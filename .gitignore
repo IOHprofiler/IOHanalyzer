@@ -1,0 +1,12 @@
+*.csv
+*.log
+*.ipynb
+*.bk
+*.pdf
+.*
+
+!/.gitignore
+__pycache__
+rawdata/
+data/
+rsconnect/

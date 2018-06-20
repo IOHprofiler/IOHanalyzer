@@ -300,10 +300,10 @@ def alignData(data):
     """
 
     #TODO: is template dependent.
-
+    
     res = []
     currentValue = data.getInitialValue()
-    #set_trace()
+
     if data.isFinished():
         res.append(data.align(currentValue))
 
@@ -359,7 +359,7 @@ def split(dataFiles, dim=None):
             # skip if comment
             if line.startswith('%'):
                 if content:
-                    dataSets.append(numpy.vstack(content).tolist())
+                    dataSets.append(numpy.vstack(content))
                     content = []
                 continue
 
@@ -383,6 +383,14 @@ def split(dataFiles, dim=None):
             content.append(numpy.array(data))
             #Check that it always have the same length?
         if content:
-            dataSets.append(numpy.vstack(content).tolist())
+            dataSets.append(numpy.vstack(content))
 
     return dataSets
+
+if __name__ == '__main__':
+    # data = HMultiReader(split(['./rawdata/dbopexp_f1_DIM1000_i1.dat']))
+    # (adata, maxevals, finalfunvals) = alignData(data)
+
+    data = split(['./rawdata/dbopexp_f1_DIM1000_i1.dat'])
+    print(len(data))
+    print(list(map(lambda d: d.tolist(), data)))

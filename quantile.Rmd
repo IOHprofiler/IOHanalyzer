@@ -1,0 +1,9 @@
+---
+title: "quantile"
+output: html_document
+---
+
+**Remark**: all sample quantiles are defined as weighted averages of consecutive order statistics. Let $\{x_1, x_2, \ldots, x_N\}$ stands for i.i.d. runtime samples. Sample quantiles are defined as:
+$$Q(p) = (1 - \alpha) x_{i:N}+ \alpha x_{i+1:N},$$
+**TODO** this is just a example showing we could explain some detials on the calculations.
+

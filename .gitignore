@@ -1,5 +1,8 @@
 *.csv
 *.log
+*.pyc
+*.RData
+*.Rhistory
 *.ipynb
 *.bk
 *.pdf

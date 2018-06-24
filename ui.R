@@ -1,28 +1,41 @@
+#
+# This is the user interface of the Shiny web application. You can run the 
+# application by clicking 'Run App' above.
+#
+# Author: Hao Wang
+# Email: wangronin@gmail.com
+
 library(shinydashboard)
+library(plotly)
 library(rCharts)
 
-header <- dashboardHeader(title = HTML('<h4><div align="center"><b>ProfilePBO</b><br><i>Post-Processing</i></div></h4>'))
+header <- dashboardHeader(title = HTML('<h4><div align="center"><b>PBOProfiler</b><br>
+                                       <i>Post-Processing</i></div></h4>'))
 
 sidebar <- dashboardSidebar(
   hr(),
   sidebarMenu(id = "tabs",
               menuItem("Upload data", tabName = "upload", icon = icon('upload', lib = 'glyphicon'), 
                        selected = T),
+              
               menuItem("Fixed-Target Results", tabName = "ERT", icon = icon("file-text-o"),
-                       menuSubItem("Data summary", tabName = "ERT_data", icon = icon("table"), selected = F),
-                       menuSubItem("Convergence", tabName = "ERT_convergence", icon = icon("line-chart")),
+                       menuSubItem("Data summary", tabName = "ERT_data", icon = icon("table")),
+                       menuSubItem("Convergence", tabName = "ERT_convergence", icon = icon("line-chart"), selected = F),
                        menuSubItem("Probility Density", tabName = "ERT_plot", icon = icon("bar-chart")),
                        menuSubItem("Cumulative Distribution", tabName = "ERT_ECDF", icon = icon("line-chart"))
                        ),
+              
               menuItem("Fixed-Budget Results", tabName = "FCE", icon = icon("file-text-o"),
                        menuSubItem("data summary", tabName = "FCE_data", icon = icon("table")),
                        menuSubItem("plot", tabName = "FCE_plot", icon = icon("bar-chart")),
                        menuSubItem("Cumulative Distribution", tabName = "FCE_ECDF", icon = icon("line-chart"))
               ),
+              
               menuItem("ReadMe", tabName = "readme", icon = icon("mortar-board")),
               menuItem("About", tabName = "about", icon = icon("question"))
   ),
   hr(),
+  
   conditionalPanel("input.tabs!='upload' && input.tabs!='readme' && input.tabs!='about'",
                    fluidRow(
                      column(1),
@@ -36,69 +49,97 @@ sidebar <- dashboardSidebar(
   )
 )
 
-precison_slider <- sliderInput('target', 
-                               label = '',
-                               min = 0, 
-                               max = 1, 
-                               value = .5)
 
 body <- dashboardBody(
+  # to show text on the header (heading banner)
+  tags$head(tags$style(HTML(
+    '.myClass { 
+        font-size: 20px;
+        line-height: 50px;
+        text-align: left;
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        padding: 0 15px;
+        overflow: hidden;
+        color: white;
+      }
+    '))),
+  
+  tags$script(HTML('
+      $(document).ready(function() {
+        $("header").find("nav").append(\'<span class="myClass"> <b>P</b>seudo-<b>B</b>
+oolean <b>O</b>ptimization Profiler <i>Post-Processing</i></span>\');
+      })
+     ')),
+  
   # include MathJax
-  HTML("<head><script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script></head>"),
+  HTML("<head><script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML'
+       async></script></head>"),
   
   tabItems(
     tabItem(tabName = 'about', 
-            includeMarkdown('about.Rmd')
+            includeMarkdown('RMD/about.Rmd')
     ),
   
     tabItem(tabName = 'readme',
-            includeMarkdown('docs.Rmd')
+            includeMarkdown('RMD/docs.Rmd')
     ),
     
     # -----------------------------------------------------------
-    # summary for Fixed-Target Runtime (ERT)
+    # Data summary for Fixed-Target Runtime (ERT)
     # -----------------------------------------------------------
     tabItem(tabName = 'ERT_data', 
       fluidRow(
         column(width = 12,
-               box(title = HTML('<p style="font-size:120%;">Runntime Statistics at chosen target values</p>'), width = 12,
+               box(title = HTML('<p style="font-size:120%;">Runtime Statistics at chosen target values</p>'), width = 12,
                    solidHeader = T, status = "primary", collapsible = T,
                    sidebarPanel(
-                     width = 2,
-                     HTML('<p align="justify">Align the running time: the smallest running time achieving the selected target values.<br>
+                     width = 3,
+                     HTML('<p align="justify">Align the running time: the smallest 
+                          running time achieving the selected target values.<br>
                           <i>Evenly spaced</i> target values are generated:</p>'),
-                     # precison_slider,
+                     
                      textInput('fstart', label = HTML('<p>\\(f_{start}:\\) starting objective value</p>'), value = ''),
                      textInput('fstop', label = HTML('<p>\\(f_{stop}:\\) stopping objective value</p>'), value = ''),
                      textInput('fstep', label = HTML('<p>\\(f_{step}:\\) objective value steps</p>'), value = ''),
-                     selectInput('select.alg', 'which algorithm to show?', choices = c('algorithm1', 'algorithm2', 'all'), selected = 'all'),
-                     downloadButton("downloadData", "Save this table as csv")
+                     selectInput('select.alg', 'which algorithm to show?', choices = c('algorithm1', 'algorithm2', 'all'), 
+                                 selected = 'all'),
+                     downloadButton("downloadData", "Save this table as csv"),
+                     br(),
+                     hr(),
+                     HTML('<p align="justify">In addition, you can download the runtime samples 
+                          aligned with respect to the specified targets.</p>'),
+                     selectInput('RT_download_format', 'please choose the format of the csv', 
+                                 choices = c('long', 'wide'), selected = 'wide'),
+                     downloadButton("download_runtime", "Save the aligned runtime samples")
                    ),
                    
                    mainPanel(
-                     width = 10,
-                     HTML('<p>Firstly, some basic statistics (<i>mean, median, quantiles</i>) are shown for the runntime at the selected objective value:</p>'),
-                     tableOutput('summary'),
+                     width = 9,
+                     HTML('<p>Firstly, some basic statistics (<i>mean, median, quantiles</i>) 
+                          are shown for the runntime at the selected objective value:</p>'),
+                     tableOutput('table_RT_summary'),
                      br(),
-                     includeMarkdown('quantile.Rmd')
-                     # HTML('<p>Secondly, the <b>Kolmogorov–Smirnov test</b> is used to investigate how the ditribution of runtimes of one algorithm differs from the other:</p><br>'),
+                     includeMarkdown('RMD/quantile.Rmd')
+                     # HTML('<p>Secondly, the <b>Kolmogorov–Smirnov test</b> is used to investigate 
+                     # how the ditribution of runtimes of one algorithm differs from the other:</p><br>'),
                      # column(10, align = "center", verbatimTextOutput('ks'))
                    )
                ),
                
-               box(title = HTML('<p style="font-size:120%;">Runntime Samples</p>'), width = 12,
+               box(title = HTML('<p style="font-size:120%;">Runtime Samples</p>'), width = 12,
                    solidHeader = TRUE, status = "primary",
                    sidebarPanel(
                      width = 2,
                      HTML('<p align="justify">Please specify the target value for the alignment:</p>'),
                      textInput('fselect', label = HTML('<p>\\(f:\\) target value</p>'), value = ''),
-                     downloadButton("downloadData.ert", "Save this table as csv")
+                     downloadButton("download_RT_sample", "Save this table as csv")
                      ),
                    
                    mainPanel(
                      width = 10,
-                     HTML('<p>The raw runtime samples aligned with respect to the specified target value are listed as follows:</p>'),
-                     verbatimTextOutput('table.RT.sample')
+                     HTML('<p>The raw runtime samples aligned with respect to the 
+                          specified target value are listed as follows:</p>'),
+                     verbatimTextOutput('table_RT_sample')
                     )
                )
           )
@@ -108,20 +149,15 @@ body <- dashboardBody(
     tabItem(tabName = 'ERT_convergence', 
             fluidRow(
               column(width = 12,
-                     box(title = 'Plot of Expected Running Time', width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Expected Runtime 
+                                      (per function)</p>'), 
+                         height = 800, width = 12,
                          collapsible = TRUE, solidHeader = TRUE, status = "primary",
                          sidebarPanel(
                            width = 2,
                            HTML('Select the range of target values to zoom in:'),
-                           sliderInput("plot.range", 
-                                       label = '', 
-                                       min = 0, 
-                                       max = 1, 
-                                       value = c(0, 1)),
-                           
-                           checkboxInput('show.instance', 
-                                         label = 'show each independent run',
-                                         value = F),
+                           sliderInput("plot.range", label = '', 
+                                       min = 0, max = 1, value = c(0, 1)),
                            
                            checkboxInput('show.mean', 
                                          label = 'show/hide mean',
@@ -133,14 +169,26 @@ body <- dashboardBody(
                            
                            checkboxInput('semilogx', 
                                          label = 'scale x axis log10',
-                                         value = F),
+                                         value = T),
                            
                            checkboxInput('semilogy', 
                                          label = 'scale y axis log10',
+                                         value = T),
+                           
+                           checkboxInput('show.instance', 
+                                         label = 'show each independent run',
                                          value = F)
                          ),
-                         mainPanel(plotOutput('mean.convergence', height = "600px", width = "1000px"))
+                         HTML('<p style="font-size:120%";>The <i>mean, median 
+                              and standard deviation</i> of the runtime samples 
+                              are depicted against the best objective values:</p>'),
+                         mainPanel(plotlyOutput('ERT_line', height = "600px", width = "1000px"))
                      )
+                     
+                     # box(title = HTML('<p style="font-size:120%;">Expected Runtime 
+                     #                  (across all functions)</p>'), 
+                     #     height = 800, width = 12,
+                     #     collapsible = TRUE, solidHeader = TRUE, status = 'primary')
               )
             )
     ),
@@ -156,16 +204,19 @@ body <- dashboardBody(
                        solidHeader = TRUE, status = "primary",
                        sidebarPanel(
                          width = 2,
-                         HTML('Align the running time: the smallest running time achieving the selected <b>target value</b>:'),
+                         HTML('Align the running time: the smallest running time 
+                              achieving the selected <b>target value</b>:'),
                          sliderInput('target.plot', 
                                      label = '',
                                      min = 0, 
                                      max = 1, 
                                      value = .5),
                         
-                         HTML('Kernel density estimation uses the following <b>kernel function</b>:'),
-                         selectInput('kernel', '', choices = c("gaussian", "epanechnikov", "rectangular",
-                                                               "triangular", "biweight", "cosine", "optcosine"), 
+                         HTML('Kernel density estimation uses the following 
+                              <b>kernel function</b>:'),
+                         selectInput('kernel', '', 
+                                     choices = c("gaussian", "epanechnikov", "rectangular",
+                                                 "triangular", "biweight", "cosine", "optcosine"), 
                                      selected = 'gaussian'),
                          
                          checkboxInput('show.RT.sample',
@@ -179,10 +230,12 @@ body <- dashboardBody(
                                 HTML('<p align="left" "font-size:150%;">The <i>probability density function</i> (p.d.f.) 
                                      of the runtime is estimated via <b>kernel density 
                                      estimation</b> (KDE). The estimates and the runtime samples are shown as follows:</p>'),
-                                plotOutput('bean.plot', height = "500px", width = "900px"),
+                                plotlyOutput('ERT_violin', height = "600px", width = "1000px"),
+                                # plotOutput('bean.plot', height = "500px", width = "900px"),
                                 br(),
                                 
-                                HTML('<p align="left" "font-size:150%;">In addition, the <i>histogram</i> (p.d.f.) of the runtime is also illustrated:</p>'),
+                                HTML('<p align="left" "font-size:150%;">In addition, 
+                                     the <i>histogram</i> (p.d.f.) of the runtime is also illustrated:</p>'),
                                 plotOutput("histogram", height = "500px", width = "900px")
                                 # showOutput("histogram", "highcharts")
                          )

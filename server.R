@@ -2,24 +2,25 @@
 # This is the server logic of a Shiny web application. You can run the 
 # application by clicking 'Run App' above.
 #
-# Find out more about building applications with Shiny here:
-# 
-#    http://shiny.rstudio.com/
-#
+# Author: Hao Wang
+# Email: wangronin@gmail.com
 
 library(shiny)
-library(ggplot2)
+
 library(reshape2)
 library(magrittr)
 library(dplyr)
-library(rCharts)
-# library(rPython)
 
-# iteration tools
+library(ggplot2)
+library(rCharts)
+library(plotly)
+
 library(itertools)
 library(iterators)
 
-options(width = 160)
+source('pproc.R')
+
+options(width = 40)
 
 t <- theme_grey() +
   theme(text = element_text(size = 15),
@@ -68,212 +69,6 @@ gg_beanplot <- function(mapping, data, p = NULL, width = 3, fill = 'grey',
   p
 }
 
-# read.data.python <- function(path) {
-#   python.exec('import os')
-#   python.exec("import sys; sys.path.insert(0, './')")
-#   python.exec('from readalign import split, VMultiReader, alignData')
-#   python.exec(sprintf("data = split(['%s'])", path))
-#   python.exec("df = list(map(lambda d: d.tolist(), data))")
-# 
-#   data <- python.get('df')
-#   ncol <- length(data[[1]][[1]])
-#   data <- lapply(data, function(x) matrix(unlist(x), ncol = ncol, byrow = T)[, 1:5] %>%
-#                 as.data.frame %>%
-#                    set_colnames(c('eval', 'DeltaF', 'BestDeltaF', 'F', 'BestF')))
-# 
-#   data
-# }
-
-# align all instances at a given target/precision
-# TODO: implement this part in C for speeding up
-# TODO: add option allowing for the minimization scenario
-target_column <- 5
-align.target <- function(data, targets = 'auto', nrow = 20) {
-  N <- length(data)
-  data.iter <- lapply(data, function(d) ihasNext(iter(as.matrix(d), by = 'row'))) # iterator of data frames
-  
-  if (is.numeric(targets)) {
-    Fvalues <- sort(targets)
-  } else {
-    if (targets == 'auto') { 
-      # similar to the alignment in bbob
-      # produce roughly 20 data records by default
-      Fstart <- sapply(data, function(x) x[, target_column][1]) %>% max(na.rm = T)
-      Fend <- sapply(data, function(x) rev(x[, target_column])[1]) %>% max(na.rm = T)
-      tmp <- seq(log10(Fstart), log10(Fend), length.out = nrow)
-      step <- tmp[2] - tmp[1]
-      idx <- log10(Fstart)
-      # idxCurrentF <- max(fvalues, na.rm = T) %>% log10 %>% '*'(nbPtsF) %>% ceiling
-      # t <- 10. ^ (idxCurrentF / nbPtsF)
-      t <- Fstart
-      
-    } else if (targets == 'full') {
-      # align at every observed fitness value
-      # this should give roughly the same time complexity as we have to iterate the whole data set
-      Fvalues <- lapply(data, function(x) unique(x[, target_column])) %>% 
-        unlist %>% unique %>% sort %>% rev
-    }
-  }
-  
-  if (targets == 'auto') {
-    Fvalues <- c()
-    res <- c()
-    curr_eval <- rep(NA, N)
-    curr_fvalues <- rep(NA, N)
-    
-    while (t > 0 && is.finite(t)) {
-      curr_eval[1:N] <- NA
-      curr_fvalues[1:N] <- NA
-      
-      for (k in seq_along(data.iter)) {
-        d <- data.iter[[k]]
-        while (hasNext(d)) {
-          curr_line <- nextElem(d)
-          v <- curr_line[target_column]
-          if (v >= t) {
-            curr_eval[k] <- curr_line[1] # hitting the target
-            curr_fvalues[k] <- v
-            break
-          }
-        }
-      }
-      
-      if (all(is.na(curr_eval)) || all(is.na(curr_fvalues))) # if the current target is not hit by any instance
-        break
-      
-      Fvalues <- c(Fvalues, t)
-      res <- rbind(res, curr_eval)
-      
-      # calculate the new target values
-      # tmp <- max(curr_fvalues, na.rm = T) %>% log10 %>% '*'(nbPtsF) %>% ceiling 
-      # make sure the new target value is bigger than the next iterate
-      idx <- idx + step
-      t <- max(c(10. ^ idx, curr_fvalues), na.rm = T)
-      # idxCurrentF <- max(tmp) %>% '-'(1)
-      # idxCurrentF <- max(idxCurrentF, tmp) %>% '+'(1)
-      # t <- 10. ^ (idxCurrentF / nbPtsF)
-    }
-  } else {
-    res <- matrix(NA, length(Fvalues), N)
-    # current_eval <- rep(NA, N)
-    for (i in seq_along(Fvalues)) {
-      t <- Fvalues[i]
-      for (k in seq_along(data)) {
-        d <- data.iter[[k]]
-        curr_eval <- NA
-        while (hasNext(d)) {
-          curr_line <- nextElem(d)
-          v <- curr_line[target_column]
-          if (v >= t) {
-            curr_eval <- curr_line[1]
-            break
-          } # hitting the target 
-        }
-        res[i, k] <- curr_eval
-      }
-    }
-  }
-  row.names(res) <- Fvalues
-  res
-}
-
-align.cost <- function(data, costs = 'auto') {
-  N <- length(data)
-  data.iter <- lapply(data, function(d) ihasNext(iter(as.matrix(d), by = 'row'))) # iterator of data frames
-  
-  if (is.numeric(targets)) {
-    Fvalues <- rev(sort(targets))
-  } else {
-    if (targets == 'auto') { # similar to the alignment in bbob
-      fvalues <- sapply(data, function(x) x$BestDeltaF[1])
-      idxCurrentF <- max(fvalues, na.rm = T) %>% log10 %>% '*'(nbPtsF) %>% ceiling
-      t <- 10. ^ (idxCurrentF / nbPtsF)
-    }
-    if (targets == 'full') {
-      Fvalues <- lapply(data, function(x) unique(x$BestDeltaF)) %>% 
-        unlist %>% unique %>% sort %>% rev
-    }
-  }
-  
-  if (targets == 'auto') {
-    Fvalues <- c()
-    res <- c()
-    curr_eval <- rep(NA, N)
-    curr_fvalues <- rep(NA, N)
-    
-    while (t > 0) {
-      curr_eval[1:N] <- NA
-      curr_fvalues[1:N] <- NA
-      
-      for (k in seq_along(data.iter)) {
-        d <- data.iter[[k]]
-        while (hasNext(d)) {
-          curr_line <- nextElem(d)
-          v <- curr_line[3]
-          if (v <= t) {
-            curr_eval[k] <- curr_line[1] # hitting the target
-            curr_fvalues[k] <- v
-            break
-          }
-        }
-      }
-      
-      if (all(is.null(curr_eval))) # if the current target is not hit by any instance
-        break
-      
-      Fvalues <- c(Fvalues, t)
-      res <- rbind(res, curr_eval)
-      
-      # calculate the new target values
-      tmp <- max(curr_fvalues, na.rm = T) %>% log10 %>% '*'(nbPtsF) %>% ceiling 
-      idxCurrentF <- max(tmp) %>% '-'(1)
-      t <- 10. ^ (idxCurrentF / nbPtsF)
-    }
-  } else {
-    res <- matrix(NA, length(Fvalues), N)
-    # current_eval <- rep(NA, N)
-    for (i in seq_along(Fvalues)) {
-      t <- Fvalues[i]
-      for (k in seq_along(data)) {
-        d <- data.iter[[k]]
-        curr_eval <- NA
-        while (hasNext(d)) {
-          curr_line <- nextElem(d)
-          v <- curr_line[3]
-          if (v <= t) {
-            curr_eval <- curr_line[1]
-            break
-          } # hitting the target 
-        }
-        res[i, k] <- curr_eval
-      }
-    }
-  }
-  row.names(res) <- Fvalues
-  res
-}
-
-# Valign <- function(df) {
-#   fvalues <- df$BestF %>% unique %>% sort
-#   
-#   df.aligned <- data.frame()
-#   data <- tbl_df(df) %>% group_by(run)
-#   # TODO: handle the case where some runs failed
-#   for (f in fvalues) {
-#     data <- data %>% filter(BestF >= f)
-#     row <- data %>% slice(1) %>% ungroup %>% arrange(run) %>% '$'('fct_eval')
-#     df.aligned <- rbind(df.aligned, row)
-#   }
-#   rownames(df.aligned) <- fvalues
-#   colnames(df.aligned) <- seq(length(unique(df$run)))
-#   df.aligned
-# }
-
-# ECDF <- function(ftarget) {
-#   RT <- as.numeric(df.aligned[as.character(ftarget), ]) # running time
-#   ecdf(log10(RT / dim))
-# }
-
 ECDF <- function(df, target) {
   v <- rownames(df) %>% as.numeric
   idx <- order(abs(target - v))[1]
@@ -293,7 +88,7 @@ if (11 < 2) {
   df2 <- read.data.python(path2)
   df2.aligned <- align.target(df2)
   
-  df <- list(df1, df2)
+  df <- list('algorithm1' = df1, 'algorithm2' = df2)
   df.aligned <- list('algorithm1' = df1.aligned, 'algorithm2' = df2.aligned)
   
   save(df, df.aligned, file = './data/tmp')
@@ -339,23 +134,24 @@ shinyServer(function(input, output, session) {
                              n.sample = apply(data, 1, . %>% {sum(!is.na(.))}), 
                  mean = rowMeans(data, na.rm = T), 
                  sd = apply(data, 1, . %>% sd(na.rm = T)),
+                 se = apply(data, 1, . %>% {sd(., na.rm = T) / sqrt(length(.))}),
                  median = apply(data, 1, . %>% median(na.rm = T)))
       i <- i + 1
     }
     res
   })
   
-  # the runtime at a given target precision
-  RT <- reactive({
-    target <- input$target %>% as.numeric
-    lapply(aligned(), . %>% {
-      v <- rownames(.) %>% as.numeric
-      idx <- order(abs(target - v))[1]
-      .[idx, ] %>% as.vector
-      }) %>% 
-      do.call(cbind.data.frame, .) %>% 
-      set_colnames(c('algorithm1', 'algorithm2'))
-  })
+  # the runtime aligned at a given target precision
+  # RT <- reactive({
+  #   target <- input$target %>% as.numeric
+  #   lapply(aligned(), . %>% {
+  #     v <- rownames(.) %>% as.numeric
+  #     idx <- order(abs(target - v))[1]
+  #     .[idx, ] %>% as.vector
+  #     }) %>% 
+  #     do.call(cbind.data.frame, .) %>% 
+  #     set_colnames(c('algorithm1', 'algorithm2'))
+  # })
   
   fvalues <- reactive({
     df.aligned <- aligned()
@@ -419,39 +215,11 @@ shinyServer(function(input, output, session) {
     #                   value = quantile(v, names = F)[7], step = step)
   })
   
-  output$convergence.raw <- renderPlot({
-    dfs <- DF()
-    instance <- input$instance
-    
-    p <- ggplot(aes(x = BestF, y = fct_eval, group = run, colour = run))
-    for (df in dfs) {
-       p <- p +
-        geom_line(data = df, size = 1, alpha = 0.4, show.legend = F) + 
-        stat_summary(fun.y = mean, geom = 'line', size = 1, 
-                     aes(group = 1)) + 
-        labs(x = 'best fitness measured', y = 'function evaluations') + 
-        scale_color_discrete(guide = F)
-      
-      if (!instance == "") {
-        data <- df %>% filter(run == instance)
-        p <- p + geom_line(data = data, 
-                           mapping = aes(x = BestF, y = fct_eval, group = 1), 
-                           size = 2, alpha = 0.9, colour = 'red',
-                           show.legend = F)
-      }
-    }
-    print(p)
-  })
+  # -----------------------------------------------------------
+  # Data summary for Fixed-Target Runtime (ERT)
+  # -----------------------------------------------------------
   
-  output$data.table <- renderDataTable({
-    instance <- input$instance
-    dfs <- DF()
-    df <- dfs[[1]]
-    df %>% filter(run == instance) %>% select(-run)
-  }, options = list(pageLength = 20))
-  
-  
-  RT.summary <- reactive({
+  get_RT_summary <- reactive({
     fall <- fvalues()  # all the aligned target values
     fstart <- input$fstart %>% as.numeric %>% max(., min(fall))
     fstop <- input$fstop %>% as.numeric %>% min(., max(fall))
@@ -473,33 +241,23 @@ shinyServer(function(input, output, session) {
         next
       
       df <- df.aligneds[[i]]
-      v <- rownames(df) %>% as.numeric
-      
-      res[[i]] <- lapply(fseq, 
-                         function(f) {
-                           idx <- order(abs(f - v))[1]
-                           RT <- df[idx, ] %>% as.vector
-                           c(f, length(RT[!is.na(RT)]), 
-                             mean(RT, na.rm = T), median(RT, na.rm = T), 
-                             quantile(RT, probs = probs, names = F, 
-                                      type = 3, na.rm = T)) # type 1 ~ 3 for the discrete r.v.
-                         }) %>% 
-        do.call(rbind, .) %>% 
-        as.data.frame %>% 
-        cbind(paste0('algorithm', i), .)
+      attr(df, 'algorithm') <- paste0('algorithm', i)
+      res[[i]] <- RT_summary(df, fseq, probs = probs)
     }
     
-    do.call(rbind.data.frame, res) %>% 
-      set_colnames(c('algorithm name', 'f(x)', 'runs', 'mean', 'median', paste0(probs * 100, '%')))
+    do.call(rbind.data.frame, res)
   })
   
-  output$summary <- renderTable({
-    df <- RT.summary()
+  output$table_RT_summary <- renderTable({
+    df <- get_RT_summary()
     df$runs %<>% as.integer
     df$median %<>% as.integer
+    # TODO: make probs as a global option
     probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
+    
+    # format the integers
     for (p in paste0(probs * 100, '%')) {
-      df[[p]] %<>%  as.integer
+      df[[p]] %<>% as.integer
     }
     df
   })
@@ -507,12 +265,56 @@ shinyServer(function(input, output, session) {
   output$downloadData <- downloadHandler(
     filename = 'runtime_summary.csv',
     content = function(file) {
-      write.csv(RT.summary(), file, row.names = F)
+      write.csv(get_RT_summary(), file, row.names = F)
     },
     contentType = "text/csv"
   )
   
-  output$table.RT.sample <- renderPrint({
+  get_RT <- reactive({
+    fall <- fvalues()  # all the aligned target values
+    fstart <- input$fstart %>% as.numeric %>% max(., min(fall))
+    fstop <- input$fstop %>% as.numeric %>% min(., max(fall))
+    fstep <- input$fstep %>% as.numeric
+    
+    # when initializing or incorrect input
+    if (is.na(fstart) || is.na(fstop) || is.na(fstep))
+      return(data.frame())
+    if (fstart >= fstop || fstep > fstop - fstart)
+      return(data.frame())
+    
+    fseq <- seq(from = fstart, to = fstop, by = fstep)
+    n_runs_max <- sapply(df.aligned, . %>% ncol) %>% max
+    df.aligneds <- aligned()
+    res <- list()
+    
+    for (i in seq_along(df.aligneds)) {
+      if (input$select.alg != 'all' && names(df.aligneds)[i] != input$select.alg)
+        next
+      
+      df <- df.aligneds[[i]]
+      attr(df, 'algorithm') <- paste0('algorithm', i)
+      data <- RT(df, fseq, format = input$RT_download_format)
+      
+      if (input$RT_download_format == 'wide') {
+        n <- ncol(data) - 2
+        if (n < n_runs_max) 
+          data %<>% cbind(., matrix(NA, nrow(.), n_runs_max - n))
+      }
+      
+      res[[i]] <- data
+    }
+    do.call(rbind.data.frame, res) 
+  })
+  
+  output$download_runtime <- downloadHandler(
+    filename = 'runtime_samples.csv',
+    content = function(file) {
+      write.csv(get_RT(), file, row.names = F)
+    },
+    contentType = "text/csv"
+  )
+  
+  output$table_RT_sample <- renderPrint({
     fall <- fvalues()  # all the aligned target values
     fselect <- input$fselect %>% as.numeric 
     
@@ -523,29 +325,32 @@ shinyServer(function(input, output, session) {
       return(data.frame())
     
     df.aligneds <- aligned()
-    res <- list()
+    res <- ''
     
     for (i in seq_along(df.aligneds)) {
       df <- df.aligneds[[i]]
       v <- rownames(df) %>% as.numeric
-      idx <- order(abs(fselect - v))[1]
-      res[[i]] <- df[idx, ] %>% as.vector
+      idx <- seq_along(v)[v >= fselect][1]
+      
+      tmp <- df[idx, ] %>% as.vector
+      res <- paste0(res, 'algorithm', i, ':', '\n')
+      res <- paste0(res, paste0(tmp, collapse = ','), '\n\n')
     }
-    names(res) <- names(df.aligneds)
-    print(res)
+    cat(res, fill = T)
   })
   
-  output$downloadData.ert <- downloadHandler(
-    filename = 'ERT.csv',
+  output$download_RT_sample <- downloadHandler(
+    filename = 'RT_sample.csv',
     content = function(file) {
-      df <- ERT()
+      df.aligneds <- aligned()
       res <- list()
-      for (k in seq_along(df)) {
-        res[[k]] <- df[[k]] %>% 
-          mutate(algorithm = paste0('algorithm', k))
+      for (i in seq_along(df.aligneds)) {
+        df <- df.aligneds[[i]]
+        attr(df, 'algorithm') <- paste0('algorithm', i)
+        res[[i]]  <- RT(df, as.numeric(input$fselect), format = 'long')
       }
-      res <- do.call(rbind.data.frame, res)
-      write.csv(res, file, row.names = F)
+      data <- do.call(rbind.data.frame, res)
+      write.csv(data, file, row.names = F)
     },
     contentType = "text/csv"
   )
@@ -567,183 +372,204 @@ shinyServer(function(input, output, session) {
     print(a)
   })
   
-  # output$raw.RT <- renderDataTable({
-  #   RT()
-  # }, options = list(pageLength = 5))
-
-  # the Fixed-Target convergence results
-  output$mean.convergence <- renderPlot({
-    target <- input$target %>% as.numeric
-    show.median <- input$show.median
-    show.mean <- input$show.mean
-    show.original <- input$show.instance
-    x_range <- input$plot.range
-
+  # -----------------------------------------------------------
+  # Plots for Fixed-Target Runtime (ERT)
+  # -----------------------------------------------------------
+  
+  # The expected runtime plot 
+  output$ERT_line <- renderPlotly({
+    xmin <- input$plot.range[1]
+    xmax <- input$plot.range[2]
+    
     df.ERT <- ERT()
     df.BestF <- BestF()
-    df.aligneds <- aligned()
-
-    p <- ggplot()
-    colors <- colorspace::rainbow_hcl(2)
-    shapes <- c(20, 4)
-    linetypes <- c('solid', 'longdash')
-
-    for (i in seq_along(df.aligneds)) {
-      df.aligned <- df.aligneds[[i]]
-      ert <- df.ERT[[i]]
-      raw <- df.BestF[[i]]
-
-      # select the aligned precison that is closest to the selected target
-      v <- rownames(df.aligned) %>% as.numeric
-      idx <- order(abs(target - v))[1]
-      df.row <- df.aligned[idx, ] %>% melt %>% mutate(variable = target)
-      width <- (max(ert$BestF) - min(ert$BestF)) / 10
-
-      # p <- gg_beanplot(p = p, mapping = aes(x = variable, y = value), data = df.row,
-      #                    width = width, fill = colors[i], trim = F,
-      #                    linetype = linetypes[i], colour = colors[i],
-      #                    point.shape = shapes[i], show.violin = show.beanplot,
-      #                    show.sample = show.sample, alpha = 0.7)
-
-      if (show.original)
-        p <- p + geom_line(data = raw, aes(x = BestF, y = eval, group = instance),
-                           colour = colors[i], size = 0.2, alpha = 0.5)
-      if (show.mean)
-        p <- p + geom_line(data = ert, aes(x = BestF, y = mean),
-                           colour = colors[i], size = 2, alpha = 1)
+    
+    n_algorithm <- length(df.ERT)
+    colors <- colorspace::rainbow_hcl(n_algorithm)
+    
+    h <- 650
+    w <- h / 9 * 16
+    p <- plot_ly(width = w, height = h) 
+    
+    for (i in seq_along(df.ERT)) {
+      raw <- df.BestF[[i]] %>% 
+        filter(BestF >= xmin, BestF <= xmax)
       
-      if (show.median)
-        p <- p + geom_line(data = ert, aes(x = BestF, y = median),
-                           colour = colors[i], size = 2, alpha = 1,
-                           linetype = 'dashed')
+      ert <- df.ERT[[i]] %>% 
+        mutate(upper = mean + sd, lower = mean - sd) %>% 
+        filter(BestF >= xmin, BestF <= xmax)
+      
+      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
+      
+      p %<>% 
+        add_trace(data = ert, x = ~BestF, y = ~upper, type = 'scatter', mode = 'lines',
+                  line = list(color = rgba_str, width = 0), 
+                  showlegend = F, name = 'mean +/- sd') %>% 
+        add_trace(x = ~BestF, y = ~lower, type = 'scatter', mode = 'lines',
+                  fill = 'tonexty',  line = list(color = 'transparent'),
+                  fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd')
+      
+      if (input$show.mean)
+        p %<>% add_trace(data = ert, x = ~BestF, y = ~mean, type = 'scatter', 
+                         mode = 'lines+markers', name = paste0('algorithm', i, '.mean'), 
+                         marker = list(color = rgb_str),
+                         line = list(color = rgb_str))
+      
+      if (input$show.median)
+        p %<>% add_trace(data = ert, x = ~BestF, y = ~median, type = 'scatter',
+                         name = paste0('algorithm', i, '.median'), mode = 'lines+markers', 
+                         marker = list(color = rgb_str),
+                         line = list(color = rgb_str, dash = 'dash'))
+      
+      if (input$show.instance)
+        p %<>% add_trace(data = raw, x = ~BestF, y = ~eval, type = 'scatter', mode = 'lines',
+                         line = list(color = rgba_str),
+                         linetype = ~instance, showlegend = F)
+    }
+    
+    xaxis.type <- switch(input$semilogx, T = 'log', F = 'linear')
+    yaxis.type <- switch(input$semilogy, T = 'log', F = 'linear')
+    
+    p %<>% layout(title = "Expected Runtime Comparison",
+                  autosize = T, hovermode = 'compare',
+                  paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
+                  xaxis = list(title = "best-so-far f(x)-value",
+                               gridcolor = 'rgb(255,255,255)',
+                               showgrid = TRUE,
+                               showline = FALSE,
+                               type = xaxis.type,
+                               showticklabels = TRUE,
+                               tickcolor = 'rgb(127,127,127)',
+                               ticks = 'outside',
+                               ticklen = 7,
+                               zeroline = F),
+                  yaxis = list(title = "function evaluations",
+                               gridcolor = 'rgb(255,255,255)',
+                               showgrid = TRUE,
+                               showline = FALSE,
+                               type = yaxis.type,
+                               showticklabels = TRUE,
+                               tickcolor = 'rgb(127,127,127)',
+                               ticks = 'outside',
+                               ticklen = 7,
+                               zeroline = F))
+  })
+  
+  output$ERT_violin <- renderPlotly({
+    ftarget <- input$target.plot %>% as.numeric
+    df.aligneds <- aligned()
+    n_algorithm <- length(df.aligneds)
+    colors <- colorspace::rainbow_hcl(n_algorithm)
+    
+    h <- 650
+    w <- h / 9 * 16
+    p <- plot_ly(width = w, height = h)
+                 
+    for (i in seq_along(df.aligneds)) {
+      df <- df.aligneds[[i]]
+      # TODO: remove this, 'algorithm' attribute should be set when reading the data
+      attr(df, 'algorithm') <- paste0('algorithm', i)
+      
+      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
+      
+      rt <- RT(df, ftarget, format = 'long')
         
-      tmp <- ert %>% 
-        filter(BestF > x_range[1], BestF < x_range[2])
+      # d <- density(rt, kernel = input$kernel)
       
-      p <- p + geom_ribbon(aes(x = BestF, ymin = mean - 1.96 * sd, ymax = mean + 1.96 * sd),
-                           data = ert, fill = '#447DF6', alpha = 0.2) +
-        ylim(c(min(tmp$mean), max(tmp$mean)))
-
-      p <- p + xlim(range = x_range) +
-        labs(x = 'best-so-far f(x)-value', y = 'runtime / function evaluation',
-             title = 'Runtime (RT) vs. target precison')
+      p %<>% 
+        add_trace(data = rt,
+                  x = ~algorithm, y = ~RT, split = ~algorithm, type = 'violin',
+                  hoveron = "points+kde",
+                  box = list(visible = T),
+                  points = 'all',
+                  pointpos = 1,
+                  jitter = 0.1,
+                  scalemode = 'count',
+                  meanline = list(visible = T),
+                  line = list(color = rgb_str, width = 1),
+                  marker = list(color = rgb_str)
+        )
       
-      if (input$semilogx)
-        p <- p + scale_x_log10()
-      
-      if (input$semilogy)
-        p <- p + scale_y_log10()
-      
-    }
-    p
-  })
-  
-  output$bean.plot <- renderPlot({
-    target <- input$target.plot %>% as.numeric
-    df.aligneds <- aligned()
-    
-    p <- ggplot()
-    colors <- 
-    shapes <- c(20, 4)
-    linetypes <- c('solid', 'longdash')
-    
-    data <- list()
-    for (i in seq_along(df.aligneds)) {
-      df.aligned <- df.aligneds[[i]]
-      
-      # select the aligned precison that is closest to the selected target
-      v <- rownames(df.aligned) %>% as.numeric
-      idx <- order(abs(target - v))[1]
-      running_time <- df.aligned[idx, ] %>% as.vector
-            
-      data[[i]] <- data.frame(algorithm = paste0('algorithm', i), run.time = running_time)
-      
-      # p <- p + xlim(range = x_range) +
-      #   labs(x = 'Best fitness', y = 'runtime / function evaluation',
-      #        title = 'Runtime (RT) vs. target precison')
+      # p %<>% 
+      #   add_trace(data = RT(df, ftarget, format = 'long'),
+      #             x = ~algorithm, y = ~RT, split = ~algorithm, type = 'violin',
+      #             hoveron = "points+kde",
+      #             box = list(visible = T),
+      #             points = 'all',
+      #             pointpos = 1,
+      #             jitter = 0.1,
+      #             scalemode = 'count',
+      #             meanline = list(visible = T),
+      #             line = list(color = rgb_str, width = 1),
+      #             marker = list(color = rgb_str)
+      #           )
     }
     
-    width <- 0.3
-    data <- do.call(rbind.data.frame, data)
-    colors <- colorspace::rainbow_hcl(2) %>% 
-      setNames(unique(data$algorithm))
-    
-    p <- gg_beanplot(p = p, mapping = aes(x = algorithm, y = run.time, 
-                                          fill = algorithm, colour = algorithm), 
-                     data = data, width = width, trim = F, kernel = input$kernel,
-                     show.sample = input$show.RT.sample, alpha = 0.8) + 
-      scale_color_manual(values = colors) + 
-      scale_fill_manual(values = colors) +
-      labs(x = 'algorithms', y = 'running time')
-    
-    p
+    p %<>%
+      layout(title = "Expected Runtime Comparison",
+                  autosize = T, hovermode = 'compare',
+                  paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
+                  xaxis = list(title = "best-so-far f(x)-value",
+                               gridcolor = 'rgb(255,255,255)',
+                               showgrid = TRUE,
+                               showline = FALSE,
+                               showticklabels = TRUE,
+                               tickcolor = 'rgb(127,127,127)',
+                               ticks = 'outside',
+                               ticklen = 7,
+                               zeroline = F),
+                  yaxis = list(title = "function evaluations",
+                               gridcolor = 'rgb(255,255,255)',
+                               showgrid = TRUE,
+                               showline = FALSE,
+                               showticklabels = TRUE,
+                               tickcolor = 'rgb(127,127,127)',
+                               ticks = 'outside',
+                               ticklen = 7,
+                               zeroline = F))
   })
-  
-  # TODO: try to use ggvis
-  # conv <- reactive({
-  #     target <- input$target %>% as.numeric
-  #     show.median <- input$show.median
-  #     show.mean <- input$show.mean
-  #     show.beanplot <- input$show.beanplot
-  #     show.sample <- input$show.RT.sample
-  #     zoomin <- input$zoomin
+    
+  #   target <- input$target.plot %>% as.numeric
+  #   df.aligneds <- aligned()
+  #   
+  #   p <- ggplot()
+  #   colors <- 
+  #   shapes <- c(20, 4)
+  #   linetypes <- c('solid', 'longdash')
+  #   
+  #   data <- list()
+  #   for (i in seq_along(df.aligneds)) {
+  #     df.aligned <- df.aligneds[[i]]
   #     
-  #     data <- ERT()
-  #     df <- DF.BestDeltaF()
-  #     df.aligneds <- aligned()
+  #     # select the aligned precison that is closest to the selected target
+  #     v <- rownames(df.aligned) %>% as.numeric
+  #     idx <- order(abs(target - v))[1]
+  #     running_time <- df.aligned[idx, ] %>% as.vector
+  #           
+  #     data[[i]] <- data.frame(algorithm = paste0('algorithm', i), run.time = running_time)
   #     
-  #     p <- ggvis()
-  #     colors <- colorspace::rainbow_hcl(2)
-  #     shapes <- c(20, 4)
-  #     linetypes <- c('solid', 'longdash')
-  #     
-  #     for (i in seq_along(df.aligneds)) {
-  #       df.aligned <- df.aligneds[[i]]
-  #       ert <- data[[i]]
-  #       raw <- df[[i]]
-  #       
-  #       # select the aligned precison that is closest to the selected target
-  #       v <- rownames(df.aligned) %>% as.numeric
-  #       idx <- order(abs(target - v))[1]
-  #       df.row <- df.aligned[idx, ] %>% melt %>% mutate(variable = target)
-  #       width <- (max(ert$BestF) - min(ert$BestF)) / 10
-  #       
-  #       # p <- gg_beanplot(p = p, mapping = aes(x = variable, y = value), data = df.row,
-  #       #                  width = width, fill = colors[i], trim = F,
-  #       #                  linetype = linetypes[i], colour = colors[i],
-  #       #                  point.shape = shapes[i], show.violin = show.beanplot,
-  #       #                  show.sample = show.sample, alpha = 0.7)
-  #       
-  #       # p <- p + geom_ribbon(aes(x = BestF, ymin = mean - 1.96 * sd, ymax = mean + 1.96 * sd),
-  #       #                      ert, fill = '#447DF6', alpha = 0.2) +
-  #       #   ylim(c(min(ert$mean), max(ert$mean)))
-  #       
-  #       if (show.mean)
-  #         p <- p %>% layer_paths(data = ert, x = ~BestF, y = ~mean, stroke := colors[i])
-  #       
-  #       # p <- p + geom_line(data = raw, aes(x = BestDeltaF, y = eval, group = instance),
-  #       #                    colour = colors[i], size = 0.2, alpha = 0.1)
-  #       
-  #       if (show.median)
-  #         p <- p + geom_line(data = ert, aes(x = BestF, y = median),
-  #                            colour = colors[i], size = 2, alpha = 0.8,
-  #                            linetype = 'dashed')
-  #       
-  #       if (zoomin) {
-  #         p <- p + scale_x_reverse(limits = c(target + width * 1.3, target - width * 1.3))
-  #       }
-  #       else
-  #         1
-  #         # p <- p + scale_x_reverse()
-  #       
-  #       # p <- p + labs(x = 'best fitness - Fopt', y = 'runtime / function evaluation',
-  #       #               title = 'Runtime (RT) vs. target precison')
-  #     }
-  #     p
+  #     # p <- p + xlim(range = x_range) +
+  #     #   labs(x = 'Best fitness', y = 'runtime / function evaluation',
+  #     #        title = 'Runtime (RT) vs. target precison')
+  #   }
+  #   
+  #   width <- 0.3
+  #   data <- do.call(rbind.data.frame, data)
+  #   colors <- colorspace::rainbow_hcl(2) %>% 
+  #     setNames(unique(data$algorithm))
+  #   
+  #   p <- gg_beanplot(p = p, mapping = aes(x = algorithm, y = run.time, 
+  #                                         fill = algorithm, colour = algorithm), 
+  #                    data = data, width = width, trim = F, kernel = input$kernel,
+  #                    show.sample = input$show.RT.sample, alpha = 0.8) + 
+  #     scale_color_manual(values = colors) + 
+  #     scale_fill_manual(values = colors) +
+  #     labs(x = 'algorithms', y = 'running time')
+  #   
+  #   p
   # })
-  # 
-  # conv %>% bind_shiny("test")
-
   
   # historgram of the running time
   output$histogram <- renderPlot({

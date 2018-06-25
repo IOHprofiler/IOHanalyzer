@@ -9,25 +9,25 @@ library(magrittr)
 library(reshape2)
 library(itertools)
 library(iterators)
-library(rPython)
+# library(rPython)
 
 # TODO: migrate to data.table for speed concern and simplicity
 # TODO: implement the S3 generics 
 
-read.data.python <- function(path) {
-  python.exec('import os')
-  python.exec("import sys; sys.path.insert(0, './')")
-  python.exec('from readalign import split, VMultiReader, alignData')
-  python.exec(sprintf("data = split(['%s'])", path))
-  python.exec("df = list(map(lambda d: d.tolist(), data))")
-  
-  data <- python.get('df')
-  ncol <- length(data[[1]][[1]])
-  data <- lapply(data, function(x) matrix(unlist(x), ncol = ncol, byrow = T)[, 1:5] %>%
-                   as.data.frame %>%
-                   set_colnames(c('eval', 'DeltaF', 'BestDeltaF', 'F', 'BestF')))
-  data
-}
+# read.data.python <- function(path) {
+#   python.exec('import os')
+#   python.exec("import sys; sys.path.insert(0, './')")
+#   python.exec('from readalign import split, VMultiReader, alignData')
+#   python.exec(sprintf("data = split(['%s'])", path))
+#   python.exec("df = list(map(lambda d: d.tolist(), data))")
+#   
+#   data <- python.get('df')
+#   ncol <- length(data[[1]][[1]])
+#   data <- lapply(data, function(x) matrix(unlist(x), ncol = ncol, byrow = T)[, 1:5] %>%
+#                    as.data.frame %>%
+#                    set_colnames(c('eval', 'DeltaF', 'BestDeltaF', 'F', 'BestF')))
+#   data
+# }
 
 # calculate the basic statistics of the runtime samples from an aligned data set
 RT_summary <- function(df, ftarget, 
@@ -88,15 +88,14 @@ RT <- function(data, ftarget, format = 'wide') {
   df
 }
 
-EPMF <- function(samples, lower = 1, upper = 100) {
-  support <- seq(lower, upper, by = 1)
-  alpha <- 1. / upper
-  n <- length(support)
-  
-  tmp <- function(x) {
-    sapply(x, function(xx) (sum(samples == xx) + alpha) / (n + alpha * upper))
+CDF_discrete <- function(x) {
+  x <- sort(x)
+  x.unique <- unique(x)
+  res <- seq_along(x) / length(x)
+  for (v in x.unique) {
+    res[x == v] <- max(res[x == v])
   }
-  tmp
+  res
 }
 
 

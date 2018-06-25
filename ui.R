@@ -9,7 +9,7 @@ library(shinydashboard)
 library(plotly)
 library(rCharts)
 
-header <- dashboardHeader(title = HTML('<h4><div align="center"><b>PBOProfiler</b><br>
+header <- dashboardHeader(title = HTML('<h4><div align="center"><b>IOHProfiler</b><br>
                                        <i>Post-Processing</i></div></h4>'))
 
 sidebar <- dashboardSidebar(
@@ -21,8 +21,8 @@ sidebar <- dashboardSidebar(
               menuItem("Fixed-Target Results", tabName = "ERT", icon = icon("file-text-o"),
                        menuSubItem("Data summary", tabName = "ERT_data", icon = icon("table")),
                        menuSubItem("Convergence", tabName = "ERT_convergence", icon = icon("line-chart"), selected = F),
-                       menuSubItem("Probility Density", tabName = "ERT_plot", icon = icon("bar-chart")),
-                       menuSubItem("Cumulative Distribution", tabName = "ERT_ECDF", icon = icon("line-chart"))
+                       menuSubItem("Probility Density", tabName = "ERT_plot", icon = icon("bar-chart"), selected = F),
+                       menuSubItem("Cumulative Distribution", tabName = "ERT_ECDF", icon = icon("line-chart"), selected = F)
                        ),
               
               menuItem("Fixed-Budget Results", tabName = "FCE", icon = icon("file-text-o"),
@@ -49,7 +49,6 @@ sidebar <- dashboardSidebar(
   )
 )
 
-
 body <- dashboardBody(
   # to show text on the header (heading banner)
   tags$head(tags$style(HTML(
@@ -66,8 +65,7 @@ body <- dashboardBody(
   
   tags$script(HTML('
       $(document).ready(function() {
-        $("header").find("nav").append(\'<span class="myClass"> <b>P</b>seudo-<b>B</b>
-oolean <b>O</b>ptimization Profiler <i>Post-Processing</i></span>\');
+        $("header").find("nav").append(\'<span class="myClass"> <b>I</b>terative <b>O</b>ptimization <b>H</b>euristics <b>P</b>rofiler</span>\');
       })
      ')),
   
@@ -120,9 +118,6 @@ oolean <b>O</b>ptimization Profiler <i>Post-Processing</i></span>\');
                      tableOutput('table_RT_summary'),
                      br(),
                      includeMarkdown('RMD/quantile.Rmd')
-                     # HTML('<p>Secondly, the <b>Kolmogorov–Smirnov test</b> is used to investigate 
-                     # how the ditribution of runtimes of one algorithm differs from the other:</p><br>'),
-                     # column(10, align = "center", verbatimTextOutput('ks'))
                    )
                ),
                
@@ -199,9 +194,9 @@ oolean <b>O</b>ptimization Profiler <i>Post-Processing</i></span>\');
     tabItem(tabName = 'ERT_plot', 
           fluidRow(
             column(width = 12,
-                   box(title = 'Plot of the Runtime Distribution', width = 12,
-                       collapsible = TRUE,
-                       solidHeader = TRUE, status = "primary",
+                   box(title = 'Empirical Probability Mass Function of the Runtime', 
+                       height = 800, width = 12,
+                       collapsible = TRUE, solidHeader = TRUE, status = "primary",
                        sidebarPanel(
                          width = 2,
                          HTML('Align the running time: the smallest running time 
@@ -230,16 +225,34 @@ oolean <b>O</b>ptimization Profiler <i>Post-Processing</i></span>\');
                                 HTML('<p align="left" "font-size:150%;">The <i>probability density function</i> (p.d.f.) 
                                      of the runtime is estimated via <b>kernel density 
                                      estimation</b> (KDE). The estimates and the runtime samples are shown as follows:</p>'),
-                                plotlyOutput('ERT_violin', height = "600px", width = "1000px"),
-                                # plotOutput('bean.plot', height = "500px", width = "900px"),
-                                br(),
-                                
-                                HTML('<p align="left" "font-size:150%;">In addition, 
-                                     the <i>histogram</i> (p.d.f.) of the runtime is also illustrated:</p>'),
-                                plotOutput("histogram", height = "500px", width = "900px")
-                                # showOutput("histogram", "highcharts")
+                                plotlyOutput('ERT_violin', height = "500px", width = "900px")
                          )
                        )
+                   ),
+                   
+                   box(title = 'Historgram of the Runtime Samples', 
+                       width = 12, height = 800,
+                       collapsible = TRUE, solidHeader = TRUE, status = "primary",
+                       sidebarPanel(
+                         width = 2,
+                         HTML('Please select the <b>target value</b>:'),
+                         sliderInput('target_hist', label = '', min = 0, max = 1, value = .5),
+                         
+                         HTML('Please choose whether the histograms are <b>overlaid</b> in one plot 
+                              or <b>separated</b> in several subplots:'),
+                         selectInput('ERT_illu_mode', '', 
+                                     choices = c("overlay", "subplot"), 
+                                     selected = 'subplot')
+                         ),
+                       
+                       mainPanel(
+                         width = 10,
+                         column(width = 12, align = "center",
+                                HTML('<p align="left" "font-size:150%;">In addition, 
+                                     the <i>histogram</i> of the runtime is also illustrated:</p>'),
+                                plotlyOutput('ERT_histogram', height = "600px", width = "1000px")
+                                )
+                         )
                    )
             )
           )
@@ -247,8 +260,8 @@ oolean <b>O</b>ptimization Profiler <i>Post-Processing</i></span>\');
     
     tabItem(tabName = 'ERT_ECDF', 
             fluidRow(
-              column(width = 8,
-                     box(title = 'Plot of the Runtime Distribution', width = 12,
+              column(width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Plot of the Runtime Distribution</p>'), width = 12,
                          collapsible = TRUE,
                          solidHeader = TRUE, status = "primary",
                          sidebarLayout(
@@ -260,9 +273,9 @@ oolean <b>O</b>ptimization Profiler <i>Post-Processing</i></span>\');
                                          max = 1, 
                                          value = 0),
                              
-                             checkboxInput('show.ecdf1', 
-                                           label = 'show target1',
-                                           value = F),
+                             # checkboxInput('show.ecdf1', 
+                             #               label = 'show target1',
+                             #               value = F),
                              
                              sliderInput("target.ecdf2",
                                          "target2",
@@ -270,9 +283,9 @@ oolean <b>O</b>ptimization Profiler <i>Post-Processing</i></span>\');
                                          max = 1, 
                                          value = 0),
                              
-                             checkboxInput('show.ecdf2', 
-                                           label = 'show target2',
-                                           value = F),
+                             # checkboxInput('show.ecdf2', 
+                             #               label = 'show target2',
+                             #               value = F),
                              
                              sliderInput("target.ecdf3",
                                          "target3",
@@ -280,49 +293,94 @@ oolean <b>O</b>ptimization Profiler <i>Post-Processing</i></span>\');
                                          max = 1, 
                                          value = 0),
                              
-                             checkboxInput('show.ecdf3', 
-                                           label = 'show target3',
-                                           value = F),
-                             
-                             sliderInput("target.ecdf4",
-                                         "target4",
-                                         min = 0, 
-                                         max = 1, 
-                                         value = 0),
-                             
-                             checkboxInput('show.ecdf4', 
-                                           label = 'show target4',
-                                           value = F),
-                             
-                             sliderInput("target.ecdf5",
-                                         "target5",
-                                         min = 0, 
-                                         max = 1, 
-                                         value = 0),
-                             
-                             checkboxInput('show.ecdf5', 
-                                           label = 'show target5',
-                                           value = T),
-                             
-                             checkboxInput('ecdf.aggr', 
-                                           label = 'aggregate all ECDFs',
+                             checkboxInput('RT_ECDF_semilogx',
+                                           label = 'scale x axis log10',
                                            value = F)
+
+                             # checkboxInput('RT_ECDF_semilogy', 
+                             #               label = 'scale y axis log10',
+                             #               value = F)
+                             
+                             # checkboxInput('show.ecdf3', 
+                             #               label = 'show target3',
+                             #               value = F),
+                             
+                             # sliderInput("target.ecdf4",
+                             #             "target4",
+                             #             min = 0, 
+                             #             max = 1, 
+                             #             value = 0),
+                             # 
+                             # checkboxInput('show.ecdf4', 
+                             #               label = 'show target4',
+                             #               value = F),
+                             # 
+                             # sliderInput("target.ecdf5",
+                             #             "target5",
+                             #             min = 0, 
+                             #             max = 1, 
+                             #             value = 0),
+                             # 
+                             # checkboxInput('show.ecdf5', 
+                             #               label = 'show target5',
+                             #               value = T),
+                             # 
+                             # checkboxInput('ecdf.aggr', 
+                             #               label = 'aggregate all ECDFs',
+                             #               value = F)
                              
                            ), 
                            
                            mainPanel(width = 9,
-                                     showOutput("ecdf", "nvd3"))
+                                     plotlyOutput("ecdf", height = "600px", width = "1100px"))
                          )
                      )
               ),
               
-              column(width = 4,
-                     box(title = 'Area under the ECDF', width = 550, height = 600,
-                         solidHeader = TRUE, status = "primary",
-                         showOutput("auc.radar", "highcharts")
+              column(width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
+                                      Distribution of the runtime: Aggregation</p>'), 
+                         width = 12,
+                         solidHeader = T, status = "primary", collapsible = T,
+                         sidebarPanel(
+                           width = 3,
+                           HTML('<p align="justify"><i>Evenly spaced</i> target values are used to aggregate the ECDF:</p>'),
+                           textInput('RT_fstart', label = HTML('<p>\\(f_{start}:\\) starting objective value</p>'), value = ''),
+                           textInput('RT_fstop', label = HTML('<p>\\(f_{stop}:\\) stopping objective value</p>'), value = ''),
+                           textInput('RT_fstep', label = HTML('<p>\\(f_{step}:\\) objective value steps</p>'), value = ''),
+                           
+                           checkboxInput('RT_ECDF_per_target',
+                                         label = 'show ECDFs for each target',
+                                         value = F),
+                           
+                           checkboxInput('RT_ECDF_AGGR_semilogx', 
+                                         label = 'scale x axis log10',
+                                         value = F)
+                           ),
+                         
+                         mainPanel(
+                           width = 9,
+                           HTML('<p>The evenly spaced target values are:</p>'),
+                           verbatimTextOutput('RT_GRID'),
+                           HTML('<p>Then the mean function of the corresponding ECDFs is illustrated:</p>'),
+                           plotlyOutput('RT_ECDF_AGGR', height = "600px", width = "1100px"),
+                           hr()
+                           
+                           # HTML('<p>The <b>Kolmogorov–Smirnov test</b> is used to investigate
+                           # how the ditribution of runtimes of one algorithm differs from the other:</p><br>'),
+                           # column(10, align = "center", verbatimTextOutput('ks'))
+                        )
                      )
+                )
               )
-            )
+              
+              # column(width = 4,
+              #        box(title = 'Area under the ECDF', width = 550, height = 600,
+              #            solidHeader = TRUE, status = "primary",
+              #            showOutput("auc.radar", "highcharts")
+              #        )
+              # )
+            
     )
   )
 )

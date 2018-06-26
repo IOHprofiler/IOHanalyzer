@@ -207,13 +207,13 @@ body <- dashboardBody(
                       
                       textInput('RT_PMF_FTARGET', label = HTML('<p>\\(f:\\) target value</p>'), 
                                 value = ''),
-                      checkboxInput('RT_SHOW_SAMPLE', label = 'show runtime samples', value = T),
+                      checkboxInput('RT_SHOW_SAMPLE', label = 'show runtime samples', value = T)
                       
-                      HTML('Kernel density estimation uses the following <b>kernel function</b>:'),
-                      selectInput('RT_PMF_KER', '',
-                                  choices = c("gaussian", "epanechnikov", "rectangular",
-                                              "triangular", "biweight", "cosine", "optcosine"),
-                                  selected = 'gaussian')
+                      # HTML('Kernel density estimation uses the following <b>kernel function</b>:'),
+                      # selectInput('RT_PMF_KER', '',
+                      #             choices = c("gaussian", "epanechnikov", "rectangular",
+                      #                         "triangular", "biweight", "cosine", "optcosine"),
+                      #             selected = 'gaussian')
 
                     ),
                     
@@ -265,9 +265,8 @@ body <- dashboardBody(
     tabItem(tabName = 'ERT_ECDF', 
             fluidRow(
               column(width = 12,
-                     box(title = HTML('<p style="font-size:120%;">Plot of the Runtime Distribution</p>'), width = 12,
-                         collapsible = TRUE,
-                         solidHeader = TRUE, status = "primary",
+                     box(title = HTML('<p style="font-size:120%;">Plot of the Runtime Distribution</p>'), 
+                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary",
                          sidebarLayout(
                            sidebarPanel(
                              width = 3,

@@ -378,8 +378,7 @@ shinyServer(function(input, output, session) {
       
       if (input$show.instance)
         p %<>% add_trace(data = raw, x = ~BestF, y = ~eval, type = 'scatter', mode = 'lines',
-                         line = list(color = rgba_str),
-                         linetype = ~instance, showlegend = F)
+                         line = list(color = rgba_str), split = ~instance, showlegend = F)
     }
     p %<>%
       layout(xaxis = list(type = switch(input$semilogx, T = 'log', F = 'linear')),
@@ -467,55 +466,13 @@ shinyServer(function(input, output, session) {
     nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
     
     if (plot_mode == 'overlay') {
-      p <- plot_ly() %>% 
-        layout(title = "Histogram of the runtime",
-               autosize = T, hovermode = 'compare',
-               barmode = "overlay",
-               paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
-               xaxis = list(title = "function evaluations",
-                            gridcolor = 'rgb(255,255,255)',
-                            showgrid = TRUE,
-                            showline = FALSE,
-                            showticklabels = TRUE,
-                            tickcolor = 'rgb(127,127,127)',
-                            ticks = 'outside',
-                            ticklen = 7,
-                            zeroline = F),
-               yaxis = list(title = "counts",
-                            gridcolor = 'rgb(255,255,255)',
-                            showgrid = TRUE,
-                            showline = FALSE,
-                            showticklabels = TRUE,
-                            tickcolor = 'rgb(127,127,127)',
-                            ticks = 'outside',
-                            ticklen = 7,
-                            zeroline = F))
+      p <- plot_ly_default(title = "Histogram of the runtime",
+                           x.title = "function evaluations", y.title = "counts")
       
     } else if (plot_mode == 'subplot') {
       p <- lapply(seq(n_algorithm), function(x) {
-        plot_ly() %>% 
-          layout(title = "Histogram of the runtime",
-                 autosize = T, hovermode = 'compare',
-                 barmode = "overlay",
-                 paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
-                 xaxis = list(title = "function evaluations",
-                              gridcolor = 'rgb(255,255,255)',
-                              showgrid = TRUE,
-                              showline = FALSE,
-                              showticklabels = TRUE,
-                              tickcolor = 'rgb(127,127,127)',
-                              ticks = 'outside',
-                              ticklen = 7,
-                              zeroline = F),
-                 yaxis = list(title = "counts",
-                              gridcolor = 'rgb(255,255,255)',
-                              showgrid = TRUE,
-                              showline = FALSE,
-                              showticklabels = TRUE,
-                              tickcolor = 'rgb(127,127,127)',
-                              ticks = 'outside',
-                              ticklen = 7,
-                              zeroline = F))
+        plot_ly_default(title = "Histogram of the runtime",
+                        x.title = "function evaluations", y.title = "counts")
       })
     }
      
@@ -710,7 +667,7 @@ shinyServer(function(input, output, session) {
           p %<>%
             add_trace(x = rt, y = v, type = 'scatter',
                       mode = 'lines', name = attr(df, 'algorithm'), showlegend = F,
-                      line = list(color = rgba_str, width = 1))
+                      line = list(color = rgba_str, width = 1, dash = 'dash'))
         }
       }
     }

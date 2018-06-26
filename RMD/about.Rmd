@@ -14,6 +14,8 @@ Last Update on 2018-06-25 01:29:48 CEST
 
 * [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye#tab-1), <i>Leiden Institute of Advanced Computer Science</i>, <f.ye@liacs.leidenuniv.nl>.
 
+* [Sander van Rijn](https://www.universiteitleiden.nl/en/staffmembers/sander-van-rijn#tab-1), <i>Leiden Institute of Advanced Computer Science</i>, <s.j.van.rijn@liacs.leidenuniv.nl>.
+
 * [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back#tab-1), <i>Leiden Institute of Advanced Computer Science</i>, <t.h.w.baeck@liacs.leidenuniv.nl>.
 
 ## License

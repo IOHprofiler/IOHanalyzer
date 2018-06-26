@@ -151,8 +151,13 @@ body <- dashboardBody(
                          sidebarPanel(
                            width = 2,
                            HTML('Select the range of target values to zoom in:'),
-                           sliderInput("plot.range", label = '', 
-                                       min = 0, max = 1, value = c(0, 1)),
+                           
+                           textInput('ERT_FSTART', 
+                                     label = HTML('<p>\\(f_{start}:\\) starting value</p>'), 
+                                     value = ''),
+                           textInput('ERT_FSTOP', 
+                                     label = HTML('<p>\\(f_{stop}:\\) ending value</p>'), 
+                                     value = ''),
                            
                            checkboxInput('show.mean', 
                                          label = 'show/hide mean',
@@ -177,7 +182,7 @@ body <- dashboardBody(
                          HTML('<p style="font-size:120%";>The <i>mean, median 
                               and standard deviation</i> of the runtime samples 
                               are depicted against the best objective values:</p>'),
-                         mainPanel(plotlyOutput('ERT_line', height = "650px", width = "1157px"))
+                         mainPanel(plotlyOutput('ERT_PER_FUN', height = "650px", width = "1157px"))
                      )
                      
                      # box(title = HTML('<p style="font-size:120%;">Expected Runtime 
@@ -198,22 +203,18 @@ body <- dashboardBody(
                     sidebarPanel(
                       width = 2,
                       HTML('Align the runtime: the smallest running time 
-                           achieving the specified <b>target value</b>:'),
+                           achieving the specified target value:'),
                       
                       textInput('RT_PMF_FTARGET', label = HTML('<p>\\(f:\\) target value</p>'), 
                                 value = ''),
-                      checkboxInput('RT_SHOW_SAMPLE', label = 'show runtime samples', value = T)
+                      checkboxInput('RT_SHOW_SAMPLE', label = 'show runtime samples', value = T),
                       
-                      # HTML('Kernel density estimation uses the following 
-                      #         <b>kernel function</b>:'),
-                      # selectInput('kernel', '', 
-                      #             choices = c("gaussian", "epanechnikov", "rectangular",
-                      #                         "triangular", "biweight", "cosine", "optcosine"), 
-                      #             selected = 'gaussian'),
-                      # 
-                      # checkboxInput('show.RT.sample',
-                      #               label = 'show runtime samples',
-                      #               value = T)
+                      HTML('Kernel density estimation uses the following <b>kernel function</b>:'),
+                      selectInput('RT_PMF_KER', '',
+                                  choices = c("gaussian", "epanechnikov", "rectangular",
+                                              "triangular", "biweight", "cosine", "optcosine"),
+                                  selected = 'gaussian')
+
                     ),
                     
                     mainPanel(
@@ -231,11 +232,11 @@ body <- dashboardBody(
             
             column(width = 12,     
                    box(title = 'Historgram of the Runtime Samples', 
-                       width = 12, 
-                       collapsible = TRUE, solidHeader = TRUE, status = "primary",
+                       width = 12, collapsible = TRUE, solidHeader = TRUE, 
+                       status = "primary",
                        sidebarPanel(
                          width = 2,
-                         HTML('Please select the <b>target value</b>:'),
+                         HTML('Please select the target value:'),
                          textInput('RT_PMF_HIST_FTARGET', label = HTML('<p>\\(f:\\) target value</p>'), 
                                    value = ''),
                          
@@ -389,5 +390,5 @@ body <- dashboardBody(
 )
 
 # -----------------------------------------------------------
-dashboardPage(title = '',
+dashboardPage(title = 'IOHProfiler',
               header, sidebar, body)

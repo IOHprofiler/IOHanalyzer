@@ -5,9 +5,7 @@ library(plotly)
 
 plot_ly_default <- function(title = NULL,
                             x.title = NULL,
-                            y.title = NULL,
-                            xaxis.type = 'linear',
-                            yaxis.type = 'linear') {
+                            y.title = NULL) {
   plot_ly() %>% 
     layout(title = title,
            autosize = T, hovermode = 'compare',
@@ -17,7 +15,6 @@ plot_ly_default <- function(title = NULL,
                         showgrid = TRUE,
                         showline = FALSE,
                         showticklabels = TRUE,
-                        type = xaxis.type,
                         tickcolor = 'rgb(127,127,127)',
                         ticks = 'outside',
                         ticklen = 7,
@@ -26,7 +23,6 @@ plot_ly_default <- function(title = NULL,
                         gridcolor = 'rgb(255,255,255)',
                         showgrid = TRUE,
                         showline = FALSE,
-                        type = yaxis.type,
                         showticklabels = TRUE,
                         tickcolor = 'rgb(127,127,127)',
                         ticks = 'outside',

@@ -146,7 +146,10 @@ shinyServer(function(input, output, session) {
   # update the values for the grid of target values
   observeEvent(fvalues, {
     v <- fvalues()
+    
+    q <- quantile(v)
     step <- ceiling((max(v) - min(v)) / 10)
+    
     updateTextInput(session, 'fstart', value = format(min(v), digits = 5, nsmall = 2))
     updateTextInput(session, 'fstop', value = format(max(v), digits = 5, nsmall = 2))
     updateTextInput(session, 'fstep', value = format(step, digits = 5, nsmall = 2))
@@ -156,32 +159,14 @@ shinyServer(function(input, output, session) {
     updateTextInput(session, 'RT_fstop', value = format(max(v), digits = 5, nsmall = 2))
     updateTextInput(session, 'RT_fstep', value = format(step, digits = 5, nsmall = 2))
     updateTextInput(session, 'RT_fselect', value = format(median(v), digits = 5, nsmall = 2))
+    
     updateTextInput(session, 'RT_PMF_FTARGET', value = format(median(v), digits = 5, nsmall = 2))
     updateTextInput(session, 'RT_PMF_HIST_FTARGET', value = format(median(v), digits = 5, nsmall = 2))
-  })
-  
-  observeEvent(fvalues, {
-    v <- fvalues() %>% 
-      format(digits = 5, nsmall = 2) %>% 
-      as.numeric
     
-    step <- ceiling((max(v) - min(v)) / 20) %>% 
-      format(digits = 5, nsmall = 2) %>% 
-      as.numeric
-    
-    updateSliderInput(session, 'target.plot', min = min(v), max = max(v),
-                      value = median(v), step = step)
-  })
-  
-  observeEvent(fvalues, {
-    v <- fvalues() %>% 
-      format(digits = 5, nsmall = 2) %>% 
-      as.numeric
-    step <- ceiling((max(v) - min(v)) / 20) %>% 
-      format(digits = 5, nsmall = 2) %>% 
-      as.numeric
-    updateSliderInput(session, 'target_hist', min = min(v), max = max(v),
-                      value = median(v), step = step)
+    s <- ((max(v) - min(v)) * 0.1 + min(v)) %>% format(digits = 5, nsmall = 2)
+    e <- ((max(v) - min(v)) * 0.9 + min(v)) %>% format(digits = 5, nsmall = 2)
+    updateTextInput(session, 'ERT_FSTART', value = s)
+    updateTextInput(session, 'ERT_FSTOP', value = e)
   })
   
   observeEvent(fvalues, {
@@ -203,16 +188,6 @@ shinyServer(function(input, output, session) {
                         min = min(v), max = max(v),
                         value = q[i], step = step)
     }
-  })
-  
-  # update the range of the fixed-target plot
-  observeEvent(fvalues, {
-    f <- fvalues()
-    fmin <- min(f) %>% round(digits = 2)
-    fmax <- max(f) %>% round(digits = 2)
-    s <- (fmax - fmin) * 0.1 + fmin %>% round(digits = 2)
-    e <- (fmax - fmin) * 0.9 + fmin %>% round(digits = 2)
-    updateSliderInput(session, 'plot.range', min = fmin, max = fmax, value = c(s, e))
   })
   
   # -----------------------------------------------------------
@@ -356,9 +331,9 @@ shinyServer(function(input, output, session) {
   
   # -----------------------------------------------------------
   # The expected runtime plot ---------------------
-  output$ERT_line <- renderPlotly({
-    xmin <- input$plot.range[1]
-    xmax <- input$plot.range[2]
+  output$ERT_PER_FUN <- renderPlotly({
+    xmin <- input$ERT_FSTART %>% as.numeric
+    xmax <- input$ERT_FSTOP %>% as.numeric
     
     df.ERT <- ERT()
     df.BestF <- BestF()
@@ -368,9 +343,7 @@ shinyServer(function(input, output, session) {
     
     p <- plot_ly_default(title = "Expected Runtime Comparison",
                          x.title = "best-so-far f(x)-value",
-                         y.title = "function evaluations",
-                         xaxis.type = switch(input$semilogx, T = 'log', F = 'linear'),
-                         yaxis.type = switch(input$semilogy, T = 'log', F = 'linear'))
+                         y.title = "function evaluations")
     
     for (i in seq_along(df.ERT)) {
       raw <- df.BestF[[i]] %>% 
@@ -408,7 +381,9 @@ shinyServer(function(input, output, session) {
                          line = list(color = rgba_str),
                          linetype = ~instance, showlegend = F)
     }
-    p
+    p %<>%
+      layout(xaxis = list(type = switch(input$semilogx, T = 'log', F = 'linear')),
+             yaxis = list(type = switch(input$semilogy, T = 'log', F = 'linear')))
   })
   
   # empirical p.m.f. of the runtime
@@ -423,7 +398,7 @@ shinyServer(function(input, output, session) {
     p <- plot_ly_default(title = "p.m.f. of the runtime",
                          x.title = "algorithms",
                          y.title = "runtime / function evaluations")
-                 
+  
     for (i in seq_along(df.aligneds)) {
       df <- df.aligneds[[i]]
       # TODO: remove this, 'algorithm' attribute should be set when reading the data
@@ -437,7 +412,7 @@ shinyServer(function(input, output, session) {
                   x = ~algorithm, y = ~RT, split = ~algorithm, type = 'violin',
                   hoveron = "points+kde",
                   box = list(visible = T),
-                  points = 'all',
+                  points = points,
                   pointpos = 1,
                   jitter = 0.1,
                   scalemode = 'count',

@@ -37,6 +37,51 @@ library(iterators)
 #   list(x = data$eval.points, y = data$est.fn)
 # }
 
+
+RT.ECDF <- function(x) {
+  x <- sort(x)
+  x.unique <- unique(x)
+  p <- seq_along(x) / length(x)
+  for (v in x.unique) {
+    p[x == v] <- max(p[x == v])
+  }
+  
+  f <- ecdf(x)
+  attr(f, 'x') <- x.unique
+  attr(f, 'p') <- p
+  attr(f, 'min') <- min(x)
+  attr(f, 'max') <- max(x)
+  f
+}
+
+# calculate the area under ECDFs on user specified targets
+ECDF_AUC <- function(df, ftargets) {
+  funs <- lapply(ftargets, function(f) {
+    RT(df, f, format = 'long') %>% 
+      '$'('RT') %>% {
+        if (all(is.na(.))) NULL
+        else  RT.ECDF(.)
+      }
+  })
+  
+  auc <- sapply(funs,
+                function(fun) {
+                  if (is.null(fun)) 0
+                  else integrate(fun, lower = attr(fun, 'min') - 1, upper = RT.max, 
+                                 subdivisions = 5e3) %>% {'$'(., 'value') / RT.max}
+                })
+}
+
+CDF_discrete <- function(x) {
+  x <- sort(x)
+  x.unique <- unique(x)
+  res <- seq_along(x) / length(x)
+  for (v in x.unique) {
+    res[x == v] <- max(res[x == v])
+  }
+  res
+}
+
 # calculate the basic statistics of the runtime samples from an aligned data set
 RT_summary <- function(df, ftarget, 
                        probs = c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.) {
@@ -96,15 +141,6 @@ RT <- function(data, ftarget, format = 'wide') {
   df
 }
 
-CDF_discrete <- function(x) {
-  x <- sort(x)
-  x.unique <- unique(x)
-  res <- seq_along(x) / length(x)
-  for (v in x.unique) {
-    res[x == v] <- max(res[x == v])
-  }
-  res
-}
 
 
 # align all instances at a given target/precision

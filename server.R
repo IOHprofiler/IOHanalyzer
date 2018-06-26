@@ -22,7 +22,6 @@ source('pproc.R')
 source('plot.R')
 
 options(width = 80)
-
 symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
              "triangle-up-open", "triangle-down-open")
 
@@ -147,13 +146,16 @@ shinyServer(function(input, output, session) {
   observeEvent(fvalues, {
     v <- fvalues()
     
-    q <- quantile(v)
+    q <- quantile(v, names = F)
     step <- ceiling((max(v) - min(v)) / 10)
     
     updateTextInput(session, 'fstart', value = format(min(v), digits = 5, nsmall = 2))
     updateTextInput(session, 'fstop', value = format(max(v), digits = 5, nsmall = 2))
     updateTextInput(session, 'fstep', value = format(step, digits = 5, nsmall = 2))
-    updateTextInput(session, 'fselect', value = format(median(v), digits = 5, nsmall = 2))
+    
+    updateTextInput(session, 'fstart_raw', value = format(min(v), digits = 5, nsmall = 2))
+    updateTextInput(session, 'fstop_raw', value = format(max(v), digits = 5, nsmall = 2))
+    updateTextInput(session, 'fstep_raw', value = format(step, digits = 5, nsmall = 2))
     
     updateTextInput(session, 'RT_fstart', value = format(min(v), digits = 5, nsmall = 2))
     updateTextInput(session, 'RT_fstop', value = format(max(v), digits = 5, nsmall = 2))
@@ -167,27 +169,15 @@ shinyServer(function(input, output, session) {
     e <- ((max(v) - min(v)) * 0.9 + min(v)) %>% format(digits = 5, nsmall = 2)
     updateTextInput(session, 'ERT_FSTART', value = s)
     updateTextInput(session, 'ERT_FSTOP', value = e)
-  })
-  
-  observeEvent(fvalues, {
-    v <- fvalues() %>% 
-      format(digits = 5, nsmall = 2) %>% 
-      as.numeric
     
-    step <- ceiling((max(v) - min(v)) / 20) %>% 
-      format(digits = 5, nsmall = 2) %>% 
-      as.numeric
+    updateTextInput(session, 'RT_ECDF_FTARGET1', value = format(q[1], digits = 5, nsmall = 2))
+    updateTextInput(session, 'RT_ECDF_FTARGET2', value = format(q[2], digits = 5, nsmall = 2))
+    updateTextInput(session, 'RT_ECDF_FTARGET3', value = format(q[3], digits = 5, nsmall = 2))
     
-    probs <- c(0.1, 0.3, 0.5, 0.7, 0.9)  # pre-defined targets: using quantiles
-    q <- quantile(v, probs = probs, names = F) %>% 
-      format(digits = 5, nsmall = 2) %>% 
-      as.numeric
     
-    for (i in seq(5)) {
-      updateSliderInput(session, paste0('target.ecdf', i), 
-                        min = min(v), max = max(v),
-                        value = q[i], step = step)
-    }
+    updateTextInput(session, 'RT_AUC_FSTART', value = format(min(v), digits = 5, nsmall = 2))
+    updateTextInput(session, 'RT_AUC_FSTOP', value = format(max(v), digits = 5, nsmall = 2))
+    updateTextInput(session, 'RT_AUC_FSTEP', value = format(step, digits = 5, nsmall = 2))
   })
   
   # -----------------------------------------------------------
@@ -246,9 +236,9 @@ shinyServer(function(input, output, session) {
   
   get_RT <- reactive({
     fall <- fvalues()  # all the aligned target values
-    fstart <- input$fstart %>% as.numeric %>% max(., min(fall))
-    fstop <- input$fstop %>% as.numeric %>% min(., max(fall))
-    fstep <- input$fstep %>% as.numeric
+    fstart <- input$fstart_raw %>% as.numeric %>% max(., min(fall))
+    fstop <- input$fstop_raw %>% as.numeric %>% min(., max(fall))
+    fstep <- input$fstep_raw %>% as.numeric
     
     # when initializing or incorrect input
     if (is.na(fstart) || is.na(fstop) || is.na(fstep))
@@ -262,7 +252,7 @@ shinyServer(function(input, output, session) {
     res <- list()
     
     for (i in seq_along(df.aligneds)) {
-      if (input$select.alg != 'all' && names(df.aligneds)[i] != input$select.alg)
+      if (input$select.alg_raw != 'all' && names(df.aligneds)[i] != input$select.alg_raw)
         next
       
       df <- df.aligneds[[i]]
@@ -274,7 +264,6 @@ shinyServer(function(input, output, session) {
         if (n < n_runs_max) 
           data %<>% cbind(., matrix(NA, nrow(.), n_runs_max - n))
       }
-      
       res[[i]] <- data
     }
     do.call(rbind.data.frame, res) 
@@ -288,30 +277,13 @@ shinyServer(function(input, output, session) {
     contentType = "text/csv"
   )
   
-  output$table_RT_sample <- renderPrint({
-    fall <- fvalues()  # all the aligned target values
-    fselect <- input$fselect %>% as.numeric 
-    
-    # when initializing or incorrect input
-    if (is.na(fselect))
-      return(data.frame())
-    if (fselect < min(fall) || fselect > max(fall))
-      return(data.frame())
-    
-    df.aligneds <- aligned()
-    res <- ''
-    
-    for (i in seq_along(df.aligneds)) {
-      df <- df.aligneds[[i]]
-      v <- rownames(df) %>% as.numeric
-      idx <- seq_along(v)[v >= fselect][1]
-      
-      tmp <- df[idx, ] %>% as.vector
-      res <- paste0(res, 'algorithm', i, ':', '\n')
-      res <- paste0(res, paste0(tmp, collapse = ','), '\n\n')
-    }
-    cat(res, fill = T)
-  })
+  output$table_RT_sample <- renderDataTable({
+    df <- get_RT()
+    df[is.na(df)] <- 'NA'
+    df
+    },
+    options = list(pageLength = 20, scrollX = T)
+  )
   
   output$download_RT_sample <- downloadHandler(
     filename = 'RT_sample.csv',
@@ -341,9 +313,8 @@ shinyServer(function(input, output, session) {
     n_algorithm <- length(df.ERT)
     colors <- colorspace::rainbow_hcl(n_algorithm)
     
-    p <- plot_ly_default(title = "Expected Runtime Comparison",
-                         x.title = "best-so-far f(x)-value",
-                         y.title = "function evaluations")
+    p <- plot_ly_default(#title = "Expected Runtime Comparison",
+                         x.title = "best-so-far f(x)-value", y.title = "function evaluations")
     
     for (i in seq_along(df.ERT)) {
       raw <- df.BestF[[i]] %>% 
@@ -394,7 +365,7 @@ shinyServer(function(input, output, session) {
     n_algorithm <- length(df.aligneds)
     colors <- colorspace::rainbow_hcl(n_algorithm)
     
-    p <- plot_ly_default(title = "p.m.f. of the runtime",
+    p <- plot_ly_default(#title = "p.m.f. of the runtime",
                          x.title = "algorithms",
                          y.title = "runtime / function evaluations")
   
@@ -466,12 +437,12 @@ shinyServer(function(input, output, session) {
     nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
     
     if (plot_mode == 'overlay') {
-      p <- plot_ly_default(title = "Histogram of the runtime",
+      p <- plot_ly_default(#title = "Histogram of the runtime",
                            x.title = "function evaluations", y.title = "counts")
       
     } else if (plot_mode == 'subplot') {
       p <- lapply(seq(n_algorithm), function(x) {
-        plot_ly_default(title = "Histogram of the runtime",
+        plot_ly_default(#title = "Histogram of the runtime",
                         x.title = "function evaluations", y.title = "counts")
       })
     }
@@ -491,7 +462,8 @@ shinyServer(function(input, output, session) {
       res <- hist(rt$RT, plot = F)
       breaks <- res$breaks
       data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
-                         text = paste0('<b>count</b>: ', res$counts, '<br><b>breaks</b>: [', 
+                         text = paste0('<b>count</b>: ', res$counts, 
+                                       '<br><b>breaks</b>: [', 
                                        breaks[-length(breaks)], ',', breaks[-1], ']')) 
       
       if (plot_mode == 'overlay') {
@@ -518,19 +490,21 @@ shinyServer(function(input, output, session) {
     p
   })
   
-  output$ecdf <- renderPlotly({
+  output$RT_ECDF <- renderPlotly({
     ftargets <- c(
-      as.numeric(input$target.ecdf1),
-      as.numeric(input$target.ecdf2),
-      as.numeric(input$target.ecdf3),
-      as.numeric(input$target.ecdf4),
-      as.numeric(input$target.ecdf5))
+      as.numeric(input$RT_ECDF_FTARGET1),
+      as.numeric(input$RT_ECDF_FTARGET2),
+      as.numeric(input$RT_ECDF_FTARGET3))
     
     dfs <- DF()
     df.aligneds <- aligned()
     n_algorithm <- length(df.aligneds)
     colors <- colorspace::rainbow_hcl(n_algorithm)
-    p <- plot_ly()
+    
+    p <- plot_ly_default(title = NULL,
+      # title = "Empirical Cumulative Distribution of the runtime",
+                         x.title = "function evaluations",
+                         y.title = "Proportion of instance")
     
     for (k in seq_along(df.aligneds)) {
       df <- df.aligneds[[k]]
@@ -556,7 +530,7 @@ shinyServer(function(input, output, session) {
           add_trace(data = res, x = rt, y = ecdf, type = 'scatter',
                     mode = 'lines', name = attr(df, 'algorithm'), showlegend = F,
                     legendgroup = paste0(k),
-                    line = list(color = rgb_str, width = 2)) %>% 
+                    line = list(color = rgb_str, width = 3)) %>% 
           add_trace(data = res, x = x, y = y, type = 'scatter',
                     mode = 'markers',  legendgroup = paste0(k),
                     name = sprintf('ECDF(%s, %.2f)', attr(df, 'algorithm'), ftargets[i]),
@@ -564,33 +538,9 @@ shinyServer(function(input, output, session) {
       }
     }
     
-    xaxis.type <- switch(input$RT_ECDF_semilogx, T = 'log', F = 'linear')
-    # yaxis.type <- switch(input$RT_ECDF_semilogy, T = 'log', F = 'linear')
-    
     p %<>%
-      layout(title = "Empirical Cumulative Distribution of the runtime",
-             autosize = T, hovermode = 'compare',
-             paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
-             xaxis = list(title = "function evaluations",
-                          gridcolor = 'rgb(255,255,255)',
-                          showgrid = TRUE,
-                          showline = FALSE,
-                          showticklabels = TRUE,
-                          type = xaxis.type,
-                          tickcolor = 'rgb(127,127,127)',
-                          ticks = 'outside',
-                          ticklen = 7,
-                          zeroline = F),
-             yaxis = list(title = "Proportion of instance",
-                          gridcolor = 'rgb(255,255,255)',
-                          showgrid = TRUE,
-                          showline = FALSE,
-                          # type = yaxis.type,
-                          showticklabels = TRUE,
-                          tickcolor = 'rgb(127,127,127)',
-                          ticks = 'outside',
-                          ticklen = 7,
-                          zeroline = F))
+      layout(xaxis = list(type = switch(input$RT_ECDF_semilogx, 
+                                        T = 'log', F = 'linear')))
   })
   
   output$RT_GRID <- renderPrint({
@@ -628,14 +578,16 @@ shinyServer(function(input, output, session) {
     RT.max <- sapply(df.aligneds, . %>% max(na.rm = T)) %>% max
     RT.min <- sapply(df.aligneds, . %>% min(na.rm = T)) %>% min
     x <- seq(RT.min, RT.max, length.out = 50)
-    p <- plot_ly()
+    p <- plot_ly_default(#title = "Empirical Cumulative Distribution of the runtime",
+                         x.title = "function evaluations",
+                         y.title = "Proportion of instance + target pairs")
     
     for (k in seq_along(df.aligneds)) {
       df <- df.aligneds[[k]]
       attr(df, 'algorithm') <- paste0('algorithm', k)
       
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.8)')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.3)')
       
       m <- lapply(fseq, function(f) {
         rt <- RT(df, f, format = 'long') %>% '$'('RT')
@@ -646,13 +598,20 @@ shinyServer(function(input, output, session) {
       }) %>% 
         do.call(rbind, .)
       
-      ecdf.aggr <- apply(m, 2, . %>% mean(na.rm = T))
-              
+      df_plot <- data.frame(x = x, mean = apply(m, 2, . %>% mean(na.rm = T)),
+                            sd = apply(m, 2, . %>% sd(na.rm = T))) %>% 
+        mutate(upper = mean + sd, lower = mean - sd)
+                              
       p %<>%
-        add_trace(x = x, y = ecdf.aggr, type = 'scatter',
+        add_trace(data = df_plot, x = ~x, y = ~upper, type = 'scatter', mode = 'lines',
+                  line = list(color = rgba_str, width = 0), 
+                  showlegend = F, name = 'mean +/- sd') %>% 
+        add_trace(x = ~x, y = ~lower, type = 'scatter', mode = 'lines',
+                  fill = 'tonexty',  line = list(color = 'transparent'),
+                  fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd') %>% 
+        add_trace(x = ~x, y = ~mean, type = 'scatter',
                   mode = 'lines', name = sprintf('ECDF.mean(%s)', attr(df, 'algorithm')), 
-                  showlegend = T,
-                  legendgroup = paste0(k),
+                  showlegend = T, legendgroup = paste0(k),
                   line = list(color = rgb_str, width = 4.5))
       
       if (input$RT_ECDF_per_target) {
@@ -672,31 +631,69 @@ shinyServer(function(input, output, session) {
       }
     }
     
-    xaxis.type <- switch(input$RT_ECDF_AGGR_semilogx, T = 'log', F = 'linear')
+    p %<>%
+      layout(xaxis = list(type = switch(input$RT_ECDF_AGGR_semilogx, 
+                                        T = 'log', F = 'linear')))
+  })
+  
+  # evaluation rake of all courses 
+  output$RT_AUC <- renderPlotly({
+    fall <- fvalues()  # all the aligned target values
+    fstart <- input$RT_AUC_FSTART %>% as.numeric %>% max(., min(fall))
+    fstop <- input$RT_AUC_FSTOP %>% as.numeric 
+    fstep <- input$RT_AUC_FSTEP %>% as.numeric
+    
+    # when initializing or incorrect input
+    if (is.na(fstart) || is.na(fstop) || is.na(fstep))
+      return(data.frame())
+    if (fstart >= fstop || fstep > fstop - fstart)
+      return(data.frame())
+    
+    ftargets <- seq(from = fstart, to = fstop, by = fstep)
+
+    df.aligneds <- aligned()
+    n_algorithm <- length(df.aligneds)
+    colors <- colorspace::rainbow_hcl(n_algorithm)
+    
+    RT.max <- sapply(df.aligneds, . %>% max(na.rm = T)) %>% max
+    p <- plot_ly_default()
+    
+    for (k in seq_along(df.aligneds)) {
+      df <- df.aligneds[[k]]
+      attr(df, 'algorithm') <- paste0('algorithm', k)
+      
+      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.4)')
+      
+      # calculate ECDFs on user specified targets
+      funs <- lapply(ftargets, function(f) {
+        RT(df, f, format = 'long') %>% 
+          '$'('RT') %>% {
+          if (all(is.na(.))) NULL
+          else  RT.ECDF(.)
+        }
+      })
+      
+      auc <- sapply(funs,
+                    function(fun) {
+                      if (is.null(fun)) 0
+                      else integrate(fun, lower = attr(fun, 'min') - 1, upper = RT.max, 
+                                     subdivisions = 5e3) %>% {'$'(., 'value') / RT.max}
+                    })
+      
+      p %<>% 
+        add_trace(type = 'scatterpolar', r = auc, 
+                  theta = paste0('f:', ftargets), fill = 'toself', fillcolor = rgba_str,
+                  marker = list(color = rgb_str), hoverinfo = 'text',
+                  text = paste0('area: ', format(auc, digits = 2, nsmall = 2)),
+                  name = attr(df, 'algorithm')) 
+    }
     
     p %<>%
-      layout(title = "Empirical Cumulative Distribution of the runtime",
+      layout(polar = list(radialaxis = list(visible = T)),
+             yaxis = list(type = 'log'),
              autosize = T, hovermode = 'compare',
-             paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
-             xaxis = list(title = "function evaluations",
-                          gridcolor = 'rgb(255,255,255)',
-                          showgrid = TRUE,
-                          showline = FALSE,
-                          showticklabels = TRUE,
-                          type = xaxis.type,
-                          tickcolor = 'rgb(127,127,127)',
-                          ticks = 'outside',
-                          ticklen = 7,
-                          zeroline = F),
-             yaxis = list(title = "Proportion of instance + target pairs",
-                          gridcolor = 'rgb(255,255,255)',
-                          showgrid = TRUE,
-                          showline = FALSE,
-                          showticklabels = TRUE,
-                          tickcolor = 'rgb(127,127,127)',
-                          ticks = 'outside',
-                          ticklen = 7,
-                          zeroline = F))
+             paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)')
   })
   
   # output$ks <- renderPrint({
@@ -715,55 +712,5 @@ shinyServer(function(input, output, session) {
   #   a <- ks.test(algorithm1, algorithm2, alternative = 'less') 
   #   print(a)
   # })
-  
-  # evaluation rake of all courses 
-  output$auc.radar <- renderChart2({
-  #   targets <- c(
-  #     as.numeric(input$target.ecdf1),
-  #     as.numeric(input$target.ecdf2),
-  #     as.numeric(input$target.ecdf3), 
-  #     as.numeric(input$target.ecdf4), 
-  #     as.numeric(input$target.ecdf5))
-  #   
-  #   dfs <- DF()
-  #   df.aligneds <- aligned()
-  #   colors <- colorspace::rainbow_hcl(2)
-  #   
-  #   plot <- Highcharts$new()
-  #   plot$chart(polar = TRUE, type = "area", width = 500, height = 500, marginLeft = 0)
-  #   plot$exporting(enable = TRUE)
-  #   # plot$title(text = 'Area under the ECDF curves')
-  #   
-  #   series <- list()
-  #   for (k in seq_along(df.aligneds)) {
-  #     df.aligned <- df.aligneds[[k]]
-  #     df <- dfs[[k]]
-  #     RT.max <- max(df.aligned, na.rm = T)
-  #     
-  #     # user selected target
-  #     f.ecdfs <- lapply(targets, . %>% ECDF(df.aligned, target = .))
-  #     auc <- sapply(f.ecdfs, 
-  #                   function(f) {
-  #                     res <- integrate(f, lower = 0, upper = RT.max, 
-  #                                      subdivisions = 3e3)
-  #                     res$value
-  #                   })
-  #     
-  #     series[[k]] <- list(data = auc, name = paste0('algorithm', k),
-  #                         fillOpacity = 0.3, color = colors[k])
-  #   }
-  #   auc <- sapply(series, function(s) s$data) %>% as.vector
-  #   categories <- targets %>% format(digits = 5, nsmall = 2)
-  #   plot$series(series)
-  #   plot$xAxis(categories = categories,
-  #              tickmarkPlacement = 'on', lineWidth = 2)
-  #   plot$yAxis(gridLineInterpolation = 'circle', lineWidth = 1, min = min(auc),
-  #              max = max(auc), endOnTick = F, tickInterval = 0.2)
-  #   plot$tooltip(formatter = "#!function () {
-  #                return '<b>' + this.series.name  + '</b><br/>' +
-  #                '<b>' + 'area: ' + '</b>' + Highcharts.numberFormat(this.point.y, 3)}!#",
-  #                useHTML = T)
-  #   return(plot)
-  })
-  
+  # 
 })

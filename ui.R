@@ -21,9 +21,9 @@ sidebar <- dashboardSidebar(
               
               menuItem("Fixed-Target Results", tabName = "ERT", icon = icon("file-text-o"),
                        menuSubItem("Data summary", tabName = "ERT_data", icon = icon("table")),
-                       menuSubItem("Convergence", tabName = "ERT_convergence", icon = icon("line-chart"), selected = F),
+                       menuSubItem("Expected Runtime", tabName = "ERT_convergence", icon = icon("line-chart"), selected = F),
                        menuSubItem("Probility Mass Function", tabName = "RT_PMF", icon = icon("bar-chart"), selected = F),
-                       menuSubItem("Cumulative Distribution", tabName = "ERT_ECDF", icon = icon("line-chart"), selected = F)
+                       menuSubItem("Cumulative Distribution", tabName = "RT_ECDF", icon = icon("line-chart"), selected = F)
                        ),
               
               menuItem("Fixed-Budget Results", tabName = "FCE", icon = icon("file-text-o"),
@@ -100,40 +100,45 @@ body <- dashboardBody(
                      textInput('fstep', label = HTML('<p>\\(f_{step}:\\) objective value steps</p>'), value = ''),
                      selectInput('select.alg', 'which algorithm to show?', choices = c('algorithm1', 'algorithm2', 'all'), 
                                  selected = 'all'),
-                     downloadButton("downloadData", "Save this table as csv"),
-                     br(),
-                     hr(),
-                     HTML('<p align="justify">In addition, you can download the runtime samples 
-                          aligned with respect to the specified targets.</p>'),
-                     selectInput('RT_download_format', 'please choose the format of the csv', 
-                                 choices = c('long', 'wide'), selected = 'wide'),
-                     downloadButton("download_runtime", "Save the aligned runtime samples")
+                     downloadButton("downloadData", "Save this table as csv")
                    ),
                    
                    mainPanel(
                      width = 9,
                      HTML('<p>Firstly, some basic statistics (<i>mean, median, quantiles</i>) 
                           are shown for the runntime at the selected objective value:</p>'),
-                     tableOutput('table_RT_summary'),
-                     br(),
-                     includeMarkdown('RMD/quantile.Rmd')
+                     tableOutput('table_RT_summary')
+                     # br(),
+                     # includeMarkdown('RMD/quantile.Rmd')
                    )
                ),
                
                box(title = HTML('<p style="font-size:120%;">Runtime Samples</p>'), width = 12,
                    solidHeader = TRUE, status = "primary",
                    sidebarPanel(
-                     width = 2,
-                     HTML('<p align="justify">Please specify the target value for the alignment:</p>'),
-                     textInput('fselect', label = HTML('<p>\\(f:\\) target value</p>'), value = ''),
-                     downloadButton("download_RT_sample", "Save this table as csv")
+                     width = 3,
+                     HTML('<p align="justify">Align the running time: the smallest 
+                          running time achieving the selected target values.<br>
+                          <i>Evenly spaced</i> target values are generated:</p>'),
+                     
+                     textInput('fstart_raw', label = HTML('<p>\\(f_{start}:\\) starting objective value</p>'), value = ''),
+                     textInput('fstop_raw', label = HTML('<p>\\(f_{stop}:\\) stopping objective value</p>'), value = ''),
+                     textInput('fstep_raw', label = HTML('<p>\\(f_{step}:\\) objective value steps</p>'), value = ''),
+                     selectInput('select.alg_raw', 'which algorithm to show?', choices = c('algorithm1', 'algorithm2', 'all'), 
+                                 selected = 'all'),
+                     HTML('<p align="justify">In addition, you can download the runtime samples 
+                          aligned with respect to the specified targets.</p>'),
+                     
+                     selectInput('RT_download_format', 'please choose the format of the csv', 
+                                 choices = c('long', 'wide'), selected = 'wide'),
+                     downloadButton("download_runtime", "Save the aligned runtime samples")
                      ),
                    
                    mainPanel(
-                     width = 10,
+                     width = 9,
                      HTML('<p>The raw runtime samples aligned with respect to the 
                           specified target value are listed as follows:</p>'),
-                     verbatimTextOutput('table_RT_sample')
+                     dataTableOutput('table_RT_sample')
                     )
                )
           )
@@ -182,7 +187,7 @@ body <- dashboardBody(
                          HTML('<p style="font-size:120%";>The <i>mean, median 
                               and standard deviation</i> of the runtime samples 
                               are depicted against the best objective values:</p>'),
-                         mainPanel(plotlyOutput('ERT_PER_FUN', height = "650px", width = "1157px"))
+                         mainPanel(plotlyOutput('ERT_PER_FUN', height = "700px", width = "1157px"))
                      )
                      
                      # box(title = HTML('<p style="font-size:120%;">Expected Runtime 
@@ -220,9 +225,9 @@ body <- dashboardBody(
                     mainPanel(
                       width = 10,
                       column(width = 12, align = "center", 
-                             HTML('<p align="left" "font-size:150%;">The <b>probability mass function</b> (p.m.f.) 
-                                     of the runtime is estimated via <b>kernel 
-                                     estimation</b> (KDE). The estimation and the boxplot are shown as follows:</p>'),
+                             HTML('<p class="alert alert-warning" align="left" "font-size:150%;"><b>Warning! </b>The 
+                                  <b>probability mass function</b> (p.m.f.) of the runtime is approximated by the 
+                                  treating the runtime as a <i>continuous</i> random variable and applying the <b>kernel estimation</b> (KDE):</p>'),
                              plotlyOutput('RT_PMF', height = "600px", width = "1000px")
                       )
                     )
@@ -262,80 +267,48 @@ body <- dashboardBody(
     ),
     
     # Runtime empirical c.d.f. ------------------------------------------
-    tabItem(tabName = 'ERT_ECDF', 
+    tabItem(tabName = 'RT_ECDF', 
             fluidRow(
               column(width = 12,
-                     box(title = HTML('<p style="font-size:120%;">Plot of the Runtime Distribution</p>'), 
+                     box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
+                                      Distribution of the runtime: Single Target</p>'), 
                          width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary",
                          sidebarLayout(
                            sidebarPanel(
                              width = 3,
-                             sliderInput("target.ecdf1",
-                                         "target1",
-                                         min = 0, 
-                                         max = 1, 
-                                         value = 0),
+                             HTML('You can specify <i>three</i> target values at which the ECDF of runtime is generated:'),
+                             textInput('RT_ECDF_FTARGET1', label = HTML('<p>\\(f_1\\)</p>'), 
+                                       value = ''),
+                             textInput('RT_ECDF_FTARGET2', label = HTML('<p>\\(f_2\\)</p>'), 
+                                       value = ''),
+                             textInput('RT_ECDF_FTARGET3', label = HTML('<p>\\(f_3\\)</p>'), 
+                                       value = ''),
                              
-                             # checkboxInput('show.ecdf1', 
-                             #               label = 'show target1',
-                             #               value = F),
-                             
-                             sliderInput("target.ecdf2",
-                                         "target2",
-                                         min = 0, 
-                                         max = 1, 
-                                         value = 0),
-                             
-                             # checkboxInput('show.ecdf2', 
-                             #               label = 'show target2',
-                             #               value = F),
-                             
-                             sliderInput("target.ecdf3",
-                                         "target3",
-                                         min = 0, 
-                                         max = 1, 
-                                         value = 0),
-                             
-                             checkboxInput('RT_ECDF_semilogx',
-                                           label = 'scale x axis log10',
-                                           value = F)
-
-                             # checkboxInput('RT_ECDF_semilogy', 
-                             #               label = 'scale y axis log10',
-                             #               value = F)
-                             
-                             # checkboxInput('show.ecdf3', 
-                             #               label = 'show target3',
-                             #               value = F),
-                             
-                             # sliderInput("target.ecdf4",
-                             #             "target4",
-                             #             min = 0, 
-                             #             max = 1, 
-                             #             value = 0),
-                             # 
-                             # checkboxInput('show.ecdf4', 
-                             #               label = 'show target4',
-                             #               value = F),
-                             # 
-                             # sliderInput("target.ecdf5",
-                             #             "target5",
-                             #             min = 0, 
-                             #             max = 1, 
-                             #             value = 0),
-                             # 
-                             # checkboxInput('show.ecdf5', 
-                             #               label = 'show target5',
-                             #               value = T),
-                             # 
-                             # checkboxInput('ecdf.aggr', 
-                             #               label = 'aggregate all ECDFs',
-                             #               value = F)
-                             
+                             checkboxInput('RT_ECDF_semilogx', label = 'scale x axis log10', value = F)
                            ), 
                            
                            mainPanel(width = 9,
-                                     plotlyOutput("ecdf", height = "600px", width = "1100px"))
+                                     plotlyOutput("RT_ECDF", height = "600px", width = "1100px"))
+                         )
+                     )
+              ),
+              
+              column(width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Area Under the ECDF</p>'),  
+                         width = 12, solidHeader = T, status = "primary", collapsible = T,
+                         sidebarPanel(
+                           width = 3,
+                           HTML('<p align="justify"><i>Evenly spaced</i> target values are used to calucate the ECDFs:</p>'),
+                           textInput('RT_AUC_FSTART', label = HTML('<p>\\(f_{start}:\\) starting objective value</p>'), value = ''),
+                           textInput('RT_AUC_FSTOP', label = HTML('<p>\\(f_{stop}:\\) stopping objective value</p>'), value = ''),
+                           textInput('RT_AUC_FSTEP', label = HTML('<p>\\(f_{step}:\\) objective value steps</p>'), value = '')
+                           
+                         ),
+                         
+                         mainPanel(width = 9,
+                                   HTML('<p align="left" "font-size:150%;">The <b>area under the ECDF</b> is 
+                                        caculated and normalized for a sequence of target values specified on the left</p>'),
+                                   plotlyOutput("RT_AUC", height = "600px", width = "750px")
                          )
                      )
               ),
@@ -376,14 +349,6 @@ body <- dashboardBody(
                      )
                 )
               )
-              
-              # column(width = 4,
-              #        box(title = 'Area under the ECDF', width = 550, height = 600,
-              #            solidHeader = TRUE, status = "primary",
-              #            showOutput("auc.radar", "highcharts")
-              #        )
-              # )
-            
     )
   )
 )

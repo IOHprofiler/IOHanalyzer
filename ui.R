@@ -12,6 +12,7 @@ library(rCharts)
 header <- dashboardHeader(title = HTML('<h4><div align="center"><b>IOHProfiler</b><br>
                                        <i>Post-Processing</i></div></h4>'))
 
+# The side bar layout ---------------------------------------------
 sidebar <- dashboardSidebar(
   hr(),
   sidebarMenu(id = "tabs",
@@ -21,7 +22,7 @@ sidebar <- dashboardSidebar(
               menuItem("Fixed-Target Results", tabName = "ERT", icon = icon("file-text-o"),
                        menuSubItem("Data summary", tabName = "ERT_data", icon = icon("table")),
                        menuSubItem("Convergence", tabName = "ERT_convergence", icon = icon("line-chart"), selected = F),
-                       menuSubItem("Probility Density", tabName = "ERT_plot", icon = icon("bar-chart"), selected = F),
+                       menuSubItem("Probility Mass Function", tabName = "RT_PMF", icon = icon("bar-chart"), selected = F),
                        menuSubItem("Cumulative Distribution", tabName = "ERT_ECDF", icon = icon("line-chart"), selected = F)
                        ),
               
@@ -82,9 +83,7 @@ body <- dashboardBody(
             includeMarkdown('RMD/docs.Rmd')
     ),
     
-    # -----------------------------------------------------------
-    # Data summary for Fixed-Target Runtime (ERT)
-    # -----------------------------------------------------------
+    # Data summary for Fixed-Target Runtime (ERT) -----------------
     tabItem(tabName = 'ERT_data', 
       fluidRow(
         column(width = 12,
@@ -141,12 +140,13 @@ body <- dashboardBody(
       )
     ),
     
+    # Expected runtime curve ---------------------------------------------
     tabItem(tabName = 'ERT_convergence', 
             fluidRow(
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Expected Runtime 
                                       (per function)</p>'), 
-                         height = 800, width = 12,
+                         width = 12,
                          collapsible = TRUE, solidHeader = TRUE, status = "primary",
                          sidebarPanel(
                            width = 2,
@@ -177,7 +177,7 @@ body <- dashboardBody(
                          HTML('<p style="font-size:120%";>The <i>mean, median 
                               and standard deviation</i> of the runtime samples 
                               are depicted against the best objective values:</p>'),
-                         mainPanel(plotlyOutput('ERT_line', height = "600px", width = "1000px"))
+                         mainPanel(plotlyOutput('ERT_line', height = "650px", width = "1157px"))
                      )
                      
                      # box(title = HTML('<p style="font-size:120%;">Expected Runtime 
@@ -188,55 +188,56 @@ body <- dashboardBody(
             )
     ),
     
-    # -----------------------------------------------------------
-    # plots for Fixed-Target Runtime (ERT)
-    # -----------------------------------------------------------
-    tabItem(tabName = 'ERT_plot', 
+    # Runtime: histograms, violin plots ------------------------------------------
+    tabItem(tabName = 'RT_PMF', 
           fluidRow(
             column(width = 12,
-                   box(title = 'Empirical Probability Mass Function of the Runtime', 
-                       height = 800, width = 12,
-                       collapsible = TRUE, solidHeader = TRUE, status = "primary",
-                       sidebarPanel(
-                         width = 2,
-                         HTML('Align the running time: the smallest running time 
-                              achieving the selected <b>target value</b>:'),
-                         sliderInput('target.plot', 
-                                     label = '',
-                                     min = 0, 
-                                     max = 1, 
-                                     value = .5),
-                        
-                         HTML('Kernel density estimation uses the following 
-                              <b>kernel function</b>:'),
-                         selectInput('kernel', '', 
-                                     choices = c("gaussian", "epanechnikov", "rectangular",
-                                                 "triangular", "biweight", "cosine", "optcosine"), 
-                                     selected = 'gaussian'),
-                         
-                         checkboxInput('show.RT.sample',
-                                       label = 'show runtime samples',
-                                       value = T)
-                       ),
-                       
-                       mainPanel(
-                         width = 10,
-                         column(width = 10, align = "center", 
-                                HTML('<p align="left" "font-size:150%;">The <i>probability density function</i> (p.d.f.) 
-                                     of the runtime is estimated via <b>kernel density 
-                                     estimation</b> (KDE). The estimates and the runtime samples are shown as follows:</p>'),
-                                plotlyOutput('ERT_violin', height = "500px", width = "900px")
-                         )
-                       )
-                   ),
-                   
+              box(title = 'Empirical Probability Mass Function of the Runtime', 
+                  width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary",
+                  sidebarLayout(
+                    sidebarPanel(
+                      width = 2,
+                      HTML('Align the runtime: the smallest running time 
+                           achieving the specified <b>target value</b>:'),
+                      
+                      textInput('RT_PMF_FTARGET', label = HTML('<p>\\(f:\\) target value</p>'), 
+                                value = ''),
+                      checkboxInput('RT_SHOW_SAMPLE', label = 'show runtime samples', value = T)
+                      
+                      # HTML('Kernel density estimation uses the following 
+                      #         <b>kernel function</b>:'),
+                      # selectInput('kernel', '', 
+                      #             choices = c("gaussian", "epanechnikov", "rectangular",
+                      #                         "triangular", "biweight", "cosine", "optcosine"), 
+                      #             selected = 'gaussian'),
+                      # 
+                      # checkboxInput('show.RT.sample',
+                      #               label = 'show runtime samples',
+                      #               value = T)
+                    ),
+                    
+                    mainPanel(
+                      width = 10,
+                      column(width = 12, align = "center", 
+                             HTML('<p align="left" "font-size:150%;">The <b>probability mass function</b> (p.m.f.) 
+                                     of the runtime is estimated via <b>kernel 
+                                     estimation</b> (KDE). The estimation and the boxplot are shown as follows:</p>'),
+                             plotlyOutput('RT_PMF', height = "600px", width = "1000px")
+                      )
+                    )
+                  )
+              )
+            ),
+            
+            column(width = 12,     
                    box(title = 'Historgram of the Runtime Samples', 
-                       width = 12, height = 800,
+                       width = 12, 
                        collapsible = TRUE, solidHeader = TRUE, status = "primary",
                        sidebarPanel(
                          width = 2,
                          HTML('Please select the <b>target value</b>:'),
-                         sliderInput('target_hist', label = '', min = 0, max = 1, value = .5),
+                         textInput('RT_PMF_HIST_FTARGET', label = HTML('<p>\\(f:\\) target value</p>'), 
+                                   value = ''),
                          
                          HTML('Please choose whether the histograms are <b>overlaid</b> in one plot 
                               or <b>separated</b> in several subplots:'),
@@ -250,14 +251,16 @@ body <- dashboardBody(
                          column(width = 12, align = "center",
                                 HTML('<p align="left" "font-size:150%;">In addition, 
                                      the <i>histogram</i> of the runtime is also illustrated:</p>'),
-                                plotlyOutput('ERT_histogram', height = "600px", width = "1000px")
-                                )
+                                plotlyOutput('RT_HIST', height = "600px", width = "1000px")
                          )
+                      )
                    )
             )
           )
+
     ),
     
+    # Runtime empirical c.d.f. ------------------------------------------
     tabItem(tabName = 'ERT_ECDF', 
             fluidRow(
               column(width = 12,
@@ -385,4 +388,6 @@ body <- dashboardBody(
   )
 )
 
-dashboardPage(header, sidebar, body)
+# -----------------------------------------------------------
+dashboardPage(title = '',
+              header, sidebar, body)

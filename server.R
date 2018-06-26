@@ -19,6 +19,7 @@ library(itertools)
 library(iterators)
 
 source('pproc.R')
+source('plot.R')
 
 options(width = 80)
 
@@ -155,6 +156,8 @@ shinyServer(function(input, output, session) {
     updateTextInput(session, 'RT_fstop', value = format(max(v), digits = 5, nsmall = 2))
     updateTextInput(session, 'RT_fstep', value = format(step, digits = 5, nsmall = 2))
     updateTextInput(session, 'RT_fselect', value = format(median(v), digits = 5, nsmall = 2))
+    updateTextInput(session, 'RT_PMF_FTARGET', value = format(median(v), digits = 5, nsmall = 2))
+    updateTextInput(session, 'RT_PMF_HIST_FTARGET', value = format(median(v), digits = 5, nsmall = 2))
   })
   
   observeEvent(fvalues, {
@@ -352,10 +355,7 @@ shinyServer(function(input, output, session) {
   )
   
   # -----------------------------------------------------------
-  # Plots for Fixed-Target Runtime (ERT)
-  # -----------------------------------------------------------
-  
-  # The expected runtime plot 
+  # The expected runtime plot ---------------------
   output$ERT_line <- renderPlotly({
     xmin <- input$plot.range[1]
     xmax <- input$plot.range[2]
@@ -366,9 +366,11 @@ shinyServer(function(input, output, session) {
     n_algorithm <- length(df.ERT)
     colors <- colorspace::rainbow_hcl(n_algorithm)
     
-    h <- 650
-    w <- h / 9 * 16
-    p <- plot_ly(width = w, height = h) 
+    p <- plot_ly_default(title = "Expected Runtime Comparison",
+                         x.title = "best-so-far f(x)-value",
+                         y.title = "function evaluations",
+                         xaxis.type = switch(input$semilogx, T = 'log', F = 'linear'),
+                         yaxis.type = switch(input$semilogy, T = 'log', F = 'linear'))
     
     for (i in seq_along(df.ERT)) {
       raw <- df.BestF[[i]] %>% 
@@ -406,45 +408,21 @@ shinyServer(function(input, output, session) {
                          line = list(color = rgba_str),
                          linetype = ~instance, showlegend = F)
     }
-    
-    xaxis.type <- switch(input$semilogx, T = 'log', F = 'linear')
-    yaxis.type <- switch(input$semilogy, T = 'log', F = 'linear')
-    
-    p %<>% layout(title = "Expected Runtime Comparison",
-                  autosize = T, hovermode = 'compare',
-                  paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
-                  xaxis = list(title = "best-so-far f(x)-value",
-                               gridcolor = 'rgb(255,255,255)',
-                               showgrid = TRUE,
-                               showline = FALSE,
-                               type = xaxis.type,
-                               showticklabels = TRUE,
-                               tickcolor = 'rgb(127,127,127)',
-                               ticks = 'outside',
-                               ticklen = 7,
-                               zeroline = F),
-                  yaxis = list(title = "function evaluations",
-                               gridcolor = 'rgb(255,255,255)',
-                               showgrid = TRUE,
-                               showline = FALSE,
-                               type = yaxis.type,
-                               showticklabels = TRUE,
-                               tickcolor = 'rgb(127,127,127)',
-                               ticks = 'outside',
-                               ticklen = 7,
-                               zeroline = F))
+    p
   })
   
   # empirical p.m.f. of the runtime
-  output$ERT_violin <- renderPlotly({
-    ftarget <- input$target.plot %>% as.numeric
+  output$RT_PMF <- renderPlotly({
+    ftarget <- input$RT_PMF_FTARGET %>% as.numeric
+    points <- switch(input$RT_SHOW_SAMPLE, T = 'all', F = F)
+    
     df.aligneds <- aligned()
     n_algorithm <- length(df.aligneds)
     colors <- colorspace::rainbow_hcl(n_algorithm)
     
-    h <- 650
-    w <- h / 9 * 16
-    p <- plot_ly(width = w, height = h)
+    p <- plot_ly_default(title = "p.m.f. of the runtime",
+                         x.title = "algorithms",
+                         y.title = "runtime / function evaluations")
                  
     for (i in seq_along(df.aligneds)) {
       df <- df.aligneds[[i]]
@@ -452,14 +430,10 @@ shinyServer(function(input, output, session) {
       attr(df, 'algorithm') <- paste0('algorithm', i)
       
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.5)')
       
-      rt <- RT(df, ftarget, format = 'long')
-        
-      # d <- density(rt, kernel = input$kernel)
-      
-      p %<>% 
-        add_trace(data = rt,
+      p %<>%
+        add_trace(data = RT(df, ftarget, format = 'long'),
                   x = ~algorithm, y = ~RT, split = ~algorithm, type = 'violin',
                   hoveron = "points+kde",
                   box = list(visible = T),
@@ -469,57 +443,53 @@ shinyServer(function(input, output, session) {
                   scalemode = 'count',
                   meanline = list(visible = T),
                   line = list(color = rgb_str, width = 1),
-                  marker = list(color = rgb_str)
-        )
+                  marker = list(color = rgb_str))
+      
+      # rt <- RT(df, ftarget, format = 'long') %>% 
+      #   mutate(label = i)
+      
+      # kernel estimation of p.m.f.
+      # res <- kernel_PMF(as.numeric(rt$RT))
+      # 
+      # x <- res$x
+      # y <- res$y
+      # 
+      # x <- x[y != 0]
+      # y <- y[y != 0] 
+      # idx <- seq(1, length(x), length.out = 50)
+      # x <- x[idx]
+      # y <- y[idx]
+      # y <- y / max(y) * 0.8
       
       # p %<>% 
-      #   add_trace(data = RT(df, ftarget, format = 'long'),
-      #             x = ~algorithm, y = ~RT, split = ~algorithm, type = 'violin',
-      #             hoveron = "points+kde",
-      #             box = list(visible = T),
-      #             points = 'all',
-      #             pointpos = 1,
-      #             jitter = 0.1,
-      #             scalemode = 'count',
-      #             meanline = list(visible = T),
-      #             line = list(color = rgb_str, width = 1),
-      #             marker = list(color = rgb_str)
-      #           )
+      #   add_trace(x = x, y = y + i, type = 'scatter',
+      #             hoveron = "points", showlegend = F,
+      #             mode = 'markers', legendgroup = paste0(i),
+      #             marker = list(color = 'rgba(9,56,125,0.45)'), 
+      #             line = list(color = 'rgb(9,56,125)', width = 0)) %>%
+      #   add_trace(data = rt, x = ~RT, y = ~as.character(label), type = 'box',
+      #             line = list(color = rgb_str, width = 0.8), legendgroup = paste0(i),
+      #             marker = list(color = rgb_str), fillcolor = rgba_str, name = attr(df, 'algorithm'))
+      # 
+      # for (k in seq_along(x)) {
+      #   p %<>% 
+      #     add_segments(x = x[k], xend = x[k], y = i, yend = y[k] + i, 
+      #                  line = list(color = 'rgba(9,56,125,0.4)'),
+      #                  showlegend = F)
+      # }
     }
-    
-    p %<>%
-      layout(title = "Expected Runtime Comparison",
-                  autosize = T, hovermode = 'compare',
-                  paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
-                  xaxis = list(title = "best-so-far f(x)-value",
-                               gridcolor = 'rgb(255,255,255)',
-                               showgrid = TRUE,
-                               showline = FALSE,
-                               showticklabels = TRUE,
-                               tickcolor = 'rgb(127,127,127)',
-                               ticks = 'outside',
-                               ticklen = 7,
-                               zeroline = F),
-                  yaxis = list(title = "function evaluations",
-                               gridcolor = 'rgb(255,255,255)',
-                               showgrid = TRUE,
-                               showline = FALSE,
-                               showticklabels = TRUE,
-                               tickcolor = 'rgb(127,127,127)',
-                               ticks = 'outside',
-                               ticklen = 7,
-                               zeroline = F))
+    p
   })
   
   # historgram of the running time
-  output$ERT_histogram <- renderPlotly({
-    ftarget <- input$target_hist %>% as.numeric
+  output$RT_HIST <- renderPlotly({
+    ftarget <- input$RT_PMF_HIST_FTARGET %>% as.numeric
     plot_mode <- input$ERT_illu_mode
     
     df.aligneds <- aligned()
     n_algorithm <- length(df.aligneds)
     colors <- colorspace::rainbow_hcl(n_algorithm)
-    nrows <- ceiling(n_algorithm / 2.)
+    nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
     
     if (plot_mode == 'overlay') {
       p <- plot_ly() %>% 
@@ -545,6 +515,7 @@ shinyServer(function(input, output, session) {
                             ticks = 'outside',
                             ticklen = 7,
                             zeroline = F))
+      
     } else if (plot_mode == 'subplot') {
       p <- lapply(seq(n_algorithm), function(x) {
         plot_ly() %>% 
@@ -581,6 +552,7 @@ shinyServer(function(input, output, session) {
       attr(df, 'algorithm') <- paste0('algorithm', i)
       rt <- RT(df, ftarget, format = 'long')
       
+      # skip if all runtime samples are NA
       if (all(is.na(rt$RT)))
         next
       

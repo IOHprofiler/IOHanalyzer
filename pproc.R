@@ -9,6 +9,7 @@ library(magrittr)
 library(reshape2)
 library(itertools)
 library(iterators)
+library(Ake)
 # library(rPython)
 
 # TODO: migrate to data.table for speed concern and simplicity
@@ -28,6 +29,14 @@ library(iterators)
 #                    set_colnames(c('eval', 'DeltaF', 'BestDeltaF', 'F', 'BestF')))
 #   data
 # }
+# 
+
+# kernel estimator of p.m.f. 
+kernel_PMF <- function(x, kernel = 'bino') {
+  res <- hcvd.fun(x, seq_bws = seq(1e-1, 1, 10), ker = kernel)
+  data <- kpmfe.fun(x, h = res$hcv, type_data = 'discrete', ker = kernel)
+  list(x = data$eval.points, y = data$est.fn)
+}
 
 # calculate the basic statistics of the runtime samples from an aligned data set
 RT_summary <- function(df, ftarget, 

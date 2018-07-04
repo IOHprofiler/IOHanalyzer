@@ -12,7 +12,6 @@ library(magrittr)
 library(dplyr)
 
 library(ggplot2)
-library(rCharts)
 library(plotly)
 
 library(itertools)
@@ -25,53 +24,8 @@ options(width = 80)
 symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
              "triangle-up-open", "triangle-down-open")
 
-t <- theme_grey() +
-  theme(text = element_text(size = 15),
-        plot.title = element_text(hjust = 0.5)
-        # legend.position = c(0.15, 0.7),       # legend position
-        # legend.key = element_blank(),         # no small box around symbol
-        # legend.key.size = unit(1.3, "line"),  # bigger symbols
-        # legend.background = element_rect(color = alpha("black", 0.5),
-        #                                  fill = alpha('blue', 0.0),
-        #                                  size = 1,
-        #                                  linetype = "solid")
-        )
-theme_set(t)
 # data_src <- './data/data_f1'
-
 # setwd('~/code_base/post-processing/')
-
-gg_beanplot <- function(mapping, data, p = NULL, width = 3, fill = 'grey', 
-                        colour = 'grey', alpha = 1, kernel = 'gaussian', bw = 'SJ', 
-                        draw_quantiles = NULL, trim = TRUE, na.rm = FALSE, 
-                        show.legend = NA, point.shape = 20, show.sample = T,
-                        show.violin = T, linetype = 'solid') {
-  
-  set.seed(42)
-  x <- as.character(mapping$x)
-  y <- as.character(mapping$y)
-  df <- data[, c(x, y)] %>% rename_(.dots = c('x' = x, 'y' = y))
-  
-  if (!is.numeric(df$x)) 
-    df$x <- tryCatch(as.numeric(df$x), # in case x is a factor...
-                     warning = function(w) return(match(x, as.factor(x)))) 
-  
-  if (is.null(p))
-    p <- ggplot()
-  
-  if (show.violin)
-    p <- p + geom_violin(data = data, mapping = mapping, trim = trim, 
-                         draw_quantiles = draw_quantiles, bw = bw, 
-                         kernel = kernel, scale = 'width',
-                         width = width, alpha = alpha)
-  if (show.sample)
-    p <- p + geom_jitter(data = df, aes(x, y), height = 0, width = width / 2, 
-                         alpha = 0.45, shape = point.shape, size = 3.5)
-    # geom_segment(aes(x = x - width / 2.2, xend = x + width / 2.2, y = y, yend = y),
-    #              df, col = 'black', size = 0.2, alpha = 0.3, linetype = linetype)
-  p
-}
-
 algorithm1 <- ''
 algorithm2 <- ''
 
@@ -496,7 +450,6 @@ shinyServer(function(input, output, session) {
       as.numeric(input$RT_ECDF_FTARGET2),
       as.numeric(input$RT_ECDF_FTARGET3))
     
-    dfs <- DF()
     df.aligneds <- aligned()
     n_algorithm <- length(df.aligneds)
     colors <- colorspace::rainbow_hcl(n_algorithm)

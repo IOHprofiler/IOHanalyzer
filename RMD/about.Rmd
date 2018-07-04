@@ -19,7 +19,7 @@ Last Update on 2018-06-26 23:36:39 CEST
 * [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back#tab-1), <i>Leiden Institute of Advanced Computer Science</i>, <t.h.w.baeck@liacs.leidenuniv.nl>.
 
 ## License
-This application is governed by the __BSD-3 Clause license__. 
+This application is governed by the __BSD 3-Clause license__. 
 
 BSD 3-Clause License
 

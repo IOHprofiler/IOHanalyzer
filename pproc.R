@@ -10,6 +10,7 @@
 library(magrittr)
 library(reshape2)
 library(data.table)
+library(Rcpp)
 
 # TODO: perhaps migrate to data.table for speed concern and simplicity
 # TODO: maybe use S4 later for 'DataSet'?
@@ -122,18 +123,21 @@ ERT.DataSet <- function(data) {
 # Return: a list of data.frames
 read_dat <- function(fname) {
   df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T,
-              select = 1:5) %>% 
-    as.data.frame
+              select = 1:5) 
   
-  columns <- colnames(df) <- as.matrix(df)[1, ]
-  idx <- grepl('function', df[, 1]) %>% 
+  idx <- grepl('function', df[, V1]) %>% 
     which %>% c(nrow(df) + 1)
+  
+  options(warn = -1)
+  columns <- colnames(df) <- as.matrix(df[1, ])
+  df %<>% sapply(function(c) {class(c) <- 'numeric'; c}) # many warnings here...
+  # df %<>% sapply(as.numeric) # many warnings here...
+  options(warn = 0)
   
   res <- lapply(seq(length(idx) - 1), function(i) {
     i1 <- idx[i] + 1
     i2 <- idx[i + 1] - 1
-    ans <- df[i1:i2, ] %>% sapply(as.numeric)
-    
+    ans <- df[i1:i2, ]
     if (i1 == i2)
       ans <- t(ans)
     
@@ -236,11 +240,14 @@ read_dir <- function(args) {
 # TODO: implement this part in C for speeding up
 # TODO: add option allowing for the minimization scenario
 # TODO: remove the option 'full' for targets
-align_target <- function(data, targets = 'auto', nrow = 20, maximization = FALSE) {
-  step <- 5.
+# TODO: write the main loop using Rcpp
+# TODO: automatically determine how many rows to align 
+align_target <- function(data, targets = 'auto', nrow = 50, maximization = FALSE) {
+  
   N <- length(data) 
   data <- lapply(data, as.matrix)   # matrices are faster for indexing?
-  next_lines <- lapply(data, function(x) x[1, ]) %>% unlist %>% 
+  idx <- c(idxTarget, idxEvals)
+  next_lines <- lapply(data, function(x) x[1, idx]) %>% unlist %>% 
     matrix(nrow = N, byrow = T)
   
   func <- ifelse(maximization, min, max)
@@ -251,18 +258,19 @@ align_target <- function(data, targets = 'auto', nrow = 20, maximization = FALSE
     Fvalues <- sort(targets)
   } else {
     if (targets == 'auto') { 
-      Fstart <- func(next_lines[, idxTarget], na.rm = T)
+      Fstart <- func(next_lines[, 1], na.rm = T)
       
-      if (1 < 2) {
+      if (!maximization) {
+        step <- 5.
         idxCurrentF <- ceiling(log10(Fstart) * step)
         t <- 10. ^ (idxCurrentF / step)
       } else {
         # similar to the alignment in bbob
-        # produce roughly 20 data records by default
+        # produce roughly 50 data records by default
         Fend <- sapply(data, function(x) rev(x[, idxTarget])[1]) %>% func(na.rm = T)
         tmp <- seq(log10(Fstart), log10(Fend), length.out = nrow)
         step <- tmp[2] - tmp[1]
-        idx <- log10(Fstart)
+        idxCurrentF <- log10(Fstart)
         t <- Fstart
       }
     } else if (targets == 'full') {
@@ -278,13 +286,16 @@ align_target <- function(data, targets = 'auto', nrow = 20, maximization = FALSE
   }
   
   if (targets == 'auto') {
-    Fvalues <- c()
-    res <- c()
+    nrow_max <- sapply(data, function(x) tail(x[, 1], 1)) %>% max
+    res <- matrix(NA, nrow = nrow_max, ncol = N)
+    Fvalues <- rep(NA, nrow_max)
+    
     curr_eval <- rep(NA, N)
     curr_fvalues <- rep(NA, N)
     finished <- rep(FALSE, N)
     index <- rep(1, N)  # 'iterator'
     
+    i <- 0
     while (t > 0 && is.finite(t)) {
       curr_eval[1:N] <- NA
       curr_fvalues[1:N] <- NA
@@ -293,18 +304,16 @@ align_target <- function(data, targets = 'auto', nrow = 20, maximization = FALSE
         d <- data[[k]]
         iter <- index[k]
         while (!finished[k]) {
-          curr_line <- next_lines[k, ]
-          
           # hitting the target
-          if (`op`(curr_line[idxTarget], t)) { 
-            curr_eval[k] <- curr_line[idxEvals] 
-            curr_fvalues[k] <- curr_line[idxTarget]
+          if (`op`(next_lines[k, 1], t)) { 
+            curr_eval[k] <- next_lines[k, 2]
+            curr_fvalues[k] <- next_lines[k, 1]
             break
           }
           
           if (iter < nrow(d)) {
             iter <- iter + 1
-            next_lines[k, ] <- d[iter, ]
+            next_lines[k, ] <- d[iter, idx]
           } else {
             finished[k] <- TRUE
           }
@@ -316,22 +325,23 @@ align_target <- function(data, targets = 'auto', nrow = 20, maximization = FALSE
       if (all(is.na(curr_eval)))
         break
       
-      res <- rbind(res, curr_eval)
-      if (1 < 2) {
+      i <- i + 1
+      res[i, ] <- curr_eval
+      if (!maximization) {
         idxCurrentF_new <- ceiling(log10(func(curr_fvalues, na.rm = T)) * step)
         if (maximization)
           idxCurrentF <- max(idxCurrentF_new, idxCurrentF)
         else
           idxCurrentF <- min(idxCurrentF_new, idxCurrentF)
         
-        Fvalues <- c(Fvalues, 10. ^ (idxCurrentF / step))
+        Fvalues[i] <-  10. ^ (idxCurrentF / step)
         idxCurrentF <- inc(idxCurrentF)
         t <- 10. ^ (idxCurrentF / step)
       } else {
         # make sure the new target value is bigger than the next iterate
-        Fvalues <- c(Fvalues, t)
-        idx <- idx + step
-        t <- 10. ^ idx
+        Fvalues[i] <- t
+        idxCurrentF <- idxCurrentF + step
+        t <- 10. ^ idxCurrentF
       }
     }
   } else {
@@ -354,56 +364,109 @@ align_target <- function(data, targets = 'auto', nrow = 20, maximization = FALSE
       }
     }
   }
-  row.names(res) <- Fvalues
+  res <- res[1:i, ]
+  Fvalues <- Fvalues[1:i]
+  rownames(res) <- Fvalues
   res
 }
+
+cppFunction(
+'NumericVector align_runtime_loop(int r, List data, NumericVector Nrows, NumericVector index,
+                       LogicalVector finished, NumericMatrix next_lines,
+                       NumericVector curr_fvalues
+                       ) {
+  int N = data.size();
+  NumericVector out = clone(curr_fvalues);
+  for (int k = 0; k < N; k++) {
+    NumericMatrix d = as<NumericMatrix>(data[k]);
+    int Nrow = Nrows[k];
+    int iter = index[k];
+    while (!finished[k]) {
+      if (next_lines(k, 0) > r) {
+        out[k] = next_lines(k, 1); 
+        break;
+      }
+      
+      if (iter < (Nrow - 1)) {
+        iter++;
+        for (int j = 0; j < 2; j++) {
+          next_lines(k, j) = d(iter, j);
+        }
+        
+      } else {
+        out[k] = next_lines(k, 1); 
+        next_lines(k, 0) = NA_REAL;
+        finished[k] = true;
+      }
+    }
+    index[k] = iter;
+  }
+  return out;
+}')
 
 align_runtime <- function(data, runtime = 'full') {
   N <- length(data) 
   data <- lapply(data, as.matrix)   # matrices are faster for indexing?
+  colnames(data) <- NULL
+  idx <- c(idxEvals, idxTarget)
   
   if (runtime == 'full') {
-    runtime <- c()
-    res <- c()
-    curr_fvalues <- rep(NA, N)
-    finished <- rep(FALSE, N)
+    nrow_max <- sapply(data, function(x) tail(x[, 1], 1)) %>% max
+    res <- matrix(NA, nrow = nrow_max, ncol = N)
+    runtime <- rep(NA, nrow_max)
     index <- rep(1, N)  # index of the 'iterator'
     
-    next_lines <- lapply(data, function(x) x[1, ]) %>% unlist %>% matrix(nrow = N, byrow = T)
-    r <- min(next_lines[, idxEvals], na.rm = T)
+    curr_fvalues <- rep(NA, N)
+    finished <- rep(FALSE, N)
     
+    next_lines <- lapply(data, function(x) x[1, idx]) %>% 
+      unlist %>% matrix(nrow = N, byrow = T)
+    r <- min(next_lines[, 1], na.rm = T)
+    Nrows <- sapply(data, nrow)
+    
+    i <- 1
     while (r > 0) {
-      # TODO: use foreach / parallel for loop
-      for (k in seq_along(data)) {
-        d <- data[[k]]
-        while (!finished[k]) {
-          curr_line <- next_lines[k, ]
-          if (curr_line[idxEvals] > r) {
-            curr_fvalues[k] <- curr_line[idxTarget] 
-            break
-          }
-          
-          if (index[k] < nrow(d)) {
-            index[k] <- index[k] + 1
-            next_lines[k, ] <- d[index[k], ]
-          } else {
-            curr_fvalues[k] <- curr_line[idxTarget]  # !IMPORTANT: store the last Target value
-            finished[k] <- TRUE
-          }
-        }
-      }
+      curr_fvalues[] <- align_runtime_loop(r, data, Nrows, 
+                                           index, finished, 
+                                           next_lines, curr_fvalues)
+      # k <- 1
+      # for (d in data) {
+      #   Nrow <- Nrows[k]
+      #   iter <- index[k]
+      #   while (!finished[k]) {
+      #     if (next_lines[k, 1] > r) {
+      #       curr_fvalues[k] <- next_lines[k, 2] 
+      #       break
+      #     }
+      #     
+      #     if (iter < Nrow) {
+      #       iter <- iter + 1
+      #       next_lines[k, ] <- d[iter, idx]
+      #     } else {
+      #       curr_fvalues[k] <- next_lines[k, 2]  # !IMPORTANT: store the last Target value
+      #       next_lines[k, 1] <- NA
+      #       finished[k] <- TRUE
+      #     }
+      #   }
+      #   index[k] <- iter
+      #   k <- k + 1
+      # }
       
-      runtime <- c(runtime, r)
-      res <- rbind(res, curr_fvalues)
+      runtime[i] <- r
+      res[i, ] <- curr_fvalues
       
       if (all(finished)) 
         break
       
-      r <- min(next_lines[, idxEvals], na.rm = T)
+      i <- i + 1
+      r <- min(next_lines[1:N, 1], na.rm = T)
     }
     
   }
-  row.names(res) <- runtime
+  res <- res[1:i, ]
+  runtime <- runtime[1:i]
+  
+  rownames(res) <- runtime
   res
 }
 

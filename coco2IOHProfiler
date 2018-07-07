@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# convert the coco-bbob stantdard output to IOPorfiler
+for f in `find $1 -name "*dat"`; 
+do 
+    echo $f;
+    sed -e 's|\.\.\.||g' -e 's|% |"|g' -e "s/ | /\" \"/g" -e 's|x2$|x2"|g' -i $f; 
+done

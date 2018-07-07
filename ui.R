@@ -5,15 +5,17 @@
 # Author: Hao Wang
 # Email: wangronin@gmail.com
 
+library(shinyjs)
+library(shinyFiles)
 library(shinydashboard)
 library(plotly)
-library(rCharts)
 
 header <- dashboardHeader(title = HTML('<h4><div align="center"><b>IOHProfiler</b><br>
                                        <i>Post-Processing</i></div></h4>'))
 
 # The side bar layout ---------------------------------------------
 sidebar <- dashboardSidebar(
+  useShinyjs(),
   hr(),
   sidebarMenu(id = "tabs",
               menuItem("Upload data", tabName = "upload", icon = icon('upload', lib = 'glyphicon'), 
@@ -41,10 +43,20 @@ sidebar <- dashboardSidebar(
                    fluidRow(
                      column(1),
                      column(10,
-                            h5('Please select the test function ID'),
-                            selectInput("fct", label = "fID",
-                                        choices = seq(4),
-                                        selected = 1)
+                            HTML('<p style="font-size:120%;">Please select the function ID'),
+                            selectInput("FUNCID_INPUT", label = '',
+                                        choices = NULL,
+                                        selected = NULL)
+                     )
+                   ),
+                   
+                   fluidRow(
+                     column(1),
+                     column(10,
+                            HTML('<p style="font-size:120%;">Please select the dimension</p>'),
+                            selectInput("DIM_INPUT", label = '',
+                                        choices = NULL,
+                                        selected = NULL)
                      )
                    )
   )
@@ -83,6 +95,53 @@ body <- dashboardBody(
             includeMarkdown('RMD/docs.Rmd')
     ),
     
+    # data uploading functionalities -----------------
+    tabItem(tabName = 'upload',
+            fluidRow(
+              column(width = 6,
+                     box(title = HTML('<p style="font-size:120%;">Upload Data</p>'), width = 12,
+                         solidHeader = T, status = "primary", collapsible = F, height = '500px',
+                         sidebarPanel(
+                           width = 4,
+                           HTML('<p align="left">Please choose a directory containing the benchmark data</p>'),
+                           shinyDirButton('directory', 'Browse the folder', 
+                                          title = 'Please choose a directory containing the benchmark data'),
+                           hr(),
+                           HTML('<p align="left">You can also remove all data you uploaded</p>')
+                         ),
+                         
+                         mainPanel(
+                           width = 8,
+                           HTML('<p>The selected folders are:</p>'),
+                           verbatimTextOutput('upload_data_promt'),
+                           # setup the scroller for upload_data_promt
+                           tags$head(tags$style("#upload_data_promt{color:red; font-size:12px; font-style:italic;
+                                                overflow-y:scroll; max-height: 395px; background: ghostwhite;}"))
+                           
+                         )
+                     )
+              ),
+              
+              column(width = 6,
+                     box(title = HTML('<p style="font-size:120%;">Data Processing Prompt</p>'), width = 12,
+                         solidHeader = T, status = "primary", collapsible = F, height = '500px',
+                         verbatimTextOutput('process_data_promt'),
+                         tags$head(tags$style("#process_data_promt{color:red; font-size:12px; font-style:italic;
+                                              overflow-y:scroll; max-height: 425px; background: ghostwhite;}"))
+                     )
+              )
+            ),
+            
+            fluidRow(
+              column(width = 12,
+                     box(title = HTML('<p style="font-size:120%;">List of processed Data</p>'), width = 12,
+                         solidHeader = T, status = "primary", collapsible = T, 
+                         dataTableOutput('DATASETLIST_INFO')
+                     )
+              )
+            )
+    ),
+    
     # Data summary for Fixed-Target Runtime (ERT) -----------------
     tabItem(tabName = 'ERT_data', 
       fluidRow(
@@ -98,8 +157,8 @@ body <- dashboardBody(
                      textInput('fstart', label = HTML('<p>\\(f_{start}:\\) starting objective value</p>'), value = ''),
                      textInput('fstop', label = HTML('<p>\\(f_{stop}:\\) stopping objective value</p>'), value = ''),
                      textInput('fstep', label = HTML('<p>\\(f_{step}:\\) objective value steps</p>'), value = ''),
-                     selectInput('select.alg', 'which algorithm to show?', choices = c('algorithm1', 'algorithm2', 'all'), 
-                                 selected = 'all'),
+                     selectInput('ALGID_INPUT', 'which algorithm to show?', choices = NULL, 
+                                 selected = NULL),
                      downloadButton("downloadData", "Save this table as csv")
                    ),
                    
@@ -124,8 +183,8 @@ body <- dashboardBody(
                      textInput('fstart_raw', label = HTML('<p>\\(f_{start}:\\) starting objective value</p>'), value = ''),
                      textInput('fstop_raw', label = HTML('<p>\\(f_{stop}:\\) stopping objective value</p>'), value = ''),
                      textInput('fstep_raw', label = HTML('<p>\\(f_{step}:\\) objective value steps</p>'), value = ''),
-                     selectInput('select.alg_raw', 'which algorithm to show?', choices = c('algorithm1', 'algorithm2', 'all'), 
-                                 selected = 'all'),
+                     selectInput('ALGID_RAW_INPUT', 'which algorithm to show?', 
+                                 choices = NULL, selected = NULL),
                      HTML('<p align="justify">In addition, you can download the runtime samples 
                           aligned with respect to the specified targets.</p>'),
                      

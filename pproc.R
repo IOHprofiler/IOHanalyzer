@@ -6,11 +6,14 @@
 # 
 # Remark:
 #   1. library 'itertool' is way two slow and thus is not used here
+#   2. Rcpp is used for the data alignment function
 
 library(magrittr)
 library(reshape2)
 library(data.table)
 library(Rcpp)
+
+source('readFiles.R')
 
 # TODO: perhaps migrate to data.table for speed concern and simplicity
 # TODO: maybe use S4 later for 'DataSet'?
@@ -43,8 +46,10 @@ DataSet <- function(info, verbose = F) {
     by_target <- align_target(dat)      # aligned by target values
     by_runtime <- align_runtime(tdat)   # aligned by runtime
     
-    maxEvals <- sapply(dat, function(d) d[nrow(d), idxEvals])
-    finalFunvals <- sapply(tdat, function(d) d[nrow(d), idxTarget])
+    maxEvals <- sapply(dat, function(d) d[nrow(d), idxEvals]) %>% 
+      set_names(NULL)
+    finalFunvals <- sapply(tdat, function(d) d[nrow(d), idxTarget]) %>% 
+      set_names(NULL)
     
     # if (any(maxEvals != info$maxEvals)) 
     #   warning('Inconsitent maxEvals in .info file and .dat file')
@@ -102,116 +107,73 @@ ERT <- function(x, succ = NULL, maxEval = Inf) {
   list(ps = N_succ / N, ERT = sum(x) / N_succ, N_succ = N_succ)
 }
 
-# compute the expected running time for a DataSet
+# compute the expected running time for a single DataSet
 ERT.DataSet <- function(data) {
   df <- data$by_target
   succ <- matrix(0, nrow(df), ncol(df))
+  
   for (i in 1:nrow(df)) {
     idx <- is.na(df[i, ])
     succ[i, ] <- !idx
     df[i, idx] <- attr(data, 'maxEvals')[idx]
   }
   
-  lapply(seq(nrow(df)), function(idx) as.data.frame(ERT(df[idx, ], succ = succ[idx, ]))) %>%
+  object <- lapply(seq(nrow(df)), function(idx) as.data.frame(ERT(df[idx, ]), succ = succ[idx, ])) %>%
     do.call(rbind.data.frame, .) %>% 
-    set_rownames(row.names(df))
+    cbind(data.frame(BestF = row.names(df) %>% as.numeric,
+                     sd = apply(df, 1, . %>% sd(na.rm = T)),
+                     se = apply(df, 1, . %>% {sd(., na.rm = T) / sqrt(length(.))}),
+                     median = apply(df, 1, . %>% median(na.rm = T))))
+  
+  class(object) %<>% c('ERT')
+  attr(object, 'DIM') <- attr(data, 'DIM')
+  attr(object, 'algId') <- attr(data, 'algId')
+  attr(object, 'funcId') <- attr(data, 'funcId')
+  object
 }
 
-# functions to read the .info, .dat files --------------------------
-
-# read .dat, .rdat, .tdat files
-# Return: a list of data.frames
-read_dat <- function(fname) {
-  df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T,
-              select = 1:5) 
-  
-  idx <- grepl('function', df[, V1]) %>% 
-    which %>% c(nrow(df) + 1)
-  
-  options(warn = -1)
-  columns <- colnames(df) <- as.matrix(df[1, ])
-  df %<>% sapply(function(c) {class(c) <- 'numeric'; c}) # many warnings here...
-  # df %<>% sapply(as.numeric) # many warnings here...
-  options(warn = 0)
-  
-  res <- lapply(seq(length(idx) - 1), function(i) {
-    i1 <- idx[i] + 1
-    i2 <- idx[i + 1] - 1
-    ans <- df[i1:i2, ]
-    if (i1 == i2)
-      ans <- t(ans)
-    
-    ans
-  })
-  res
-}
-
-# read .info files and extract information
-read_IndexFile <- function(fname) {
-  f <- file(fname, 'r')
-  path <- dirname(fname)
-  
-  data <- list()
-  i <- 1
-  while (TRUE) {
-    lines <- readLines(f, n = 3)
-    if (length(lines) == 0 ) 
-      break
-    
-    header <- strsplit(lines[1] , ',')[[1]] %>% trimws %>% 
-      strsplit(split = '=') %>% unlist %>% trimws %>% 
-      matrix(nrow = 2) %>% {
-        ans <- as.list(.[2, ])
-        names(ans) <- .[1, ]
-        for (name in .[1, ]) {
-          v <- suppressWarnings(as.numeric(ans[[name]])) # convert quoted numeric values to numeric
-          if (!is.na(v))
-            ans[[name]] <- v
-        }
-        ans
-      }
-    
-    record <- strsplit(lines[3], ',')[[1]] %>% trimws
-    res <- strsplit(record[-1], ':') %>% unlist %>% matrix(nrow = 2)
-    info <- strsplit(res[2, ], '\\|') %>% unlist %>% matrix(nrow = 2)
-    datafile <- file.path(path, record[1])
-    
-    # TODO: check the name of the attributes and fix them!
-    data[[i]] <- c(header,
-                   list(comment = lines[2], 
-                        datafile = datafile,
-                        instance = as.numeric(res[1, ]),
-                        maxEvals = as.numeric(info[1, ]),
-                        bestdeltaf = as.numeric(info[2, ]))
-    )
-    
-    i <- i + 1
-  }
-  close(f)
-  data
-}
-
-# TODO: create class DataSetList class
 # read all raw data files in a give directory
-read_dir <- function(args) {
-  args <- trimws(args)
-  indexFiles <- file.path(args, dir(args, pattern = '.info'))  # scan all .info fils
+read_dir <- function(args, verbose = T, print_fun = NULL) {
+  DataSetList(args, verbose, print_fun)
+}
+
+# S3 constructoer of the 'DataSetList' ----------------------------
+DataSetList <- function(args = NULL, verbose = T, print_fun = NULL) {
+  if (is.null(args))
+    return(structure(list(), class = c('DataSetList', 'list')))
   
-  DataSetList <- list()
+  args <- trimws(args)
+  indexFiles <- file.path(args, dir(args, pattern = '.info'))  # scan all .info files
+  
+  if (is.null(print_fun))
+    print_fun <- cat
+  
+  object <- list()
   i <- 1
+  
   for (file in indexFiles) {
     indexInfo <- read_IndexFile(file)
     
+    if (verbose) {
+      print_fun(paste('processing', file, '...\n'))
+      print_fun(sprintf('   algorithm %s...\n', indexInfo[[1]]$algId))
+    }
+    
     for (info in indexInfo) {
+      if (verbose) {
+        print_fun(sprintf('      %d instances on f%d %dD...\n',
+                          length(info$instance), info$funcId, info$DIM))
+      }
+      
       copy_flag <- TRUE
       data <- DataSet(info)
       instance <- attr(data, 'instance')
       
       # check for duplicated instances
-      if (length(DataSetList) != 0) {
-        idx <- sapply(DataSetList, . %>% `==`(data)) %>% which
+      if (length(object) != 0) {
+        idx <- sapply(object, . %>% `==`(data)) %>% which
         for (k in idx) {
-          instance_ <- attr(DataSetList[[k]], 'instance')
+          instance_ <- attr(object[[k]], 'instance')
           if (all(instance == instance_)) {
             copy_flag <- FALSE
             warning('duplicated instances!')
@@ -225,13 +187,53 @@ read_dir <- function(args) {
       }
       
       if (copy_flag) {
-        DataSetList[[i]] <- data
+        object[[i]] <- data
         i <- i + 1
       }
     }
   }
   # TODO: sort all DataSet
-  DataSetList
+  class(object) %<>% c('DataSetList')
+  object
+}
+
+summary.DataSetList <- function(data) {
+  sapply(data, function(d) {
+    list(funcId = attr(d, 'funcId'), 
+      DIM = attr(d, 'DIM'),
+      algId = attr(d, 'algId'),
+      datafile = attr(d, 'datafile'),
+      comment = attr(d, 'comment'))
+  }) %>% 
+    t %>% 
+    as.data.frame
+}
+
+getDIM <- function(data) {
+  sapply(data, function(d) attr(d, 'DIM')) %>% unique %>% sort
+}
+
+getfuncId <- function(data) {
+  sapply(data, function(d) attr(d, 'funcId')) %>% unique %>% sort
+}
+
+getAlgId <- function(data) {
+  sapply(data, function(d) attr(d, 'algId')) %>% unique %>% sort
+}
+
+getFunvals <- function(data) {
+  lapply(data, function(x) rownames(x$by_target)) %>% unlist %>%
+    as.numeric %>% unique %>% sort %>% rev
+}
+
+filter.DataSetList <- function(data, by) {
+  on <- names(by)
+  idx <- rep(TRUE, length(data))
+  
+  for (i in seq_along(on)) {
+    idx <- idx & sapply(data, . %>% attr(on[i])) == by[i]
+  }
+  res <- data[idx]
 }
 
 # functions to align the raw data -----------------------
@@ -517,18 +519,21 @@ CDF_discrete <- function(x) {
 }
 
 # calculate the basic statistics of the runtime samples from an aligned data set
-RT_summary <- function(df, ftarget, 
-                       probs = c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.) {
+RT_summary <- function(dataset, ftarget, maximization = FALSE,
+                               probs = c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.) {
+  df <- dataset$by_target
+  algId <- attr(dataset, 'algId')
+  
   ftarget <- c(ftarget)
   f_aligned <- rownames(df) %>% as.numeric
-  algorithm.name <- attr(df, 'algorithm')
+  op <- ifelse(maximization, `>=`, `<=`)
   
-  if (is.null(algorithm.name)) 
-    algorithm.name <- 'unknown'
+  if (is.null(algId)) 
+    algId <- 'unknown'
   
   lapply(ftarget, 
          function(f) {
-           seq_along(f_aligned)[f_aligned >= f][1] %>% 
+           seq_along(f_aligned)[op(f_aligned, f)][1] %>% 
            # order(abs(f - f_aligned))[1] %>% 
            df[., ] %>% 
              as.vector %>% {
@@ -540,35 +545,38 @@ RT_summary <- function(df, ftarget,
          }) %>% 
     do.call(rbind, .) %>% 
     as.data.frame %>% 
-    cbind(algorithm.name, .) %>%
-    set_colnames(c('algorithm', 'f(x)', 'runs', 'mean', 'median', paste0(probs * 100, '%')))
+    cbind(algId, .) %>%
+    set_colnames(c('algId', 'f(x)', 'runs', 'mean', 'median', paste0(probs * 100, '%')))
 }
 
 # Retrieve the runtime samples from an aligned data set
 # wide-format is set by default
-RT <- function(data, ftarget, format = 'wide') {
-  ftarget <- c(ftarget)
-  f_aligned <- rownames(data) %>% as.numeric
-  algorithm <- attr(data, 'algorithm')
-  n_run <- ncol(data)
+RT <- function(dataset, ftarget, format = 'wide', maximization = FALSE) {
+  data <- dataset$by_target
+  algId <- attr(dataset, 'algId')
   
-  if (is.null(algorithm)) 
-    algorithm <- 'unknown'
+  ftarget <- c(ftarget)
+  n_run <- ncol(data)
+  f_aligned <- rownames(data) %>% as.numeric
+  op <- ifelse(maximization, `>=`, `<=`)
+  
+  if (is.null(algId)) 
+    algId <- 'unknown'
   
   df <- lapply(ftarget, 
          function(f) {
-           seq_along(f_aligned)[f_aligned >= f][1] %>% 
+           seq_along(f_aligned)[op(f_aligned, f)][1] %>% 
              data[., ] %>% 
              as.vector %>% 
              c(f, .)
          }) %>% 
     do.call(rbind, .) %>% 
     as.data.frame %>% 
-    cbind(algorithm, .) %>%
-    set_colnames(c('algorithm', 'f(x)', paste0('run.', seq(n_run))))
+    cbind(algId, .) %>%
+    set_colnames(c('algId', 'f(x)', paste0('run.', seq(n_run))))
   
   if (format == 'long') {
-    df <- melt(df, id = c('algorithm', 'f(x)'), variable.name = 'run', 
+    df <- melt(df, id = c('algId', 'f(x)'), variable.name = 'run', 
                value.name = 'RT') %>% 
       mutate(run = as.numeric(gsub('run.', '', run)) %>% as.integer)
   }

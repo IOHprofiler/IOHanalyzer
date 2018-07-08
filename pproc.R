@@ -132,6 +132,31 @@ ERT.DataSet <- function(data) {
   object
 }
 
+# compute the fixed cost error for a single DataSet
+FCE.DataSet <- function(data) {
+  df <- data$by_runtime
+  succ <- matrix(0, nrow(df), ncol(df))
+  
+  for (i in 1:nrow(df)) {
+    idx <- is.na(df[i, ])
+    succ[i, ] <- !idx
+    df[i, idx] <- attr(data, 'maxEvals')[idx]
+  }
+  
+  object <- data.frame(runtime = row.names(df) %>% as.integer,
+                       FCE = apply(df, 1, . %>% mean(na.rm = T)),
+                       median = apply(df, 1, . %>% median(na.rm = T)),
+                       sd = apply(df, 1, . %>% sd(na.rm = T)),
+                       se = apply(df, 1, . %>% {sd(., na.rm = T) / sqrt(length(.))})
+                       )
+  
+  class(object) %<>% c('FCE')
+  attr(object, 'DIM') <- attr(data, 'DIM')
+  attr(object, 'algId') <- attr(data, 'algId')
+  attr(object, 'funcId') <- attr(data, 'funcId')
+  object
+}
+
 # read all raw data files in a give directory
 read_dir <- function(args, verbose = T, print_fun = NULL) {
   DataSetList(args, verbose, print_fun)
@@ -224,6 +249,11 @@ getAlgId <- function(data) {
 getFunvals <- function(data) {
   lapply(data, function(x) rownames(x$by_target)) %>% unlist %>%
     as.numeric %>% unique %>% sort %>% rev
+}
+
+getRuntimes <- function(data) {
+  lapply(data, function(x) rownames(x$by_runtime)) %>% unlist %>%
+    as.numeric %>% unique %>% sort
 }
 
 filter.DataSetList <- function(data, by) {
@@ -583,7 +613,78 @@ RT <- function(dataset, ftarget, format = 'wide', maximization = FALSE) {
   df
 }
 
+# TODO: find a better name for those two functions
+# calculate the basic statistics of the runtime samples from an aligned data set
+FCE_summary <- function(dataset, runtimes, maximization = FALSE,
+                        probs = c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.) {
+  df <- dataset$by_runtime
+  algId <- attr(dataset, 'algId')
+  
+  runtimes <- c(runtimes)
+  RT_aligned <- rownames(df) %>% as.numeric
+  
+  if (is.null(algId)) 
+    algId <- 'unknown'
+  
+  lapply(runtimes, 
+         function(r) {
+           idx <- seq_along(RT_aligned)[RT_aligned >= r]
+           ifelse(length(idx) == 0, nrow(df), idx[1]) %>% 
+             df[., ] %>% 
+             as.vector %>% {
+               c(r, length(.[!is.na(.)]), 
+                 mean(., na.rm = T), median(., na.rm = T), 
+                 quantile(., probs = probs, names = F, na.rm = T))
+             }
+         }) %>% 
+    do.call(rbind, .) %>% 
+    as.data.frame %>% 
+    cbind(algId, .) %>%
+    set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', paste0(probs * 100, '%')))
+}
 
+#' Fixed Cost Error
+#'
+#' @param dataset 
+#' @param runtimes 
+#' @param format 
+#' @param maximization 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+FCE <- function(dataset, runtimes, format = 'wide', maximization = FALSE) {
+  data <- dataset$by_runtime
+  algId <- attr(dataset, 'algId')
+  
+  runtimes <- c(runtimes)
+  n_run <- ncol(data)
+  RT_aligned <- rownames(data) %>% as.numeric
+  
+  if (is.null(algId)) 
+    algId <- 'unknown'
+  
+  df <- lapply(runtimes, 
+               function(r) {
+                 idx <- seq_along(RT_aligned)[RT_aligned >= r]
+                 ifelse(length(idx) == 0, nrow(data), idx[1]) %>%
+                   data[., ] %>% 
+                   as.vector %>% 
+                   c(r, .)
+               }) %>% 
+    do.call(rbind, .) %>% 
+    as.data.frame %>% 
+    cbind(algId, .) %>%
+    set_colnames(c('algId', 'runtime', paste0('run.', seq(n_run))))
+  
+  if (format == 'long') {
+    df <- melt(df, id = c('algId', 'runtime'), variable.name = 'run', 
+               value.name = 'f(x)') %>% 
+      mutate(run = as.numeric(gsub('run.', '', run)) %>% as.integer)
+  }
+  df
+}
 
 
 

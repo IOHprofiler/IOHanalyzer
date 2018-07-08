@@ -1,0 +1,8 @@
+This table summarizes for each algorithm and each target value chosen on the left:
+
+  * runs: the number of runs that have found at least one solution of the required target quality $f(x)$, 
+  * mean: the average number of function evaluations needed to find a solution of function value at least $f(x)$
+  * median, $2\%, 5\%,\ldots,98\%$ : the quantiles of these first-hitting times
+
+When not all runs managed to find the target value, the statistics hold for the simulated algorithm that restarts after B iterations, where B is the maximal number of function evaluations that an algorithm is allowed to perform per iteration.
+

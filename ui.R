@@ -10,19 +10,23 @@ library(shinyFiles)
 library(shinydashboard)
 library(plotly)
 
-FCE_GRID_INPUT_TEXT <- '<p align="justify">Set the range and the granularity of the results.
-                       The table will show target values that are reached by evenly spaced runtime values.</p>'
+# TODO: rename most of the id of the control widgets
 
-RT_MIN_LABEL <- HTML('<p>\\(RT_{min}:\\) smallest runtime value</p>')
-RT_MAX_LABEL <- HTML('<p>\\(RT_{max}:\\) largest runtime value</p>')
-RT_STEP_LABEL <- HTML('<p>\\(\\Delta RT:\\) granularity (step size)</p>')
+FCE_GRID_INPUT_TEXT <- '<p align="justify">Set the range and the granularity of the results. 
+The table will show function values that have been reached within evenly spaced evaluation budgets.</p>'
 
-F_MIN_LABEL <- HTML('<p>\\(log_{10}(f_{min}):\\) smallest target value</p>')
-F_MAX_LABEL <- HTML('<p>\\(log_{10}(f_{max}):\\) largest target value</p>')
-F_STEP_LABEL <- HTML('<p>\\(log_{10}(\\Delta f):\\) granularity (step size)</p>')
+RT_MIN_LABEL <- HTML('<p>\\(B_{\\text{min}}:\\) smallest budget value</p>')
+RT_MAX_LABEL <- HTML('<p>\\(B_{\\text{max}}:\\) largest budget value</p>')
+RT_STEP_LABEL <- HTML('<p>\\(\\Delta B:\\) granularity (step size)</p>')
+
+F_MIN_LABEL <- HTML('<p>\\(f_{\\text{min}}:\\) smallest target value</p>')
+F_MAX_LABEL <- HTML('<p>\\(f_{\\text{max}}:\\) largest target value</p>')
+F_STEP_LABEL <- HTML('<p>\\(\\Delta f:\\) granularity (step size)</p>')
 
 header <- dashboardHeader(title = HTML('<h4><div align="center"><b>IOHProfiler</b><br>
                                        <i>Post-Processing</i></div></h4>'))
+
+HTML_P <- function(s) HTML(paste0('<p align="left" style="font-size:120%";>', s, '</p>'))
 
 # The side bar layout ---------------------------------------------
 sidebar <- dashboardSidebar(
@@ -104,13 +108,9 @@ body <- dashboardBody(
   
   # tabitems ----------------------
   tabItems(
-    tabItem(tabName = 'about', 
-            includeMarkdown('RMD/about.Rmd')
-    ),
+    tabItem(tabName = 'about', includeMarkdown('RMD/about.Rmd')),
   
-    tabItem(tabName = 'readme',
-            includeMarkdown('RMD/docs.Rmd')
-    ),
+    tabItem(tabName = 'readme', includeMarkdown('RMD/docs.Rmd')),
     
     # data uploading functionalities -----------------
     tabItem(tabName = 'upload',
@@ -121,7 +121,7 @@ body <- dashboardBody(
                          sidebarPanel(
                            width = 12,
                            
-                           HTML('<p align="left">Please choose a directory containing the benchmark data</p>'),
+                           HTML('<p align="left" style="font-size:120%;">Please choose a zip file containing the benchmark data</p>'),
                            fileInput("ZIP", "Choose a ZIP file", multiple = FALSE,
                                      accept = c("Application/zip", ".zip")),
                            
@@ -129,7 +129,8 @@ body <- dashboardBody(
                            # shinyDirButton('directory', 'Browse the folder', 
                            #                title = 'Please choose a directory containing the benchmark data'),
                            hr(),
-                           HTML('<p align="left">You can also remove all data you uploaded</p>')
+                           HTML('<p align="left" style="font-size:120%;">You can also remove all data you uploaded</p>'),
+                           actionButton('RM_DATA', 'Clear data')
                          ),
                          
                          mainPanel(
@@ -173,16 +174,16 @@ body <- dashboardBody(
                      HTML('<p align="justify">Set the range and the granularity of the results.
                           The table will show fixed-target runtimes for evenly spaced target values.</p>'),
                      
-                     textInput('fstart', label = HTML('<p>\\(log_{10}(f_{min}):\\) smallest target value</p>'), value = ''),
-                     textInput('fstop', label = HTML('<p>\\(log_{10}(f_{max}):\\) largest target value</p>'), value = ''),
-                     textInput('fstep', label = HTML('<p>\\(log_{10}(\\Delta f):\\) granularity (step size)</p>'), value = ''),
+                     textInput('fstart', label = F_MIN_LABEL, value = ''),
+                     textInput('fstop', label = F_MAX_LABEL, value = ''),
+                     textInput('fstep', label = F_STEP_LABEL, value = ''),
                      selectInput('ALGID_INPUT', 'Algorithms', choices = NULL, selected = NULL),
                      downloadButton("downloadData", "Save this table as csv")
                    ),
                    
                    mainPanel(
                      width = 9,
-                     includeMarkdown('RMD/RT_SUMMARY_TABLE.Rmd'),
+                     HTML(paste0('<div style="font-size:120%;">', includeMarkdown('RMD/RT_SUMMARY_TABLE.Rmd'),'</div>')),
                      tableOutput('table_RT_summary')
                    )
                ),
@@ -194,9 +195,9 @@ body <- dashboardBody(
                      HTML('<p align="justify">Set the range and the granularity of the results.
                           The table will show fixed-target runtimes for evenly spaced target values.</p>'),
                      
-                     textInput('fstart_raw', label = HTML('<p>\\(log_{10}(f_{min}):\\) smallest target value</p>'), value = ''),
-                     textInput('fstop_raw', label = HTML('<p>\\(log_{10}(f_{max}):\\) largest target value</p>'), value = ''),
-                     textInput('fstep_raw', label = HTML('<p>\\(log_{10}(\\Delta f):\\) granularity (step size)</p>'), value = ''),
+                     textInput('fstart_raw', label = F_MIN_LABEL, value = ''),
+                     textInput('fstop_raw', label = F_MAX_LABEL, value = ''),
+                     textInput('fstep_raw', label = F_STEP_LABEL, value = ''),
                      selectInput('ALGID_RAW_INPUT', 'Algorithms', 
                                  choices = NULL, selected = NULL),
                      
@@ -207,11 +208,11 @@ body <- dashboardBody(
                    
                    mainPanel(
                      width = 9,
-                     HTML("<p>This table shows for each selected algorithm \\(A\\), 
+                     HTML('<p style="font-size:120%;">This table shows for each selected algorithm \\(A\\), 
                           each selected target value \\(f(x)\\), and each run \\(r\\) 
                           the number \\(T(A,f(x),r)\\) of evaluations performed by the 
                           algorithm until it evaluated for the first time a solution of 
-                          quality at least f(x).</p>"),
+                          quality at least \\(f(x)\\).</p>'),
                      dataTableOutput('table_RT_sample')
                     )
                )
@@ -233,10 +234,10 @@ body <- dashboardBody(
                              HTML('<p style="font-size:120%;">Range of the displayed target values</p>'),
                              
                              textInput('ERT_FSTART', 
-                                       label = HTML('<p>\\(log_{10}(f_{min}):\\) smallest target value</p>'), 
+                                       label = F_MIN_LABEL, 
                                        value = ''),
                              textInput('ERT_FSTOP', 
-                                       label = HTML('<p>\\(log_{10}(f_{max}):\\) largest target value</p>'), 
+                                       label = F_MAX_LABEL, 
                                        value = ''),
                              
                              checkboxInput('show.mean', 
@@ -266,8 +267,7 @@ body <- dashboardBody(
                               are depicted against the best objective values. 
                               The displayed elements (mean, median, standard deviations) 
                               can be switched on and off by clicking on the legend on the right. 
-                              A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure. 
-                              These also include the option to download the plot as png file.</p>'),
+                              A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
                          mainPanel(plotlyOutput('ERT_PER_FUN', height = "700px", width = "1157px"))
                      )
                      
@@ -283,7 +283,7 @@ body <- dashboardBody(
     tabItem(tabName = 'RT_PMF', 
           fluidRow(
             column(width = 12,     
-                   box(title = 'Historgram of the Runtime Samples', 
+                   box(title = 'Histogram of Fixed-Target Runtimes', 
                        width = 12, collapsible = TRUE, solidHeader = TRUE, 
                        status = "primary",
                        sidebarPanel(
@@ -301,13 +301,14 @@ body <- dashboardBody(
                        mainPanel(
                          width = 10,
                          column(width = 12, align = "center",
-                                HTML('<p align="left" "font-size:120%;">
-                                    This histogram counts how many runs needed between 
-                                    \\(t\\) and \\(t+1\\) function evaluations. The buckets 
-                                    \\([t,t+1)\\) are chosen automatically. [Can we add an explanation how they are chosen? ] 
+                                HTML_P('This histogram counts how many runs needed between 
+                                    \\(t\\) and \\(t+1\\) function evaluations. The bins
+                                    \\([t,t+1)\\) are chosen automatically. The bin size is determined
+                                    by the so-called <b>Freedman–Diaconis rule</b>: \\(\\text{Bin size}=
+                                    2\\frac{Q_3 - Q_1}{\\sqrt[3]{n}}\\), where \\(Q_1, Q_3\\) are the \\(25\\%\\) 
+                                    and \\(75\\%\\) percentile of the runtime and \\(n\\) is the sample size.
                                     The displayed algorithms can be selected by clicking on the legend on the right. 
-                                    A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure. 
-                                    This also includes the option to download the plot as png file.</p>'),
+                                    A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
                                 plotlyOutput('RT_HIST', height = "600px", width = "1000px")
                                 )
                        )
@@ -323,7 +324,7 @@ body <- dashboardBody(
                       HTML('Select the target value for which the runtime distribution is shown'),
                       
                       textInput('RT_PMF_FTARGET', label = '', value = ''),
-                      checkboxInput('RT_SHOW_SAMPLE', label = 'show runtime samples', value = T)
+                      checkboxInput('RT_SHOW_SAMPLE', label = 'show runtime for each run', value = T)
                       
                       # HTML('Kernel density estimation uses the following <b>kernel function</b>:'),
                       # selectInput('RT_PMF_KER', '',
@@ -364,21 +365,18 @@ body <- dashboardBody(
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
                                       Distribution of the runtime: Aggregation</p>'), 
-                         width = 12,
-                         solidHeader = T, status = "primary", collapsible = T,
+                         width = 12, solidHeader = T, status = "primary", collapsible = T,
                          sidebarPanel(
                            width = 3,
                            HTML('<p align="justify">Set the range and the granularity 
                                 of the quality targets taken into account in the ECDF curve. 
                                 The plot will show the ECDF curves for evenly spaced target values.</p>'),
-                           textInput('RT_fstart', label = HTML('<p>\\(log_{10}(f_{min}):\\) smallest target value</p>'), value = ''),
-                           textInput('RT_fstop', label = HTML('<p>\\(log_{10}(f_{max}):\\) largest target value</p>'), value = ''),
-                           textInput('RT_fstep', label = HTML('<p>\\(log_{10}(\\Delta f):\\) granularity (step size)</p>'), value = ''),
-                           
+                           textInput('RT_fstart', label = F_MIN_LABEL, value = ''),
+                           textInput('RT_fstop', label = F_MAX_LABEL, value = ''),
+                           textInput('RT_fstep', label = F_STEP_LABEL, value = ''),
                            checkboxInput('RT_ECDF_per_target',
                                          label = 'show ECDFs for each target',
                                          value = F),
-                           
                            checkboxInput('RT_ECDF_AGGR_semilogx', 
                                          label = 'scale x axis log10',
                                          value = F)
@@ -388,12 +386,12 @@ body <- dashboardBody(
                            width = 9,
                            HTML('<p style="font-size:120%;">The evenly spaced target values are:</p>'),
                            verbatimTextOutput('RT_GRID'),
-                           HTML('<p style="font-size:120%;">Then the mean function of the corresponding ECDFs 
-                                is illustrated as follows. The displayed elements (mean 
-                                and standard deviations) can be switched on and off by 
-                                clicking on the legend on the right. A <b>tooltip</b> 
-                                and <b>toolbar</b> appears when hovering over the figure. 
-                                This also includes the option to download the plot as png file.</p>'),
+                           HTML('<p style="font-size:120%;">The fraction of (run,target value)
+                                pairs \\((i,v)\\) satisfying that the best solution that the algorithm has 
+                                found in the \\(i\\)-th run within the given time budget \\(t\\) has quality at least
+                                \\(v\\) is plotted against the available budget \\(t\\). The displayed elements can be switched 
+                                on and off by clicking on the legend on the right. A <b>tooltip</b> 
+                                and <b>toolbar</b> appears when hovering over the figure.</p>'),
                            plotlyOutput('RT_ECDF_AGGR', height = "600px", width = "1100px"),
                            hr()
                            
@@ -463,11 +461,11 @@ body <- dashboardBody(
             )
     ),
     
-    # Data Summary for Fixed-Target Runtime (ERT) -----------------
+    # Data Summary for Fixed-Target Runtime (FCE) -----------------
     tabItem(tabName = 'FCE_DATA', 
             fluidRow(
               column(width = 12,
-                     box(title = HTML('<p style="font-size:120%;">Target Statistics at Chosen Runtime Values</p>'), width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Target Statistics at Chosen Budget Values</p>'), width = 12,
                          solidHeader = T, status = "primary", collapsible = T,
                          sidebarPanel(
                            width = 3,
@@ -482,12 +480,14 @@ body <- dashboardBody(
                          
                          mainPanel(
                            width = 9,
-                           includeMarkdown('RMD/RT_SUMMARY_TABLE.Rmd'),
+                           HTML(paste0('<div style="font-size:120%;">', 
+                                       includeMarkdown('RMD/TAR_SUMMARY_TABLE.Rmd'),
+                                       '</div>')),
                            tableOutput('FCE_SUMMARY')
                          )
                      ),
                      
-                     box(title = HTML('<p style="font-size:120%;">Original Runtime Samples</p>'), width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Original Target Samples</p>'), width = 12,
                          solidHeader = TRUE, status = "primary",
                          sidebarPanel(
                            width = 3,
@@ -522,12 +522,12 @@ body <- dashboardBody(
     tabItem(tabName = 'FCE_PDF', 
             fluidRow(
               column(width = 12,     
-                     box(title = 'Histogram of the Runtime Samples', 
+                     box(title = 'Histogram of Fixed-Budget Targets', 
                          width = 12, collapsible = TRUE, solidHeader = TRUE, 
                          status = "primary",
                          sidebarPanel(
                            width = 2,
-                           textInput('FCE_HIST_RUNTIME', label = HTML('Select the runtime value'), 
+                           textInput('FCE_HIST_RUNTIME', label = HTML('Select the budget value'), 
                                      value = ''),
                            
                            HTML('Choose whether the histograms are <b>overlaid</b> in one plot 
@@ -541,12 +541,12 @@ body <- dashboardBody(
                            width = 10,
                            column(width = 12, align = "center",
                                   HTML('<p align="left" "font-size:120%;">
-                                       This histogram counts how many runs needed between 
-                                       \\(t\\) and \\(t+1\\) function evaluations. The buckets 
-                                       \\([t,t+1)\\) are chosen automatically. [Can we add an explanation how they are chosen? ] 
+                                       This histogram counts the number of runs whose best-so-far function values within the 
+first \\(B\\) evaluations is between \\(v_i\\) and \\(v_{i+1}\\). The buckets \\([v_i,v_{i+1})\\) are chosen automatically 
+according to the so-called <b>Freedman–Diaconis rule</b>: \\(\\text{Bin size}= 2\\frac{Q_3 - Q_1}{\\sqrt[3]{n}}\\), 
+where \\(Q_1, Q_3\\) are the \\(25\\%\\) and \\(75\\%\\) percentile of the runtime and \\(n\\) is the sample size.
                                        The displayed algorithms can be selected by clicking on the legend on the right. 
-                                       A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure. 
-                                       This also includes the option to download the plot as png file.</p>'),
+                                       A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
                                   plotlyOutput('FCE_HIST', height = "600px", width = "1000px")
                            )
                          )
@@ -554,12 +554,12 @@ body <- dashboardBody(
               ),
               
               column(width = 12,
-                     box(title = 'Empirical Probability Density Function of Target Values', 
+                     box(title = 'Empirical Probability Density Function of Fixed-Budget Function Values', 
                          width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary",
                          sidebarLayout(
                            sidebarPanel(
                              width = 2,
-                             HTML('Select the target value for which the runtime distribution is shown'),
+                             HTML('Select the budget for which the distribution of best-so-far function values is shown'),
                              
                              textInput('FCE_PDF_RUNTIME', label = '', value = ''),
                              checkboxInput('FCE_SHOW_SAMPLE', label = 'show runtime samples', value = T),
@@ -570,15 +570,11 @@ body <- dashboardBody(
                              width = 10,
                              column(width = 12, align = "center", 
                                     HTML('<p align="left" style="font-size:120%;">
-                                         The plot shows the distribution of the first hitting 
-                                         times of the individual runs (dots), and an estimated 
-                                         distribution of the probability mass function. 
-                                         The displayed algorithms can be selected by clicking on 
-                                         the legend on the right. A <b>tooltip</b> and <b>toolbar</b> 
-                                         appear when hovering over the figure. This also includes the
-                                         option to download the plot as png file. A csv file with the runtime 
-                                         data can be downlowaded from the  
-                                         <a href="#shiny-tab-ERT_data", data-toggle="tab"> Data Summary tab</a>.'),
+                                         The plot shows, for the budget selected on the left, the distribution 
+of the best-so-far function values of the individual runs (dots), and an estimated distribution of the probability mass function. 
+The displayed algorithms can be selected by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> 
+appear when hovering over the figure. A csv file with the runtime data can be downlowaded from the 
+                                         <a href="#shiny-tab-FCE_DATA", data-toggle="tab"> Data Summary tab</a>.'),
                                     plotlyOutput('FCE_PDF', height = "600px", width = "1000px")
                              )
                           )
@@ -588,7 +584,7 @@ body <- dashboardBody(
                   )
     ),
     
-    # Expected runtime curve ---------------------------------------------
+    # Expected target curve ---------------------------------------------
     tabItem(tabName = 'FCE_convergence', 
             fluidRow(
               column(width = 12,
@@ -599,7 +595,7 @@ body <- dashboardBody(
                          div(style = "width: 90%;",
                              sidebarPanel(
                                width = 3,
-                               HTML('<p style="font-size:120%;">Range of the displayed target values</p>'),
+                               HTML('<p style="font-size:120%;">Range of the displayed budget values</p>'),
                                
                                textInput('FCE_RT_MIN', label = RT_MIN_LABEL, value = ''),
                                textInput('FCE_RT_MAX', label = RT_MAX_LABEL, value = ''),
@@ -623,12 +619,11 @@ body <- dashboardBody(
                          ),
                          
                          HTML('<p style="font-size:120%";>The <b><i>mean, median 
-                              and standard deviation</i></b> of the runtime samples 
-                              are depicted against the best objective values. 
-                              The displayed elements (mean, median, standard deviations) 
+                              and standard deviation</i></b> of the best function values
+                              found with a fixed-budget of evaluations are depicted against the budget. 
+                              The displayed elements 
                               can be switched on and off by clicking on the legend on the right. 
-                              A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure. 
-                              These also include the option to download the plot as png file.</p>'),
+                              A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
                          mainPanel(plotlyOutput('FCE_PER_FUN', height = "700px", width = "1157px"))
                      )
                 )
@@ -639,21 +634,21 @@ body <- dashboardBody(
     tabItem(tabName = 'FCE_ECDF', 
             fluidRow(
               column(width = 12,
-                     box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
-                                      Distribution of the runtime: Aggregation</p>'), 
+                     box(title = HTML('<p style="font-size:120%;">Empirical Cumulative Distribution 
+                                      of the Fixed-Budget Values: Aggregation</p>'), 
                          width = 12,
                          solidHeader = T, status = "primary", collapsible = T,
                          sidebarPanel(
                            width = 3,
-                           HTML('<p align="justify">Set the range and the granularity 
-                                of the quality targets taken into account in the ECDF curve. 
-                                The plot will show the ECDF curves for evenly spaced target values.</p>'),
+                           HTML('<p align="justify">Set the range and the granularity of the budgets 
+                                taken into account in the ECDF curve. The plot will show the ECDF curves 
+                                for evenly spaced budgets.</p>'),
                            textInput('FCE_ECDF_RT_MIN', label = RT_MIN_LABEL, value = ''),
                            textInput('FCE_ECDF_RT_MAX', label = RT_MAX_LABEL, value = ''),
                            textInput('FCE_ECDF_RT_STEP', label = RT_STEP_LABEL, value = ''),
                            
                            checkboxInput('FCE_ECDF_per_target',
-                                         label = 'show ECDFs for each target',
+                                         label = 'show ECDF for each budget',
                                          value = F),
                            
                            checkboxInput('FCE_ECDF_AGGR_semilogx', 
@@ -663,14 +658,12 @@ body <- dashboardBody(
                          
                          mainPanel(
                            width = 9,
-                           HTML('<p style="font-size:120%;">The evenly spaced target values are:</p>'),
+                           HTML('<p style="font-size:120%;">The evenly spaced budget values are:</p>'),
                            verbatimTextOutput('FCE_RT_GRID'),
-                           HTML('<p style="font-size:120%;">Then the mean function of the corresponding ECDFs 
-                                is illustrated as follows. The displayed elements (mean 
-                                and standard deviations) can be switched on and off by 
-                                clicking on the legend on the right. A <b>tooltip</b> 
-                                and <b>toolbar</b> appears when hovering over the figure. 
-                                This also includes the option to download the plot as png file.</p>'),
+                           HTML('<p style="font-size:120%;">The fraction of (run,budget) pairs \\((i,B)\\) satisfying 
+that the best solution that the algorithm has found in the \\(i\\)-th run within the first \\(B\\) evaluations has quality at 
+least \\(v\\) is plotted against the target value \\(v\\). The displayed elements can be switched on and off by clicking on the 
+legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
                            plotlyOutput('FCE_ECDF_AGGR', height = "600px", width = "1100px"),
                            hr()
                            )
@@ -682,8 +675,7 @@ body <- dashboardBody(
                          width = 12, solidHeader = T, status = "primary", collapsible = T,
                          sidebarPanel(
                            width = 3,
-                           HTML('<p align="justify">Set the range and the granularity of
-                                the evenly spaced quality targets taken into account in the plot.</p>'),
+                           HTML('<p align="justify">Set the range and the granularity of the evenly spaced budgets.</p>'),
                            textInput('FCE_AUC_RT_MIN', label = RT_MIN_LABEL, value = ''),
                            textInput('FCE_AUC_RT_MAX', label = RT_MAX_LABEL, value = ''),
                            textInput('FCE_AUC_RT_STEP', label = RT_STEP_LABEL, value = '')
@@ -691,43 +683,37 @@ body <- dashboardBody(
                          
                          mainPanel(width = 9,
                                    HTML('<p align="left" style="font-size:120%;">The <b>area under the ECDF</b> is 
-                                        caculated for the sequence of target values specified on the left. The displayed
-                                        values are normalized against the maximal number of function evaluations for 
-                                        each algorithm.
-                                        Intuitively, the larger the area, the better the algorithm. 
+                                        caculated for the sequence of budget values specified on the left. The displayed
+                                        values are normalized against the maximal target value recorded for 
+                                        each algorithm. Intuitively, the larger the area, the better the algorithm. 
                                         The displayed algorithms can be selected by clicking on the legend on the right. 
-                                        A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.
-                                        This also includes the option to download the plot as png file.</p>'),
+                                        A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
                                    plotlyOutput("FCE_AUC", height = "600px", width = "750px")
                                    )
                          )
               ),
               
               column(width = 12,
-                     box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
-                                      Distribution of the Runtime: Single Target</p>'), 
+                     box(title = HTML('<p style="font-size:120%;">Empirical Cumulative Distribution of the Fixed-Budget Values: Single Budgets</p>'), 
                          width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary",
                          sidebarLayout(
                            sidebarPanel(
                              width = 3,
-                             HTML('Select the target values for which EDCF curves are displayed'),
-                             textInput('FCE_ECDF_RT1', label = HTML('<p>\\(RT_1\\)</p>'), 
+                             HTML('Select the budgets for which EDCF curves are displayed '),
+                             textInput('FCE_ECDF_RT1', label = HTML('<p>\\(B_1\\)</p>'), 
                                        value = ''),
-                             textInput('FCE_ECDF_RT2', label = HTML('<p>\\(RT_2\\)</p>'), 
+                             textInput('FCE_ECDF_RT2', label = HTML('<p>\\(B_2\\)</p>'), 
                                        value = ''),
-                             textInput('FCE_ECDF_RT3', label = HTML('<p>\\(RT_3\\)</p>'), 
+                             textInput('FCE_ECDF_RT3', label = HTML('<p>\\(B_3\\)</p>'), 
                                        value = ''),
                              checkboxInput('FCE_ECDF_semilogx', label = 'scale x axis log10', value = F)
                            ), 
                            
                            mainPanel(width = 9,
                                      HTML('<p align="left" style="font-size:120%;">
-                                          Each EDCF curve shows the proportion of the runs 
-                                          that have found a solution of at least the required 
-                                          target value within the budget given by the \\(x\\)-axis. 
-                                          The displayed curves can be selected by clicking on the legend on the right. A <b>tooltip</b> 
-                                          and <b>toolbar</b> appears when hovering over the figure. 
-                                          This also includes the option to download the plot as png file.</p>'),
+                                          Each EDCF curve shows the proportion of the runs that have found within the 
+given budget B a solution of at least the required target value given by the x-axis. The displayed curves can be selected
+by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
                                      plotlyOutput("FCE_ECDF_PER_TARGET", height = "600px", width = "1100px"))
                            )
                         )
@@ -737,9 +723,5 @@ body <- dashboardBody(
   )
 )
 
-
-
-
 # -----------------------------------------------------------
-dashboardPage(title = 'IOHProfiler',
-              header, sidebar, body)
+dashboardPage(title = 'IOHProfiler', header, sidebar, body)

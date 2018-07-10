@@ -20,14 +20,16 @@ source('pproc.R')
 source('plot.R')
 
 options(width = 80)
-options(shiny.maxRequestSize = 100 * 1024 ^ 2) 
+options(shiny.maxRequestSize = 200 * 1024 ^ 2) 
 
 symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
              "triangle-up-open", "triangle-down-open")
 
 # transformations applied on the function value
-trans_funeval <- `log10`
-reverse_trans_funeval <- function(x) 10 ^ x
+# trans_funeval <- `log10`
+# reverse_trans_funeval <- function(x) 10 ^ x
+trans_funeval <- . %>% return
+reverse_trans_funeval <- . %>% return
 
 # transformations applied on runtime values
 trans_runtime <- . %>% return
@@ -98,6 +100,15 @@ shinyServer(function(input, output, session) {
         class(DataList$data) <- 'DataSetList'  # TODO: fix this urgly part
       }
     } 
+  })
+  
+  # remove all uploaded data set
+  observeEvent(input$RM_DATA, {
+    if (length(DataList$data) != 0) {
+      DataList$data <- list()
+      folderList$data <- list() 
+      shinyjs::html("process_data_promt", 'all data are removed!\n', add = FALSE)
+    }
   })
   
   # show the detailed information on DataSetList
@@ -415,7 +426,7 @@ shinyServer(function(input, output, session) {
   # empirical p.m.f. of the runtime
   output$RT_PMF <- renderPlotly({
     ftarget <- input$RT_PMF_FTARGET %>% as.numeric %>% reverse_trans_funeval
-    points <- switch(input$RT_SHOW_SAMPLE, T = 'all', F = F)
+    points <- ifelse(input$RT_SHOW_SAMPLE, 'all', FALSE)
     
     data <- DATA()
     n_algorithm <- length(data)
@@ -513,7 +524,7 @@ shinyServer(function(input, output, session) {
       if (all(is.na(rt$RT)))
         next
       
-      res <- hist(rt$RT, plot = F)
+      res <- hist(rt$RT, breaks = nclass.FD, plot = F)
       breaks <- res$breaks
       plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
                          text = paste0('<b>count</b>: ', res$counts, 
@@ -764,24 +775,6 @@ shinyServer(function(input, output, session) {
              paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)')
   })
   
-  # output$ks <- renderPrint({
-  #   target <- input$target %>% as.numeric
-  #   df.aligneds <- aligned()
-  #   
-  #   running_time <- list()
-  #   for (i in seq_along(df.aligneds)) {
-  #     df <- df.aligneds[[i]]
-  #     v <- rownames(df) %>% as.numeric
-  #     idx <- order(abs(target - v))[1]
-  #     running_time[[i]] <- df[idx, ] %>% as.vector
-  #   }
-  #   algorithm1 <- running_time[[1]]
-  #   algorithm2 <- running_time[[2]]
-  #   a <- ks.test(algorithm1, algorithm2, alternative = 'less') 
-  #   print(a)
-  # })
-  # 
-  
   # Data summary for Fixed-Budget target (FCE)  --------------
   get_FCE_summary <- reactive({
     data <- DATA()
@@ -896,13 +889,13 @@ shinyServer(function(input, output, session) {
   # empirical p.d.f. of the target value
   output$FCE_PDF <- renderPlotly({
     runtime <- input$FCE_PDF_RUNTIME %>% as.integer %>% reverse_trans_runtime
-    points <- switch(input$FCE_SHOW_SAMPLE, T = 'all', F = F)
+    points <- ifelse(input$FCE_SHOW_SAMPLE, 'all', FALSE)
     
     data <- DATA()
     n_algorithm <- length(data)
     colors <- colorspace::rainbow_hcl(n_algorithm)
     
-    p <- plot_ly_default(#title = "p.m.f. of the runtime",
+    p <- plot_ly_default(
       x.title = "algorithms",
       y.title = "Target value")
     
@@ -1139,7 +1132,7 @@ shinyServer(function(input, output, session) {
     x <- seq(funevals.min, funevals.max, length.out = 50)
     p <- plot_ly_default(#title = "Empirical Cumulative Distribution of the runtime",
       x.title = "target value",
-      y.title = "Proportion of (run, target) pairs")
+      y.title = "Proportion of (run, budget) pairs")
     
     for (k in seq_along(data)) {
       df <- data[[k]]
@@ -1262,4 +1255,22 @@ shinyServer(function(input, output, session) {
              paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)')
   })
   
+  # output$ks <- renderPrint({
+  #   target <- input$target %>% as.numeric
+  #   df.aligneds <- aligned()
+  #   
+  #   running_time <- list()
+  #   for (i in seq_along(df.aligneds)) {
+  #     df <- df.aligneds[[i]]
+  #     v <- rownames(df) %>% as.numeric
+  #     idx <- order(abs(target - v))[1]
+  #     running_time[[i]] <- df[idx, ] %>% as.vector
+  #   }
+  #   algorithm1 <- running_time[[1]]
+  #   algorithm2 <- running_time[[2]]
+  #   a <- ks.test(algorithm1, algorithm2, alternative = 'less') 
+  #   print(a)
+  # })
+  # 
+  # 
 })

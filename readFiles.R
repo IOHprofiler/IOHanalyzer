@@ -1,3 +1,9 @@
+# This file contains some functions for reading, aligning, analyzing the raw data
+# from the pseudo-boolean benchmarking
+#
+# Author: Hao Wang
+# Email: wangronin@gmail.com
+
 library(magrittr)
 library(dplyr)
 library(reshape2)
@@ -54,9 +60,11 @@ read_IndexFile <- function(fname) {
         ans <- as.list(.[2, ])
         names(ans) <- .[1, ]
         for (name in .[1, ]) {
-          v <- suppressWarnings(as.numeric(ans[[name]])) # convert quoted numeric values to numeric
-          if (!is.na(v))
-            ans[[name]] <- v
+          value <- ans[[name]]
+          ans[[name]] <- gsub("'", '', value)
+          value <- suppressWarnings(as.numeric(value)) # convert quoted numeric values to numeric
+          if (!is.na(value))
+            ans[[name]] <- value
         }
         ans
       }

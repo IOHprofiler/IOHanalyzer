@@ -4,5 +4,6 @@ This table summarizes for each algorithm and each target value chosen on the lef
   * mean: the average number of function evaluations needed to find a solution of function value at least $f(x)$
   * median, $2\%, 5\%,\ldots,98\%$ : the quantiles of these first-hitting times
 
-When not all runs managed to find the target value, the statistics hold for the simulated algorithm that restarts after B iterations, where B is the maximal number of function evaluations that an algorithm is allowed to perform per iteration.
+When not all runs managed to find the target value, the statistics hold only for those runs that did. That is, the mean value is the mean of the successful runs. Same for the quantiles. An alternative version with simulated restarts is currently in preparation. 
+
 

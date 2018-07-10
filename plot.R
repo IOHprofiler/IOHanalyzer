@@ -7,6 +7,7 @@
 library(plotly)
 library(ggplot2)
 
+
 plot_ly_default <- function(title = NULL,
                             x.title = NULL,
                             y.title = NULL) {

@@ -2,8 +2,7 @@
 <img src="../logo/CNRS.gif" style="width:6%"> &nbsp;&nbsp;
 <img src="../logo/SU.jpg" style="width:10%">
 
-## Version
-Last Update on 2018-06-26 23:36:39 CEST
+## Iterative Optimization Heuristics Profiler
 
 ## Development Team
 * [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang#tab-1), <i>Leiden Institute of Advanced Computer Science</i>, <h.wang@liacs.leidenuniv.nl>.
@@ -27,12 +26,12 @@ When using IOHProfiler and parts thereof, please kindly cite this work as
   journal = {CoRR}, <br/> 
   volume = {tbd}, <br/> 
   year = {2018}, <br/> 
-  url = {tbd}<br/> 
+  url = {tbd} <br/> 
 } 
 
 ## Acknowledgements
 
-Carola Doerr thanks __Anne Auger__ and __Dimo Brockhoff__ from INRIA Saclay, France, for very helpful discussions about the performance criteria used by the COCO (COmparing Continuous Optimisers) platform (https://github.com/numbbo/coco).
+Carola Doerr thanks Anne Auger and Dimo Brockhoff from INRIA Saclay, France, for very helpful discussions about the performance criteria used by the COCO (COmparing Continuous Optimisers) platform (https://github.com/numbbo/coco). Furong Ye acknowledges financial support from the China Scholarship Council, CSC No. 201706310143.
 
 ## License
 This application is governed by the __BSD 3-Clause license__. 

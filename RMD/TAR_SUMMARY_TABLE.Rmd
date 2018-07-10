@@ -1,0 +1,7 @@
+This table summarizes for each algorithm and each __budget__ $B$ chosen on the left:
+
+  * runs: the number of runs that have performed at least $B$ evaluations,
+  * mean: the average best-so-far function value obtain within a budget of $B$ evaluations,
+  * median, $2\%, 5\%,\ldots,98\%$ : the quantiles of the best function values found within the first $B$ evaluations.
+
+When not all runs evaluated at least $B$ search points, the statistics hold for the subset of runs that did. Alternative statistics using simulated restarted algorithms are in preparation. 

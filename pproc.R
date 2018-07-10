@@ -16,7 +16,7 @@ library(Rcpp)
 source('readFiles.R')
 
 # TODO: perhaps migrate to data.table for speed concern and simplicity
-# TODO: maybe use S4 later for 'DataSet'?
+# TODO: find better name to replace FCE
 
 # global variables for the alignment
 idxEvals <- 1
@@ -64,6 +64,7 @@ DataSet <- function(info, verbose = F) {
 }
 
 print.DataSet <- function(data, verbose = F) {
+  # TODO: implement the verbose mode
   cat(sprintf('DataSet(%s on f%s %dD)', 
               attr(data, 'algId'),
               attr(data, 'funcId'),
@@ -80,18 +81,157 @@ plot.DataSet <- function(data) {
   
 }
 
-`==.DataSet` <- function(set1, set2) {
-  if (length(set1) == 0 || length(set2) == 0) 
+`==.DataSet` <- function(dsL, dsR) {
+  if (length(dsL) == 0 || length(dsR) == 0) 
     return(FALSE)
   
-   attr(set1, 'funcId') == attr(set2, 'funcId') &&
-    attr(set1, 'DIM') == attr(set2, 'DIM') &&
-    attr(set1, 'Precision') == attr(set2, 'Precision') &&
-    attr(set1, 'algId') == attr(set2, 'algId') &&
-    attr(set1, 'comment') == attr(set2, 'comment')
+   attr(dsL, 'funcId') == attr(dsR, 'funcId') &&
+    attr(dsL, 'DIM') == attr(dsR, 'DIM') &&
+    attr(dsL, 'Precision') == attr(dsR, 'Precision') &&
+    attr(dsL, 'algId') == attr(dsR, 'algId') &&
+    attr(dsL, 'comment') == attr(dsR, 'comment')
 }
 
-# the estimator for expected running time
+# calculate the basic statistics of the runtime samples from an aligned data set
+RT_summary <- function(dataset, ftarget, maximization = FALSE,
+                       probs = c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.) {
+  df <- dataset$by_target
+  algId <- attr(dataset, 'algId')
+  
+  ftarget <- c(ftarget)
+  f_aligned <- rownames(df) %>% as.numeric
+  op <- ifelse(maximization, `>=`, `<=`)
+  
+  if (is.null(algId)) 
+    algId <- 'unknown'
+  
+  lapply(ftarget, 
+         function(f) {
+           seq_along(f_aligned)[op(f_aligned, f)][1] %>% 
+             # order(abs(f - f_aligned))[1] %>% 
+             df[., ] %>% 
+             as.vector %>% {
+               c(f, length(.[!is.na(.)]), 
+                 mean(., na.rm = T), median(., na.rm = T), 
+                 # type 1 ~ 3 for the discrete r.v.
+                 quantile(., probs = probs, names = F, type = 3, na.rm = T)) 
+             }
+         }) %>% 
+    do.call(rbind, .) %>% 
+    as.data.frame %>% 
+    cbind(algId, .) %>%
+    set_colnames(c('algId', 'f(x)', 'runs', 'mean', 'median', paste0(probs * 100, '%')))
+}
+
+# Retrieve the runtime samples from an aligned data set
+# wide-format is set by default
+RT <- function(dataset, ftarget, format = 'wide', maximization = FALSE) {
+  data <- dataset$by_target
+  algId <- attr(dataset, 'algId')
+  
+  ftarget <- c(ftarget)
+  n_run <- ncol(data)
+  f_aligned <- rownames(data) %>% as.numeric
+  op <- ifelse(maximization, `>=`, `<=`)
+  
+  if (is.null(algId)) 
+    algId <- 'unknown'
+  
+  df <- lapply(ftarget, 
+               function(f) {
+                 seq_along(f_aligned)[op(f_aligned, f)][1] %>% 
+                   data[., ] %>% 
+                   as.vector %>% 
+                   c(f, .)
+               }) %>% 
+    do.call(rbind, .) %>% 
+    as.data.frame %>% 
+    cbind(algId, .) %>%
+    set_colnames(c('algId', 'f(x)', paste0('run.', seq(n_run))))
+  
+  if (format == 'long') {
+    df <- melt(df, id = c('algId', 'f(x)'), variable.name = 'run', 
+               value.name = 'RT') %>% 
+      mutate(run = as.numeric(gsub('run.', '', run)) %>% as.integer)
+  }
+  df
+}
+
+# TODO: find a better name for those two functions
+# calculate the basic statistics of the runtime samples from an aligned data set
+FCE_summary <- function(dataset, runtimes, maximization = FALSE,
+                        probs = c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.) {
+  df <- dataset$by_runtime
+  algId <- attr(dataset, 'algId')
+  
+  runtimes <- c(runtimes)
+  RT_aligned <- rownames(df) %>% as.numeric
+  
+  if (is.null(algId)) 
+    algId <- 'unknown'
+  
+  lapply(runtimes, 
+         function(r) {
+           idx <- seq_along(RT_aligned)[RT_aligned >= r]
+           ifelse(length(idx) == 0, nrow(df), idx[1]) %>% 
+             df[., ] %>% 
+             as.vector %>% {
+               c(r, length(.[!is.na(.)]), 
+                 mean(., na.rm = T), median(., na.rm = T), 
+                 quantile(., probs = probs, names = F, na.rm = T))
+             }
+         }) %>% 
+    do.call(rbind, .) %>% 
+    as.data.frame %>% 
+    cbind(algId, .) %>%
+    set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', paste0(probs * 100, '%')))
+}
+
+#' Fixed Cost Error
+#'
+#' @param dataset 
+#' @param runtimes 
+#' @param format 
+#' @param maximization 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+FCE <- function(dataset, runtimes, format = 'wide', maximization = FALSE) {
+  data <- dataset$by_runtime
+  algId <- attr(dataset, 'algId')
+  
+  runtimes <- c(runtimes)
+  n_run <- ncol(data)
+  RT_aligned <- rownames(data) %>% as.numeric
+  
+  if (is.null(algId)) 
+    algId <- 'unknown'
+  
+  df <- lapply(runtimes, 
+               function(r) {
+                 idx <- seq_along(RT_aligned)[RT_aligned >= r]
+                 ifelse(length(idx) == 0, nrow(data), idx[1]) %>%
+                   data[., ] %>% 
+                   as.vector %>% 
+                   c(r, .)
+               }) %>% 
+    do.call(rbind, .) %>% 
+    as.data.frame %>% 
+    cbind(algId, .) %>%
+    set_colnames(c('algId', 'runtime', paste0('run.', seq(n_run))))
+  
+  if (format == 'long') {
+    df <- melt(df, id = c('algId', 'runtime'), variable.name = 'run', 
+               value.name = 'f(x)') %>% 
+      mutate(run = as.numeric(gsub('run.', '', run)) %>% as.integer)
+  }
+  df
+}
+
+# the estimator for the expected running time
+# TODO: add the variance of the estimate
 ERT <- function(x, succ = NULL, maxEval = Inf) {
   x <- na.omit(x)
   drop <- attr(x, 'na.action')
@@ -118,7 +258,10 @@ ERT.DataSet <- function(data) {
     df[i, idx] <- attr(data, 'maxEvals')[idx]
   }
   
-  object <- lapply(seq(nrow(df)), function(idx) as.data.frame(ERT(df[idx, ]), succ = succ[idx, ])) %>%
+  object <- lapply(seq(nrow(df)),
+                   function(idx) 
+                     as.data.frame(ERT(df[idx, ]), succ = succ[idx, ])
+    ) %>%
     do.call(rbind.data.frame, .) %>% 
     cbind(data.frame(BestF = row.names(df) %>% as.numeric,
                      sd = apply(df, 1, . %>% sd(na.rm = T)),
@@ -174,6 +317,9 @@ DataSetList <- function(args = NULL, verbose = T, print_fun = NULL) {
     print_fun <- cat
   
   object <- list()
+  DIM <- c()
+  algId <- c()
+  funcId <- c()
   i <- 1
   
   for (file in indexFiles) {
@@ -192,6 +338,9 @@ DataSetList <- function(args = NULL, verbose = T, print_fun = NULL) {
       
       copy_flag <- TRUE
       data <- DataSet(info)
+      DIM[i] <- attr(data, 'DIM')
+      funcId[i] <- attr(data, 'funcId')
+      algId[i] <- attr(data, 'algId')
       instance <- attr(data, 'instance')
       
       # check for duplicated instances
@@ -217,10 +366,27 @@ DataSetList <- function(args = NULL, verbose = T, print_fun = NULL) {
       }
     }
   }
-  # TODO: sort all DataSet
+  
+  # TODO: sort all DataSet by key order: algId, funcId and DIM
   class(object) %<>% c('DataSetList')
+  attr(object, 'DIM') <- DIM
+  attr(object, 'funcId') <- funcId
+  attr(object, 'algId') <- algId
   object
 }
+
+`[.DataSetList` <- function(x, i, drop = FALSE) {
+  obj <- unclass(x)[i]
+  class(obj) %<>% c('DataSetList')
+  attr(obj, 'DIM') <- attr(x, 'DIM')[i]
+  attr(obj, 'funId') <- attr(x, 'funId')[i]
+  attr(obj, 'algId') <- attr(x, 'algId')[i]
+  obj
+}
+
+# print.DataSetList <- function(ds) {
+#   
+# }
 
 summary.DataSetList <- function(data) {
   sapply(data, function(d) {
@@ -259,13 +425,23 @@ getRuntimes <- function(data) {
 filter.DataSetList <- function(data, by) {
   on <- names(by)
   idx <- rep(TRUE, length(data))
-  
+
   for (i in seq_along(on)) {
     idx <- idx & sapply(data, . %>% attr(on[i])) == by[i]
   }
-  res <- data[idx]
+  data[idx]
 }
 
+subset.DataSetList <- function(ds, ...) {
+  n <- nargs() - 1
+  condition_call <- substitute(list(...))
+  idx <- eval(condition_call, attributes(ds)) %>% 
+    unlist %>% 
+    matrix(nrow = n, byrow = T) %>% 
+    apply(MARGIN = 2, all)
+  ds[idx]
+}
+ 
 # functions to align the raw data -----------------------
 
 # align all instances at a given target/precision
@@ -503,7 +679,6 @@ align_runtime <- function(data, runtime = 'full') {
 }
 
 # functions to compute statistics from the data set ----
-
 RT.ECDF <- function(x) {
   x <- sort(x)
   x.unique <- unique(x)
@@ -548,143 +723,6 @@ CDF_discrete <- function(x) {
   res
 }
 
-# calculate the basic statistics of the runtime samples from an aligned data set
-RT_summary <- function(dataset, ftarget, maximization = FALSE,
-                               probs = c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.) {
-  df <- dataset$by_target
-  algId <- attr(dataset, 'algId')
-  
-  ftarget <- c(ftarget)
-  f_aligned <- rownames(df) %>% as.numeric
-  op <- ifelse(maximization, `>=`, `<=`)
-  
-  if (is.null(algId)) 
-    algId <- 'unknown'
-  
-  lapply(ftarget, 
-         function(f) {
-           seq_along(f_aligned)[op(f_aligned, f)][1] %>% 
-           # order(abs(f - f_aligned))[1] %>% 
-           df[., ] %>% 
-             as.vector %>% {
-               c(f, length(.[!is.na(.)]), 
-                 mean(., na.rm = T), median(., na.rm = T), 
-                 # type 1 ~ 3 for the discrete r.v.
-                 quantile(., probs = probs, names = F, type = 3, na.rm = T)) 
-             }
-         }) %>% 
-    do.call(rbind, .) %>% 
-    as.data.frame %>% 
-    cbind(algId, .) %>%
-    set_colnames(c('algId', 'f(x)', 'runs', 'mean', 'median', paste0(probs * 100, '%')))
-}
-
-# Retrieve the runtime samples from an aligned data set
-# wide-format is set by default
-RT <- function(dataset, ftarget, format = 'wide', maximization = FALSE) {
-  data <- dataset$by_target
-  algId <- attr(dataset, 'algId')
-  
-  ftarget <- c(ftarget)
-  n_run <- ncol(data)
-  f_aligned <- rownames(data) %>% as.numeric
-  op <- ifelse(maximization, `>=`, `<=`)
-  
-  if (is.null(algId)) 
-    algId <- 'unknown'
-  
-  df <- lapply(ftarget, 
-         function(f) {
-           seq_along(f_aligned)[op(f_aligned, f)][1] %>% 
-             data[., ] %>% 
-             as.vector %>% 
-             c(f, .)
-         }) %>% 
-    do.call(rbind, .) %>% 
-    as.data.frame %>% 
-    cbind(algId, .) %>%
-    set_colnames(c('algId', 'f(x)', paste0('run.', seq(n_run))))
-  
-  if (format == 'long') {
-    df <- melt(df, id = c('algId', 'f(x)'), variable.name = 'run', 
-               value.name = 'RT') %>% 
-      mutate(run = as.numeric(gsub('run.', '', run)) %>% as.integer)
-  }
-  df
-}
-
-# TODO: find a better name for those two functions
-# calculate the basic statistics of the runtime samples from an aligned data set
-FCE_summary <- function(dataset, runtimes, maximization = FALSE,
-                        probs = c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.) {
-  df <- dataset$by_runtime
-  algId <- attr(dataset, 'algId')
-  
-  runtimes <- c(runtimes)
-  RT_aligned <- rownames(df) %>% as.numeric
-  
-  if (is.null(algId)) 
-    algId <- 'unknown'
-  
-  lapply(runtimes, 
-         function(r) {
-           idx <- seq_along(RT_aligned)[RT_aligned >= r]
-           ifelse(length(idx) == 0, nrow(df), idx[1]) %>% 
-             df[., ] %>% 
-             as.vector %>% {
-               c(r, length(.[!is.na(.)]), 
-                 mean(., na.rm = T), median(., na.rm = T), 
-                 quantile(., probs = probs, names = F, na.rm = T))
-             }
-         }) %>% 
-    do.call(rbind, .) %>% 
-    as.data.frame %>% 
-    cbind(algId, .) %>%
-    set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', paste0(probs * 100, '%')))
-}
-
-#' Fixed Cost Error
-#'
-#' @param dataset 
-#' @param runtimes 
-#' @param format 
-#' @param maximization 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-FCE <- function(dataset, runtimes, format = 'wide', maximization = FALSE) {
-  data <- dataset$by_runtime
-  algId <- attr(dataset, 'algId')
-  
-  runtimes <- c(runtimes)
-  n_run <- ncol(data)
-  RT_aligned <- rownames(data) %>% as.numeric
-  
-  if (is.null(algId)) 
-    algId <- 'unknown'
-  
-  df <- lapply(runtimes, 
-               function(r) {
-                 idx <- seq_along(RT_aligned)[RT_aligned >= r]
-                 ifelse(length(idx) == 0, nrow(data), idx[1]) %>%
-                   data[., ] %>% 
-                   as.vector %>% 
-                   c(r, .)
-               }) %>% 
-    do.call(rbind, .) %>% 
-    as.data.frame %>% 
-    cbind(algId, .) %>%
-    set_colnames(c('algId', 'runtime', paste0('run.', seq(n_run))))
-  
-  if (format == 'long') {
-    df <- melt(df, id = c('algId', 'runtime'), variable.name = 'run', 
-               value.name = 'f(x)') %>% 
-      mutate(run = as.numeric(gsub('run.', '', run)) %>% as.integer)
-  }
-  df
-}
 
 
 

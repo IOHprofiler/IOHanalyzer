@@ -50,6 +50,7 @@ sidebar <- dashboardSidebar(
                        menuSubItem("Cumulative Distribution", tabName = "FCE_ECDF", icon = icon("line-chart"))
               ),
               
+              menuItem("Algorithm Parameters", tabName = "PARAMETER", icon = icon('file-text-o')),
               menuItem("ReadMe", tabName = "readme", icon = icon("mortar-board")),
               menuItem("About", tabName = "about", icon = icon("question"))
   ),
@@ -109,7 +110,6 @@ body <- dashboardBody(
   # tabitems ----------------------
   tabItems(
     tabItem(tabName = 'about', includeMarkdown('RMD/about.Rmd')),
-  
     tabItem(tabName = 'readme', includeMarkdown('RMD/docs.Rmd')),
     
     # data uploading functionalities -----------------
@@ -163,7 +163,7 @@ body <- dashboardBody(
             )
     ),
     
-    # Data Summary for Fixed-Target Runtime (ERT) -----------------
+    # RT: Data Summary -----------------
     tabItem(tabName = 'ERT_data', 
       fluidRow(
         column(width = 12,
@@ -195,9 +195,11 @@ body <- dashboardBody(
                      HTML('<p align="justify">Set the range and the granularity of the results.
                           The table will show fixed-target runtimes for evenly spaced target values.</p>'),
                      
-                     textInput('fstart_raw', label = F_MIN_LABEL, value = ''),
-                     textInput('fstop_raw', label = F_MAX_LABEL, value = ''),
-                     textInput('fstep_raw', label = F_STEP_LABEL, value = ''),
+                     textInput('F_MIN_SAMPLE', label = F_MIN_LABEL, value = ''),
+                     textInput('F_MAX_SAMPLE', label = F_MAX_LABEL, value = ''),
+                     textInput('F_STEP_SAMPLE', label = F_STEP_LABEL, value = ''),
+                     checkboxInput('F_LOGSPACE_DATA_SUMMARY',
+                                   label = HTML('Evenly space target values in \\(log_{10}\\) space')),
                      selectInput('ALGID_RAW_INPUT', 'Algorithms', 
                                  choices = NULL, selected = NULL),
                      
@@ -220,7 +222,7 @@ body <- dashboardBody(
       )
     ),
     
-    # Expected runtime curve ---------------------------------------------
+    # RT: Expected Convergence Curve ---------------------------------------------
     tabItem(tabName = 'ERT_convergence', 
             fluidRow(
               column(width = 12,
@@ -254,11 +256,11 @@ body <- dashboardBody(
                              
                              checkboxInput('semilogy', 
                                            label = 'scale y axis log10',
-                                           value = T),
+                                           value = T)
                              
-                             checkboxInput('show.instance', 
-                                           label = 'show each independent run',
-                                           value = F)
+                             # checkboxInput('show.instance', 
+                             #               label = 'show each independent run',
+                             #               value = F)
                            )
                          ),
                          
@@ -279,7 +281,7 @@ body <- dashboardBody(
             )
     ),
     
-    # Runtime: histograms, violin plots ------------------------------------------
+    # RT: histograms, violin plots ------------------------------------------
     tabItem(tabName = 'RT_PMF', 
           fluidRow(
             column(width = 12,     
@@ -359,7 +361,7 @@ body <- dashboardBody(
           )
     ),
     
-    # Runtime empirical c.d.f. ------------------------------------------
+    # RT empirical c.d.f. ------------------------------------------
     tabItem(tabName = 'RT_ECDF', 
             fluidRow(
               column(width = 12,
@@ -409,9 +411,9 @@ body <- dashboardBody(
                            width = 3,
                            HTML('<p align="justify">Set the range and the granularity of
                                 the evenly spaced quality targets taken into account in the plot.</p>'),
-                           textInput('RT_AUC_FSTART', label = HTML('<p>\\(log_{10}(f_{min}):\\) smallest target value</p>'), value = ''),
-                           textInput('RT_AUC_FSTOP', label = HTML('<p>\\(log_{10}(f_{max}):\\) largest target value</p>'), value = ''),
-                           textInput('RT_AUC_FSTEP', label = HTML('<p>\\(log_{10}(\\Delta f):\\) granularity (step size)</p>'), value = '')
+                           textInput('RT_AUC_FSTART', label = F_MIN_LABEL, value = ''),
+                           textInput('RT_AUC_FSTOP', label = F_MAX_LABEL, value = ''),
+                           textInput('RT_AUC_FSTEP', label = F_STEP_LABEL, value = '')
                          ),
                          
                          mainPanel(width = 9,
@@ -461,7 +463,7 @@ body <- dashboardBody(
             )
     ),
     
-    # Data Summary for Fixed-Target Runtime (FCE) -----------------
+    # FCE: Data Summary -----------------
     tabItem(tabName = 'FCE_DATA', 
             fluidRow(
               column(width = 12,
@@ -475,7 +477,7 @@ body <- dashboardBody(
                            textInput('RT_MAX', label = RT_MAX_LABEL, value = ''),
                            textInput('RT_STEP', label = RT_STEP_LABEL, value = ''),
                            selectInput('FCE_ALGID_INPUT', 'Algorithms', choices = NULL, selected = NULL),
-                           downloadButton("FCE_downloadData", "Save this table as csv")
+                           downloadButton("FCE_SUMMARY_download", "Save this table as csv")
                            ),
                          
                          mainPanel(
@@ -501,7 +503,7 @@ body <- dashboardBody(
                            
                            selectInput('download_format_FCE', 'Format of the csv', 
                                        choices = c('long', 'wide'), selected = 'wide'),
-                           downloadButton("download_FCE_SAMPLE", "Save the aligned runtime samples as csv")
+                           downloadButton("FCE_SAMPLE_download", "Save the aligned runtime samples as csv")
                            ),
                          
                          mainPanel(
@@ -510,7 +512,7 @@ body <- dashboardBody(
                                 each selected target value \\(f(x)\\), and each run \\(r\\) 
                                 the number \\(T(A,f(x),r)\\) of evaluations performed by the 
                                 algorithm until it evaluated for the first time a solution of 
-                                quality at least f(x).</p>"),
+                                quality at least \\(f(x)\\).</p>"),
                            dataTableOutput('FCE_SAMPLE')
                            )
                     )
@@ -518,7 +520,7 @@ body <- dashboardBody(
             )
         ),
     
-    # Probability density plot and Histogram for Fixed-Budget Targets --------
+    # FCE: historgrams, p.d.f. --------
     tabItem(tabName = 'FCE_PDF', 
             fluidRow(
               column(width = 12,     
@@ -584,7 +586,7 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                   )
     ),
     
-    # Expected target curve ---------------------------------------------
+    # FCE: Expected Convergence Curve ---------------------------------------------
     tabItem(tabName = 'FCE_convergence', 
             fluidRow(
               column(width = 12,
@@ -630,7 +632,7 @@ appear when hovering over the figure. A csv file with the runtime data can be do
               )
       ),
     
-    # Target Value empirical c.d.f. ------------------------------------------
+    # FCE: empirical c.d.f. ------------------------------------------
     tabItem(tabName = 'FCE_ECDF', 
             fluidRow(
               column(width = 12,
@@ -719,6 +721,43 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                         )
                     )
                 )
+        ),
+    
+    # Parameter tab -------
+    tabItem(tabName = 'PARAMETER', 
+            fluidRow(
+              column(width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Expected Parameter Value 
+                                      (per function)</p>'), 
+                      width = 12,
+                      collapsible = TRUE, solidHeader = TRUE, status = "primary",
+                      div(style = "width: 90%;",
+                          sidebarPanel(
+                            width = 3,
+                            HTML('<p style="font-size:120%;">Range of the displayed budget values (\\(x\\) axis)</p>'),
+                            
+                            textInput('PAR_RT_MIN', label = RT_MIN_LABEL, value = ''),
+                            textInput('PAR_RT_MAX', label = RT_MAX_LABEL, value = ''),
+                            
+                            selectInput('PAR_ALGID_INPUT', 'Algorithms', choices = NULL, selected = NULL),
+                            selectInput('PAR_show.mean', label = 'mean/median', 
+                                        choices = c('mean', 'median'),
+                                        selected = 'mean'),
+                            
+                            checkboxInput('PAR_semilogx', 
+                                          label = 'scale x axis log10',
+                                          value = T)
+                          )
+                      ),
+                      
+                      HTML('<p style="font-size:120%";>The <b><i>mean or median</i></b> of internal parameters of the algorithm
+                           found with a fixed-budget of evaluations are depicted against the budget. 
+                           The displayed elements can be switched on and off by clicking on the legend on the right. 
+                           A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
+                      mainPanel(plotlyOutput('PAR_PER_FUN', height = "700px", width = "1157px"))
+                      )
+                  )
+              )
         )
   )
 )

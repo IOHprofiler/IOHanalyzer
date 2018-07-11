@@ -21,6 +21,7 @@ source('readFiles.R')
 # global variables for the alignment
 idxEvals <- 1
 idxTarget <- 3
+n_data_column <- 5
 
 # constructor of S3 class 'DataSet' ---------------------------
 # Attributes
@@ -33,6 +34,8 @@ idxTarget <- 3
 #   maxEvals
 #   finalFunEvals
 #   comment
+#   
+#   TODO: maybe also store the raw data sets
 DataSet <- function(info, verbose = F) {
   if (!is.null(info)) {
     datFile <- info$datafile
@@ -43,19 +46,18 @@ DataSet <- function(info, verbose = F) {
     dat <- read_dat(datFile)          # read the dat file
     tdat <- read_dat(tdatFile)        # read the tdat file
     
-    by_target <- align_target(dat)      # aligned by target values
-    by_runtime <- align_runtime(tdat)   # aligned by runtime
+    by_target <- align_by_target(dat)      # aligned by target values
+    by_runtime <- align_by_runtime(tdat)   # aligned by runtime
     
     maxEvals <- sapply(dat, function(d) d[nrow(d), idxEvals]) %>% 
       set_names(NULL)
     finalFunvals <- sapply(tdat, function(d) d[nrow(d), idxTarget]) %>% 
       set_names(NULL)
     
-    # if (any(maxEvals != info$maxEvals)) 
+    # if (any(maxEvals != info$maxEvals))
     #   warning('Inconsitent maxEvals in .info file and .dat file')
     
-    do.call(function(...) structure(list(by_target = by_target, by_runtime = by_runtime), 
-                                    class = c('DataSet'), ...), 
+    do.call(function(...) structure(c(by_target, by_runtime), class = c('DataSet'), ...), 
             c(info, list(maxEvals = maxEvals, finalFunvals = finalFunvals)))
      
   } else {
@@ -278,14 +280,6 @@ ERT.DataSet <- function(data) {
 # compute the fixed cost error for a single DataSet
 FCE.DataSet <- function(data) {
   df <- data$by_runtime
-  succ <- matrix(0, nrow(df), ncol(df))
-  
-  for (i in 1:nrow(df)) {
-    idx <- is.na(df[i, ])
-    succ[i, ] <- !idx
-    df[i, idx] <- attr(data, 'maxEvals')[idx]
-  }
-  
   object <- data.frame(runtime = row.names(df) %>% as.integer,
                        FCE = apply(df, 1, . %>% mean(na.rm = T)),
                        median = apply(df, 1, . %>% median(na.rm = T)),
@@ -297,6 +291,27 @@ FCE.DataSet <- function(data) {
   attr(object, 'DIM') <- attr(data, 'DIM')
   attr(object, 'algId') <- attr(data, 'algId')
   attr(object, 'funcId') <- attr(data, 'funcId')
+  object
+}
+
+EPAR.DataSet <- function(data) {
+  data.ori <- data
+  data <- data[-c(1, 2)] # drop the aligned data set
+  par_name <- names(data)
+  
+  df <- lapply(names(data), function(n) as.data.frame(data[[n]])) %>% 
+    do.call(rbind.data.frame, .)
+  
+  object <- data.frame(runtime = rep(rownames(data[[1]]), 2) %>% as.integer,
+                       mean = apply(df, 1, . %>% mean(na.rm = T)),
+                       median = apply(df, 1, . %>% median(na.rm = T)),
+                       sd = apply(df, 1, . %>% sd(na.rm = T))) %>% 
+    cbind(par = rep(par_name, each = nrow(data[[1]])), .)
+  
+  class(object) %<>% c('EPAR')
+  attr(object, 'DIM') <- attr(data.ori, 'DIM')
+  attr(object, 'algId') <- attr(data.ori, 'algId')
+  attr(object, 'funcId') <- attr(data.ori, 'funcId')
   object
 }
 
@@ -442,242 +457,6 @@ subset.DataSetList <- function(ds, ...) {
   ds[idx]
 }
  
-# functions to align the raw data -----------------------
-
-# align all instances at a given target/precision
-# TODO: implement this part in C for speeding up
-# TODO: add option allowing for the minimization scenario
-# TODO: remove the option 'full' for targets
-# TODO: write the main loop using Rcpp
-# TODO: automatically determine how many rows to align 
-align_target <- function(data, targets = 'auto', nrow = 50, maximization = FALSE) {
-  
-  N <- length(data) 
-  data <- lapply(data, as.matrix)   # matrices are faster for indexing?
-  idx <- c(idxTarget, idxEvals)
-  next_lines <- lapply(data, function(x) x[1, idx]) %>% unlist %>% 
-    matrix(nrow = N, byrow = T)
-  
-  func <- ifelse(maximization, min, max)
-  op <- ifelse(maximization, `>=`, `<=`)
-  inc <- ifelse(maximization, function(x) x + 1, function(x) x - 1)
-  
-  if (is.numeric(targets)) {
-    Fvalues <- sort(targets)
-  } else {
-    if (targets == 'auto') { 
-      Fstart <- func(next_lines[, 1], na.rm = T)
-      
-      if (!maximization) {
-        step <- 5.
-        idxCurrentF <- ceiling(log10(Fstart) * step)
-        t <- 10. ^ (idxCurrentF / step)
-      } else {
-        # similar to the alignment in bbob
-        # produce roughly 50 data records by default
-        Fend <- sapply(data, function(x) rev(x[, idxTarget])[1]) %>% func(na.rm = T)
-        tmp <- seq(log10(Fstart), log10(Fend), length.out = nrow)
-        step <- tmp[2] - tmp[1]
-        idxCurrentF <- log10(Fstart)
-        t <- Fstart
-      }
-    } else if (targets == 'full') {
-      # align at every observed fitness value
-      # this should give roughly the same time complexity 
-      # as we have to iterate the whole data set
-      Fvalues <- lapply(data, function(x) unique(x[, idxTarget])) %>% 
-        unlist %>% unique %>% sort
-      
-      if (!maximization)
-        Fvalues <- rev(Fvalues)
-    }
-  }
-  
-  if (targets == 'auto') {
-    nrow_max <- sapply(data, function(x) tail(x[, 1], 1)) %>% max
-    res <- matrix(NA, nrow = nrow_max, ncol = N)
-    Fvalues <- rep(NA, nrow_max)
-    
-    curr_eval <- rep(NA, N)
-    curr_fvalues <- rep(NA, N)
-    finished <- rep(FALSE, N)
-    index <- rep(1, N)  # 'iterator'
-    
-    i <- 0
-    while (t > 0 && is.finite(t)) {
-      curr_eval[1:N] <- NA
-      curr_fvalues[1:N] <- NA
-      
-      for (k in seq_along(data)) {
-        d <- data[[k]]
-        iter <- index[k]
-        while (!finished[k]) {
-          # hitting the target
-          if (`op`(next_lines[k, 1], t)) { 
-            curr_eval[k] <- next_lines[k, 2]
-            curr_fvalues[k] <- next_lines[k, 1]
-            break
-          }
-          
-          if (iter < nrow(d)) {
-            iter <- iter + 1
-            next_lines[k, ] <- d[iter, idx]
-          } else {
-            finished[k] <- TRUE
-          }
-        }
-        index[k] <- iter
-      }
-      
-      # if the current target is not hit by any instance
-      if (all(is.na(curr_eval)))
-        break
-      
-      i <- i + 1
-      res[i, ] <- curr_eval
-      if (!maximization) {
-        idxCurrentF_new <- ceiling(log10(func(curr_fvalues, na.rm = T)) * step)
-        if (maximization)
-          idxCurrentF <- max(idxCurrentF_new, idxCurrentF)
-        else
-          idxCurrentF <- min(idxCurrentF_new, idxCurrentF)
-        
-        Fvalues[i] <-  10. ^ (idxCurrentF / step)
-        idxCurrentF <- inc(idxCurrentF)
-        t <- 10. ^ (idxCurrentF / step)
-      } else {
-        # make sure the new target value is bigger than the next iterate
-        Fvalues[i] <- t
-        idxCurrentF <- idxCurrentF + step
-        t <- 10. ^ idxCurrentF
-      }
-    }
-  } else {
-    res <- matrix(NA, length(Fvalues), N)
-    # current_eval <- rep(NA, N)
-    for (i in seq_along(Fvalues)) {
-      t <- Fvalues[i]
-      for (k in seq_along(data)) {
-        d <- data.iter[[k]]
-        curr_eval <- NA
-        while (hasNext(d)) {
-          curr_line <- nextElem(d)
-          v <- curr_line[idxTarget]
-          if (`op`(v, t)) {
-            curr_eval <- curr_line[1]
-            break
-          } # hitting the target 
-        }
-        res[i, k] <- curr_eval
-      }
-    }
-  }
-  res <- res[1:i, ]
-  Fvalues <- Fvalues[1:i]
-  rownames(res) <- Fvalues
-  res
-}
-
-cppFunction(
-'NumericVector align_runtime_loop(int r, List data, NumericVector Nrows, NumericVector index,
-                       LogicalVector finished, NumericMatrix next_lines,
-                       NumericVector curr_fvalues
-                       ) {
-  int N = data.size();
-  NumericVector out = clone(curr_fvalues);
-  for (int k = 0; k < N; k++) {
-    NumericMatrix d = as<NumericMatrix>(data[k]);
-    int Nrow = Nrows[k];
-    int iter = index[k];
-    while (!finished[k]) {
-      if (next_lines(k, 0) > r) {
-        out[k] = next_lines(k, 1); 
-        break;
-      }
-      
-      if (iter < (Nrow - 1)) {
-        iter++;
-        for (int j = 0; j < 2; j++) {
-          next_lines(k, j) = d(iter, j);
-        }
-        
-      } else {
-        out[k] = next_lines(k, 1); 
-        next_lines(k, 0) = NA_REAL;
-        finished[k] = true;
-      }
-    }
-    index[k] = iter;
-  }
-  return out;
-}')
-
-align_runtime <- function(data, runtime = 'full') {
-  N <- length(data) 
-  data <- lapply(data, as.matrix)   # matrices are faster for indexing?
-  colnames(data) <- NULL
-  idx <- c(idxEvals, idxTarget)
-  
-  if (runtime == 'full') {
-    nrow_max <- sapply(data, function(x) tail(x[, 1], 1)) %>% max
-    res <- matrix(NA, nrow = nrow_max, ncol = N)
-    runtime <- rep(NA, nrow_max)
-    index <- rep(1, N)  # index of the 'iterator'
-    
-    curr_fvalues <- rep(NA, N)
-    finished <- rep(FALSE, N)
-    
-    next_lines <- lapply(data, function(x) x[1, idx]) %>% 
-      unlist %>% matrix(nrow = N, byrow = T)
-    r <- min(next_lines[, 1], na.rm = T)
-    Nrows <- sapply(data, nrow)
-    
-    i <- 1
-    while (r > 0) {
-      curr_fvalues[] <- align_runtime_loop(r, data, Nrows, 
-                                           index, finished, 
-                                           next_lines, curr_fvalues)
-      # k <- 1
-      # for (d in data) {
-      #   Nrow <- Nrows[k]
-      #   iter <- index[k]
-      #   while (!finished[k]) {
-      #     if (next_lines[k, 1] > r) {
-      #       curr_fvalues[k] <- next_lines[k, 2] 
-      #       break
-      #     }
-      #     
-      #     if (iter < Nrow) {
-      #       iter <- iter + 1
-      #       next_lines[k, ] <- d[iter, idx]
-      #     } else {
-      #       curr_fvalues[k] <- next_lines[k, 2]  # !IMPORTANT: store the last Target value
-      #       next_lines[k, 1] <- NA
-      #       finished[k] <- TRUE
-      #     }
-      #   }
-      #   index[k] <- iter
-      #   k <- k + 1
-      # }
-      
-      runtime[i] <- r
-      res[i, ] <- curr_fvalues
-      
-      if (all(finished)) 
-        break
-      
-      i <- i + 1
-      r <- min(next_lines[1:N, 1], na.rm = T)
-    }
-    
-  }
-  res <- res[1:i, ]
-  runtime <- runtime[1:i]
-  
-  rownames(res) <- runtime
-  res
-}
-
 # functions to compute statistics from the data set ----
 RT.ECDF <- function(x) {
   x <- sort(x)

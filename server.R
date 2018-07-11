@@ -41,7 +41,7 @@ exdir <- './data'
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   
-  # clean up the temporary files on server when exiting  
+  # clean up the temporarsy files on server when exiting  
   session$onSessionEnded(function() {
     unlink(exdir, recursive = T)
   })
@@ -118,15 +118,9 @@ shinyServer(function(input, output, session) {
       summary(datasets)
     else
       data.frame()
-  }, options = list(pageLength = 10, 
-                    scrollX = F, 
-                    autoWidth = TRUE,
-                    columnDefs = list(list(width = '20px', 
-                                           targets = c(0, 1))
-                                      )
-                    )
-  )
-  
+  }, options = list(pageLength = 10, scrollX = F, autoWidth = TRUE,
+                    columnDefs = list(list(width = '20px', targets = c(0, 1)))))
+    
   # update the list of dimensionality, funcId and algId
   observe({
     data <- DataList$data
@@ -142,6 +136,7 @@ shinyServer(function(input, output, session) {
     algId <- c(getAlgId(data), 'all')
     updateSelectInput(session, 'ALGID_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'ALGID_RAW_INPUT', choices = algId, selected = 'all')
+    updateSelectInput(session, 'PAR_ALGID_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'FCE_ALGID_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'FCE_ALGID_RAW_INPUT', choices = algId, selected = 'all')
   })
@@ -169,6 +164,12 @@ shinyServer(function(input, output, session) {
     lapply(data, FCE.DataSet)
   })
   
+  # compute the expected parameter value for all DataSets after filtering
+  EPAR.DATA <- reactive({
+    data <- DATA()
+    lapply(data, EPAR.DataSet)
+  })
+  
   # update the values for the grid of target values
   observe({
     data <- DATA()
@@ -188,9 +189,9 @@ shinyServer(function(input, output, session) {
     updateTextInput(session, 'fstop', value = format(max(v), digits = 5, nsmall = 2))
     updateTextInput(session, 'fstep', value = format(step, digits = 5, nsmall = 2))
     
-    updateTextInput(session, 'fstart_raw', value = format(min(v), digits = 5, nsmall = 2))
-    updateTextInput(session, 'fstop_raw', value = format(max(v), digits = 5, nsmall = 2))
-    updateTextInput(session, 'fstep_raw', value = format(step, digits = 5, nsmall = 2))
+    updateTextInput(session, 'F_MIN_SAMPLE', value = format(min(v), digits = 5, nsmall = 2))
+    updateTextInput(session, 'F_MAX_SAMPLE', value = format(max(v), digits = 5, nsmall = 2))
+    updateTextInput(session, 'F_STEP_SAMPLE', value = format(step, digits = 5, nsmall = 2))
     
     updateTextInput(session, 'RT_fstart', value = format(min(v), digits = 5, nsmall = 2))
     updateTextInput(session, 'RT_fstop', value = format(max(v), digits = 5, nsmall = 2))
@@ -239,10 +240,13 @@ shinyServer(function(input, output, session) {
     updateTextInput(session, 'FCE_HIST_RUNTIME', value = median(v))
     updateTextInput(session, 'FCE_PDF_RUNTIME', value = median(v))
     
-    s <- ((max(v) - min(v)) * 0.1 + min(v)) %>% as.integer
-    e <- ((max(v) - min(v)) * 0.9 + min(v)) %>% as.integer
+    s <- ((max(v) - min(v)) * 0.05 + min(v)) %>% as.integer
+    e <- ((max(v) - min(v)) * 0.95 + min(v)) %>% as.integer
     updateTextInput(session, 'FCE_RT_MIN', value = s)
     updateTextInput(session, 'FCE_RT_MAX', value = e)
+    
+    updateTextInput(session, 'PAR_RT_MIN', value = s)
+    updateTextInput(session, 'PAR_RT_MAX', value = e)
     
     updateTextInput(session, 'FCE_ECDF_RT_MIN', value = min(v))
     updateTextInput(session, 'FCE_ECDF_RT_MAX', value = max(v))
@@ -308,7 +312,15 @@ shinyServer(function(input, output, session) {
   })
   
   output$downloadData <- downloadHandler(
-    filename = 'runtime_summary.csv',
+    filename = {
+      data <- DATA()
+      algId <- paste0(getAlgId(data), collapse = ';')
+      fstart <- input$fstart %>% format(format = "e", digits = 2)
+      fstop <- input$fstop %>% format(format = "e", digits = 2)
+      fstep <- input$fstep %>% format(format = "e", digits = 2)
+      sprintf('runtime_summary_[%s]_(%s,%s,%s).csv', algId,
+              fstart, fstop, fstep)
+    }, 
     content = function(file) {
       write.csv(get_RT_summary(), file, row.names = F)
     },
@@ -319,9 +331,9 @@ shinyServer(function(input, output, session) {
     data <- DATA()
     fall <- getFunvals(data)
     
-    fstart <- input$fstart_raw %>% as.numeric
-    fstop <- input$fstop_raw %>% as.numeric
-    fstep <- input$fstep_raw %>% as.numeric
+    fstart <- input$F_MIN_SAMPLE %>% as.numeric
+    fstop <- input$F_MAX_SAMPLE %>% as.numeric
+    fstep <- input$F_STEP_SAMPLE %>% as.numeric
     
     # when initializing or incorrect input
     if (is.na(fstart) || is.na(fstop) || is.na(fstep))
@@ -355,7 +367,14 @@ shinyServer(function(input, output, session) {
   })
   
   output$download_runtime <- downloadHandler(
-    filename = 'runtime_samples.csv',
+    filename = {
+      data <- DATA()
+      algId <- paste0(getAlgId(data), collapse = ';')
+      fstart <- input$F_MIN_SAMPLE %>% format(format = "e", digits = 2)
+      fstop <- input$F_MAX_SAMPLE %>% format(format = "e", digits = 2)
+      fstep <- input$F_STEP_SAMPLE %>% format(format = "e", digits = 2)
+      sprintf('runtime_[%s]_(%s,%s,%s).csv', algId, fstart, fstop, fstep)
+    },
     content = function(file) {
       write.csv(get_RT(), file, row.names = F)
     },
@@ -365,8 +384,7 @@ shinyServer(function(input, output, session) {
   output$table_RT_sample <- renderDataTable({
     df <- get_RT()
     df[is.na(df)] <- 'NA'
-    df}, options = list(pageLength = 20, scrollX = T)
-  )
+    df}, options = list(pageLength = 20, scrollX = T))
   
   # The expected runtime plot ---------------------
   output$ERT_PER_FUN <- renderPlotly({
@@ -521,14 +539,13 @@ shinyServer(function(input, output, session) {
       rt <- RT(df, ftarget, format = 'long')
       
       # skip if all runtime samples are NA
-      if (all(is.na(rt$RT)))
+      if (sum(!is.na(rt$RT)) < 2)
         next
       
       res <- hist(rt$RT, breaks = nclass.FD, plot = F)
       breaks <- res$breaks
       plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
-                         text = paste0('<b>count</b>: ', res$counts, 
-                                       '<br><b>breaks</b>: [', 
+                         text = paste0('<b>count</b>: ', res$counts, '<br><b>breaks</b>: [', 
                                        breaks[-length(breaks)], ',', breaks[-1], ']')) 
       
       if (plot_mode == 'overlay') {
@@ -824,8 +841,16 @@ shinyServer(function(input, output, session) {
     df
   })
   
-  output$FCE_downloadData <- downloadHandler(
-    filename = 'fix_budget_target_summary.csv',
+  output$FCE_SUMMARY_download <- downloadHandler(
+    filename = {
+      data <- DATA()
+      algId <- paste0(getAlgId(data), collapse = ';')
+      rt_min <- input$RT_MIN %>% as.integer %>% as.character
+      rt_max <- input$RT_MAX %>% as.integer %>% as.character
+      rt_step <- input$RT_STEP %>% as.integer %>% as.character
+      sprintf('target_summary_[%s]_(%s,%s,%s).csv', algId, 
+              rt_min, rt_max, rt_step)
+    },
     content = function(file) {
       write.csv(get_FCE_summary(), file, row.names = F)
     },
@@ -872,8 +897,16 @@ shinyServer(function(input, output, session) {
     do.call(rbind.data.frame, res) 
   })
   
-  output$download_FCE_SAMPLE <- downloadHandler(
-    filename = 'fix_budget_target_sample.csv',
+  output$FCE_SAMPLE_download <- downloadHandler(
+    filename = {
+      data <- DATA()
+      algId <- paste0(getAlgId(data), collapse = ';')
+      rt_min <- input$RT_MIN %>% as.integer %>% as.character
+      rt_max <- input$RT_MAX %>% as.integer %>% as.character
+      rt_step <- input$RT_STEP %>% as.integer %>% as.character
+      sprintf('target_sample_[%s]_(%s,%s,%s).csv', algId, 
+              rt_min, rt_max, rt_step)
+    },
     content = function(file) {
       write.csv(get_FCE(), file, row.names = F)
     },
@@ -883,8 +916,7 @@ shinyServer(function(input, output, session) {
   output$FCE_SAMPLE <- renderDataTable({
     df <- get_FCE()
     df[is.na(df)] <- 'NA'
-    df}, options = list(pageLength = 20, scrollX = T)
-  )
+    df}, options = list(pageLength = 20, scrollX = T))
   
   # empirical p.d.f. of the target value
   output$FCE_PDF <- renderPlotly({
@@ -951,11 +983,11 @@ shinyServer(function(input, output, session) {
       algId <- attr(df, 'algId')
       fce <- FCE(df, runtime, format = 'long')
       
-      # skip if all runtime samples are NA
-      if (all(is.na(fce$`f(x)`)))
+      # skip if all target samples are NA
+      if (sum(!is.na(fce$`f(x)`)) < 2)
         next
       
-      res <- hist(fce$`f(x)`, plot = F)
+      res <- hist(fce$`f(x)`, breaks = nclass.FD, plot = F)
       breaks <- res$breaks
       plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
                               text = paste0('<b>count</b>: ', res$counts, 
@@ -1253,6 +1285,61 @@ shinyServer(function(input, output, session) {
              yaxis = list(type = 'log'),
              autosize = T, hovermode = 'compare',
              paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)')
+  })
+  
+  # Expected Evolution of parameters in the algorithm
+  output$PAR_PER_FUN <- renderPlotly({
+    rt_min <- input$PAR_RT_MIN %>% as.integer %>% reverse_trans_runtime
+    rt_max <- input$PAR_RT_MAX %>% as.integer %>% reverse_trans_runtime
+    
+    data <- EPAR.DATA()
+    n_algorithm <- length(data)
+    n_param <- sapply(data, function(d) length(unique(d$par))) %>% max
+    colors <- colorspace::rainbow_hcl(n_algorithm * n_param)
+    
+    p <- plot_ly_default(x.title = "runtime", y.title = "parameters")
+    i <- 1
+    
+    for (df in data) {
+      algId <- attr(df, 'algId')
+      if (input$PAR_ALGID_INPUT != 'all' && algId != input$PAR_ALGID_INPUT)
+        next
+      
+      ddf <- df %>% 
+        mutate(upper = mean + sd, lower = mean - sd) %>% 
+        filter(runtime >= rt_min, runtime <= rt_max)
+      
+      par_name <- unique(df$par)
+      for (name in par_name) {
+        dddf <- filter(ddf, par == name)
+        
+        # p %<>% 
+        #   add_trace(data = dddf, x = ~runtime, y = ~upper, type = 'scatter', mode = 'lines',
+        #             line = list(color = rgba_str, width = 0), 
+        #             showlegend = F, name = paste0(name, '.mean +/- sd')) %>% 
+        #   add_trace(x = ~runtime, y = ~lower, type = 'scatter', mode = 'lines',
+        #             fill = 'tonexty',  line = list(color = 'transparent'),
+        #             fillcolor = rgba_str, showlegend = T, paste0(name, '.mean +/- sd')) 
+        
+        rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
+        rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
+        
+        if (input$PAR_show.mean == 'mean')
+          p %<>% add_trace(data = dddf, x = ~runtime, y = ~mean, type = 'scatter', 
+                           mode = 'lines+markers', name = paste0(algId, '.', name, '.mean'), 
+                           marker = list(color = rgb_str),
+                           line = list(color = rgb_str))
+        
+        else if (input$PAR_show.mean == 'median')
+          p %<>% add_trace(data = dddf, x = ~runtime, y = ~median, type = 'scatter',
+                           name = paste0(algId, '.', name, '.mean'), mode = 'lines+markers', 
+                           marker = list(color = rgb_str),
+                           line = list(color = rgb_str, dash = 'dash'))
+        i <- i + 1
+      }
+    }
+    p %<>%
+      layout(xaxis = list(type = switch(input$PAR_semilogx, T = 'log', F = 'linear')))
   })
   
   # output$ks <- renderPrint({

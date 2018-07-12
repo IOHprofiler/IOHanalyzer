@@ -17,11 +17,6 @@ source('readFiles.R')
 # TODO: perhaps migrate to data.table for speed concern and simplicity
 # TODO: find better name to replace FCE
 
-# global variables for the alignment
-idxEvals <- 1
-idxTarget <- 3
-n_data_column <- 5
-
 # constructor of S3 class 'DataSet' ---------------------------
 # Attributes
 #   funId
@@ -35,23 +30,31 @@ n_data_column <- 5
 #   comment
 #   
 #   TODO: maybe also store the raw data sets
-DataSet <- function(info, verbose = F) {
+DataSet <- function(info, verbose = F, maximization = TRUE) {
   if (!is.null(info)) {
     datFile <- info$datafile
     path <- dirname(info$datafile)
     filename <- basename(info$datafile)
+    
+    idatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.idat'))
     tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
+    cdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.cdat'))
     
-    dat <- read_dat(datFile)          # read the dat file
-    tdat <- read_dat(tdatFile)        # read the tdat file
+    dat <- read_dat(tdatFile)          # read the dat file
+    tdat <- read_dat(tdatFile)         # read the tdat file
     
-    by_target <- align_by_target(dat)      # aligned by target values
+    by_target <- align_by_target(dat, maximization = maximization)      # aligned by target values
     by_runtime <- align_by_runtime(tdat)   # aligned by runtime
     
     maxEvals <- sapply(dat, function(d) d[nrow(d), idxEvals]) %>% 
       set_names(NULL)
     finalFunvals <- sapply(tdat, function(d) d[nrow(d), idxTarget]) %>% 
       set_names(NULL)
+    
+    if (length(info$instance) == 0 || length(info$instance) != length(dat)) {
+      warning('The number of instances found in the info is inconsistent with the data!')
+      info$instance <- seq(length(dat))
+    }
     
     # if (any(maxEvals != info$maxEvals))
     #   warning('Inconsitent maxEvals in .info file and .dat file')
@@ -94,7 +97,7 @@ plot.DataSet <- function(data) {
 }
 
 # calculate the basic statistics of the runtime samples from an aligned data set
-RT_summary <- function(dataset, ftarget, maximization = FALSE,
+RT_summary <- function(dataset, ftarget, maximization = TRUE,
                        probs = c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.) {
   df <- dataset$by_target
   algId <- attr(dataset, 'algId')
@@ -126,7 +129,7 @@ RT_summary <- function(dataset, ftarget, maximization = FALSE,
 
 # Retrieve the runtime samples from an aligned data set
 # wide-format is set by default
-RT <- function(dataset, ftarget, format = 'wide', maximization = FALSE) {
+RT <- function(dataset, ftarget, format = 'wide', maximization = TRUE) {
   data <- dataset$by_target
   algId <- attr(dataset, 'algId')
   
@@ -160,7 +163,7 @@ RT <- function(dataset, ftarget, format = 'wide', maximization = FALSE) {
 
 # TODO: find a better name for those two functions
 # calculate the basic statistics of the runtime samples from an aligned data set
-FCE_summary <- function(dataset, runtimes, maximization = FALSE,
+FCE_summary <- function(dataset, runtimes, maximization = TRUE,
                         probs = c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.) {
   df <- dataset$by_runtime
   algId <- attr(dataset, 'algId')
@@ -188,18 +191,7 @@ FCE_summary <- function(dataset, runtimes, maximization = FALSE,
     set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', paste0(probs * 100, '%')))
 }
 
-#' Fixed Cost Error
-#'
-#' @param dataset 
-#' @param runtimes 
-#' @param format 
-#' @param maximization 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-FCE <- function(dataset, runtimes, format = 'wide', maximization = FALSE) {
+FCE <- function(dataset, runtimes, format = 'wide', maximization = TRUE) {
   data <- dataset$by_runtime
   algId <- attr(dataset, 'algId')
   
@@ -315,12 +307,12 @@ EPAR.DataSet <- function(data) {
 }
 
 # read all raw data files in a give directory
-read_dir <- function(args, verbose = T, print_fun = NULL) {
-  DataSetList(args, verbose, print_fun)
+read_dir <- function(args, verbose = T, print_fun = NULL, maximization = TRUE) {
+  DataSetList(args, verbose, print_fun, maximization = maximization)
 }
 
 # S3 constructoer of the 'DataSetList' ----------------------------
-DataSetList <- function(args = NULL, verbose = T, print_fun = NULL) {
+DataSetList <- function(args = NULL, verbose = T, print_fun = NULL, maximization = TRUE) {
   if (is.null(args))
     return(structure(list(), class = c('DataSetList', 'list')))
   
@@ -351,7 +343,7 @@ DataSetList <- function(args = NULL, verbose = T, print_fun = NULL) {
       }
       
       copy_flag <- TRUE
-      data <- DataSet(info)
+      data <- DataSet(info, maximization = maximization)
       DIM[i] <- attr(data, 'DIM')
       funcId[i] <- attr(data, 'funcId')
       algId[i] <- attr(data, 'algId')
@@ -426,6 +418,8 @@ getAlgId <- function(data) {
   sapply(data, function(d) attr(d, 'algId')) %>% unique %>% sort
 }
 
+# TODO: let the user choose/detect whether the problem is subject to maximization
+# and determine whether to sort the function values in ascending/desceding order
 getFunvals <- function(data) {
   lapply(data, function(x) rownames(x$by_target)) %>% unlist %>%
     as.numeric %>% unique %>% sort %>% rev

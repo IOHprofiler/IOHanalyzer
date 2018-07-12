@@ -19,9 +19,11 @@ install.packages('shinyjs')
 install.packages('shinydashboard')
 install.packages('magrittr')
 install.packages('dplyr')
-install.packages('plotly')
 install.packages('reshape2')
 install.packages('data.table')
+install.packages('markdown')
+install.packages('devtools')
+devtools::install_github("ropensci/plotly")
 ```
 
 Now, extract the zip of containing the source code to your preferred location, e.g., your desktop.
@@ -29,6 +31,6 @@ After this step, please just type the following command in the R console:
 ```{r wrapper=TRUE, eval=FALSE}
 shiny::runApp('path/to/the/code/folder')
 ```
-Please make sure that you replace the path __'path/to/the/code/folder'__ to the path where the source code is located on your computer. For example, if the source code folder is located on your desktop, this path should look like __C:\\Users\\(username)\\Desktop\\post-processing__. If there is no error in the installation, a webpage should automatically pop-up in your web browser!
+Please make sure that you replace the path __'path/to/the/code/folder'__ to the path where the source code is located on your computer. For example, if the source code folder is located on your desktop, this path should look like __C:\\\\Users\\(username)\\\\Desktop\\\\post-processing__. If there is no error in the installation, a webpage should automatically pop-up in your web browser!
 
 

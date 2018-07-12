@@ -73,19 +73,28 @@ read_IndexFile <- function(fname) {
       }
     
     record <- strsplit(lines[3], ',')[[1]] %>% trimws
-    res <- strsplit(record[-1], ':') %>% unlist %>% matrix(nrow = 2)
-    info <- strsplit(res[2, ], '\\|') %>% unlist %>% matrix(nrow = 2)
-    datafile <- file.path(path, record[1])
     
+    # TODO: this must also be removed...
+    if (record[2] == "") {
+      warning(sprintf('File %s is incomplete!', fname))
+      res <- NULL
+      info <- NULL
+    } else {
+      res <- strsplit(record[-1], ':') %>% unlist %>% matrix(nrow = 2)
+      info <- strsplit(res[2, ], '\\|') %>% unlist %>% matrix(nrow = 2)
+    }
+    
+    datafile <- file.path(path, record[1])
     # TODO: check the name of the attributes and fix them!
     data[[i]] <- c(header,
                    list(comment = lines[2], 
                         datafile = datafile,
-                        instance = as.numeric(res[1, ]),
-                        maxEvals = as.numeric(info[1, ]),
-                        bestdeltaf = as.numeric(info[2, ]))
+                        # TODO: REMOVE this in the future for Furong's data set
+                        instance = seq(ncol(res)))  
+                        # instance = as.numeric(res[1, ]),
+                        # maxEvals = as.numeric(info[1, ]),
+                        # bestdeltaf = as.numeric(info[2, ]))
     )
-    
     i <- i + 1
   }
   close(f)
@@ -93,13 +102,17 @@ read_IndexFile <- function(fname) {
 }
 
 # functions to align the raw data -----------------------
+# global variables for the alignment
+idxEvals <- 1
+idxTarget <- 3
+n_data_column <- 5
 # align all instances at a given target/precision
 # TODO: implement this part in C for speeding up
 # TODO: add option allowing for the minimization scenario
 # TODO: remove the option 'full' for targets
 # TODO: write the main loop using Rcpp
 # TODO: automatically determine how many rows to align 
-align_by_target <- function(data, targets = 'auto', nrow = 50, maximization = FALSE) {
+align_by_target <- function(data, targets = 'auto', nrow = 50, maximization = TRUE) {
   N <- length(data) 
   data <- lapply(data, as.matrix)   # matrices are faster for indexing?
   idx <- c(idxTarget, idxEvals)
@@ -123,7 +136,10 @@ align_by_target <- function(data, targets = 'auto', nrow = 50, maximization = FA
       } else {
         # similar to the alignment in bbob
         # produce roughly 50 data records by default
-        Fend <- sapply(data, function(x) rev(x[, idxTarget])[1]) %>% func(na.rm = T)
+        Fend <- sapply(data, function(x) rev(x[, idxTarget])[1]) %>% max(na.rm = T)
+        if (Fstart == 0)
+          Fstart <- Fstart + 1
+        
         tmp <- seq(log10(Fstart), log10(Fend), length.out = nrow)
         step <- tmp[2] - tmp[1]
         idxCurrentF <- log10(Fstart)
@@ -185,11 +201,10 @@ align_by_target <- function(data, targets = 'auto', nrow = 50, maximization = FA
       res[i, ] <- curr_eval
       if (!maximization) {
         idxCurrentF_new <- ceiling(log10(func(curr_fvalues, na.rm = T)) * step)
-        if (maximization)
-          idxCurrentF <- max(idxCurrentF_new, idxCurrentF)
-        else
-          idxCurrentF <- min(idxCurrentF_new, idxCurrentF)
-        
+        # if (maximization)
+        # idxCurrentF <- max(idxCurrentF_new, idxCurrentF)
+        # else
+        idxCurrentF <- min(idxCurrentF_new, idxCurrentF)
         Fvalues[i] <-  10. ^ (idxCurrentF / step)
         idxCurrentF <- inc(idxCurrentF)
         t <- 10. ^ (idxCurrentF / step)
@@ -236,7 +251,7 @@ align_by_runtime <- function(data, runtime = 'full') {
   if (length(n_column) > 1)
     stop('inconsistent number of columns in each run!')
   
-  n_param <- n_column - 5
+  n_param <- n_column - n_data_column
   
   if (runtime == 'full') {
     nrow_max <- sapply(data, function(x) tail(x[, 1], 1)) %>% max
@@ -318,8 +333,9 @@ align_by_runtime <- function(data, runtime = 'full') {
       param[[k]] <- param[[k]][1:i, ] %>% 
         set_rownames(runtime) 
     }
+    return(c(list(by_runtime = res, param)))
   }
-  list(by_runtime = res) %>% c(param)
+  list(by_runtime = res)
 }
 
 # Use Rcpp to speed up 'align_by_runtime'

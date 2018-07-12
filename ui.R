@@ -102,6 +102,13 @@ body <- dashboardBody(
                    }, 20);
   ')),
   
+  # tags$script(HTML('
+  #      window.setInterval(function() {
+  #                  var elem = document.getElementById("upload_data_promt");
+  #                  elem.scrollTop = elem.scrollHeight;
+  #                  }, 20);
+  # ')),
+  
   # include MathJax
   HTML("<head><script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML'
        async></script></head>"),
@@ -121,7 +128,7 @@ body <- dashboardBody(
                            width = 12,
                            
                            HTML('<p align="left" style="font-size:120%;">Please choose a zip file containing the benchmark data</p>'),
-                           fileInput("ZIP", "Choose a ZIP file", multiple = FALSE,
+                           fileInput("ZIP", "Choose a ZIP file", multiple = TRUE,
                                      accept = c("Application/zip", ".zip")),
                            
                            # TODO: keep this for the local version
@@ -134,10 +141,10 @@ body <- dashboardBody(
                          
                          mainPanel(
                            width = 12,
-                           HTML('<p style="font-size:120%;">The selected folders are:</p>'),
+                           HTML('<p style="font-size:120%;">The processed folders are:</p>'),
                            verbatimTextOutput('upload_data_promt'),
                            tags$head(tags$style("#upload_data_promt{color:red; font-size:12px; font-style:italic;
-                                                overflow-y:scroll; max-height: 395px; background: ghostwhite;}"))
+                                                overflow-y:visible; max-height: 100px; background: ghostwhite;}"))
                          )
                      )
               ),
@@ -310,7 +317,7 @@ body <- dashboardBody(
                                     and \\(75\\%\\) percentile of the runtime and \\(n\\) is the sample size.
                                     The displayed algorithms can be selected by clicking on the legend on the right. 
                                     A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-                                plotlyOutput('RT_HIST', height = "600px", width = "1000px")
+                                plotlyOutput('RT_HIST', height = "800px", width = "1300px")
                                 )
                        )
                        )
@@ -325,7 +332,8 @@ body <- dashboardBody(
                       HTML('Select the target value for which the runtime distribution is shown'),
                       
                       textInput('RT_PMF_FTARGET', label = '', value = ''),
-                      checkboxInput('RT_SHOW_SAMPLE', label = 'show runtime for each run', value = T)
+                      checkboxInput('RT_SHOW_SAMPLE', label = 'show runtime for each run', value = T),
+                      checkboxInput('RT_PMF_LOGY', label = 'scale y axis log10', value = F)
                       
                       # HTML('Kernel density estimation uses the following <b>kernel function</b>:'),
                       # selectInput('RT_PMF_KER', '',
@@ -351,7 +359,7 @@ body <- dashboardBody(
                                   option to download the plot as png file. A csv file with the runtime 
                                   data can be downlowaded from the  
                                   <a href="#shiny-tab-ERT_data", data-toggle="tab"> Data Summary tab</a>.'),
-                             plotlyOutput('RT_PMF', height = "600px", width = "1000px")
+                             plotlyOutput('RT_PMF', height = "800px", width = "1300px")
                       )
                     )
                   )
@@ -548,7 +556,7 @@ according to the so-called <b>Freedman–Diaconis rule</b>: \\(\\text{Bin size}=
 where \\(Q_1, Q_3\\) are the \\(25\\%\\) and \\(75\\%\\) percentile of the runtime and \\(n\\) is the sample size.
                                        The displayed algorithms can be selected by clicking on the legend on the right. 
                                        A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                                  plotlyOutput('FCE_HIST', height = "600px", width = "1000px")
+                                  plotlyOutput('FCE_HIST', height = "800px", width = "1300px")
                            )
                          )
                      )
@@ -576,7 +584,7 @@ of the best-so-far function values of the individual runs (dots), and an estimat
 The displayed algorithms can be selected by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> 
 appear when hovering over the figure. A csv file with the runtime data can be downlowaded from the 
                                          <a href="#shiny-tab-FCE_DATA", data-toggle="tab"> Data Summary tab</a>.'),
-                                    plotlyOutput('FCE_PDF', height = "600px", width = "1000px")
+                                    plotlyOutput('FCE_PDF', height = "800px", width = "1300px")
                              )
                           )
                        )
@@ -625,7 +633,7 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                               The displayed elements 
                               can be switched on and off by clicking on the legend on the right. 
                               A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                         mainPanel(plotlyOutput('FCE_PER_FUN', height = "700px", width = "1157px"))
+                         mainPanel(plotlyOutput('FCE_PER_FUN', height = "700px", width = "1257px"))
                      )
                 )
               )

@@ -6,7 +6,6 @@
 # Email: wangronin@gmail.com
 
 library(shinyjs)
-library(shinyFiles)
 library(shinydashboard)
 library(plotly)
 

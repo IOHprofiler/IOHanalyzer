@@ -11,7 +11,6 @@
 library(magrittr)
 library(reshape2)
 library(data.table)
-library(Rcpp)
 
 source('readFiles.R')
 

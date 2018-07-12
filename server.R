@@ -7,13 +7,11 @@
 
 library(shiny)
 library(shinyjs)
-library(shinyFiles)
 
 library(reshape2)
 library(magrittr)
 library(dplyr)
 
-library(ggplot2)
 library(plotly)
 
 source('pproc.R')

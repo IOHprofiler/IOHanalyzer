@@ -25,9 +25,18 @@ symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
 maximization <- TRUE
 src_suite <- 'PBO' # TODO: this shoule be taken from the data set
 
+limit.data.frame <- function(df, n) {
+  N <- nrow(df)
+  if (N > n) {
+    idx <- c(1, seq(1, N, length.out = n), N) %>% unique
+    df[idx, ]
+  } else 
+    df
+}
+
 # Formatter for function values
 format_funeval <- ifelse(src_suite == 'PBO',
-                         function(v) format(round(as.numeric(v))),
+                         function(v) format(as.integer(as.numeric(v))),
                          function(v) format(v, format = "e", digits = 5, nsmall = 2))
 
 # generate evenly space grid of function values
@@ -118,7 +127,7 @@ shinyServer(function(input, output, session) {
     if (length(folderList$data) == 0)
       folder_new <- folders
     else
-      folder_new <- setdiff(folderList$data, folders)
+      folder_new <- setdiff(folders, intersect(folderList$data, folders))
     
     req(length(folder_new) != 0)
     
@@ -146,6 +155,7 @@ shinyServer(function(input, output, session) {
       DataList$data <- list()
       folderList$data <- list() 
       shinyjs::html("process_data_promt", 'all data are removed!\n', add = FALSE)
+      shinyjs::html("upload_data_promt", "", add = FALSE)
     }
   })
   
@@ -217,6 +227,7 @@ shinyServer(function(input, output, session) {
     v <- trans_funeval(v)    # generate the grid in log10 scale!
     q <- quantile(v, probs = c(.25, .5, .75), names = F)
     grid <- funeval_grid(v, length.out = 15) 
+    
     step <- grid[2] - grid[1]
     start <- grid[1]
     stop <- grid[length(grid)]
@@ -249,6 +260,9 @@ shinyServer(function(input, output, session) {
     updateTextInput(session, 'RT_AUC_FSTART', value = format_funeval(start))
     updateTextInput(session, 'RT_AUC_FSTOP', value = format_funeval(stop))
     updateTextInput(session, 'RT_AUC_FSTEP', value = format_funeval(step))
+    
+    updateTextInput(session, 'PAR_F_MIN', value = start)
+    updateTextInput(session, 'PAR_F_MAX', value = stop)
   })
   
   # update the values for the grid of running times
@@ -281,9 +295,6 @@ shinyServer(function(input, output, session) {
     updateTextInput(session, 'FCE_RT_MIN', value = s)
     updateTextInput(session, 'FCE_RT_MAX', value = e)
     
-    updateTextInput(session, 'PAR_RT_MIN', value = s)
-    updateTextInput(session, 'PAR_RT_MAX', value = e)
-    
     updateTextInput(session, 'FCE_ECDF_RT_MIN', value = min(v))
     updateTextInput(session, 'FCE_ECDF_RT_MAX', value = max(v))
     updateTextInput(session, 'FCE_ECDF_RT_STEP', value = step)
@@ -314,8 +325,9 @@ shinyServer(function(input, output, session) {
       return(data.frame())
     
     fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
+      c(fstart, ., fstop) %>% unique %>% 
       reverse_trans_funeval %>% 
-      .[. >= min(fall)] %>% .[. <= max(fall)] 
+      .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     
     probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
     res <- list()
@@ -349,11 +361,10 @@ shinyServer(function(input, output, session) {
   output$downloadData <- downloadHandler(
     filename = {
       data <- DATA()
-      algId <- paste0(getAlgId(data), collapse = ';')
       fstart <- format_funeval(input$fstart)
       fstop <- format_funeval(input$fstop)
       fstep <- format_funeval(input$fstep) 
-      sprintf('runtime_summary_[%s]_(%s,%s,%s).csv', algId,
+      sprintf('runtime_summary_(%s,%s,%s).csv',
               fstart, fstop, fstep)
     }, 
     content = function(file) {
@@ -377,8 +388,9 @@ shinyServer(function(input, output, session) {
       return(data.frame())
     
     fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
+      c(fstart, ., fstop) %>% unique %>% 
       reverse_trans_funeval %>% 
-      .[. >= min(fall)] %>% .[. <= max(fall)] 
+      .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     
     data <- DATA()
     res <- list()
@@ -408,7 +420,7 @@ shinyServer(function(input, output, session) {
       fstart <- input$F_MIN_SAMPLE %>% format_funeval
       fstop <- input$F_MAX_SAMPLE %>% format_funeval
       fstep <- input$F_STEP_SAMPLE %>% format_funeval
-      sprintf('runtime_[%s]_(%s,%s,%s).csv', algId, fstart, fstop, fstep)
+      sprintf('runtime_(%s,%s,%s).csv', fstart, fstop, fstep)
     },
     content = function(file) {
       write.csv(get_RT(), file, row.names = F)
@@ -434,40 +446,36 @@ shinyServer(function(input, output, session) {
                          x.title = "best-so-far f(x)-value", y.title = "function evaluations")
     
     for (i in seq_along(data)) {
-      # raw <- df.BestF[[i]] %>% 
-        # filter(BestF >= xmin, BestF <= xmax)
       df <- data[[i]]
       algId <- attr(df, 'algId')
-      ert <- df %>% 
+      df_plot <- df %>% 
         mutate(upper = ERT + sd, lower = ERT - sd) %>% 
-        filter(BestF >= Fmin, BestF <= Fmax)
+        filter(BestF >= Fmin, BestF <= Fmax) %>% 
+        limit.data.frame(n = 50)
       
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
       
       p %<>% 
-        add_trace(data = ert, x = ~BestF, y = ~upper, type = 'scatter', mode = 'lines',
-                  line = list(color = rgba_str, width = 0), 
+        add_trace(data = df_plot, x = ~BestF, y = ~upper, type = 'scatter', mode = 'lines',
+                  line = list(color = rgba_str, width = 0),  legendgroup = algId,
                   showlegend = F, name = 'mean +/- sd') %>% 
         add_trace(x = ~BestF, y = ~lower, type = 'scatter', mode = 'lines',
                   fill = 'tonexty',  line = list(color = 'transparent'),
+                  legendgroup = algId,
                   fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd')
       
       if (input$show.mean)
-        p %<>% add_trace(data = ert, x = ~BestF, y = ~ERT, type = 'scatter', 
+        p %<>% add_trace(data = df_plot, x = ~BestF, y = ~ERT, type = 'scatter', 
                          mode = 'lines+markers', name = paste0(algId, '.mean'), 
-                         marker = list(color = rgb_str),
+                         marker = list(color = rgb_str), legendgroup = algId,
                          line = list(color = rgb_str))
       
       if (input$show.median)
-        p %<>% add_trace(data = ert, x = ~BestF, y = ~median, type = 'scatter',
+        p %<>% add_trace(data = df_plot, x = ~BestF, y = ~median, type = 'scatter',
                          name = paste0(algId, '.median'), mode = 'lines+markers', 
-                         marker = list(color = rgb_str),
+                         marker = list(color = rgb_str),  legendgroup = algId,
                          line = list(color = rgb_str, dash = 'dash'))
-      
-      # if (input$show.instance)
-        # p %<>% add_trace(data = raw, x = ~BestF, y = ~eval, type = 'scatter', mode = 'lines',
-                         # line = list(color = rgba_str), split = ~instance, showlegend = F)
     }
     p %<>%
       layout(xaxis = list(type = switch(input$semilogx, T = 'log', F = 'linear')),
@@ -672,9 +680,10 @@ shinyServer(function(input, output, session) {
     if (fstart >= fstop || fstep > fstop - fstart)
       return(data.frame())
     
-    seq(from = fstart, to = fstop, by = fstep) %>% 
+    fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
+      c(fstart, ., fstop) %>% unique %>% 
       reverse_trans_funeval %>% 
-      .[. >= min(fall)] %>% .[. <= max(fall)] %>% 
+      .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] %>% 
       cat
   })
   
@@ -693,8 +702,9 @@ shinyServer(function(input, output, session) {
       return(data.frame())
     
     fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
+      c(fstart, ., fstop) %>% unique %>% 
       reverse_trans_funeval %>% 
-      .[. >= min(fall)] %>% .[. <= max(fall)] 
+      .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     
     data <- DATA()
     n_algorithm <- length(data)
@@ -779,8 +789,9 @@ shinyServer(function(input, output, session) {
       return(data.frame())
     
     fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
+      c(fstart, ., fstop) %>% unique %>% 
       reverse_trans_funeval %>% 
-      .[. >= min(fall)] %>% .[. <= max(fall)] 
+      .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)]  
 
     n_algorithm <- length(data)
     colors <- colorspace::rainbow_hcl(n_algorithm)
@@ -883,8 +894,7 @@ shinyServer(function(input, output, session) {
       rt_min <- input$RT_MIN %>% as.integer %>% as.character
       rt_max <- input$RT_MAX %>% as.integer %>% as.character
       rt_step <- input$RT_STEP %>% as.integer %>% as.character
-      sprintf('target_summary_[%s]_(%s,%s,%s).csv', algId, 
-              rt_min, rt_max, rt_step)
+      sprintf('target_summary_(%s,%s,%s).csv', rt_min, rt_max, rt_step)
     },
     content = function(file) {
       write.csv(get_FCE_summary(), file, row.names = F)
@@ -939,7 +949,7 @@ shinyServer(function(input, output, session) {
       rt_min <- input$RT_MIN %>% as.integer %>% as.character
       rt_max <- input$RT_MAX %>% as.integer %>% as.character
       rt_step <- input$RT_STEP %>% as.integer %>% as.character
-      sprintf('target_sample_[%s]_(%s,%s,%s).csv', algId, 
+      sprintf('target_sample_(%s,%s,%s).csv', 
               rt_min, rt_max, rt_step)
     },
     content = function(file) {
@@ -1067,29 +1077,31 @@ shinyServer(function(input, output, session) {
       algId <- attr(df, 'algId')
       fce <- df %>% 
         mutate(upper = FCE + sd, lower = FCE - sd) %>% 
-        filter(runtime >= rt_min, runtime <= rt_max)
+        filter(runtime >= rt_min, runtime <= rt_max) %>% 
+        limit.data.frame(n = 50)
       
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
       
       p %<>% 
         add_trace(data = fce, x = ~runtime, y = ~upper, type = 'scatter', mode = 'lines',
-                  line = list(color = rgba_str, width = 0), 
+                  line = list(color = rgba_str, width = 0), legendgroup = algId,
                   showlegend = F, name = 'mean +/- sd') %>% 
         add_trace(x = ~runtime, y = ~lower, type = 'scatter', mode = 'lines',
                   fill = 'tonexty',  line = list(color = 'transparent'),
+                  legendgroup = algId, 
                   fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd')
       
       if (input$FCE_show.mean)
         p %<>% add_trace(data = fce, x = ~runtime, y = ~FCE, type = 'scatter', 
                          mode = 'lines+markers', name = paste0(algId, '.mean'), 
-                         marker = list(color = rgb_str),
+                         marker = list(color = rgb_str), legendgroup = algId,
                          line = list(color = rgb_str))
       
       if (input$FCE_show.median)
         p %<>% add_trace(data = fce, x = ~runtime, y = ~median, type = 'scatter',
                          name = paste0(algId, '.median'), mode = 'lines+markers', 
-                         marker = list(color = rgb_str),
+                         marker = list(color = rgb_str), legendgroup = algId,
                          line = list(color = rgb_str, dash = 'dash'))
     }
     p %<>%
@@ -1324,15 +1336,15 @@ shinyServer(function(input, output, session) {
   
   # Expected Evolution of parameters in the algorithm
   output$PAR_PER_FUN <- renderPlotly({
-    rt_min <- input$PAR_RT_MIN %>% as.integer %>% reverse_trans_runtime
-    rt_max <- input$PAR_RT_MAX %>% as.integer %>% reverse_trans_runtime
+    f_min <- input$PAR_F_MIN %>% as.numeric %>% reverse_trans_funeval
+    f_max <- input$PAR_F_MAX %>% as.numeric %>% reverse_trans_funeval
     
     data <- EPAR.DATA()
     n_algorithm <- length(data)
     n_param <- sapply(data, function(d) length(unique(d$par))) %>% max
     colors <- colorspace::rainbow_hcl(n_algorithm * n_param)
     
-    p <- plot_ly_default(x.title = "runtime", y.title = "parameters")
+    p <- plot_ly_default(x.title = "function evaluation", y.title = "parameters")
     i <- 1
     
     for (df in data) {
@@ -1342,7 +1354,7 @@ shinyServer(function(input, output, session) {
       
       ddf <- df %>% 
         mutate(upper = mean + sd, lower = mean - sd) %>% 
-        filter(runtime >= rt_min, runtime <= rt_max)
+        filter(BestF >= f_min, BestF <= f_max)
       
       par_name <- unique(df$par)
       for (name in par_name) {
@@ -1360,13 +1372,13 @@ shinyServer(function(input, output, session) {
         rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
         
         if (input$PAR_show.mean == 'mean')
-          p %<>% add_trace(data = dddf, x = ~runtime, y = ~mean, type = 'scatter', 
+          p %<>% add_trace(data = dddf, x = ~BestF, y = ~mean, type = 'scatter', 
                            mode = 'lines+markers', name = paste0(algId, '.', name, '.mean'), 
                            marker = list(color = rgb_str),
                            line = list(color = rgb_str))
         
         else if (input$PAR_show.mean == 'median')
-          p %<>% add_trace(data = dddf, x = ~runtime, y = ~median, type = 'scatter',
+          p %<>% add_trace(data = dddf, x = ~BestF, y = ~median, type = 'scatter',
                            name = paste0(algId, '.', name, '.mean'), mode = 'lines+markers', 
                            marker = list(color = rgb_str),
                            line = list(color = rgb_str, dash = 'dash'))

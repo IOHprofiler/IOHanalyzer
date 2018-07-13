@@ -45,11 +45,13 @@ DataSet <- function(info, verbose = F, maximization = TRUE) {
     
     by_target <- align_by_target(dat, maximization = maximization)      # aligned by target values
     by_runtime <- align_by_runtime(tdat)   # aligned by runtime
+    by_runtime <- by_runtime[1]
     
     maxEvals <- sapply(dat, function(d) d[nrow(d), idxEvals]) %>% 
       set_names(NULL)
     finalFunvals <- sapply(tdat, function(d) d[nrow(d), idxTarget]) %>% 
       set_names(NULL)
+    
     
     if (length(info$instance) == 0 || length(info$instance) != length(dat)) {
       warning('The number of instances found in the info is inconsistent with the data!')
@@ -111,12 +113,13 @@ RT_summary <- function(dataset, ftarget, maximization = TRUE,
   
   lapply(ftarget, 
          function(f) {
-           seq_along(f_aligned)[op(f_aligned, f)][1] %>% 
+           seq_along(f_aligned)[`op`(f_aligned + 0.01, f)][1] %>% 
              # order(abs(f - f_aligned))[1] %>% 
              df[., ] %>% 
              as.vector %>% {
                c(f, length(.[!is.na(.)]), 
                  mean(., na.rm = T), median(., na.rm = T), 
+                 sd(., na.rm = T),
                  # type 1 ~ 3 for the discrete r.v.
                  quantile(., probs = probs, names = F, type = 3, na.rm = T)) 
              }
@@ -124,7 +127,7 @@ RT_summary <- function(dataset, ftarget, maximization = TRUE,
     do.call(rbind, .) %>% 
     as.data.frame %>% 
     cbind(algId, .) %>%
-    set_colnames(c('algId', 'f(x)', 'runs', 'mean', 'median', paste0(probs * 100, '%')))
+    set_colnames(c('algId', 'f(x)', 'runs', 'mean', 'median', 'sd', paste0(probs * 100, '%')))
 }
 
 # Retrieve the runtime samples from an aligned data set
@@ -143,7 +146,7 @@ RT <- function(dataset, ftarget, format = 'wide', maximization = TRUE) {
   
   df <- lapply(ftarget, 
                function(f) {
-                 seq_along(f_aligned)[op(f_aligned, f)][1] %>% 
+                 seq_along(f_aligned)[op(f_aligned + 0.1, f)][1] %>% 
                    data[., ] %>% 
                    as.vector %>% 
                    c(f, .)
@@ -156,7 +159,8 @@ RT <- function(dataset, ftarget, format = 'wide', maximization = TRUE) {
   if (format == 'long') {
     df <- melt(df, id = c('algId', 'f(x)'), variable.name = 'run', 
                value.name = 'RT') %>% 
-      mutate(run = as.numeric(gsub('run.', '', run)) %>% as.integer)
+      mutate(run = as.numeric(gsub('run.', '', run)) %>% as.integer) %>% 
+      arrange(`f(x)`, run)
   }
   df
 }
@@ -181,14 +185,14 @@ FCE_summary <- function(dataset, runtimes, maximization = TRUE,
              df[., ] %>% 
              as.vector %>% {
                c(r, length(.[!is.na(.)]), 
-                 mean(., na.rm = T), median(., na.rm = T), 
+                 mean(., na.rm = T), median(., na.rm = T), sd(., na.rm = T),
                  quantile(., probs = probs, names = F, na.rm = T))
              }
          }) %>% 
     do.call(rbind, .) %>% 
     as.data.frame %>% 
     cbind(algId, .) %>%
-    set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', paste0(probs * 100, '%')))
+    set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', 'sd', paste0(probs * 100, '%')))
 }
 
 FCE <- function(dataset, runtimes, format = 'wide', maximization = TRUE) {
@@ -218,7 +222,8 @@ FCE <- function(dataset, runtimes, format = 'wide', maximization = TRUE) {
   if (format == 'long') {
     df <- melt(df, id = c('algId', 'runtime'), variable.name = 'run', 
                value.name = 'f(x)') %>% 
-      mutate(run = as.numeric(gsub('run.', '', run)) %>% as.integer)
+      mutate(run = as.numeric(gsub('run.', '', run)) %>% as.integer) %>% 
+      arrange(runtime, run)
   }
   df
 }
@@ -243,19 +248,13 @@ ERT <- function(x, succ = NULL, maxEval = Inf) {
 # compute the expected running time for a single DataSet
 ERT.DataSet <- function(data) {
   df <- data$by_target
-  succ <- matrix(0, nrow(df), ncol(df))
+  N <- ncol(df)
+  N_succ <- apply(df, 1, function(x) sum(!is.na(x)))
   
-  for (i in 1:nrow(df)) {
-    idx <- is.na(df[i, ])
-    succ[i, ] <- !idx
-    df[i, idx] <- attr(data, 'maxEvals')[idx]
-  }
-  
-  object <- lapply(seq(nrow(df)),
-                   function(idx) 
-                     as.data.frame(ERT(df[idx, ]), succ = succ[idx, ])
-    ) %>%
-    do.call(rbind.data.frame, .) %>% 
+  # ERT = apply(df, 1, . %>% sum(na.rm = T)) / N_succ
+  object <- data.frame(ERT = rowSums(df, na.rm = T) / N_succ,
+                       ps = N_succ / N,
+                       N_succ = N_succ) %>% 
     cbind(data.frame(BestF = row.names(df) %>% as.numeric,
                      sd = apply(df, 1, . %>% sd(na.rm = T)),
                      se = apply(df, 1, . %>% {sd(., na.rm = T) / sqrt(length(.))}),
@@ -287,13 +286,14 @@ FCE.DataSet <- function(data) {
 
 EPAR.DataSet <- function(data) {
   data.ori <- data
-  data <- data[-c(1, 2)] # drop the aligned data set
+  data <- data[!(names(data) %in% c('by_runtime', 'by_target'))] # drop the aligned data set
   par_name <- names(data)
+  n_par <- length(par_name)
   
   df <- lapply(names(data), function(n) as.data.frame(data[[n]])) %>% 
     do.call(rbind.data.frame, .)
   
-  object <- data.frame(runtime = rep(rownames(data[[1]]), 2) %>% as.integer,
+  object <- data.frame(BestF = rep(rownames(data[[1]]), n_par) %>% as.numeric,
                        mean = apply(df, 1, . %>% mean(na.rm = T)),
                        median = apply(df, 1, . %>% median(na.rm = T)),
                        sd = apply(df, 1, . %>% sd(na.rm = T))) %>% 

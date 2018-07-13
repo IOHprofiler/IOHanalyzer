@@ -20,14 +20,16 @@ When using IOHProfiler and parts thereof, please kindly cite this work as
 
 [Hao Wang, Furong Ye, Carola Doerr, Sander van Rijn, Thomas Bäck: <i>IOHProfiler: A New Tool for Benchmarking and Profiling Iterative Optimization Heuristics</i>, arXiv, 2018]
 
-@article{IOHProfiler, <br/> 
-  author = {Hao Wang, Furong Ye, Carola Doerr, Sander van Rijn, Thomas Bäck}, <br/> 
-  title = {IOHProfiler: A New Tool for Benchmarking and Profiling Iterative Optimization Heuristics}, <br/> 
-  journal = {CoRR}, <br/> 
-  volume = {tbd}, <br/> 
-  year = {2018}, <br/> 
-  url = {tbd} <br/> 
+```
+@article{IOHProfiler,
+  author = {Hao Wang, Furong Ye, Carola Doerr, Sander van Rijn, Thomas Bäck},
+  title = {IOHProfiler: A New Tool for Benchmarking and Profiling Iterative Optimization Heuristics},
+  journal = {CoRR}, 
+  volume = {tbd},  
+  year = {2018}, 
+  url = {tbd} 
 } 
+```
 
 ## Acknowledgements
 

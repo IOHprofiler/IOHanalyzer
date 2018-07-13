@@ -102,12 +102,12 @@ body <- dashboardBody(
                    }, 20);
   ')),
   
-  # tags$script(HTML('
-  #      window.setInterval(function() {
-  #                  var elem = document.getElementById("upload_data_promt");
-  #                  elem.scrollTop = elem.scrollHeight;
-  #                  }, 20);
-  # ')),
+  tags$script(HTML('
+       window.setInterval(function() {
+                   var elem = document.getElementById("upload_data_promt");
+                   elem.scrollTop = elem.scrollHeight;
+                   }, 20);
+  ')),
   
   # include MathJax
   HTML("<head><script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML'
@@ -204,8 +204,8 @@ body <- dashboardBody(
                      textInput('F_MIN_SAMPLE', label = F_MIN_LABEL, value = ''),
                      textInput('F_MAX_SAMPLE', label = F_MAX_LABEL, value = ''),
                      textInput('F_STEP_SAMPLE', label = F_STEP_LABEL, value = ''),
-                     checkboxInput('F_LOGSPACE_DATA_SUMMARY',
-                                   label = HTML('Evenly space target values in \\(log_{10}\\) space')),
+                     # checkboxInput('F_LOGSPACE_DATA_SUMMARY',
+                     #               label = HTML('Evenly space target values in \\(log_{10}\\) space')),
                      selectInput('ALGID_RAW_INPUT', 'Algorithms', 
                                  choices = NULL, selected = NULL),
                      
@@ -741,10 +741,10 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                       div(style = "width: 90%;",
                           sidebarPanel(
                             width = 3,
-                            HTML('<p style="font-size:120%;">Range of the displayed budget values (\\(x\\) axis)</p>'),
+                            HTML('<p style="font-size:120%;">Range of the function values (\\(x\\) axis)</p>'),
                             
-                            textInput('PAR_RT_MIN', label = RT_MIN_LABEL, value = ''),
-                            textInput('PAR_RT_MAX', label = RT_MAX_LABEL, value = ''),
+                            textInput('PAR_F_MIN', label = F_MIN_LABEL, value = ''),
+                            textInput('PAR_F_MAX', label = F_MAX_LABEL, value = ''),
                             
                             selectInput('PAR_ALGID_INPUT', 'Algorithms', choices = NULL, selected = NULL),
                             selectInput('PAR_show.mean', label = 'mean/median', 
@@ -761,7 +761,7 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                            found with a fixed-budget of evaluations are depicted against the budget. 
                            The displayed elements can be switched on and off by clicking on the legend on the right. 
                            A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                      mainPanel(plotlyOutput('PAR_PER_FUN', height = "700px", width = "1157px"))
+                      mainPanel(plotlyOutput('PAR_PER_FUN', height = "800px", width = "1257px"))
                       )
                   )
               )

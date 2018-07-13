@@ -17,6 +17,15 @@ source('readFiles.R')
 # TODO: perhaps migrate to data.table for speed concern and simplicity
 # TODO: find better name to replace FCE
 
+limit.data.frame <- function(df, n) {
+  N <- nrow(df)
+  if (N > n) {
+    idx <- c(1, seq(1, N, length.out = n), N) %>% unique
+    df[idx, ]
+  } else 
+    df
+}
+
 # constructor of S3 class 'DataSet' ---------------------------
 # Attributes
 #   funId
@@ -113,11 +122,10 @@ RT_summary <- function(dataset, ftarget, maximization = TRUE,
   
   lapply(ftarget, 
          function(f) {
-           seq_along(f_aligned)[`op`(f_aligned + 0.01, f)][1] %>% 
-             # order(abs(f - f_aligned))[1] %>% 
-             df[., ] %>% 
+           idx <- seq_along(f_aligned)[`op`(f_aligned + 0.01, f)][1]
+           df[idx, ] %>% 
              as.vector %>% {
-               c(f, length(.[!is.na(.)]), 
+               c(f_aligned[idx], length(.[!is.na(.)]), 
                  mean(., na.rm = T), median(., na.rm = T), 
                  sd(., na.rm = T),
                  # type 1 ~ 3 for the discrete r.v.
@@ -178,25 +186,28 @@ FCE_summary <- function(dataset, runtimes, maximization = TRUE,
   if (is.null(algId)) 
     algId <- 'unknown'
   
-  lapply(runtimes, 
-         function(r) {
-           idx <- seq_along(RT_aligned)[RT_aligned >= r]
-           ifelse(length(idx) == 0, nrow(df), idx[1]) %>% 
-             df[., ] %>% 
-             as.vector %>% {
-               c(r, length(.[!is.na(.)]), 
-                 mean(., na.rm = T), median(., na.rm = T), sd(., na.rm = T),
-                 quantile(., probs = probs, names = F, na.rm = T))
-             }
-         }) %>% 
-    do.call(rbind, .) %>% 
-    as.data.frame %>% 
-    cbind(algId, .) %>%
-    set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', 'sd', paste0(probs * 100, '%')))
+  idx <- sapply(runtimes, function(r) {
+    idx <- seq_along(RT_aligned)[RT_aligned >= r]
+    ifelse(length(idx) == 0, nrow(df), idx[1])
+  }) %>% 
+    unique
+  
+  df <- df[idx, ]
+  data.frame(algId = algId,
+             runtime = RT_aligned[idx],
+             runs = apply(df, 1, . %>% {length(.[!is.na(.)])}),
+             mean = apply(df, 1, . %>% mean(., na.rm = T)), 
+             median = apply(df, 1, . %>% median(., na.rm = T)), 
+             sd = apply(df, 1, . %>% sd(., na.rm = T))) %>% 
+  cbind(as.data.frame(apply(df, 1, . %>% quantile(., probs = probs, names = F, 
+                                                  na.rm = T))) %>% t %>% 
+          set_colnames(paste0(probs * 100, '%')))
+  
 }
 
 FCE <- function(dataset, runtimes, format = 'wide', maximization = TRUE) {
-  data <- dataset$by_runtime
+  data <- as.data.frame(dataset$by_runtime) %>% 
+    limit.data.frame(n = 200)
   algId <- attr(dataset, 'algId')
   
   runtimes <- c(runtimes)
@@ -206,17 +217,13 @@ FCE <- function(dataset, runtimes, format = 'wide', maximization = TRUE) {
   if (is.null(algId)) 
     algId <- 'unknown'
   
-  df <- lapply(runtimes, 
-               function(r) {
-                 idx <- seq_along(RT_aligned)[RT_aligned >= r]
-                 ifelse(length(idx) == 0, nrow(data), idx[1]) %>%
-                   data[., ] %>% 
-                   as.vector %>% 
-                   c(r, .)
-               }) %>% 
-    do.call(rbind, .) %>% 
-    as.data.frame %>% 
-    cbind(algId, .) %>%
+  idx <- sapply(runtimes, function(r) {
+    idx <- seq_along(RT_aligned)[RT_aligned >= r]
+    ifelse(length(idx) == 0, nrow(data), idx[1]) %>% unique
+  })
+  
+  df <- data[idx, ] %>% 
+    cbind(data.frame(algId = algId, runtime = RT_aligned[idx]), .) %>% 
     set_colnames(c('algId', 'runtime', paste0('run.', seq(n_run))))
   
   if (format == 'long') {

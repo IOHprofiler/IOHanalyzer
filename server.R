@@ -25,15 +25,6 @@ symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
 maximization <- TRUE
 src_suite <- 'PBO' # TODO: this shoule be taken from the data set
 
-limit.data.frame <- function(df, n) {
-  N <- nrow(df)
-  if (N > n) {
-    idx <- c(1, seq(1, N, length.out = n), N) %>% unique
-    df[idx, ]
-  } else 
-    df
-}
-
 # Formatter for function values
 format_funeval <- ifelse(src_suite == 'PBO',
                          function(v) format(as.integer(as.numeric(v))),
@@ -906,9 +897,9 @@ shinyServer(function(input, output, session) {
     data <- DATA()
     rt <- getRuntimes(data)
     
-    rt_min <- input$RT_MIN %>% as.integer
-    rt_max <- input$RT_MAX %>% as.integer
-    rt_step <- input$RT_STEP %>% as.integer
+    rt_min <- input$RT_MIN_SAMPLE %>% as.integer
+    rt_max <- input$RT_MAX_SAMPLE %>% as.integer
+    rt_step <- input$RT_STEP_SAMPLE %>% as.integer
     
     # when initializing or incorrect input
     if (is.na(rt_min) || is.na(rt_max) || is.na(rt_step))
@@ -1026,8 +1017,7 @@ shinyServer(function(input, output, session) {
       
       df <- data[[i]]
       algId <- attr(df, 'algId')
-      fce <- FCE(df, runtime, format = 'long')
-      
+      fce <- FCE(df, runtime, format = 'long', maximization = maximization)
       # skip if all target samples are NA
       if (sum(!is.na(fce$`f(x)`)) < 2)
         next
@@ -1208,7 +1198,7 @@ shinyServer(function(input, output, session) {
     funevals.max <- sapply(data, function(d) max(d$by_runtime, na.rm = T)) %>% max
     funevals.min <- sapply(data, function(d) min(d$by_runtime, na.rm = T)) %>% min
     
-    x <- seq(funevals.min, funevals.max, length.out = 50)
+    x <- seq(funevals.min, funevals.max, length.out = 40)
     p <- plot_ly_default(#title = "Empirical Cumulative Distribution of the runtime",
       x.title = "target value",
       y.title = "Proportion of (run, budget) pairs")
@@ -1221,19 +1211,23 @@ shinyServer(function(input, output, session) {
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.15)')
       rgba_str2 <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.8)')
       
-      m <- lapply(rt_seq, function(r) {
-        ce <- FCE(df, r, format = 'long') %>% '$'(`f(x)`)
-        if (all(is.na(ce)))
-          return(rep(0, length(x)))
-        fun <- ecdf(ce)
-        fun(x)
-      }) %>% 
-        do.call(rbind, .)
+      fun <- FCE(df, rt_seq, format = 'long',  maximization = maximization)$`f(x)` %>% 
+        ecdf
+      m <- fun(x)
+      # m <- lapply(rt_seq, function(r) {
+      #   ce <- FCE(df, r, format = 'long',  maximization = maximization) %>% '$'(`f(x)`)
+      #   if (all(is.na(ce)))
+      #     return(rep(0, length(x)))
+      #   fun <- ecdf(ce)
+      #   fun(x)
+      # }) %>% 
+        # do.call(rbind, .)
       
-      df_plot <- data.frame(x = x, 
-                            mean = apply(m, 2, . %>% mean(na.rm = T)),
-                            sd = apply(m, 2, . %>% sd(na.rm = T))) %>% 
-        mutate(upper = mean + sd, lower = mean - sd)
+      df_plot <- data.frame(x = x, mean = m)
+      # df_plot <- data.frame(x = x, 
+      #                       mean = apply(m, 2, . %>% mean(na.rm = T)),
+      #                       sd = apply(m, 2, . %>% sd(na.rm = T))) %>% 
+      #   mutate(upper = mean + sd, lower = mean - sd)
       
       p %<>%
         # add_trace(data = df_plot, x = ~x, y = ~upper, type = 'scatter', mode = 'lines',
@@ -1270,63 +1264,85 @@ shinyServer(function(input, output, session) {
                                         T = 'log', F = 'linear')))
   })
   
+  plot.DATA <- reactive({
+    data <- DATA()
+    for (k in seq_along(data)) {
+      data[[k]]$by_runtime <- limit.data.frame(data[[k]]$by_runtime, n = 100)
+    }
+    data
+  })
+  
   # evaluation rake of all courses 
   output$FCE_AUC <- renderPlotly({
-    data <- DATA()
+    data <- plot.DATA()
     rt <- getRuntimes(data)
-    
+
     rt_min <- input$FCE_AUC_RT_MIN %>% as.integer
     rt_max <- input$FCE_AUC_RT_MAX %>% as.integer
     rt_step <- input$FCE_AUC_RT_STEP %>% as.integer
-    
+
     # when initializing or incorrect input
     if (is.na(rt_min) || is.na(rt_max) || is.na(rt_step))
       return(data.frame())
     if (rt_min >= rt_max || rt_step > rt_max - rt_min)
       return(data.frame())
-    
-    rt_seq <- seq(from = rt_min, to = rt_max, by = rt_step) %>% 
-      reverse_trans_runtime %>% 
-      .[. >= min(rt)] %>% .[. <= max(rt)] 
-    
+
+    rt_seq <- seq(from = rt_min, to = rt_max, by = rt_step) %>%
+      reverse_trans_runtime %>%
+      .[. >= min(rt)] %>% .[. <= max(rt)]
+
     n_algorithm <- length(data)
     colors <- colorspace::rainbow_hcl(n_algorithm)
-    
+
     funevals.max <- sapply(data, function(d) max(d$by_runtime, na.rm = T)) %>% max
     p <- plot_ly_default()
-    
+
     for (k in seq_along(data)) {
       df <- data[[k]]
       algId <- attr(df, 'algId')
-      
+
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.2)')
+
+      # func <- function(x) { 
+      #   f <- ecdf(x)
+      #   attr(f, 'min') <- min(x)
+      #   f
+      # }
       
+      # tmp <- FCE(df, rt_seq, format = 'long', maximization = maximization) %>% 
+      #   group_by(group) %>% 
+      #   summarise(ecdf = func)
+        
       # calculate ECDFs on user specified targets
       funs <- lapply(rt_seq, function(r) {
-        FCE(df, r, format = 'long') %>% 
+        FCE(df, r, format = 'long') %>%
           '$'(`f(x)`) %>% {
             if (all(is.na(.))) NULL
-            else  RT.ECDF(.)
+            else  {
+              f <- ecdf(.)
+              attr(f, 'min') <- min(.)
+              f
+            }
           }
       })
-      
+
       auc <- sapply(funs,
                     function(fun) {
                       if (is.null(fun)) 0
-                      else integrate(fun, lower = attr(fun, 'min') - 1, upper = funevals.max, 
-                                     subdivisions = 5e3) %>% {'$'(., 'value') / funevals.max}
+                      else integrate(fun, lower = attr(fun, 'min') - 1, upper = funevals.max,
+                                     subdivisions = 1e3) %>% {'$'(., 'value') / funevals.max}
                     })
-      
-      p %<>% 
-        add_trace(type = 'scatterpolar', r = auc, 
-                  theta = paste0('B:', as.integer(rt_seq)), 
+
+      p %<>%
+        add_trace(type = 'scatterpolar', r = auc,
+                  theta = paste0('B:', as.integer(rt_seq)),
                   fill = 'toself', fillcolor = rgba_str,
                   marker = list(color = rgb_str), hoverinfo = 'text',
                   text = paste0('area: ', format(auc, digits = 2, nsmall = 2)),
-                  name = algId) 
+                  name = algId)
     }
-    
+
     p %<>%
       layout(polar = list(radialaxis = list(visible = T)),
              yaxis = list(type = 'log'),

@@ -105,7 +105,7 @@ read_IndexFile <- function(fname) {
 # functions to align the raw data -----------------------
 # global variables for the alignment
 idxEvals <- 1
-idxTarget <- 5
+idxTarget <- 3
 n_data_column <- 5
 # align all instances at a given target/precision
 # TODO: implement this part in C for speeding up
@@ -116,7 +116,6 @@ n_data_column <- 5
 align_by_target <- function(data, targets = 'full', nrow = 100, maximization = TRUE) {
   N <- length(data) 
   data <- lapply(data, as.matrix)   # matrices are faster for indexing?
-  # idx <- c(idxTarget, idxEvals)
   next_lines <- lapply(data, function(x) x[1, ]) %>% unlist %>% 
     matrix(nrow = N, byrow = T)
   
@@ -183,7 +182,7 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
         while (!finished[k]) {
           # hitting the target
           # TODO: solve this issue!
-          if (`op`(next_lines[k, 1], as.integer(t))) { 
+          if (`op`(next_lines[k, 1], t)) { 
             curr_eval[k] <- next_lines[k, 2]
             curr_fvalues[k] <- next_lines[k, 1]
             break
@@ -246,23 +245,44 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
       for (k in seq_along(data)) {
         d <- data[[k]]
         iter <- index[k]
-        while (!finished[k]) {
-          # hitting the target
-          # TODO: solve this issue!
-          if (`op`(next_lines[k, idxTarget], as.integer(t))) {
+        
+        # if (next_lines[k, idxTarget] + 0.001 >= t) {
+        #   curr_eval[k] <- next_lines[k, idxEvals]
+        # } else {
+        #   while (!finished[k]) {
+        #     # hitting the target
+        #     # TODO: solve this issue (+0.001) precision issue!
+        #     if (next_lines[k, idxTarget] + 0.001 >= t) {
+        #       curr_eval[k] <- next_lines[k, idxEvals]
+        #       break
+        #     }
+        #     
+        #     if (iter < nrow(d)) {
+        #       iter <- iter + 1
+        #       next_lines[k, ] <- as.numeric(d[iter, ])
+        #     } else {
+        #       finished[k] <- TRUE
+        #     }
+        #   }
+        # }
+        
+        while (TRUE) {
+          # if hitting the target
+          # TODO: solve this issue (+0.001) precision issue!
+          if (next_lines[k, idxTarget] + 0.001 >= t) {
             curr_eval[k] <- next_lines[k, idxEvals]
-            if (iter == nrow(d))
-              finished[k] <- TRUE
             break
           }
-
+          
+          # otherwise, is the iterator finished?
           if (iter < nrow(d)) {
             iter <- iter + 1
-            next_lines[k, ] <- d[iter, ]
+            next_lines[k, ] <- as.numeric(d[iter, ])
           } else {
-            finished[k] <- TRUE
+            break
           }
         }
+        
         index[k] <- iter
       }
       
@@ -272,7 +292,7 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
         }
       }
       
-      res[i, ] <- curr_eval
+      res[i, ] <- curr_eval[1:N]
       i <- i + 1
       t <- Fvalues[i]
       

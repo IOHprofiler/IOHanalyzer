@@ -10,6 +10,16 @@ library(reshape2)
 library(data.table)
 library(Rcpp)
 
+# reduce the size of the data set by evenly subsampling the records
+limit.data.frame <- function(df, n) {
+  N <- nrow(df)
+  if (N > n) {
+    idx <- c(1, seq(1, N, length.out = n), N) %>% unique
+    df[idx, ]
+  } else 
+    df
+}
+
 # functions to read the .info, .dat files --------------------------
 scan_indexFile <- function(folder) {
   folder <- trimws(folder)
@@ -41,7 +51,8 @@ read_dat <- function(fname) {
     if (i1 == i2)
       ans <- t(ans)
     
-    ans
+    # the cdat can be very big
+    ans %<>% limit.data.frame(n = 200)
   })
   res
 }
@@ -50,12 +61,13 @@ read_dat <- function(fname) {
 read_IndexFile <- function(fname) {
   f <- file(fname, 'r')
   path <- dirname(fname)
-  
   data <- list()
   i <- 1
+  
   while (TRUE) {
-    lines <- readLines(f, n = 3)
-    if (length(lines) == 0 ) 
+    # TODO: remove suppressWarnings later
+    lines <- suppressWarnings(readLines(f, n = 3))
+    if (length(lines) == 0) 
       break
     
     header <- strsplit(lines[1] , ',')[[1]] %>% trimws %>% 
@@ -108,11 +120,6 @@ idxEvals <- 1
 idxTarget <- 3
 n_data_column <- 5
 # align all instances at a given target/precision
-# TODO: implement this part in C for speeding up
-# TODO: add option allowing for the minimization scenario
-# TODO: remove the option 'full' for targets
-# TODO: write the main loop using Rcpp
-# TODO: automatically determine how many rows to align 
 align_by_target <- function(data, targets = 'full', nrow = 100, maximization = TRUE) {
   N <- length(data) 
   data <- lapply(data, as.matrix)   # matrices are faster for indexing?
@@ -240,32 +247,12 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
     
     while (is.finite(t)) {
       curr_eval[1:N] <- NA
+      # Rcpp implementation
       # curr_eval[1:N] <- align_by_target_inner_loop(t, data, index, finished,
       #                                              next_lines, curr_eval)
       for (k in seq_along(data)) {
         d <- data[[k]]
         iter <- index[k]
-        
-        # if (next_lines[k, idxTarget] + 0.001 >= t) {
-        #   curr_eval[k] <- next_lines[k, idxEvals]
-        # } else {
-        #   while (!finished[k]) {
-        #     # hitting the target
-        #     # TODO: solve this issue (+0.001) precision issue!
-        #     if (next_lines[k, idxTarget] + 0.001 >= t) {
-        #       curr_eval[k] <- next_lines[k, idxEvals]
-        #       break
-        #     }
-        #     
-        #     if (iter < nrow(d)) {
-        #       iter <- iter + 1
-        #       next_lines[k, ] <- as.numeric(d[iter, ])
-        #     } else {
-        #       finished[k] <- TRUE
-        #     }
-        #   }
-        # }
-        
         while (TRUE) {
           # if hitting the target
           # TODO: solve this issue (+0.001) precision issue!

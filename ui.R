@@ -143,7 +143,7 @@ body <- dashboardBody(
                            width = 12,
                            HTML('<p style="font-size:120%;">The processed folders are:</p>'),
                            verbatimTextOutput('upload_data_promt'),
-                           tags$head(tags$style("#upload_data_promt{color:red; font-size:12px; font-style:italic;
+                           tags$head(tags$style("#upload_data_promt{color:black; font-size:12px; font-style:italic;
                                                 overflow-y:visible; max-height: 100px; background: ghostwhite;}"))
                          )
                      )
@@ -153,7 +153,7 @@ body <- dashboardBody(
                      box(title = HTML('<p style="font-size:120%;">Data Processing Prompt</p>'), width = 12,
                          solidHeader = T, status = "primary", collapsible = F, height = '500px',
                          verbatimTextOutput('process_data_promt'),
-                         tags$head(tags$style("#process_data_promt{color:red; font-size:12px; font-style:italic;
+                         tags$head(tags$style("#process_data_promt{color:black; font-size:12px; font-style:italic;
                                               overflow-y:visible; max-height: 425px; background: ghostwhite;}"))
                      )
               )
@@ -401,7 +401,7 @@ body <- dashboardBody(
                                 \\(v\\) is plotted against the available budget \\(t\\). The displayed elements can be switched 
                                 on and off by clicking on the legend on the right. A <b>tooltip</b> 
                                 and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                           plotlyOutput('RT_ECDF_AGGR', height = "600px", width = "1100px"),
+                           plotlyOutput('RT_ECDF_AGGR', height = "750px", width = "1200px"),
                            hr()
                            
                            # HTML('<p>The <b>Kolmogorov–Smirnov test</b> is used to investigate
@@ -432,7 +432,7 @@ body <- dashboardBody(
                                         The displayed algorithms can be selected by clicking on the legend on the right. 
                                         A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.
                                         This also includes the option to download the plot as png file.</p>'),
-                                   plotlyOutput("RT_AUC", height = "600px", width = "750px")
+                                   plotlyOutput("RT_AUC", height = "750px", width = "1150px")
                                    )
                      )
               ),
@@ -463,7 +463,7 @@ body <- dashboardBody(
                                           The displayed curves can be selected by clicking on the legend on the right. A <b>tooltip</b> 
                                           and <b>toolbar</b> appears when hovering over the figure. 
                                           This also includes the option to download the plot as png file.</p>'),
-                                     plotlyOutput("RT_ECDF", height = "600px", width = "1100px"))
+                                     plotlyOutput("RT_ECDF", height = "750px", width = "1150px"))
                          )
                      )
               )
@@ -671,9 +671,9 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                            verbatimTextOutput('FCE_RT_GRID'),
                            HTML('<p style="font-size:120%;">The fraction of (run,budget) pairs \\((i,B)\\) satisfying 
 that the best solution that the algorithm has found in the \\(i\\)-th run within the first \\(B\\) evaluations has quality at 
-least \\(v\\) is plotted against the target value \\(v\\). The displayed elements can be switched on and off by clicking on the 
+<b>most</b> \\(v\\) is plotted against the target value \\(v\\). The displayed elements can be switched on and off by clicking on the 
 legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                           plotlyOutput('FCE_ECDF_AGGR', height = "600px", width = "1100px"),
+                           plotlyOutput('FCE_ECDF_AGGR', height = "800px", width = "1200px"),
                            hr()
                            )
                     )
@@ -694,10 +694,10 @@ legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering o
                                    HTML('<p align="left" style="font-size:120%;">The <b>area under the ECDF</b> is 
                                         caculated for the sequence of budget values specified on the left. The displayed
                                         values are normalized against the maximal target value recorded for 
-                                        each algorithm. Intuitively, the larger the area, the better the algorithm. 
+                                        each algorithm. Intuitively, the <b>smaller</b> the area, the <b>better</b> the algorithm. 
                                         The displayed algorithms can be selected by clicking on the legend on the right. 
                                         A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                                   plotlyOutput("FCE_AUC", height = "600px", width = "750px")
+                                   plotlyOutput("FCE_AUC", height = "750px", width = "1150px")
                                    )
                          )
               ),
@@ -723,7 +723,7 @@ legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering o
                                           Each EDCF curve shows the proportion of the runs that have found within the 
 given budget B a solution of at least the required target value given by the x-axis. The displayed curves can be selected
 by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                                     plotlyOutput("FCE_ECDF_PER_TARGET", height = "600px", width = "1100px"))
+                                     plotlyOutput("FCE_ECDF_PER_TARGET", height = "750px", width = "1200px"))
                            )
                         )
                     )
@@ -753,6 +753,10 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                             
                             checkboxInput('PAR_semilogx', 
                                           label = 'scale x axis log10',
+                                          value = T),
+                            
+                            checkboxInput('PAR_semilogy', 
+                                          label = 'scale y axis log10',
                                           value = T)
                           )
                       ),

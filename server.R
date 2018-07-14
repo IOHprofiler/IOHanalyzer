@@ -4,6 +4,8 @@
 #
 # Author: Hao Wang
 # Email: wangronin@gmail.com
+# TODO
+#   * add 'shiny::req' to all the functions when the input might be insufficient
 
 library(shiny)
 library(shinyjs)
@@ -328,7 +330,7 @@ shinyServer(function(input, output, session) {
       if (input$ALGID_INPUT != 'all' && attr(df, 'algId') != input$ALGID_INPUT)
         next
       
-      res[[i]] <- RT_summary(df, fseq, probs = probs, maximization = maximization)
+      res[[i]] <- summarise_runtime(df, fseq, probs = probs, maximization = maximization)
     }
     do.call(rbind.data.frame, res)
   })
@@ -393,7 +395,8 @@ shinyServer(function(input, output, session) {
       if (input$ALGID_RAW_INPUT != 'all' && attr(df, 'algId') != input$ALGID_RAW_INPUT)
         next
       
-      rt <- RT(df, fseq, format = input$RT_download_format, maximization = maximization)
+      rt <- get_runtime_sample(df, fseq, format = input$RT_download_format, 
+                               maximization = maximization)
       if (input$RT_download_format == 'wide') {
         n <- ncol(rt) - 2
         if (n < n_runs_max) 
@@ -493,7 +496,7 @@ shinyServer(function(input, output, session) {
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.5)')
       
       p %<>%
-        add_trace(data = RT(df, ftarget, format = 'long'),
+        add_trace(data = get_runtime_sample(df, ftarget, format = 'long'),
                   x = ~algId, y = ~RT, split = ~algId, type = 'violin',
                   hoveron = "points+kde",
                   box = list(visible = T),
@@ -544,7 +547,7 @@ shinyServer(function(input, output, session) {
   
   # historgram of the running time
   output$RT_HIST <- renderPlotly({
-    ftarget <- format_funeval( input$RT_PMF_HIST_FTARGET) %>% as.numeric %>% reverse_trans_funeval
+    ftarget <- format_funeval(input$RT_PMF_HIST_FTARGET) %>% as.numeric %>% reverse_trans_funeval
     plot_mode <- input$ERT_illu_mode
     
     data <- DATA()
@@ -562,14 +565,14 @@ shinyServer(function(input, output, session) {
                         x.title = "function evaluations", y.title = "runs")
       })
     }
-     
+    
     for (i in seq_along(data)) {
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.35)')
       
       df <- data[[i]]
       algId <- attr(df, 'algId')
-      rt <- RT(df, ftarget, format = 'long')
+      rt <- get_runtime_sample(df, ftarget, format = 'long')
       
       # skip if all runtime samples are NA
       if (sum(!is.na(rt$RT)) < 2)
@@ -628,7 +631,7 @@ shinyServer(function(input, output, session) {
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.35)')
       
       for (i in seq_along(ftargets)) {
-        res <- RT(df, ftargets[i], format = 'long') 
+        res <- get_runtime_sample(df, ftargets[i], format = 'long') 
         rt <- sort(res$RT)
         
         if (all(is.na(rt)))
@@ -647,7 +650,7 @@ shinyServer(function(input, output, session) {
                     line = list(color = rgb_str, width = 3)) %>% 
           add_trace(data = res, x = x, y = y, type = 'scatter',
                     mode = 'markers',  legendgroup = paste0(k),
-                    name = sprintf('ECDF(%s, %.2e)', algId, ftargets[i]),
+                    name = sprintf('(%s, %.2e)', algId, ftargets[i]),
                     marker = list(color = rgb_str, symbol = symbols[i], size = 13))
       }
     }
@@ -717,7 +720,7 @@ shinyServer(function(input, output, session) {
       rgba_str2 <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.8)')
       
       m <- lapply(fseq, function(f) {
-        rt <- RT(df, f, format = 'long') %>% '$'('RT')
+        rt <- get_runtime_sample(df, f, format = 'long') %>% '$'('RT')
         if (all(is.na(rt)))
           return(rep(0, length(x)))
         fun <- ecdf(rt)
@@ -738,13 +741,13 @@ shinyServer(function(input, output, session) {
         #           fill = 'tonexty',  line = list(color = 'transparent'),
         #           fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd') %>% 
         add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
-                  mode = 'lines', name = sprintf('ECDF.mean(%s)', algId), 
+                  mode = 'lines', name = sprintf('%s', algId), 
                   showlegend = T, legendgroup = paste0(k),
                   line = list(color = rgb_str, width = 4.5))
       
       if (input$RT_ECDF_per_target) {
         for (f in fseq) {
-          rt <- RT(df, f, format = 'long') %>% '$'('RT') %>% sort
+          rt <- get_runtime_sample(df, f, format = 'long') %>% '$'('RT') %>% sort
           # TODO: plot the unsuccessful ECDF
           if (all(is.na(rt)))
             next
@@ -799,7 +802,7 @@ shinyServer(function(input, output, session) {
       
       # calculate ECDFs on user specified targets
       funs <- lapply(fseq, function(f) {
-        RT(df, f, format = 'long') %>% 
+        get_runtime_sample(df, f, format = 'long') %>% 
           '$'('RT') %>% {
           if (all(is.na(.))) NULL
           else  RT.ECDF(.)
@@ -856,7 +859,7 @@ shinyServer(function(input, output, session) {
       if (input$FCE_ALGID_INPUT != 'all' && attr(df, 'algId') != input$FCE_ALGID_INPUT)
         next
       
-      res[[i]] <- FCE_summary(df, rt_seq, probs = probs, maximization = maximization)
+      res[[i]] <- summarise_target(df, rt_seq, probs = probs, maximization = maximization)
     }
     do.call(rbind.data.frame, res)
   })
@@ -921,7 +924,8 @@ shinyServer(function(input, output, session) {
           && attr(df, 'algId') != input$FCE_ALGID_RAW_INPUT)
         next
       
-      rt <- FCE(df, rt_seq, format = input$download_format_FCE, maximization = maximization)
+      rt <- get_target_sample(df, rt_seq, format = input$download_format_FCE, 
+                              maximization = maximization)
       if (input$download_format_FCE == 'wide') {
         # impute the missing records
         n <- ncol(rt) - 2
@@ -974,7 +978,7 @@ shinyServer(function(input, output, session) {
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.5)')
       
       p %<>%
-        add_trace(data = FCE(df, runtime, format = 'long'),
+        add_trace(data = get_target_sample(df, runtime, format = 'long'),
                   x = ~algId, y = ~`f(x)`, split = ~algId, type = 'violin',
                   hoveron = "points+kde",
                   box = list(visible = T),
@@ -1017,7 +1021,7 @@ shinyServer(function(input, output, session) {
       
       df <- data[[i]]
       algId <- attr(df, 'algId')
-      fce <- FCE(df, runtime, format = 'long', maximization = maximization)
+      fce <- get_target_sample(df, runtime, format = 'long', maximization = maximization)
       # skip if all target samples are NA
       if (sum(!is.na(fce$`f(x)`)) < 2)
         next
@@ -1065,33 +1069,36 @@ shinyServer(function(input, output, session) {
     for (i in seq_along(data)) {
       df <- data[[i]]
       algId <- attr(df, 'algId')
+      
       fce <- df %>% 
         mutate(upper = FCE + sd, lower = FCE - sd) %>% 
         filter(runtime >= rt_min, runtime <= rt_max) %>% 
-        limit.data.frame(n = 50)
+        limit.data.frame(n = 60)
+      
+      if (nrow(fce) == 0)
+        next
       
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
       
       p %<>% 
         add_trace(data = fce, x = ~runtime, y = ~upper, type = 'scatter', mode = 'lines',
-                  line = list(color = rgba_str, width = 0), legendgroup = algId,
+                  line = list(color = rgba_str, width = 0), 
                   showlegend = F, name = 'mean +/- sd') %>% 
         add_trace(x = ~runtime, y = ~lower, type = 'scatter', mode = 'lines',
                   fill = 'tonexty',  line = list(color = 'transparent'),
-                  legendgroup = algId, 
                   fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd')
       
       if (input$FCE_show.mean)
         p %<>% add_trace(data = fce, x = ~runtime, y = ~FCE, type = 'scatter', 
-                         mode = 'lines+markers', name = paste0(algId, '.mean'), 
-                         marker = list(color = rgb_str), legendgroup = algId,
+                         mode = 'lines+markers', name = sprintf("%s.mean", algId), 
+                         marker = list(color = rgb_str), 
                          line = list(color = rgb_str))
       
       if (input$FCE_show.median)
         p %<>% add_trace(data = fce, x = ~runtime, y = ~median, type = 'scatter',
-                         name = paste0(algId, '.median'), mode = 'lines+markers', 
-                         marker = list(color = rgb_str), legendgroup = algId,
+                         name = sprintf("%s.median", algId), mode = 'lines+markers', 
+                         marker = list(color = rgb_str),
                          line = list(color = rgb_str, dash = 'dash'))
     }
     p %<>%
@@ -1123,7 +1130,7 @@ shinyServer(function(input, output, session) {
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.35)')
       
       for (i in seq_along(runtimes)) {
-        res <- FCE(df, runtimes[i], format = 'long') 
+        res <- get_target_sample(df, runtimes[i], format = 'long') 
         funvals <- sort(res$`f(x)`)
         
         if (all(is.na(funvals)))
@@ -1143,7 +1150,7 @@ shinyServer(function(input, output, session) {
                     line = list(color = rgb_str, width = 3)) %>% 
           add_trace(data = res, x = x, y = y, type = 'scatter',
                     mode = 'markers',  legendgroup = paste0(k),
-                    name = sprintf('ECDF(%s, %.2e)', algId, runtimes[i]),
+                    name = sprintf('%s, %.2e', algId, runtimes[i]),
                     marker = list(color = rgb_str, symbol = symbols[i], size = 13))
       }
     }
@@ -1191,7 +1198,6 @@ shinyServer(function(input, output, session) {
       reverse_trans_runtime %>% 
       .[. >= min(rt)] %>% .[. <= max(rt)]
     
-    data <- DATA()
     n_algorithm <- length(data)
     colors <- colorspace::rainbow_hcl(n_algorithm)
     
@@ -1211,11 +1217,11 @@ shinyServer(function(input, output, session) {
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.15)')
       rgba_str2 <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.8)')
       
-      fun <- FCE(df, rt_seq, format = 'long',  maximization = maximization)$`f(x)` %>% 
+      fun <- get_target_sample(df, rt_seq, format = 'long',  maximization = maximization)$`f(x)` %>% 
         ecdf
       m <- fun(x)
       # m <- lapply(rt_seq, function(r) {
-      #   ce <- FCE(df, r, format = 'long',  maximization = maximization) %>% '$'(`f(x)`)
+      #   ce <- get_target_sample(df, r, format = 'long',  maximization = maximization) %>% '$'(`f(x)`)
       #   if (all(is.na(ce)))
       #     return(rep(0, length(x)))
       #   fun <- ecdf(ce)
@@ -1237,13 +1243,13 @@ shinyServer(function(input, output, session) {
         #           fill = 'tonexty',  line = list(color = 'transparent'),
         #           fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd') %>% 
         add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
-                  mode = 'lines', name = sprintf('ECDF.mean(%s)', algId), 
+                  mode = 'lines', name = sprintf('%s', algId), 
                   showlegend = T, legendgroup = paste0(k),
                   line = list(color = rgb_str, width = 4.5))
       
       if (input$FCE_ECDF_per_target) {
         for (r in rt_seq) {
-          ce <- FCE(df, r, format = 'long') %>% '$'(`f(x)`) %>% sort
+          ce <- get_target_sample(df, r, format = 'long') %>% '$'(`f(x)`) %>% sort
           if (all(is.na(ce)))
             next
           else {
@@ -1254,7 +1260,7 @@ shinyServer(function(input, output, session) {
           p %<>%
             add_trace(x = ce, y = v, type = 'scatter',
                       mode = 'lines', name = algId, showlegend = F,
-                      line = list(color = rgba_str2, width = 1, dash = 'dot'))
+                      line = list(color = rgba_str2, width = 1))
         }
       }
     }
@@ -1304,19 +1310,9 @@ shinyServer(function(input, output, session) {
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.2)')
 
-      # func <- function(x) { 
-      #   f <- ecdf(x)
-      #   attr(f, 'min') <- min(x)
-      #   f
-      # }
-      
-      # tmp <- FCE(df, rt_seq, format = 'long', maximization = maximization) %>% 
-      #   group_by(group) %>% 
-      #   summarise(ecdf = func)
-        
       # calculate ECDFs on user specified targets
       funs <- lapply(rt_seq, function(r) {
-        FCE(df, r, format = 'long') %>%
+        get_target_sample(df, r, format = 'long') %>%
           '$'(`f(x)`) %>% {
             if (all(is.na(.))) NULL
             else  {
@@ -1360,7 +1356,7 @@ shinyServer(function(input, output, session) {
     n_param <- sapply(data, function(d) length(unique(d$par))) %>% max
     colors <- colorspace::rainbow_hcl(n_algorithm * n_param)
     
-    p <- plot_ly_default(x.title = "function evaluation", y.title = "parameters")
+    p <- plot_ly_default(x.title = "best-so-far f(x) value", y.title = "parameters")
     i <- 1
     
     for (df in data) {
@@ -1375,6 +1371,7 @@ shinyServer(function(input, output, session) {
       par_name <- unique(df$par)
       for (name in par_name) {
         dddf <- filter(ddf, par == name)
+        req(nrow(dddf) > 0)
         
         # p %<>% 
         #   add_trace(data = dddf, x = ~runtime, y = ~upper, type = 'scatter', mode = 'lines',
@@ -1402,7 +1399,8 @@ shinyServer(function(input, output, session) {
       }
     }
     p %<>%
-      layout(xaxis = list(type = switch(input$PAR_semilogx, T = 'log', F = 'linear')))
+      layout(xaxis = list(type = switch(input$PAR_semilogx, T = 'log', F = 'linear')),
+             yaxis = list(type = switch(input$PAR_semilogy, T = 'log', F = 'linear')))
   })
   
   # output$ks <- renderPrint({

@@ -1,11 +1,13 @@
 ---
-title: "Installation on Windows"
+title: "Installation"
 output:
   html_document: default
   pdf_document: default
 ---
 
 To install __IOHProfiler__ locally, you need to install R environment first. Please download the windows version from (https://cran.r-project.org/bin/windows/base/R-3.5.1-win.exe). Please install the __R-3.5.1-win.exe__ file (the latest, as of 11 July, 2018): just like installing a normal windows software.
+
+For linux/MacOS users, please download the corresponding version of R.
 
 After installation, you should see a R console icon on your desktop. On windows 10, it is very likely that there is no such an icon on the desktop. But, it can be found in all programs (select the __Start__ button, and then scroll through the alphabetical list on the left). An example is shown in the following screenshot:
 
@@ -31,6 +33,6 @@ After this step, please just type the following command in the R console:
 ```{r wrapper=TRUE, eval=FALSE}
 shiny::runApp('path/to/the/code/folder')
 ```
-Please make sure that you replace the path __'path/to/the/code/folder'__ to the path where the source code is located on your computer. For example, if the source code folder is located on your desktop, this path should look like __C:\\\\Users\\(username)\\\\Desktop\\\\post-processing__. If there is no error in the installation, a webpage should automatically pop-up in your web browser!
+Please make sure that you replace the path __'path/to/the/code/folder'__ to the path where the source code is located on your computer. For example, if the source code folder is located on your desktop, this path should look like __C:\\\\Users\\(username)\\\\Desktop\\\\post-processing__. On Linux/MacOS, this path might look like __/home/(username)/post-processing__ .If there is no error in the installation, a webpage should automatically pop-up in your web browser!
 
 

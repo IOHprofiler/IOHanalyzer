@@ -117,7 +117,7 @@ read_IndexFile <- function(fname) {
 # functions to align the raw data -----------------------
 # global variables for the alignment
 idxEvals <- 1
-idxTarget <- 3
+idxTarget <- 5
 n_data_column <- 5
 # align all instances at a given target/precision
 align_by_target <- function(data, targets = 'full', nrow = 100, maximization = TRUE) {

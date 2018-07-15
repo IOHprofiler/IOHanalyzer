@@ -25,7 +25,7 @@ F_STEP_LABEL <- HTML('<p>\\(\\Delta f:\\) granularity (step size)</p>')
 header <- dashboardHeader(title = HTML('<h4><div align="center"><b>IOHProfiler</b><br>
                                        <i>Post-Processing</i></div></h4>'))
 
-HTML_P <- function(s) HTML(paste0('<p align="left" style="font-size:120%";>', s, '</p>'))
+HTML_P <- function(s) HTML(paste0('<p align="left" style="font-size:120%;">', s, '</p>'))
 
 # The side bar layout ---------------------------------------------
 sidebar <- dashboardSidebar(
@@ -766,7 +766,29 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                            The displayed elements can be switched on and off by clicking on the legend on the right. 
                            A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
                       mainPanel(plotlyOutput('PAR_PER_FUN', height = "800px", width = "1257px"))
-                      )
+                      ),
+                     
+                     box(title = HTML('<p style="font-size:120%;">Parameter Statistics at Chosen Target Values</p>'), width = 12,
+                         solidHeader = T, status = "primary", collapsible = T,
+                         sidebarPanel(
+                           width = 3,
+                           HTML('<p align="justify">Set the range and the granularity of the results.
+                                The table will show fixed-target parameter values for evenly spaced target values.</p>'),
+                           
+                           textInput('PAR_F_MIN_SUMMARY', label = F_MIN_LABEL, value = ''),
+                           textInput('PAR_F_MAX_SUMMARY', label = F_MAX_LABEL, value = ''),
+                           textInput('PAR_F_STEP_SUMMARY', label = F_STEP_LABEL, value = ''),
+                           selectInput('PAR_ALGID_INPUT_SUMMARY', 'Algorithms', choices = NULL, selected = NULL),
+                           selectInput('PAR_INPUT', 'Parameters', choices = NULL, selected = NULL),
+                           downloadButton("PAR_downloadData", "Save this table as csv")
+                           ),
+                         
+                         mainPanel(
+                           width = 9,
+                           HTML(paste0('<div style="font-size:120%;">', includeMarkdown('RMD/RT_SUMMARY_TABLE.Rmd'),'</div>')),
+                           tableOutput('table_PAR_summary')
+                         )
+                     )
                   )
               )
         )

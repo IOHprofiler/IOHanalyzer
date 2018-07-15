@@ -128,8 +128,8 @@ shinyServer(function(input, output, session) {
       indexFiles <- scan_indexFile(folder)
       if (length(indexFiles) == 0) 
         shinyjs::html("process_data_promt", 
-                      paste0('No index file (.info) is found in folder ', 
-                             folder, '... skip\n'), add = TRUE)
+                      paste0('<p style="color:red;">No index file (.info) is found in folder ', 
+                             folder, '... skip</p>'), add = TRUE)
       else {
         folderList$data <- c(folderList$data, folder)  
         print_fun <- function(s) shinyjs::html("process_data_promt", s, add = TRUE)
@@ -147,7 +147,7 @@ shinyServer(function(input, output, session) {
     if (length(DataList$data) != 0) {
       DataList$data <- list()
       folderList$data <- list() 
-      shinyjs::html("process_data_promt", 'all data are removed!\n', add = FALSE)
+      shinyjs::html("process_data_promt", '<p style="color:red;">all data are removed!</p>', add = FALSE)
       shinyjs::html("upload_data_promt", "", add = FALSE)
     }
   })
@@ -162,7 +162,7 @@ shinyServer(function(input, output, session) {
   }, options = list(pageLength = 10, scrollX = F, autoWidth = TRUE,
                     columnDefs = list(list(width = '20px', targets = c(0, 1)))))
     
-  # update the list of dimensionality, funcId and algId
+  # update the list of dimensionality, funcId and algId and parameter list
   observe({
     data <- DataList$data
     if (length(data) == 0)
@@ -180,6 +180,10 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, 'PAR_ALGID_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'FCE_ALGID_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'FCE_ALGID_RAW_INPUT', choices = algId, selected = 'all')
+    updateSelectInput(session, 'PAR_ALGID_INPUT_SUMMARY', choices = algId, selected = 'all')
+    
+    parId <- c(getParId(data), 'all')
+    updateSelectInput(session, 'PAR_INPUT', choices = parId, selected = 'all')
   })
   
   # the filtered DataSets 
@@ -256,6 +260,10 @@ shinyServer(function(input, output, session) {
     
     updateTextInput(session, 'PAR_F_MIN', value = start)
     updateTextInput(session, 'PAR_F_MAX', value = stop)
+    
+    updateTextInput(session, 'PAR_F_MIN_SUMMARY', value = start)
+    updateTextInput(session, 'PAR_F_MAX_SUMMARY', value = stop)
+    updateTextInput(session, 'PAR_F_STEP_SUMMARY', value = start)
   })
   
   # update the values for the grid of running times
@@ -1420,5 +1428,127 @@ shinyServer(function(input, output, session) {
   #   print(a)
   # })
   # 
+  
+  get_PAR_summary <- reactive({
+    data <- DATA()
+    fall <- getFunvals(data)
+    
+    fstart <- format_funeval(input$PAR_F_MIN_SUMMARY) %>% as.numeric
+    fstop <- format_funeval(input$PAR_F_MAX_SUMMARY) %>% as.numeric
+    fstep <- format_funeval(input$PAR_F_STEP_SUMMARY) %>% as.numeric
+    
+    # when initializing or incorrect input
+    if (is.na(fstart) || is.na(fstop) || is.na(fstep))
+      return(data.frame())
+    if (fstart >= fstop || fstep > fstop - fstart)
+      return(data.frame())
+    
+    fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
+      c(fstart, ., fstop) %>% unique %>% 
+      reverse_trans_funeval %>% 
+      .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+    
+    probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
+    res <- list()
+    
+    for (i in seq_along(data)) {
+      df <- data[[i]]
+      
+      if (input$PAR_ALGID_INPUT_SUMMARY != 'all' 
+          && attr(df, 'algId') != input$PAR_ALGID_INPUT_SUMMARY)
+        next
+      
+      res[[i]] <- summarise_par(df, fseq, probs = probs, maximization = maximization)
+      if (input$PAR_INPUT != 'all')
+        res[[i]] %<>% filter(parId == input$PAR_INPUT)
+    }
+    do.call(rbind.data.frame, res)
+  })
+  
+  output$table_PAR_summary <- renderTable({
+    df <- get_PAR_summary()
+    df$run %<>% as.integer
+    df$mean %<>% format(digits = 2, nsmall = 2)
+    df$median %<>% format(digits = 2, nsmall = 2)
+    
+    # TODO: make probs as a global option
+    probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
+    
+    # format the integers
+    for (p in paste0(probs * 100, '%')) {
+      df[[p]] %<>% format(digits = 2, nsmall = 2)
+    }
+    df
+  })
+  
+  output$PAR_downloadData <- downloadHandler(
+    filename = {
+      data <- DATA()
+      fstart <- format_funeval(input$PAR_F_MIN_SUMMARY)
+      fstop <- format_funeval(input$PAR_F_MAX_SUMMARY)
+      fstep <- format_funeval(input$PAR_F_STEP_SUMMARY)
+      sprintf('parameter_summary_(%s,%s,%s).csv',
+              fstart, fstop, fstep)
+    },
+    content = function(file) {
+      write.csv(get_PAR_summary(), file, row.names = F)
+    },
+    contentType = "text/csv"
+  )
+   
+  # get_RT <- reactive({
+  #   data <- DATA()
+  #   fall <- getFunvals(data)
+  #   
+  #   fstart <- format_funeval(input$F_MIN_SAMPLE) %>% as.numeric
+  #   fstop <- format_funeval(input$F_MAX_SAMPLE) %>% as.numeric
+  #   fstep <- format_funeval(input$F_STEP_SAMPLE) %>% as.numeric
+  #   
+  #   # when initializing or incorrect input
+  #   if (is.na(fstart) || is.na(fstop) || is.na(fstep))
+  #     return(data.frame())
+  #   if (fstart >= fstop || fstep > fstop - fstart)
+  #     return(data.frame())
+  #   
+  #   fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
+  #     c(fstart, ., fstop) %>% unique %>% 
+  #     reverse_trans_funeval %>% 
+  #     .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+  #   
+  #   data <- DATA()
+  #   res <- list()
+  #   n_runs_max <- sapply(data, function(x) ncol(x$by_target)) %>% max
+  #   
+  #   for (i in seq_along(data)) {
+  #     df <- data[[i]]
+  #     
+  #     if (input$ALGID_RAW_INPUT != 'all' && attr(df, 'algId') != input$ALGID_RAW_INPUT)
+  #       next
+  #     
+  #     rt <- get_runtime_sample(df, fseq, format = input$RT_download_format, 
+  #                              maximization = maximization)
+  #     if (input$RT_download_format == 'wide') {
+  #       n <- ncol(rt) - 2
+  #       if (n < n_runs_max) 
+  #         rt %<>% cbind(., matrix(NA, nrow(.), n_runs_max - n))
+  #     }
+  #     res[[i]] <- rt
+  #   }
+  #   do.call(rbind.data.frame, res) 
+  # })
   # 
+  # output$download_runtime <- downloadHandler(
+  #   filename = {
+  #     data <- DATA()
+  #     algId <- paste0(getAlgId(data), collapse = ';')
+  #     fstart <- input$F_MIN_SAMPLE %>% format_funeval
+  #     fstop <- input$F_MAX_SAMPLE %>% format_funeval
+  #     fstep <- input$F_STEP_SAMPLE %>% format_funeval
+  #     sprintf('runtime_(%s,%s,%s).csv', fstart, fstop, fstep)
+  #   },
+  #   content = function(file) {
+  #     write.csv(get_RT(), file, row.names = F)
+  #   },
+  #   contentType = "text/csv"
+  # )
 })

@@ -71,6 +71,10 @@ DataSet <- function(info, verbose = F, maximization = TRUE) {
   }
 }
 
+getParId2 <- function(data) {
+  setdiff(names(data), c('by_runtime', 'by_target'))
+}
+
 print.DataSet <- function(data, verbose = F) {
   # TODO: implement the verbose mode
   cat(sprintf('DataSet(%s on f%s %dD)', 
@@ -245,6 +249,51 @@ get_target_sample <- function(dataset, runtimes, format = 'wide', maximization =
       arrange(runtime, run)
   }
   df
+}
+
+summarise_par <- function(data, ftarget, maximization = TRUE, probs = NULL) {
+  algId <- attr(data, 'algId')
+  data <- data[!(names(data) %in% c('by_runtime', 'by_target'))] # drop the aligned data set
+  par_name <- names(data)
+  n_par <- length(par_name)
+  
+  op <- ifelse(maximization, `>=`, `<=`)
+  ftarget <- c(ftarget) %>% as.double
+  
+  if (is.null(algId)) 
+    algId <- 'unknown'
+  if (is.null(probs))
+    probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
+  
+  res <- list()
+  for (i in seq(n_par)) {
+    par <- par_name[i]
+    df <- data[[par]]
+    
+    f_aligned <- rownames(df) %>% as.double
+    idx <- seq_along(f_aligned)
+    
+    res[[i]] <- lapply(ftarget, 
+                       function(f) {
+                         matched <- idx[`op`(f_aligned, f)][1]
+                         target <- ifelse(is.na(matched), f, f_aligned[matched])
+                         df[matched, ] %>% 
+                           as.vector %>% {
+                             c(target, 
+                               length(.[!is.na(.)]), 
+                               mean(., na.rm = T), 
+                               median(., na.rm = T), 
+                               sd(., na.rm = T),
+                               quantile(., probs = probs, names = F, na.rm = T)
+                             ) 
+                           }
+                       }) %>% 
+      do.call(rbind, .) %>% 
+      as.data.frame %>% 
+      cbind(algId, par, .) %>% 
+      set_colnames(c('algId', 'parId', 'f(x)', 'runs', 'mean', 'median', 'sd', paste0(probs * 100, '%'))) 
+  }
+  do.call(rbind.data.frame, res)
 }
 
 # the estimator for the expected running time
@@ -435,6 +484,10 @@ getfuncId <- function(data) {
 
 getAlgId <- function(data) {
   sapply(data, function(d) attr(d, 'algId')) %>% unique %>% sort
+}
+
+getParId <- function(data) {
+  lapply(data, function(d) setdiff(names(d), c('by_runtime', 'by_target'))) %>% unlist %>% unique
 }
 
 # TODO: let the user choose/detect whether the problem is subject to maximization

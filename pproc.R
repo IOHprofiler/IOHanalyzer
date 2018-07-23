@@ -36,24 +36,24 @@ DataSet <- function(info, verbose = F, maximization = TRUE) {
     path <- dirname(info$datafile)
     filename <- basename(info$datafile)
     
+    # TODO: do we need to read .idat file here?
     idatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.idat'))
     tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
     cdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.cdat'))
     cdatFile <- ifelse(file.exists(cdatFile), cdatFile, tdatFile)
     
-    dat <- read_dat(tdatFile)          # read the dat file
-    tdat <- read_dat(cdatFile)         # read the tdat file
+    # TODO: whether to keep the raw data set list?
+    dat <- read_dat(tdatFile)          # read the tdat file
+    tdat <- read_dat(cdatFile)         # read the cdat file
     
     by_target <- align_by_target(dat, maximization = maximization)      # aligned by target values
     by_runtime <- align_by_runtime(tdat)   # aligned by runtime
     
-    # TODO: remove this and add the parameters that are aligned by runtimes
+    # TODO: remove this and include the parameters that are aligned by runtimes
     by_runtime <- by_runtime[1]            
     
-    maxEvals <- sapply(dat, function(d) d[nrow(d), idxEvals]) %>% 
-      set_names(NULL)
-    finalFunvals <- sapply(tdat, function(d) d[nrow(d), idxTarget]) %>% 
-      set_names(NULL)
+    maxEvals <- sapply(dat, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
+    finalFunvals <- sapply(tdat, function(d) d[nrow(d), idxTarget]) %>% set_names(NULL)
     
     if (length(info$instance) == 0 || length(info$instance) != length(dat)) {
       warning('The number of instances found in the info is inconsistent with the data!')
@@ -77,10 +77,13 @@ getParId2 <- function(data) {
 
 print.DataSet <- function(data, verbose = F) {
   # TODO: implement the verbose mode
-  cat(sprintf('DataSet(%s on f%s %dD)', 
-              attr(data, 'algId'),
-              attr(data, 'funcId'),
-              attr(data, 'DIM')))
+  cat(as.character.DataSet(data))
+}
+
+as.character.DataSet <- function(data, verbose = F) {
+  # TODO: implement the verbose mode
+  sprintf('DataSet(%s on f%s %dD)', attr(data, 'algId'), attr(data, 'funcId'),
+          attr(data, 'DIM'))
 }
 
 # TODO:
@@ -379,7 +382,16 @@ read_dir <- function(args, verbose = T, print_fun = NULL, maximization = TRUE) {
   DataSetList(args, verbose, print_fun, maximization = maximization)
 }
 
-# S3 constructoer of the 'DataSetList' ----------------------------
+# S3 constructoer of the 'DataSetList' 
+# Attributes
+#   funId
+#   DIM
+#   algId
+#   Precision
+#   datafile
+#   instance
+#   maxEvals
+#   finalFunEvals
 DataSetList <- function(args = NULL, verbose = T, print_fun = NULL, maximization = TRUE) {
   if (is.null(args))
     return(structure(list(), class = c('DataSetList', 'list')))
@@ -458,9 +470,12 @@ DataSetList <- function(args = NULL, verbose = T, print_fun = NULL, maximization
   obj
 }
 
-# print.DataSetList <- function(ds) {
-#   
-# }
+print.DataSetList <- function(ds) {
+  cat('DataSetList:\n')
+  for (i in seq_along(ds)) {
+    cat(sprintf('%d: %s', i, as.character(ds[[i]])))
+  }
+}
 
 summary.DataSetList <- function(data) {
   sapply(data, function(d) {
@@ -522,7 +537,7 @@ subset.DataSetList <- function(ds, ...) {
   ds[idx]
 }
  
-# functions to compute statistics from the data set ----
+# functions to compute statistics from the data set
 RT.ECDF <- function(x) {
   x <- sort(x)
   x.unique <- unique(x)

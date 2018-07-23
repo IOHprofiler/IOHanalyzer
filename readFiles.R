@@ -31,10 +31,8 @@ scan_indexFile <- function(folder) {
 read_dat <- function(fname) {
   df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
   
-  idx <- grepl('function', df[, V1]) %>% which 
-  
   # check for data consistence
-  header_len <- sapply(idx[], function(i) sum(!df[i, ] == "")) %>% min
+  header_len <- apply(df[idx, ] != "", 1, sum) %>% min
   idx %<>% c(nrow(df) + 1)
   df <- df[, 1:header_len]
   
@@ -299,40 +297,39 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
 }
 
 # Use Rcpp to speed up 'align_by_runtime'
-# cppFunction(
-# 'NumericVector align_by_target_inner_loop(double t, List data, NumericVector index,
-#                        LogicalVector finished, NumericMatrix next_lines,
-#                        NumericVector curr_eval
-#                        ) {
-#   int N = data.size();
-#   NumericVector out = clone(curr_eval);
-# 
-#   for (int k = 0; k < N; k++) {
-#     NumericMatrix d = as<NumericMatrix>(data[k]);
-#     int Nrow = d.nrow();
-#     int iter = index[k];
-# 
-#     while (!finished[k]) {
-#       if (next_lines(k, 0) >= t) {
-#         out[k] = next_lines(k, 1);
-#         if (iter == Nrow) {
-#           finished[k] = true;
-#         }
-#         break;
-#       }
-# 
-#       if (iter < (Nrow - 1)) {
-#         iter++;
-#         next_lines(k, 0) = d(iter, 2);
-#         next_lines(k, 1) = d(iter, 0);
-#       } else {
-#         finished[k] = true;
-#       }
-#     }
-#     index[k] = iter;
-#   }
-#   return out;
-# }')
+cppFunction('
+NumericVector align_by_target_inner_loop(double t, int idxEvals, int idxTarget, 
+  List data, NumericVector index, NumericMatrix next_lines, NumericVector curr_eval) {
+
+  int N = data.size();
+  NumericVector out = clone(curr_eval);
+
+  for (int k = 0; k < N; k++) {
+    NumericMatrix d = as<NumericMatrix>(data[k]);
+    int n_row = d.nrow();
+    int n_col = d.ncol();
+    int iter = index[k];
+
+    while (true) {
+      if (next_lines(k, idxTarget) >= t) {
+        out[k] = next_lines(k, idxEvals);
+        break;
+      }
+
+      if (iter < (n_row - 1)) {
+        iter++;
+        for (int j = 0; j < n_col; j++) {
+          next_lines(k, j) = d(iter, j);
+        }
+      } else {
+        break;
+      }
+    }
+    index[k] = iter;
+  }
+  return out;
+}
+')
 
 # TODO: find a better way to organize the output
 align_by_runtime <- function(data, runtime = 'full') {

@@ -20,7 +20,7 @@ limit.data.frame <- function(df, n) {
     df
 }
 
-# functions to read the .info, .dat files --------------------------
+# functions to read the .info, .dat files 
 scan_indexFile <- function(folder) {
   folder <- trimws(folder)
   file.path(folder, dir(folder, pattern = '.info'))
@@ -52,7 +52,7 @@ read_dat <- function(fname) {
       ans <- t(ans)
     
     # the cdat can be very big
-    ans %<>% limit.data.frame(n = 200)
+    ans %<>% limit.data.frame(n = 500)
   })
   res
 }
@@ -114,7 +114,7 @@ read_IndexFile <- function(fname) {
   data
 }
 
-# functions to align the raw data -----------------------
+# functions to align the raw data
 # global variables for the alignment
 idxEvals <- 1
 idxTarget <- 5
@@ -338,81 +338,74 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
 align_by_runtime <- function(data, runtime = 'full') {
   N <- length(data) 
   data <- lapply(data, as.matrix)   # matrices are faster for indexing?
-  idx <- c(idxEvals, idxTarget)
   
+  n_rows <- sapply(data, nrow)
   n_column <- sapply(data, . %>% ncol) %>% unique
+  n_param <- n_column - n_data_column
   if (length(n_column) > 1)
     stop('inconsistent number of columns in each run!')
   
-  n_param <- n_column - n_data_column
+  index <- rep(1, N)  # index of the 'iterator'
+  curr_fvalues <- rep(NA_real_, N)  # NOTE: only NA_real_ work with the Rcpp code below
+  next_lines <- lapply(data, function(x) x[1, ]) %>% 
+    unlist %>% matrix(nrow = N, byrow = T)
+  
+  nrow_max <- lapply(data, function(x) x[, idxEvals]) %>% unlist %>% unique %>% length 
+  res <- matrix(NA, nrow = nrow_max, ncol = N)  # the aligned data
+  
+  if (n_param > 0) { # the aligned parameters
+    param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
+    param <- lapply(seq(n_param), . %>% {matrix(NA, nrow = nrow_max, ncol = N)}) %>% 
+      set_names(param_names)  
+  }
   
   if (runtime == 'full') {
-    nrow_max <- sapply(data, function(x) tail(x[, 1], 1)) %>% max
-    res <- matrix(NA, nrow = nrow_max, ncol = N)  # the aligned data
-    
-    if (n_param > 0) { # the aligned parameters
-      param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
-      param <- lapply(seq(n_param), . %>% {matrix(NA, nrow = nrow_max, ncol = N)}) %>% 
-        set_names(param_names)  
-    }
-    
     runtime <- rep(NA, nrow_max)
-    index <- rep(1, N)  # index of the 'iterator'
-    
-    curr_fvalues <- rep(NA, N)
-    finished <- rep(FALSE, N)
-    
-    next_lines <- lapply(data, function(x) x[1, ]) %>% 
-      unlist %>% matrix(nrow = N, byrow = T)
-    r <- min(next_lines[, 1], na.rm = T)
-    Nrows <- sapply(data, nrow)
-    
+    r <- min(next_lines[, idxEvals], na.rm = T)
     i <- 1
-    while (r > 0) {
+    while (TRUE) {
+      # Rcpp implementation
+      align_by_runtime_inner_loop(r, idxEvals - 1, idxTarget - 1, data, n_rows, 
+                                  index - 1, next_lines, curr_fvalues)
       
-      # store the aligned parameters first
+      # the slower implementation
+      # for (k in seq_along(data)) {
+      #   d <- data[[k]]
+      #   n_row <- n_rows[k]
+      #   iter <- index[k]
+      #   
+      #   while (!is.na(next_lines[k, idxEvals])) {
+      #     if (next_lines[k, idxEvals] > r) {
+      #       curr_fvalues[k] <- next_lines[k, idxTarget]
+      #       break
+      #     }
+      #     
+      #     if (iter < n_row) {
+      #       iter <- iter + 1
+      #       next_lines[k, ] <- d[iter, ]
+      #     } else {
+      #       curr_fvalues[k] <- next_lines[k, idxTarget]  # !IMPORTANT: store the last Target value
+      #       next_lines[k, idxEvals] <- NA
+      #     }
+      #   }
+      #   index[k] <- iter
+      # }
+      
+      runtime[i] <- r
+      res[i, ] <- curr_fvalues
+      
+      # store the aligned parameters
       if (n_param > 0) {
         for (k in seq(n_param)) {
           param[[k]][i, ] <- next_lines[, k + n_data_column]
         }
       }
       
-      # curr_fvalues[] <- align_runtime_loop(r, data, Nrows, 
-      #                                      index, finished, 
-      #                                      next_lines, curr_fvalues)
-      
-      # the slower implementation
-      k <- 1
-      for (d in data) {
-        Nrow <- Nrows[k]
-        iter <- index[k]
-        while (!finished[k]) {
-          if (next_lines[k, 1] > r) {
-            curr_fvalues[k] <- next_lines[k, 2]
-            break
-          }
-          
-          if (iter < Nrow) {
-            iter <- iter + 1
-            next_lines[k, ] <- d[iter, ]
-          } else {
-            curr_fvalues[k] <- next_lines[k, 2]  # !IMPORTANT: store the last Target value
-            next_lines[k, 1] <- NA
-            finished[k] <- TRUE
-          }
-        }
-        index[k] <- iter
-        k <- k + 1
-      }
-      
-      runtime[i] <- r
-      res[i, ] <- curr_fvalues
-      
-      if (all(finished)) 
-        break
+      if (all(is.na(next_lines[, idxEvals])))
+        break 
       
       i <- i + 1
-      r <- min(next_lines[1:N, 1], na.rm = T)
+      r <- min(next_lines[, idxEvals], na.rm = T)
     }
   }
   
@@ -426,42 +419,42 @@ align_by_runtime <- function(data, runtime = 'full') {
       param[[k]] <- param[[k]][1:i, ] %>% 
         set_rownames(runtime) 
     }
-    return(c(list(by_runtime = res), param))
+    c(list(by_runtime = res), param)
+  } else {
+    list(by_runtime = res)
   }
-  list(by_runtime = res)
 }
 
 # Use Rcpp to speed up 'align_by_runtime'
-# cppFunction(
-# 'NumericVector align_runtime_loop(int r, List data, NumericVector Nrows, NumericVector index,
-#                        LogicalVector finished, NumericMatrix next_lines,
-#                        NumericVector curr_fvalues
-#                        ) {
-#   int N = data.size();
-#   NumericVector out = clone(curr_fvalues);
-#   for (int k = 0; k < N; k++) {
-#     NumericMatrix d = as<NumericMatrix>(data[k]);
-#     int Nrow = Nrows[k];
-#     int iter = index[k];
-#     while (!finished[k]) {
-#       if (next_lines(k, 0) > r) {
-#         out[k] = next_lines(k, 1); 
-#         break;
-#       }
-#       
-#       if (iter < (Nrow - 1)) {
-#         iter++;
-#         for (int j = 0; j < Nrow; j++) {
-#           next_lines(k, j) = d(iter, j);
-#         }
-#         
-#       } else {
-#         out[k] = next_lines(k, 1); 
-#         next_lines(k, 0) = NA_REAL;
-#         finished[k] = true;
-#       }
-#     }
-#     index[k] = iter;
-#   }
-#   return out;
-# }')
+cppFunction('
+void align_by_runtime_inner_loop(int r, int idxEvals, int idxTarget, 
+  List data, NumericVector n_rows, NumericVector index, NumericMatrix next_lines,
+  NumericVector curr_fvalues) {
+
+  int N = data.size();
+  for (int k = 0; k < N; k++) {
+    NumericMatrix d = as<NumericMatrix>(data[k]);
+    int n_row = n_rows[k];
+    int iter = index[k];
+    int n_col = d.ncol();
+
+    while (!NumericVector::is_na(next_lines(k, idxEvals))) {
+      if (next_lines(k, idxEvals) > r) {
+        curr_fvalues[k] = next_lines(k, idxTarget);
+        break;
+      }
+
+      if (iter < (n_row - 1)) {
+        iter++;
+        for (int j = 0; j < n_col; j++) {
+          next_lines(k, j) = d(iter, j);
+        }
+      } else {
+        curr_fvalues[k] = next_lines(k, idxTarget);
+        next_lines(k, idxEvals) = NA_REAL;
+      }
+    }
+    index[k] = iter;
+  }
+}
+')

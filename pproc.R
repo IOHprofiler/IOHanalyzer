@@ -361,6 +361,8 @@ EPAR.DataSet <- function(data) {
   par_name <- names(data)
   n_par <- length(par_name)
   
+  if (n_par == 0) return(NULL)
+  
   df <- lapply(names(data), function(n) as.data.frame(data[[n]])) %>% 
     do.call(rbind.data.frame, .)
   

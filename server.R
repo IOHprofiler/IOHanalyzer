@@ -4,8 +4,10 @@
 #
 # Author: Hao Wang
 # Email: wangronin@gmail.com
-# TODO
+# 
+# TODO:
 #   * add 'shiny::req' to all the functions when the input might be insufficient
+#   * rename most of the control widgets in a uniform and understandable scheme
 
 library(shiny)
 library(shinyjs)
@@ -263,7 +265,7 @@ shinyServer(function(input, output, session) {
     
     updateTextInput(session, 'PAR_F_MIN_SUMMARY', value = start)
     updateTextInput(session, 'PAR_F_MAX_SUMMARY', value = stop)
-    updateTextInput(session, 'PAR_F_STEP_SUMMARY', value = start)
+    updateTextInput(session, 'PAR_F_STEP_SUMMARY', value = step)
   })
   
   # update the values for the grid of running times
@@ -1360,6 +1362,8 @@ shinyServer(function(input, output, session) {
     f_max <- input$PAR_F_MAX %>% as.numeric %>% reverse_trans_funeval
     
     data <- EPAR.DATA()
+    req(any(!is.null(data)))
+    
     n_algorithm <- length(data)
     n_param <- sapply(data, function(d) length(unique(d$par))) %>% max
     colors <- colorspace::rainbow_hcl(n_algorithm * n_param)
@@ -1467,7 +1471,7 @@ shinyServer(function(input, output, session) {
   
   output$table_PAR_summary <- renderTable({
     df <- get_PAR_summary()
-    df$run %<>% as.integer
+    df$runs %<>% as.integer
     df$mean %<>% format(digits = 2, nsmall = 2)
     df$median %<>% format(digits = 2, nsmall = 2)
     

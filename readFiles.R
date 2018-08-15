@@ -30,6 +30,7 @@ scan_indexFile <- function(folder) {
 # Return: a list of data.frames
 read_dat <- function(fname) {
   df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
+  idx <- which(df[, 1] == 'function evaluation')
   
   # check for data consistence
   header_len <- apply(df[idx, ] != "", 1, sum) %>% min
@@ -52,7 +53,7 @@ read_dat <- function(fname) {
     # the cdat can be very big
     ans %<>% limit.data.frame(n = 500)
   })
-  res
+  res 
 }
 
 # read .info files and extract information

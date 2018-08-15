@@ -43,10 +43,10 @@ DataSet <- function(info, verbose = F, maximization = TRUE) {
     cdatFile <- ifelse(file.exists(cdatFile), cdatFile, tdatFile)
     
     # TODO: whether to keep the raw data set list?
-    tdat <- read_dat(tdatFile)          # read the tdat file
+    tdat <- read_dat(tdatFile)         # read the tdat file
     cdat <- read_dat(cdatFile)         # read the cdat file
     
-    by_target <- align_by_target(tdat, maximization = maximization)      # aligned by target values
+    by_target <- align_by_target(tdat, maximization = maximization) # aligned by target values
     by_runtime <- align_by_runtime(cdat)   # aligned by runtime
     
     # TODO: remove this and include the parameters that are aligned by runtimes
@@ -581,8 +581,3 @@ CDF_discrete <- function(x) {
   }
   res
 }
-
-
-
-
-

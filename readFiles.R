@@ -40,7 +40,10 @@ read_dat <- function(fname) {
   # turn off the warnings of the data coersion below
   options(warn = -1)
   columns <- colnames(df) <- as.matrix(df[1, ])
-  df %<>% sapply(function(c) {class(c) <- 'numeric'; c}) 
+  # TOOD: this opeartor is too slow
+  df %<>% sapply(function(c) {class(c) <- 'numeric'; c})
+  # df <- df[, lapply(.SD, as.numeric)]
+  # df %<>% mutate_all(funs(as.numeric(.)))
   options(warn = 0)
   
   res <- lapply(seq(length(idx) - 1), function(i) {
@@ -50,7 +53,8 @@ read_dat <- function(fname) {
     if (i1 == i2)
       ans <- t(ans)
     
-    # the cdat can be very big
+    # TODO: how to handle this properly?
+    # the cdat can be very big, restrict it!
     ans %<>% limit.data.frame(n = 500)
   })
   res 
@@ -113,7 +117,8 @@ read_IndexFile <- function(fname) {
   data
 }
 
-# functions to align the raw data
+
+# functions to align the raw data 
 # global variables for the alignment
 idxEvals <- 1
 idxTarget <- 5
@@ -121,11 +126,13 @@ n_data_column <- 5
 # align all instances at a given target/precision
 align_by_target <- function(data, targets = 'full', nrow = 100, maximization = TRUE) {
   N <- length(data) 
-  data <- lapply(data, as.matrix)   # matrices are faster for indexing?
+  data <- lapply(data, as.matrix)   # TODO: matrices are faster for indexing?
   next_lines <- lapply(data, function(x) x[1, ]) %>% unlist %>% 
     matrix(nrow = N, byrow = T)
   
+  n_rows <- sapply(data, nrow)
   n_column <- sapply(data, . %>% ncol) %>% unique
+  n_param <- n_column - n_data_column
   if (length(n_column) > 1)
     stop('inconsistent number of columns in each run!')
   
@@ -133,11 +140,11 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
   op <- ifelse(maximization, `>=`, `<=`)
   inc <- ifelse(maximization, function(x) x + 1, function(x) x - 1)
   
-  if (is.numeric(targets)) {  # if target values are given
+  if (is.numeric(targets)) {  # given target values to be aligned
     Fvalues <- sort(targets)
   } else {
     if (targets == 'auto') {  # automatically detemined alignment values
-      Fstart <- func(next_lines[, 1], na.rm = T)
+      Fstart <- func(next_lines[, idxTarget], na.rm = T)
       
       if (!maximization) {
         step <- 5.
@@ -155,6 +162,11 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
         idxCurrentF <- log10(Fstart)
         t <- Fstart
       }
+      nrow_max <- lapply(data, function(x) unique(x[, idxTarget])) %>% 
+        unlist %>% unique %>% length
+      res <- matrix(NA, nrow = nrow_max, ncol = N)
+      Fvalues <- rep(NA, nrow_max)
+      
     } else if (targets == 'full') {  
       # align at every observed fitness value
       # this should give roughly the same time complexity 
@@ -167,49 +179,61 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
     }
   }
   
+  index <- rep(1, N)  # 'iterator'
+  res <- matrix(NA, length(Fvalues), N)
+  curr_eval <- rep(NA, N)
+  
+  if (n_param > 0) { # the aligned parameters
+    param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
+    param <- lapply(seq(n_param), . %>% {matrix(NA, nrow = length(Fvalues), ncol = N)}) %>% 
+      set_names(param_names)  
+  }
+  
   if (targets == 'auto') {
-    nrow_max <- sapply(data, function(x) tail(x[, 1], 1)) %>% max
-    res <- matrix(NA, nrow = nrow_max, ncol = N)
-    Fvalues <- rep(NA, nrow_max)
-    
-    curr_eval <- rep(NA, N)
     curr_fvalues <- rep(NA, N)
-    finished <- rep(FALSE, N)
-    index <- rep(1, N)  # 'iterator'
+    i <- 1
     
-    i <- 0
-    while (t > 0 && is.finite(t)) {
+    while (all(index < n_rows)) {
       curr_eval[1:N] <- NA
       curr_fvalues[1:N] <- NA
       
       for (k in seq_along(data)) {
         d <- data[[k]]
         iter <- index[k]
-        while (!finished[k]) {
+        
+        while (TRUE) {
           # hitting the target
           # TODO: solve this issue!
-          if (`op`(next_lines[k, 1], t)) { 
-            curr_eval[k] <- next_lines[k, 2]
-            curr_fvalues[k] <- next_lines[k, 1]
+          if (`op`(next_lines[k, idxTarget], t)) { 
+            curr_eval[k] <- next_lines[k, idxEvals]
+            curr_fvalues[k] <- next_lines[k, idxTarget]
             break
           }
           
           if (iter < nrow(d)) {
             iter <- iter + 1
-            next_lines[k, ] <- d[iter, idx]
+            next_lines[k, ] <- d[iter, ]
           } else {
-            finished[k] <- TRUE
+            break
           }
         }
         index[k] <- iter
       }
       
-      # if the current target is not hit by any instance
-      if (all(is.na(curr_eval)))
-        break
-      
       i <- i + 1
       res[i, ] <- curr_eval
+      
+      if (n_param > 0) {
+        for (k in seq(n_param)) {
+          param[[k]][i, ] <- next_lines[, k + n_data_column]
+        }
+      }
+      
+      # if the all the iterations are completed
+      # if (all(index == n_rows))
+      #   break
+      
+      # setup the new target value
       if (!maximization) {
         idxCurrentF_new <- ceiling(log10(func(curr_fvalues, na.rm = T)) * step)
         # if (maximization)
@@ -226,36 +250,24 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
         t <- 10. ^ idxCurrentF
       }
     }
-    res <- res[1:i, ]
-    Fvalues <- Fvalues[1:i]
   } else {
-    n_param <- n_column - n_data_column
-    if (n_param > 0) { # the aligned parameters
-      param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
-      param <- lapply(seq(n_param), . %>% {matrix(NA, nrow = length(Fvalues), ncol = N)}) %>% 
-        set_names(param_names)  
-    }
-    
-    res <- matrix(NA, length(Fvalues), N)
-    curr_eval <- rep(NA, N)
-    finished <- rep(FALSE, N)
-    
-    index <- rep(1, N)  # 'iterator'
     t <- Fvalues[1]
     i <- 1
     
     while (is.finite(t)) {
       curr_eval[1:N] <- NA
+      
       # Rcpp implementation
-      # curr_eval[1:N] <- align_by_target_inner_loop(t, data, index, finished,
-      #                                              next_lines, curr_eval)
+      # curr_eval[] <- align_by_target_inner_loop(t, idxEvals - 1, idxTarget - 1,
+      #                                           data, index, next_lines, curr_eval)
+  
       for (k in seq_along(data)) {
         d <- data[[k]]
         iter <- index[k]
         while (TRUE) {
           # if hitting the target
           # TODO: solve this issue (+0.001) precision issue!
-          if (next_lines[k, idxTarget] + 0.001 >= t) {
+          if (next_lines[k, idxTarget] >= t) {
             curr_eval[k] <- next_lines[k, idxEvals]
             break
           }
@@ -263,38 +275,42 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
           # otherwise, is the iterator finished?
           if (iter < nrow(d)) {
             iter <- iter + 1
-            next_lines[k, ] <- as.numeric(d[iter, ])
+            next_lines[k, ] <- d[iter, ]
           } else {
             break
           }
         }
-        
         index[k] <- iter
       }
       
+      res[i, ] <- curr_eval[1:N]
       if (n_param > 0) {
         for (k in seq(n_param)) {
           param[[k]][i, ] <- next_lines[, k + n_data_column]
         }
       }
       
-      res[i, ] <- curr_eval[1:N]
+      if (i == length(Fvalues)) 
+        break
+      
       i <- i + 1
       t <- Fvalues[i]
-      
-      if (all(finished) || i > length(Fvalues))
-        break
     }
   }
   
+  # the return values
+  res <- res[1:i, ]
+  Fvalues <- Fvalues[1:i]
   rownames(res) <- Fvalues
+  
   if (n_param > 0) {
     for (k in seq(n_param)) {
-      param[[k]] <- set_rownames(param[[k]], Fvalues)
+      param[[k]] <- param[[k]][1:i, ] %>% 
+        set_rownames(Fvalues) 
     }
-    return(c(list(by_target = res), param))
-  }
-  list(by_target = res)
+    c(list(by_target = res), param)
+  } else 
+    list(by_target = res)
 }
 
 # Use Rcpp to speed up 'align_by_runtime'
@@ -340,6 +356,7 @@ align_by_runtime <- function(data, runtime = 'full') {
   n_rows <- sapply(data, nrow)
   n_column <- sapply(data, . %>% ncol) %>% unique
   n_param <- n_column - n_data_column
+
   if (length(n_column) > 1)
     stop('inconsistent number of columns in each run!')
   

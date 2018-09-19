@@ -188,6 +188,7 @@ summarise_target <- function(dataset, runtimes, maximization = TRUE, probs = NUL
   runtimes <- c(runtimes)
   runtimes_aligned <- rownames(df) %>% as.numeric
   idx <- seq_along(runtimes_aligned)
+  op <- ifelse(maximization, max, min)
   
   if (is.null(algId)) 
     algId <- 'unknown'
@@ -198,8 +199,7 @@ summarise_target <- function(dataset, runtimes, maximization = TRUE, probs = NUL
   matched <- sapply(runtimes, function(r) {
     res <- idx[runtimes_aligned >= r]
     ifelse(length(res) == 0, N, res[1]) 
-  }) %>% 
-    unique
+  }) %>% unique
   
   if (length(matched) == 0)
     return(data.frame())
@@ -210,9 +210,12 @@ summarise_target <- function(dataset, runtimes, maximization = TRUE, probs = NUL
     t %>%
     set_colnames(paste0(probs * 100, '%'))
   
+  tmp <- summarise_runtime(dataset, op(attributes(dataset)$finalFunvals))
+  
   data.frame(algId = algId,
              runtime = runtimes_aligned[matched],
              runs = apply(df, 1, . %>% {length(.[!is.na(.)])}),
+             runs.MaxFunvals = tmp$runs,
              mean = apply(df, 1, . %>% mean(., na.rm = T)), 
              median = apply(df, 1, . %>% median(., na.rm = T)), 
              sd = apply(df, 1, function(x) sd(x, na.rm = T))) %>% 

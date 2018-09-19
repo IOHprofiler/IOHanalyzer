@@ -183,6 +183,9 @@ body <- dashboardBody(
                      textInput('fstart', label = F_MIN_LABEL, value = ''),
                      textInput('fstop', label = F_MAX_LABEL, value = ''),
                      textInput('fstep', label = F_STEP_LABEL, value = ''),
+                     checkboxInput('singleF', label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
+                                                           Once toggled, only \\(f_{\\text{min}}\\) is 
+                                                           used to generate the table on the right.</p>'), value = FALSE),
                      selectInput('ALGID_INPUT', 'Algorithms', choices = NULL, selected = NULL),
                      downloadButton("downloadData", "Save this table as csv")
                    ),

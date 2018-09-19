@@ -106,6 +106,15 @@ shinyServer(function(input, output, session) {
       return(NULL)
   })
   
+  observe({
+    if (input$singleF) {
+      fstart <- input$fstart
+      # updateTextInput(session, 'fstart', value = format_funeval(start))
+      updateTextInput(session, 'fstop', value = format_funeval(fstart))
+      # updateTextInput(session, 'fstep', value = format_funeval(step))
+    }
+  })
+  
   # # print the folderList
   # output$upload_data_promt <- renderPrint({
   #   folders <- folderList$data
@@ -321,16 +330,23 @@ shinyServer(function(input, output, session) {
     fstop <- format_funeval(input$fstop) %>% as.numeric
     fstep <- format_funeval(input$fstep) %>% as.numeric
     
-    # when initializing or incorrect input
-    if (is.na(fstart) || is.na(fstop) || is.na(fstep))
-      return(data.frame())
-    if (fstart >= fstop || fstep > fstop - fstart)
-      return(data.frame())
-    
-    fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
-      c(fstart, ., fstop) %>% unique %>% 
-      reverse_trans_funeval %>% 
-      .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+    if (input$singleF)
+      fseq <- c(fstart) %>% 
+        reverse_trans_funeval %>% 
+        .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+    else {
+      # TODO: change this to 'req'
+      # when initializing or incorrect input
+      if (is.na(fstart) || is.na(fstop) || is.na(fstep))
+        return(data.frame())
+      if (fstart >= fstop || fstep > fstop - fstart)
+        return(data.frame())
+      
+      fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
+        c(fstart, ., fstop) %>% unique %>% 
+        reverse_trans_funeval %>% 
+        .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+    }
     
     probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
     res <- list()
@@ -744,16 +760,18 @@ shinyServer(function(input, output, session) {
         mutate(upper = mean + sd, lower = mean - sd)
                               
       p %<>%
-        # add_trace(data = df_plot, x = ~x, y = ~upper, type = 'scatter', mode = 'lines',
-        #           line = list(color = rgba_str, width = 0), 
-        #           showlegend = F, name = 'mean +/- sd') %>% 
-        # add_trace(x = ~x, y = ~lower, type = 'scatter', mode = 'lines',
-        #           fill = 'tonexty',  line = list(color = 'transparent'),
-        #           fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd') %>% 
+        # TODO: maybe not showing the std. shade at all!
+        add_trace(data = df_plot, x = ~x, y = ~upper, type = 'scatter', mode = 'lines',
+                  line = list(color = rgba_str, width = 0),
+                  showlegend = F, name = 'mean +/- sd') %>%
+        add_trace(x = ~x, y = ~lower, type = 'scatter', mode = 'lines',
+                  fill = 'tonexty',  line = list(color = 'transparent'),
+                  fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd') %>%
         add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
-                  mode = 'lines', name = sprintf('%s', algId), 
+                  mode = 'lines+markers', name = sprintf('%s', algId), 
                   showlegend = T, legendgroup = paste0(k),
-                  line = list(color = rgb_str, width = 4.5))
+                  line = list(color = rgb_str, width = 4.5),
+                  marker = list(color = rgb_str, size = 11))
       
       if (input$RT_ECDF_per_target) {
         for (f in fseq) {
@@ -851,6 +869,10 @@ shinyServer(function(input, output, session) {
     rt_max <- input$RT_MAX %>% as.integer
     rt_step <- input$RT_STEP %>% as.integer
     
+    # check for requirements
+    req(rt_min < rt_max)
+    req(rt_step > 0)
+    
     # when initializing or incorrect input
     if (is.na(rt_min) || is.na(rt_max) || is.na(rt_step))
       return(data.frame())
@@ -877,6 +899,7 @@ shinyServer(function(input, output, session) {
   output$FCE_SUMMARY <- renderTable({
     df <- get_FCE_summary()
     df$runs %<>% as.integer
+    df$runs.MaxFunvals %<>% as.integer
     df$median %<>% format(format = 'e', digits = 3)
     df$mean %<>% format(format = 'e', digits = 3)
     df$runtime %<>% as.integer
@@ -1253,9 +1276,10 @@ shinyServer(function(input, output, session) {
         #           fill = 'tonexty',  line = list(color = 'transparent'),
         #           fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd') %>% 
         add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
-                  mode = 'lines', name = sprintf('%s', algId), 
+                  mode = 'lines+markers', name = sprintf('%s', algId), 
                   showlegend = T, legendgroup = paste0(k),
-                  line = list(color = rgb_str, width = 4.5))
+                  line = list(color = rgb_str, width = 4.5),
+                  marker = list(color = rgb_str, size = 11))
       
       if (input$FCE_ECDF_per_target) {
         for (r in rt_seq) {

@@ -53,6 +53,7 @@ read_dat <- function(fname) {
     if (i1 == i2)
       ans <- t(ans)
     
+    # ans
     # TODO: how to handle this properly?
     # the cdat can be very big, restrict it!
     ans %<>% limit.data.frame(n = 500)
@@ -440,6 +441,7 @@ align_by_runtime <- function(data, runtime = 'full') {
   }
 }
 
+# TODO: verify this function
 # Use Rcpp to speed up 'align_by_runtime'
 cppFunction('
 void align_by_runtime_inner_loop(int r, int idxEvals, int idxTarget, 

@@ -20,17 +20,18 @@ source('pproc.R')
 source('plot.R')
 
 options(width = 80)
-options(shiny.maxRequestSize = 200 * 1024 ^ 2)   # maximal number of 
+options(shiny.maxRequestSize = 200 * 1024 ^ 2)   # maximal number of requests, this is too many...
 
 symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
              "triangle-up-open", "triangle-down-open")
 
 # TODO: put it as an option such that the user can select
 maximization <- TRUE
-src_suite <- 'PBO' # TODO: this shoule be taken from the data set
+src_format <- 'IOHProfiler' # TODO: this shoule be taken from the data set
+sub_sampling <- TRUE
 
 # Formatter for function values
-format_funeval <- ifelse(src_suite == 'PBO',
+format_funeval <- ifelse(src_format == 'IOHProfiler',
                          function(v) format(as.integer(as.numeric(v))),
                          function(v) format(v, format = "e", digits = 5, nsmall = 2))
 
@@ -38,7 +39,7 @@ format_funeval <- ifelse(src_suite == 'PBO',
 funeval_grid <- function(v, ...) {
   from <- min(v)
   to <- max(v)
-  if (src_suite == 'PBO') {
+  if (src_format == 'IOHProfiler') {
     from <- round(from)
     to <- round(to)
     grid <- seq(from, to, ...)
@@ -59,7 +60,7 @@ reverse_trans_funeval <- . %>% return
 trans_runtime <- . %>% return
 reverse_trans_runtime <- . %>% return
 
-# extraction directory
+# directory where data are extracted from the zip file
 exdir <- './data'
 
 # Define server logic required to draw a histogram
@@ -73,6 +74,21 @@ shinyServer(function(input, output, session) {
   # variables shared
   folderList <- reactiveValues(data = list())
   DataList <- reactiveValues(data = list())
+  
+  # update the format of the data source
+  observe({
+    src_format <<- input$DATA_SRC_FORMAT
+    if (input$DATA_SRC_FORMAT == 'IOHProfiler') {
+      maximization <<- TRUE
+    } else if (input$DATA_SRC_FORMAT == 'COCO') {
+      maximization <<- FALSE
+    }
+  })
+  
+  # is subsamping?
+  observe({
+    sub_sampling <<- input$SUBSAMPLING  
+  })
   
   # IMPORTANT: this only works locally, keep it for the local version
   # links to users file systems
@@ -100,21 +116,21 @@ shinyServer(function(input, output, session) {
         name <- strsplit(filename[i], '\\.')[[1]][1]
         folders[i] <- file.path(exdir, name)
       }
-      
       return(folders)
     } else
       return(NULL)
   })
   
-  observe({
-    if (input$singleF) {
-      fstart <- input$fstart
-      # updateTextInput(session, 'fstart', value = format_funeval(start))
-      updateTextInput(session, 'fstop', value = format_funeval(fstart))
-      # updateTextInput(session, 'fstep', value = format_funeval(step))
-    }
-  })
-  
+  # TODO: this part might not be
+  # observe({
+  #   if (input$singleF) {
+  #     fstart <- input$fstart
+  #     # updateTextInput(session, 'fstart', value = format_funeval(start))
+  #     updateTextInput(session, 'fstop', value = format_funeval(fstart))
+  #     # updateTextInput(session, 'fstep', value = format_funeval(step))
+  #   }
+  # })
+  # 
   # # print the folderList
   # output$upload_data_promt <- renderPrint({
   #   folders <- folderList$data
@@ -145,7 +161,9 @@ shinyServer(function(input, output, session) {
         folderList$data <- c(folderList$data, folder)  
         print_fun <- function(s) shinyjs::html("process_data_promt", s, add = TRUE)
         DataList$data <- c(DataList$data, read_dir(folder, print_fun = print_fun,
-                                                   maximization = maximization))
+                                                   maximization = maximization,
+                                                   format = src_format,
+                                                   subsampling = sub_sampling))
         class(DataList$data) <- 'DataSetList'  # TODO: fix this urgly part
         shinyjs::html("upload_data_promt", 
                       sprintf('%d: %s\n', length(folderList$data), folder), add = TRUE)
@@ -400,16 +418,22 @@ shinyServer(function(input, output, session) {
     fstop <- format_funeval(input$F_MAX_SAMPLE) %>% as.numeric
     fstep <- format_funeval(input$F_STEP_SAMPLE) %>% as.numeric
     
-    # when initializing or incorrect input
-    if (is.na(fstart) || is.na(fstop) || is.na(fstep))
-      return(data.frame())
-    if (fstart >= fstop || fstep > fstop - fstart)
-      return(data.frame())
-    
-    fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
-      c(fstart, ., fstop) %>% unique %>% 
+    if (input$F_SAMPLE_SINGLE)
+      fseq <- c(fstart) %>% 
       reverse_trans_funeval %>% 
       .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+    else {
+      # when initializing or incorrect input
+      if (is.na(fstart) || is.na(fstop) || is.na(fstep))
+        return(data.frame())
+      if (fstart >= fstop || fstep > fstop - fstart)
+        return(data.frame())
+      
+      fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
+        c(fstart, ., fstop) %>% unique %>% 
+        reverse_trans_funeval %>% 
+        .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+    }
     
     data <- DATA()
     res <- list()
@@ -873,15 +897,22 @@ shinyServer(function(input, output, session) {
     req(rt_min < rt_max)
     req(rt_step > 0)
     
-    # when initializing or incorrect input
-    if (is.na(rt_min) || is.na(rt_max) || is.na(rt_step))
-      return(data.frame())
-    if (rt_min >= rt_max || rt_step > rt_max - rt_min)
-      return(data.frame())
-    
-    rt_seq <- seq(from = rt_min, to = rt_max, by = rt_step) %>% 
+    if (input$RT_SINGLE)
+      rt_seq <- c(rt_min) %>% 
       reverse_trans_runtime %>% 
-      .[. >= min(rt)] %>% .[. <= max(rt)] 
+      .[. >= (min(rt))] %>% .[. <= (max(rt))] 
+    else {
+      # TODO: remove this part and replace it with shiny::req
+      # when initializing or incorrect input
+      if (is.na(rt_min) || is.na(rt_max) || is.na(rt_step))
+        return(data.frame())
+      if (rt_min >= rt_max || rt_step > rt_max - rt_min)
+        return(data.frame())
+      
+      rt_seq <- seq(from = rt_min, to = rt_max, by = rt_step) %>% 
+        reverse_trans_runtime %>% 
+        .[. >= min(rt)] %>% .[. <= max(rt)] 
+    }
     
     probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
     res <- list()
@@ -937,15 +968,25 @@ shinyServer(function(input, output, session) {
     rt_max <- input$RT_MAX_SAMPLE %>% as.integer
     rt_step <- input$RT_STEP_SAMPLE %>% as.integer
     
-    # when initializing or incorrect input
-    if (is.na(rt_min) || is.na(rt_max) || is.na(rt_step))
-      return(data.frame())
-    if (rt_min >= rt_max || rt_step > rt_max - rt_min)
-      return(data.frame())
+    # check for requirements
+    req(rt_min <= rt_max)
+    req(rt_step > 0)
     
-    rt_seq <- seq(from = rt_min, to = rt_max, by = rt_step) %>% 
+    if (input$RT_SINGLE_SAMPLE)
+      rt_seq <- c(rt_min) %>% 
       reverse_trans_runtime %>% 
-      .[. >= min(rt)] %>% .[. <= max(rt)] 
+      .[. >= (min(rt))] %>% .[. <= (max(rt))] 
+    else {
+      # when initializing or incorrect input
+      if (is.na(rt_min) || is.na(rt_max) || is.na(rt_step))
+        return(data.frame())
+      if (rt_min >= rt_max || rt_step > rt_max - rt_min)
+        return(data.frame())
+      
+      rt_seq <- seq(from = rt_min, to = rt_max, by = rt_step) %>% 
+        reverse_trans_runtime %>% 
+        .[. >= min(rt)] %>% .[. <= max(rt)] 
+    }
     
     res <- list()
     n_runs_max <- sapply(data, function(x) length(attr(x, 'instance'))) %>% max

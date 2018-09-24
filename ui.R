@@ -10,7 +10,6 @@ library(shinydashboard)
 library(plotly)
 
 # TODO: rename most of the id of the control widgets
-
 FCE_GRID_INPUT_TEXT <- '<p align="justify">Set the range and the granularity of the results. 
 The table will show function values that have been reached within evenly spaced evaluation budgets.</p>'
 
@@ -123,35 +122,37 @@ body <- dashboardBody(
             fluidRow(
               column(width = 6,
                      box(title = HTML('<p style="font-size:120%;">Upload Data</p>'), width = 12,
-                         solidHeader = T, status = "primary", collapsible = F, height = '500px',
+                         solidHeader = T, status = "primary", collapsible = F, height = '520px',
                          sidebarPanel(
                            width = 12,
                            
-                           HTML('<p align="left" style="font-size:120%;">Please choose a zip file containing the benchmark data</p>'),
-                           fileInput("ZIP", "Choose a ZIP file", multiple = TRUE,
-                                     accept = c("Application/zip", ".zip")),
+                           selectInput('DATA_SRC_FORMAT', label = HTML('<p align="left" style="font-size:120%;">Please choose the format of your data sets</p>'),
+                                       choices = c('IOHProfiler', 'COCO'), selected = 'IOHProfiler', width = '50%'),
+                           HTML('<p align="justify" style="font-size:120%;">When the data set is huge, the alignment can take a lone time. In this case, you could toggle the efficient mode to subsample the data set. However, the precision of data will be compromised.</p>'),
+                           checkboxInput('SUBSAMPLING', label = HTML('<p align="left" style="font-size:120%;">Efficient mode</p>'), value = T),
+                           
+                           fileInput("ZIP", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>zip file</i> containing the benchmark data</p>'),
+                                     multiple = TRUE, accept = c("Application/zip", ".zip")),
                            
                            # TODO: keep this for the local version
                            # shinyDirButton('directory', 'Browse the folder', 
                            #                title = 'Please choose a directory containing the benchmark data'),
-                           hr(),
-                           HTML('<p align="left" style="font-size:120%;">You can also remove all data you uploaded</p>'),
+                           HTML('<p align="left" style="font-size:120%;"><b>Remove all data you uploaded</b></p>'),
                            actionButton('RM_DATA', 'Clear data')
-                         ),
-                         
-                         mainPanel(
-                           width = 12,
-                           HTML('<p style="font-size:120%;">The processed folders are:</p>'),
-                           verbatimTextOutput('upload_data_promt'),
-                           tags$head(tags$style("#upload_data_promt{color:black; font-size:12px; font-style:italic;
-                                                overflow-y:visible; max-height: 100px; background: ghostwhite;}"))
                          )
+                         # mainPanel(
+                         #   width = 12,
+                         #   HTML('<p style="font-size:120%;">The processed folders are:</p>'),
+                         #   verbatimTextOutput('upload_data_promt'),
+                         #   tags$head(tags$style("#upload_data_promt{color:black; font-size:12px; font-style:italic;
+                         #                        overflow-y:visible; max-height: 100px; background: ghostwhite;}"))
+                         # )
                      )
               ),
               
               column(width = 6,
                      box(title = HTML('<p style="font-size:120%;">Data Processing Prompt</p>'), width = 12,
-                         solidHeader = T, status = "primary", collapsible = F, height = '500px',
+                         solidHeader = T, status = "primary", collapsible = F, height = '520px',
                          verbatimTextOutput('process_data_promt'),
                          tags$head(tags$style("#process_data_promt{color:black; font-size:12px; font-style:italic;
                                               overflow-y:visible; max-height: 425px; background: ghostwhite;}"))
@@ -180,6 +181,7 @@ body <- dashboardBody(
                      HTML('<p align="justify">Set the range and the granularity of the results.
                           The table will show fixed-target runtimes for evenly spaced target values.</p>'),
                      
+                     # TODO: find better naming scheme for 'fstart, fstop, singleF'
                      textInput('fstart', label = F_MIN_LABEL, value = ''),
                      textInput('fstop', label = F_MAX_LABEL, value = ''),
                      textInput('fstep', label = F_STEP_LABEL, value = ''),
@@ -207,6 +209,12 @@ body <- dashboardBody(
                      textInput('F_MIN_SAMPLE', label = F_MIN_LABEL, value = ''),
                      textInput('F_MAX_SAMPLE', label = F_MAX_LABEL, value = ''),
                      textInput('F_STEP_SAMPLE', label = F_STEP_LABEL, value = ''),
+                     checkboxInput('F_SAMPLE_SINGLE', 
+                                    label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
+                                                  Once toggled, only \\(f_{\\text{min}}\\) is 
+                                                  used to generate the table on the right.</p>'), value = FALSE),
+                     
+                     # TODO: do we need this log scaling?
                      # checkboxInput('F_LOGSPACE_DATA_SUMMARY',
                      #               label = HTML('Evenly space target values in \\(log_{10}\\) space')),
                      selectInput('ALGID_RAW_INPUT', 'Algorithms', 
@@ -486,6 +494,9 @@ body <- dashboardBody(
                            textInput('RT_MIN', label = RT_MIN_LABEL, value = ''),
                            textInput('RT_MAX', label = RT_MAX_LABEL, value = ''),
                            textInput('RT_STEP', label = RT_STEP_LABEL, value = ''),
+                           checkboxInput('RT_SINGLE', label = HTML('<p>\\(B_{\\text{min}} = B_{\\text{max}}\\)?
+                                                           Once toggled, only \\(B_{\\text{min}}\\) is 
+                                                           used to generate the table on the right.</p>'), value = FALSE),
                            selectInput('FCE_ALGID_INPUT', 'Algorithms', choices = NULL, selected = NULL),
                            downloadButton("FCE_SUMMARY_download", "Save this table as csv")
                            ),
@@ -508,6 +519,10 @@ body <- dashboardBody(
                            textInput('RT_MIN_SAMPLE', label = RT_MIN_LABEL, value = ''),
                            textInput('RT_MAX_SAMPLE', label = RT_MAX_LABEL, value = ''),
                            textInput('RT_STEP_SAMPLE', label = RT_STEP_LABEL, value = ''),
+                           checkboxInput('RT_SINGLE_SAMPLE', 
+                                         label = HTML('<p>\\(B_{\\text{min}} = B_{\\text{max}}\\)?
+                                                       Once toggled, only \\(B_{\\text{min}}\\) is 
+                                                       used to generate the table on the right.</p>'), value = FALSE),
                            selectInput('FCE_ALGID_RAW_INPUT', 'Algorithms', 
                                        choices = NULL, selected = NULL),
                            
@@ -518,11 +533,12 @@ body <- dashboardBody(
                          
                          mainPanel(
                            width = 9,
-                           HTML("<p>This table shows for each selected algorithm \\(A\\), 
+                           HTML("<div style='font-size:120%;'>This table shows for each selected algorithm \\(A\\), 
                                 each selected target value \\(f(x)\\), and each run \\(r\\) 
                                 the number \\(T(A,f(x),r)\\) of evaluations performed by the 
                                 algorithm until it evaluated for the first time a solution of 
-                                quality at least \\(f(x)\\).</p>"),
+                                quality at least \\(f(x)\\).</div>"),
+                           br(),
                            dataTableOutput('FCE_SAMPLE')
                            )
                     )

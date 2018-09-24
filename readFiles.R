@@ -26,11 +26,13 @@ scan_indexFile <- function(folder) {
   file.path(folder, dir(folder, pattern = '.info'))
 }
 
-# read .dat, .rdat, .tdat files
+# reading .dat, .rdat, .tdat files ----
+
+# for IOHProfiler format
 # Return: a list of data.frames
-read_dat <- function(fname) {
+read_dat <- function(fname, subsampling = FALSE) {
   df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
-  idx <- which(df[, 1] == 'function evaluation')
+  idx <- c(which(df[, 1] == 'function evaluation'), nrow(df))
   
   # check for data consistence
   header_len <- apply(df[idx, ] != "", 1, sum) %>% min
@@ -40,7 +42,7 @@ read_dat <- function(fname) {
   # turn off the warnings of the data coersion below
   options(warn = -1)
   columns <- colnames(df) <- as.matrix(df[1, ])
-  # TOOD: this opeartor is too slow
+  # TOOD: this opeartor is the bottelneck
   df %<>% sapply(function(c) {class(c) <- 'numeric'; c})
   # df <- df[, lapply(.SD, as.numeric)]
   # df %<>% mutate_all(funs(as.numeric(.)))
@@ -53,10 +55,38 @@ read_dat <- function(fname) {
     if (i1 == i2)
       ans <- t(ans)
     
-    # ans
-    # TODO: how to handle this properly?
-    # the cdat can be very big, restrict it!
-    ans %<>% limit.data.frame(n = 500)
+    # TODO: determine the number of record...
+    if (subsampling)
+      ans %<>% limit.data.frame(n = 500)
+    else 
+      ans
+  })
+  res 
+}
+
+# for COCO format
+# Return: a list of data.frames
+read_COCO_dat <- function(fname, subsampling = FALSE) {
+  X <- scan(fname, what = '', sep = '\n', quiet = T)
+  idx <- c(which(startsWith(X, '%')), length(X))
+  
+  res <- lapply(seq(length(idx) - 1), function(i) {
+    i1 <- idx[i] + 1
+    i2 <- idx[i + 1] - 1
+    
+    ans <- lapply(X[i1:i2], function(x) as.numeric(strsplit(x, "[[:space:]]+")[[1]]))
+    ncol <- sapply(ans, length)
+    
+    ans %<>%
+      unlist %>% 
+      matrix(nrow = i2 - i1 + 1, ncol = ncol, byrow = T) %>% 
+      as.data.frame
+    
+    # TODO: determine the number of record...
+    if (subsampling)
+      ans %<>% limit.data.frame(n = 500)
+    else 
+      ans
   })
   res 
 }
@@ -118,14 +148,19 @@ read_IndexFile <- function(fname) {
   data
 }
 
+# functions to align the raw data ----
 
-# functions to align the raw data 
 # global variables for the alignment
 idxEvals <- 1
 idxTarget <- 5
 n_data_column <- 5
+
 # align all instances at a given target/precision
-align_by_target <- function(data, targets = 'full', nrow = 100, maximization = TRUE) {
+align_by_target <- function(data, targets = 'full', nrow = 100, maximization = TRUE,
+                            format = 'IOHProfiler') {
+  idxTarget <- switch(format,
+                      IOHProfiler = 5,
+                      COCO = 3)
   N <- length(data) 
   data <- lapply(data, as.matrix)   # TODO: matrices are faster for indexing?
   next_lines <- lapply(data, function(x) x[1, ]) %>% unlist %>% 
@@ -268,7 +303,7 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
         while (TRUE) {
           # if hitting the target
           # TODO: solve this issue (+0.001) precision issue!
-          if (next_lines[k, idxTarget] >= t) {
+          if (`op`(next_lines[k, idxTarget], t)) {
             curr_eval[k] <- next_lines[k, idxEvals]
             break
           }
@@ -350,7 +385,10 @@ NumericVector align_by_target_inner_loop(double t, int idxEvals, int idxTarget,
 ')
 
 # TODO: find a better way to organize the output
-align_by_runtime <- function(data, runtime = 'full') {
+align_by_runtime <- function(data, runtime = 'full', format = 'IOHProfiler') {
+  idxTarget <- switch(format,
+                      IOHProfiler = 5,
+                      COCO = 3)
   N <- length(data) 
   data <- lapply(data, as.matrix)   # matrices are faster for indexing?
   

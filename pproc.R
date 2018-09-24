@@ -30,34 +30,48 @@ source('readFiles.R')
 #   comment
 #   
 #   TODO: maybe also store the raw data sets
-DataSet <- function(info, verbose = F, maximization = TRUE) {
+DataSet <- function(info, verbose = F, maximization = TRUE, format = 'IOHProfiler',
+                    subsampling = FALSE) {
   if (!is.null(info)) {
     datFile <- info$datafile
     path <- dirname(info$datafile)
     filename <- basename(info$datafile)
     
     # TODO: do we need to read .idat file here?
-    idatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.idat'))
-    tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
-    cdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.cdat'))
-    cdatFile <- ifelse(file.exists(cdatFile), cdatFile, tdatFile)
+    if (format == 'IOHProfiler') {
+      idatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.idat'))
+      tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
+      cdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.cdat'))
+      cdatFile <- ifelse(file.exists(cdatFile), cdatFile, tdatFile)
+    } else if (format == 'COCO') {
+      datFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
+      tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
+    }
     
     # TODO: whether to keep the raw data set list?
-    tdat <- read_dat(tdatFile)         # read the tdat file
-    cdat <- read_dat(cdatFile)         # read the cdat file
+    if (format == 'IOHProfiler') {
+      tar_dat <- read_dat(tdatFile, subsampling)        # read the tdat file
+      rt_dat <- read_dat(cdatFile, subsampling)         # read the cdat file
+    } else if (format == 'COCO') {
+      tar_dat <- read_COCO_dat(datFile, subsampling)    # read the tdat file
+      rt_dat <- read_COCO_dat(tdatFile, subsampling)    # read the cdat file
+    }
     
-    by_target <- align_by_target(tdat, maximization = maximization) # aligned by target values
-    by_runtime <- align_by_runtime(cdat)   # aligned by runtime
+    # aligned by target values
+    by_target <- align_by_target(tar_dat, maximization = maximization, format = format) 
+    # aligned by runtime
+    by_runtime <- align_by_runtime(rt_dat, format = format)   
     
     # TODO: remove this and include the parameters that are aligned by runtimes
+    # TODO: implement two different alignments for the parameter
     by_runtime <- by_runtime[1]            
     
-    maxEvals <- sapply(tdat, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
-    finalFunvals <- sapply(cdat, function(d) d[nrow(d), idxTarget]) %>% set_names(NULL)
+    maxEvals <- sapply(tar_dat, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
+    finalFunvals <- sapply(rt_dat, function(d) d[nrow(d), idxTarget]) %>% set_names(NULL)
     
-    if (length(info$instance) == 0 || length(info$instance) != length(tdat)) {
+    if (length(info$instance) == 0 || length(info$instance) != length(tar_dat)) {
       warning('The number of instances found in the info is inconsistent with the data!')
-      info$instance <- seq(length(dat))
+      info$instance <- seq(length(tar_dat))
     }
     
     # if (any(maxEvals != info$maxEvals))
@@ -383,8 +397,10 @@ EPAR.DataSet <- function(data) {
 }
 
 # read all raw data files in a give directory
-read_dir <- function(args, verbose = T, print_fun = NULL, maximization = TRUE) {
-  DataSetList(args, verbose, print_fun, maximization = maximization)
+read_dir <- function(args, verbose = T, print_fun = NULL, maximization = TRUE, 
+                     format = 'IOHProfiler', subsampling = FALSE) {
+  DataSetList(args, verbose, print_fun, maximization = maximization,
+              format = format, subsampling = subsampling)
 }
 
 # S3 constructoer of the 'DataSetList' 
@@ -397,7 +413,8 @@ read_dir <- function(args, verbose = T, print_fun = NULL, maximization = TRUE) {
 #   instance
 #   maxEvals
 #   finalFunEvals
-DataSetList <- function(args = NULL, verbose = T, print_fun = NULL, maximization = TRUE) {
+DataSetList <- function(args = NULL, verbose = T, print_fun = NULL, maximization = TRUE,
+                        format = 'IOHProfiler', subsampling = FALSE) {
   if (is.null(args))
     return(structure(list(), class = c('DataSetList', 'list')))
   
@@ -428,7 +445,8 @@ DataSetList <- function(args = NULL, verbose = T, print_fun = NULL, maximization
       }
       
       copy_flag <- TRUE
-      data <- DataSet(info, maximization = maximization)
+      data <- DataSet(info, maximization = maximization, format = format, 
+                      subsampling = subsampling)
       DIM[i] <- attr(data, 'DIM')
       funcId[i] <- attr(data, 'funcId')
       algId[i] <- attr(data, 'algId')

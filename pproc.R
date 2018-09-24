@@ -50,28 +50,28 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = 'IOHProfile
     
     # TODO: whether to keep the raw data set list?
     if (format == 'IOHProfiler') {
-      tar_dat <- read_dat(tdatFile, subsampling)        # read the tdat file
-      rt_dat <- read_dat(cdatFile, subsampling)         # read the cdat file
+      tar_data <- read_dat(tdatFile, subsampling)        # read the tdat file
+      rt_data <- read_dat(cdatFile, subsampling)         # read the cdat file
     } else if (format == 'COCO') {
-      tar_dat <- read_COCO_dat(datFile, subsampling)    # read the tdat file
-      rt_dat <- read_COCO_dat(tdatFile, subsampling)    # read the cdat file
+      tar_data <- read_COCO_dat(datFile, subsampling)    # read the tdat file
+      rt_data <- read_COCO_dat(tdatFile, subsampling)    # read the cdat file
     }
     
     # aligned by target values
-    by_target <- align_by_target(tar_dat, maximization = maximization, format = format) 
+    by_target <- align_by_target(tar_data, maximization = maximization, format = format) 
     # aligned by runtime
-    by_runtime <- align_by_runtime(rt_dat, format = format)   
+    by_runtime <- align_by_runtime(rt_data, format = format)   
     
     # TODO: remove this and include the parameters that are aligned by runtimes
     # TODO: implement two different alignments for the parameter
     by_runtime <- by_runtime[1]            
     
-    maxEvals <- sapply(tar_dat, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
-    finalFunvals <- sapply(rt_dat, function(d) d[nrow(d), idxTarget]) %>% set_names(NULL)
+    maxEvals <- sapply(tar_data, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
+    finalFunvals <- sapply(rt_data, function(d) d[nrow(d), idxTarget]) %>% set_names(NULL)
     
-    if (length(info$instance) == 0 || length(info$instance) != length(tar_dat)) {
+    if (length(info$instance) == 0 || length(info$instance) != length(tar_data)) {
       warning('The number of instances found in the info is inconsistent with the data!')
-      info$instance <- seq(length(tar_dat))
+      info$instance <- seq(length(tar_data))
     }
     
     # if (any(maxEvals != info$maxEvals))
@@ -397,9 +397,9 @@ EPAR.DataSet <- function(data) {
 }
 
 # read all raw data files in a give directory
-read_dir <- function(args, verbose = T, print_fun = NULL, maximization = TRUE, 
+read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE, 
                      format = 'IOHProfiler', subsampling = FALSE) {
-  DataSetList(args, verbose, print_fun, maximization = maximization,
+  DataSetList(path, verbose, print_fun, maximization = maximization,
               format = format, subsampling = subsampling)
 }
 
@@ -413,13 +413,13 @@ read_dir <- function(args, verbose = T, print_fun = NULL, maximization = TRUE,
 #   instance
 #   maxEvals
 #   finalFunEvals
-DataSetList <- function(args = NULL, verbose = T, print_fun = NULL, maximization = TRUE,
+DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization = TRUE,
                         format = 'IOHProfiler', subsampling = FALSE) {
-  if (is.null(args))
+  if (is.null(path))
     return(structure(list(), class = c('DataSetList', 'list')))
   
-  args <- trimws(args)
-  indexFiles <- file.path(args, dir(args, pattern = '.info'))  # scan all .info files
+  path <- trimws(path)
+  indexFiles <- file.path(path, dir(path, pattern = '.info'))  # scan all .info files
   
   if (is.null(print_fun))
     print_fun <- cat
@@ -484,6 +484,11 @@ DataSetList <- function(args = NULL, verbose = T, print_fun = NULL, maximization
   object
 }
 
+# TODO: implement this 
+# c.DataSetList <- function(...) {
+#   browser()
+# }
+
 `[.DataSetList` <- function(x, i, drop = FALSE) {
   obj <- unclass(x)[i]
   class(obj) %<>% c('DataSetList')
@@ -543,7 +548,6 @@ getRuntimes <- function(data) {
 filter.DataSetList <- function(data, by) {
   on <- names(by)
   idx <- rep(TRUE, length(data))
-
   for (i in seq_along(on)) {
     idx <- idx & sapply(data, . %>% attr(on[i])) == by[i]
   }
@@ -553,7 +557,7 @@ filter.DataSetList <- function(data, by) {
 subset.DataSetList <- function(ds, ...) {
   n <- nargs() - 1
   condition_call <- substitute(list(...))
-  idx <- eval(condition_call, attributes(ds)) %>% 
+  idx <- sapply(ds, function(data) eval(condition_call, attributes(data))) %>% 
     unlist %>% 
     matrix(nrow = n, byrow = T) %>% 
     apply(MARGIN = 2, all)

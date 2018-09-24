@@ -224,6 +224,7 @@ shinyServer(function(input, output, session) {
       return(NULL)
     
     filter(DataList$data, by = c(DIM = dim, funcId = funcId))
+    # subset(DataList$data, DIM == dim, funcId == funcId)
   })
   
   # compute the ERT for all DataSets after filtering

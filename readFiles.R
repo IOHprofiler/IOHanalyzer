@@ -32,7 +32,7 @@ scan_indexFile <- function(folder) {
 # Return: a list of data.frames
 read_dat <- function(fname, subsampling = FALSE) {
   df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
-  idx <- c(which(df[, 1] == 'function evaluation'), nrow(df))
+  idx <- which(df[, 1] == 'function evaluation')
   
   # check for data consistence
   header_len <- apply(df[idx, ] != "", 1, sum) %>% min
@@ -65,10 +65,9 @@ read_dat <- function(fname, subsampling = FALSE) {
 }
 
 # for COCO format
-# Return: a list of data.frames
 read_COCO_dat <- function(fname, subsampling = FALSE) {
   X <- scan(fname, what = '', sep = '\n', quiet = T)
-  idx <- c(which(startsWith(X, '%')), length(X))
+  idx <- c(which(startsWith(X, '%')), length(X) + 1)
   
   res <- lapply(seq(length(idx) - 1), function(i) {
     i1 <- idx[i] + 1

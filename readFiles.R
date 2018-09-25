@@ -33,7 +33,7 @@ scan_indexFile <- function(folder) {
 read_dat <- function(fname, subsampling = FALSE) {
   df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
   idx <- which(df[, 1] == 'function evaluation')
-  
+
   # check for data consistence
   header_len <- apply(df[idx, ] != "", 1, sum) %>% min
   idx %<>% c(nrow(df) + 1)
@@ -64,30 +64,30 @@ read_dat <- function(fname, subsampling = FALSE) {
   res 
 }
 
-# for COCO format
+# fast data reading for COCO format
 read_COCO_dat <- function(fname, subsampling = FALSE) {
+  # improve the speed of 'scan'
   X <- scan(fname, what = '', sep = '\n', quiet = T)
-  idx <- c(which(startsWith(X, '%')), length(X) + 1)
+  idx <- which(startsWith(X, '%'))
   
-  res <- lapply(seq(length(idx) - 1), function(i) {
-    i1 <- idx[i] + 1
-    i2 <- idx[i + 1] - 1
-    
-    ans <- lapply(X[i1:i2], function(x) as.numeric(strsplit(x, "[[:space:]]+")[[1]]))
-    ncol <- sapply(ans, length)
-    
-    ans %<>%
-      unlist %>% 
-      matrix(nrow = i2 - i1 + 1, ncol = ncol, byrow = T) %>% 
-      as.data.frame
-    
-    # TODO: determine the number of record...
-    if (subsampling)
-      ans %<>% limit.data.frame(n = 500)
-    else 
-      ans
-  })
-  res 
+  df <- paste(X[-idx], collapse = '\n') %>% 
+    fread(header = FALSE, sep = ' ', colClasses = 'numeric', fill = T) %>% 
+    as.data.frame
+  
+  idx %<>% c(length(X) + 1) %>% 
+    `-`(seq(0, length(idx)))
+  
+  lapply(seq(length(idx) - 1), 
+         function(i) {
+           i1 <- idx[i]
+           i2 <- idx[i + 1] - 1
+           ans <-  df[i1:i2, ]
+           
+           if (subsampling)
+             ans %<>% limit.data.frame(n = 500)
+           else 
+             ans
+         })
 }
 
 # read .info files and extract information

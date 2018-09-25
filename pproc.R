@@ -501,7 +501,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
 print.DataSetList <- function(ds) {
   cat('DataSetList:\n')
   for (i in seq_along(ds)) {
-    cat(sprintf('%d: %s', i, as.character(ds[[i]])))
+    cat(sprintf('%d: %s\n', i, as.character(ds[[i]])))
   }
 }
 
@@ -554,14 +554,17 @@ filter.DataSetList <- function(data, by) {
   data[idx]
 }
 
-subset.DataSetList <- function(ds, ...) {
+# filter the DataSetList
+subset.DataSetList <- function(dsList, ...) {
   n <- nargs() - 1
   condition_call <- substitute(list(...))
-  idx <- sapply(ds, function(data) eval(condition_call, attributes(data))) %>% 
-    unlist %>% 
-    matrix(nrow = n, byrow = T) %>% 
-    apply(MARGIN = 2, all)
-  ds[idx]
+  idx <- sapply(dsList, 
+                function(ds)
+                  eval(condition_call, attributes(ds), parent.frame()) %>% 
+                  unlist %>% 
+                  all
+                )
+  dsList[idx]
 }
  
 # functions to compute statistics from the data set

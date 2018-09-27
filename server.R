@@ -218,13 +218,13 @@ shinyServer(function(input, output, session) {
   # the filtered DataSets 
   DATA <- reactive({
     dim <- input$DIM_INPUT
-    funcId <- input$FUNCID_INPUT
+    id <- input$FUNCID_INPUT
     
     if (length(DataList$data) == 0)
       return(NULL)
     
-    filter(DataList$data, by = c(DIM = dim, funcId = funcId))
-    # subset(DataList$data, DIM == dim, funcId == funcId)
+    # filter(DataList$data, by = c(DIM = dim, funcId = id))
+    subset(DataList$data, DIM == dim, funcId == id)
   })
   
   # compute the ERT for all DataSets after filtering
@@ -786,12 +786,12 @@ shinyServer(function(input, output, session) {
                               
       p %<>%
         # TODO: maybe not showing the std. shade at all!
-        add_trace(data = df_plot, x = ~x, y = ~upper, type = 'scatter', mode = 'lines',
-                  line = list(color = rgba_str, width = 0),
-                  showlegend = F, name = 'mean +/- sd') %>%
-        add_trace(x = ~x, y = ~lower, type = 'scatter', mode = 'lines',
-                  fill = 'tonexty',  line = list(color = 'transparent'),
-                  fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd') %>%
+        # add_trace(data = df_plot, x = ~x, y = ~upper, type = 'scatter', mode = 'lines',
+        #           line = list(color = rgba_str, width = 0),
+        #           showlegend = F, name = 'mean +/- sd') %>%
+        # add_trace(x = ~x, y = ~lower, type = 'scatter', mode = 'lines',
+        #           fill = 'tonexty',  line = list(color = 'transparent'),
+        #           fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd') %>%
         add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
                   mode = 'lines+markers', name = sprintf('%s', algId), 
                   showlegend = T, legendgroup = paste0(k),

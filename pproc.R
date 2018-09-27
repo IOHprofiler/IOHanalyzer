@@ -558,9 +558,10 @@ filter.DataSetList <- function(data, by) {
 subset.DataSetList <- function(dsList, ...) {
   n <- nargs() - 1
   condition_call <- substitute(list(...))
+  enclos <- parent.frame()
   idx <- sapply(dsList, 
-                function(ds)
-                  eval(condition_call, attributes(ds), parent.frame()) %>% 
+                function(ds) 
+                  eval(condition_call, attributes(ds), enclos) %>% 
                   unlist %>% 
                   all
                 )

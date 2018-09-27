@@ -64,6 +64,7 @@ read_dat <- function(fname, subsampling = FALSE) {
   res 
 }
 
+# TODO: think of even faster methods...
 # fast data reading for COCO format
 read_COCO_dat <- function(fname, subsampling = FALSE) {
   # improve the speed of 'scan'
@@ -167,7 +168,12 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
   
   n_rows <- sapply(data, nrow)
   n_column <- sapply(data, . %>% ncol) %>% unique
-  n_param <- n_column - n_data_column
+  
+  if (format == 'COCO')
+    n_param <- 0
+  else
+    n_param <- n_column - n_data_column
+    
   if (length(n_column) > 1)
     stop('inconsistent number of columns in each run!')
   
@@ -393,7 +399,11 @@ align_by_runtime <- function(data, runtime = 'full', format = 'IOHProfiler') {
   
   n_rows <- sapply(data, nrow)
   n_column <- sapply(data, . %>% ncol) %>% unique
-  n_param <- n_column - n_data_column
+  
+  if (format == 'COCO')
+    n_param <- 0
+  else
+    n_param <- n_column - n_data_column
 
   if (length(n_column) > 1)
     stop('inconsistent number of columns in each run!')

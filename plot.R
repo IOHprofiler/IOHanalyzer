@@ -14,6 +14,7 @@ plot_ly_default <- function(title = NULL,
   plot_ly() %>% 
     layout(title = title,
            autosize = T, hovermode = 'compare',
+           legend = list(x = 0, y = -0.2, orientation = 'h'),
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
            font = list(size = 18, family = 'sans-serif'),
            titlefont = list(size = 16, family = 'sans-serif'),

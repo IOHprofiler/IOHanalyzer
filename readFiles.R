@@ -55,7 +55,7 @@ read_dat <- function(fname, subsampling = FALSE) {
     if (i1 == i2)
       ans <- t(ans)
     
-    # TODO: determine the number of record...
+    # TODO: determine the number of record in the 'efficient mode'
     if (subsampling)
       ans %<>% limit.data.frame(n = 500)
     else 

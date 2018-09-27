@@ -135,7 +135,9 @@ body <- dashboardBody(
                            
                            selectInput('DATA_SRC_FORMAT', label = HTML('<p align="left" style="font-size:120%;">Please choose the format of your data sets</p>'),
                                        choices = c('IOHProfiler', 'COCO'), selected = 'IOHProfiler', width = '50%'),
-                           HTML('<p align="justify" style="font-size:120%;">When the data set is huge, the alignment can take a lone time. In this case, you could toggle the efficient mode to subsample the data set. However, the precision of data will be compromised.</p>'),
+                           HTML('<p align="justify" style="font-size:120%;">When the data set is huge, the alignment
+                                can take a lone time. In this case, you could toggle the efficient mode to subsample 
+                                the data set. However, the precision of data will be compromised.</p>'),
                            checkboxInput('SUBSAMPLING', label = HTML('<p align="left" style="font-size:120%;">Efficient mode</p>'), value = T),
                            
                            fileInput("ZIP", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>zip file</i> containing the benchmark data</p>'),
@@ -169,7 +171,7 @@ body <- dashboardBody(
             
             fluidRow(
               column(width = 12,
-                     box(title = HTML('<p style="font-size:120%;">List of processed Data</p>'), width = 12,
+                     box(title = HTML('<p style="font-size:120%;">List of Processed Data</p>'), width = 12,
                          solidHeader = T, status = "primary", collapsible = T, 
                          dataTableOutput('DATASETLIST_INFO')
                      )

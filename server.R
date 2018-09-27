@@ -31,9 +31,7 @@ src_format <- 'IOHProfiler' # TODO: this shoule be taken from the data set
 sub_sampling <- TRUE
 
 # Formatter for function values
-format_funeval <- ifelse(src_format == 'IOHProfiler',
-                         function(v) format(as.integer(as.numeric(v))),
-                         function(v) format(v, format = "e", digits = 5, nsmall = 2))
+format_funeval <- function(v) format(as.integer(as.numeric(v)))
 
 # generate evenly space grid of function values
 funeval_grid <- function(v, ...) {
@@ -75,14 +73,22 @@ shinyServer(function(input, output, session) {
   folderList <- reactiveValues(data = list())
   DataList <- reactiveValues(data = list())
   
-  # update the format of the data source
+  # update maximization indication, trans_funeval according to src_format 
   observe({
     src_format <<- input$DATA_SRC_FORMAT
     if (input$DATA_SRC_FORMAT == 'IOHProfiler') {
       maximization <<- TRUE
+      trans_funeval <<- . %>% return
+      reverse_trans_runtime <<- . %>% return
+      format_funeval <<- function(v) format(as.integer(as.numeric(v)))
+      
     } else if (input$DATA_SRC_FORMAT == 'COCO') {
       maximization <<- FALSE
-    }
+      format_funeval <<- function(v) format(v, format = "e", digits = 5, nsmall = 2)
+      # TODO: determine if we need transformations on the function values
+      # trans_funeval <<- `log10`
+      # reverse_trans_funeval <<- function(x) 10 ^ x
+    } 
   })
   
   # is subsamping?
@@ -158,13 +164,16 @@ shinyServer(function(input, output, session) {
                       paste0('<p style="color:red;">No index file (.info) is found in folder ', 
                              folder, '... skip</p>'), add = TRUE)
       else {
-        folderList$data <- c(folderList$data, folder)  
+        folderList$data <- c(folderList$data, folder)
+        
+        # TODO: check if the newly loaded data contradicts the selected format
         print_fun <- function(s) shinyjs::html("process_data_promt", s, add = TRUE)
         DataList$data <- c(DataList$data, read_dir(folder, print_fun = print_fun,
                                                    maximization = maximization,
                                                    format = src_format,
                                                    subsampling = sub_sampling))
-        class(DataList$data) <- 'DataSetList'  # TODO: fix this urgly part
+        # TODO: fix this urgly part by implementing 'c()' for DataSetList
+        class(DataList$data) <- 'DataSetList'  
         shinyjs::html("upload_data_promt", 
                       sprintf('%d: %s\n', length(folderList$data), folder), add = TRUE)
       }
@@ -351,7 +360,7 @@ shinyServer(function(input, output, session) {
     
     if (input$singleF)
       fseq <- c(fstart) %>% 
-        reverse_trans_funeval %>% 
+        reverse_trans_funeval %>%
         .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     else {
       # TODO: change this to 'req'
@@ -363,7 +372,7 @@ shinyServer(function(input, output, session) {
       
       fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
         c(fstart, ., fstop) %>% unique %>% 
-        reverse_trans_funeval %>% 
+        reverse_trans_funeval %>%
         .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     }
     
@@ -525,6 +534,10 @@ shinyServer(function(input, output, session) {
     p %<>%
       layout(xaxis = list(type = switch(input$semilogx, T = 'log', F = 'linear')),
              yaxis = list(type = switch(input$semilogy, T = 'log', F = 'linear')))
+    
+    # minimization for COCO
+    if (src_format == 'COCO')
+      p %<>% layout(xaxis = list(autorange = "reversed"))
   })
   
   # empirical p.m.f. of the runtime

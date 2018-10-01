@@ -5,7 +5,6 @@
 # Email: wangronin@gmail.com
 # 
 # Remark:
-#   1. library 'itertool' is way two slow and thus is not used here
 #   2. Rcpp is used for the data alignment function
 
 library(magrittr)
@@ -16,6 +15,7 @@ source('readFiles.R')
 
 # TODO: perhaps migrate to data.table for speed concern and simplicity
 # TODO: find better name to replace FCE
+# TODO: general issue: maybe separate DataSetList class from DataSet class
 
 # constructor of S3 class 'DataSet' ---------------------------
 # Attributes
@@ -403,16 +403,17 @@ read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
               format = format, subsampling = subsampling)
 }
 
-# S3 constructoer of the 'DataSetList' 
+# TODO: find a better name for this function
+# TODO: implement this
+load_index <- function(file) {
+  
+}
+
+# S3 constructor of the 'DataSetList' 
 # Attributes
 #   funId
 #   DIM
 #   algId
-#   Precision
-#   datafile
-#   instance
-#   maxEvals
-#   finalFunEvals
 DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization = TRUE,
                         format = 'IOHProfiler', subsampling = FALSE) {
   if (is.null(path))
@@ -476,7 +477,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
     }
   }
   
-  # TODO: sort all DataSet by key order: algId, funcId and DIM
+  # TODO: sort all DataSet by multiple attributes: algId, funcId and DIM
   class(object) %<>% c('DataSetList')
   attr(object, 'DIM') <- DIM
   attr(object, 'funcId') <- funcId
@@ -484,16 +485,32 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
   object
 }
 
-# TODO: implement this 
-# c.DataSetList <- function(...) {
-#   browser()
-# }
+c.DataSetList <- function(...) {
+  # TODO: maybe remove duplicated dataset in the further
+  # remove the empty list first
+  dsl <- list(...)
+  dsl <- dsl[sapply(dsl, length) != 0]  
+  
+  if (length(dsl) == 0)
+    return()
+  
+  object <- unlist(dsl, recursive = F)
+  class(object) %<>% c('DataSetList')
+  
+  for (attr_str in c('DIM', 'funcId', 'algId')) {
+    attr(object, attr_str) <- unlist(lapply(dsl, function(x) attr(x, attr_str)))
+  }
+  object
+}
 
 `[.DataSetList` <- function(x, i, drop = FALSE) {
-  obj <- unclass(x)[i]
+  # remove the attributes firstly
+  obj <- unclass(x)[i] 
   class(obj) %<>% c('DataSetList')
+  
+  # also slice the attributes accordingly
   attr(obj, 'DIM') <- attr(x, 'DIM')[i]
-  attr(obj, 'funId') <- attr(x, 'funId')[i]
+  attr(obj, 'funcId') <- attr(x, 'funcId')[i]
   attr(obj, 'algId') <- attr(x, 'algId')[i]
   obj
 }

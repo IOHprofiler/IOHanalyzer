@@ -71,7 +71,7 @@ shinyServer(function(input, output, session) {
   
   # variables shared
   folderList <- reactiveValues(data = list())
-  DataList <- reactiveValues(data = list())
+  DataList <- reactiveValues(data = DataSetList())
   
   # update maximization indication, trans_funeval according to src_format 
   observe({
@@ -172,8 +172,9 @@ shinyServer(function(input, output, session) {
                                                    maximization = maximization,
                                                    format = src_format,
                                                    subsampling = sub_sampling))
+        
         # TODO: fix this urgly part by implementing 'c()' for DataSetList
-        class(DataList$data) <- 'DataSetList'  
+        # class(DataList$data) <- 'DataSetList'
         shinyjs::html("upload_data_promt", 
                       sprintf('%d: %s\n', length(folderList$data), folder), add = TRUE)
       }
@@ -538,6 +539,7 @@ shinyServer(function(input, output, session) {
     # minimization for COCO
     if (src_format == 'COCO')
       p %<>% layout(xaxis = list(autorange = "reversed"))
+    p
   })
   
   # empirical p.m.f. of the runtime

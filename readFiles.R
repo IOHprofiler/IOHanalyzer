@@ -3,12 +3,16 @@
 #
 # Author: Hao Wang
 # Email: wangronin@gmail.com
+# 
+# TODO: maybe I should always use data.table as it is very fast
 
 library(magrittr)
 library(dplyr)
 library(reshape2)
 library(data.table)
 library(Rcpp)
+
+sourceCpp('C/align.cc')
 
 # reduce the size of the data set by evenly subsampling the records
 limit.data.frame <- function(df, n) {
@@ -20,75 +24,10 @@ limit.data.frame <- function(df, n) {
     df
 }
 
-# functions to read the .info, .dat files 
+# scan *.info files for IOHProfiler or COCO
 scan_indexFile <- function(folder) {
   folder <- trimws(folder)
   file.path(folder, dir(folder, pattern = '.info'))
-}
-
-# reading .dat, .rdat, .tdat files ----
-
-# for IOHProfiler format
-# Return: a list of data.frames
-read_dat <- function(fname, subsampling = FALSE) {
-  df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
-  idx <- which(df[, 1] == 'function evaluation')
-
-  # check for data consistence
-  header_len <- apply(df[idx, ] != "", 1, sum) %>% min
-  idx %<>% c(nrow(df) + 1)
-  df <- df[, 1:header_len]
-  
-  # turn off the warnings of the data coersion below
-  options(warn = -1)
-  columns <- colnames(df) <- as.matrix(df[1, ])
-  # TOOD: this opeartor is the bottelneck
-  df %<>% sapply(function(c) {class(c) <- 'numeric'; c})
-  # df <- df[, lapply(.SD, as.numeric)]
-  # df %<>% mutate_all(funs(as.numeric(.)))
-  options(warn = 0)
-  
-  res <- lapply(seq(length(idx) - 1), function(i) {
-    i1 <- idx[i] + 1
-    i2 <- idx[i + 1] - 1
-    ans <- df[i1:i2, ]
-    if (i1 == i2)
-      ans <- t(ans)
-    
-    # TODO: determine the number of record in the 'efficient mode'
-    if (subsampling)
-      ans %<>% limit.data.frame(n = 500)
-    else 
-      ans
-  })
-  res 
-}
-
-# TODO: think of even faster methods...
-# fast data reading for COCO format
-read_COCO_dat <- function(fname, subsampling = FALSE) {
-  # improve the speed of 'scan'
-  X <- scan(fname, what = '', sep = '\n', quiet = T)
-  idx <- which(startsWith(X, '%'))
-  
-  df <- paste(X[-idx], collapse = '\n') %>% 
-    fread(header = FALSE, sep = ' ', colClasses = 'numeric', fill = T) %>% 
-    as.data.frame
-  
-  idx %<>% c(length(X) + 1) %>% 
-    `-`(seq(0, length(idx)))
-  
-  lapply(seq(length(idx) - 1), 
-         function(i) {
-           i1 <- idx[i]
-           i2 <- idx[i + 1] - 1
-           ans <-  df[i1:i2, ]
-           
-           if (subsampling)
-             ans %<>% limit.data.frame(n = 500)
-           else 
-             ans
-         })
 }
 
 # read .info files and extract information
@@ -138,14 +77,104 @@ read_IndexFile <- function(fname) {
                         datafile = datafile,
                         # TODO: REMOVE this in the future for Furong's data set
                         instance = seq(ncol(res)))  
-                        # instance = as.numeric(res[1, ]),
-                        # maxEvals = as.numeric(info[1, ]),
-                        # bestdeltaf = as.numeric(info[2, ]))
+                   # instance = as.numeric(res[1, ]),
+                   # maxEvals = as.numeric(info[1, ]),
+                   # bestdeltaf = as.numeric(info[2, ]))
     )
     i <- i + 1
   }
   close(f)
   data
+}
+
+# check the format of data
+check_format <- function(path) {
+  index_files <- scan_indexFile(path)
+  info <- lapply(index_files, read_IndexFile) %>% unlist(recursive = F)
+  datafile <- sapply(info, . %>% `$`(datafile))
+  
+  format <- lapply(datafile, function(file) {
+    first_line <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
+    if (startsWith(first_line, '%'))
+      'COCO'
+    else if (startsWith(first_line, 'function'))
+      'IOHProfiler'
+  }) %>% unlist 
+  
+  res <- data.frame(datafile = datafile, format = format)
+  
+  if (length(levels(res$format)) > 1) {
+    warning(paste(path, 'contains multiple data formats. This is not allowed for data processing.
+                  Please check the returned dataframe for more information.'))
+    res
+  } else
+    levels(res$format)[1]
+}
+
+# reading .dat, .rdat, .tdat files ----
+
+# for IOHProfiler format
+# Return: a list of data.frames
+read_dat <- function(fname, subsampling = FALSE) {
+  # TODO: use the same method as in read_COCO_dat
+  df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
+  idx <- which(df[, 1] == 'function evaluation')
+
+  # check for data consistence
+  header_len <- apply(df[idx, ] != "", 1, sum) %>% min
+  idx %<>% c(nrow(df) + 1)
+  df <- df[, 1:header_len]
+  
+  # turn off the warnings of the data coersion below
+  options(warn = -1)
+  columns <- colnames(df) <- as.matrix(df[1, ])
+  # TOOD: this opeartor is the bottelneck
+  df %<>% sapply(function(c) {class(c) <- 'numeric'; c})
+  # df <- df[, lapply(.SD, as.numeric)]
+  # df %<>% mutate_all(funs(as.numeric(.)))
+  options(warn = 0)
+  
+  res <- lapply(seq(length(idx) - 1), function(i) {
+    i1 <- idx[i] + 1
+    i2 <- idx[i + 1] - 1
+    ans <- df[i1:i2, ]
+    if (i1 == i2)
+      ans <- t(ans)
+    
+    # TODO: determine the number of record in the 'efficient mode'
+    if (subsampling)
+      ans %<>% limit.data.frame(n = 500)
+    else 
+      ans
+  })
+  res 
+}
+
+# read COCO '.dat'-like file
+read_COCO_dat <- function(fname, subsampling = FALSE) {
+  # read the file as a character vector (one string per row)
+  X <- fread(fname, header = FALSE, sep = '\n', colClasses = 'character') %>% 
+    apply(1, as.character)
+  
+  idx <- which(startsWith(X, '%'))
+  df <- paste(X[-idx], collapse = '\n') %>% 
+    fread(header = FALSE, sep = ' ', colClasses = 'numeric') %>% 
+    as.data.frame
+  
+  idx %<>% c(length(X) + 1) %>% `-`(seq(0, length(idx)))
+  
+  lapply(seq(length(idx) - 1), 
+         function(i) {
+           i1 <- idx[i]
+           i2 <- idx[i + 1] - 1
+           ans <-  df[i1:i2, ]
+           
+           # TODO: determine the number of records automatically, the same here
+           if (subsampling)
+             ans %<>% limit.data.frame(n = 500)
+           else 
+             ans
+         })
 }
 
 # functions to align the raw data ----
@@ -354,41 +383,6 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
     list(by_target = res)
 }
 
-# Use Rcpp to speed up 'align_by_runtime'
-cppFunction('
-NumericVector align_by_target_inner_loop(double t, int idxEvals, int idxTarget, 
-  List data, NumericVector index, NumericMatrix next_lines, NumericVector curr_eval) {
-
-  int N = data.size();
-  NumericVector out = clone(curr_eval);
-
-  for (int k = 0; k < N; k++) {
-    NumericMatrix d = as<NumericMatrix>(data[k]);
-    int n_row = d.nrow();
-    int n_col = d.ncol();
-    int iter = index[k];
-
-    while (true) {
-      if (next_lines(k, idxTarget) >= t) {
-        out[k] = next_lines(k, idxEvals);
-        break;
-      }
-
-      if (iter < (n_row - 1)) {
-        iter++;
-        for (int j = 0; j < n_col; j++) {
-          next_lines(k, j) = d(iter, j);
-        }
-      } else {
-        break;
-      }
-    }
-    index[k] = iter;
-  }
-  return out;
-}
-')
-
 # TODO: find a better way to organize the output
 align_by_runtime <- function(data, runtime = 'full', format = 'IOHProfiler') {
   idxTarget <- switch(format,
@@ -487,38 +481,3 @@ align_by_runtime <- function(data, runtime = 'full', format = 'IOHProfiler') {
     list(by_runtime = res)
   }
 }
-
-# TODO: verify this function
-# Use Rcpp to speed up 'align_by_runtime'
-cppFunction('
-void align_by_runtime_inner_loop(int r, int idxEvals, int idxTarget, 
-  List data, NumericVector n_rows, NumericVector index, NumericMatrix next_lines,
-  NumericVector curr_fvalues) {
-
-  int N = data.size();
-  for (int k = 0; k < N; k++) {
-    NumericMatrix d = as<NumericMatrix>(data[k]);
-    int n_row = n_rows[k];
-    int iter = index[k];
-    int n_col = d.ncol();
-
-    while (!NumericVector::is_na(next_lines(k, idxEvals))) {
-      if (next_lines(k, idxEvals) > r) {
-        curr_fvalues[k] = next_lines(k, idxTarget);
-        break;
-      }
-
-      if (iter < (n_row - 1)) {
-        iter++;
-        for (int j = 0; j < n_col; j++) {
-          next_lines(k, j) = d(iter, j);
-        }
-      } else {
-        curr_fvalues[k] = next_lines(k, idxTarget);
-        next_lines(k, idxEvals) = NA_REAL;
-      }
-    }
-    index[k] = iter;
-  }
-}
-')

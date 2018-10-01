@@ -1,4 +1,4 @@
-# Post-procesing Tool
+# IOHProfiler: Post-Processing
 
 This is the post-processing tool of the project __Iterative Optimization Heuristics Profiler__ (IOHProfiler). This tool provides a web-based interface to analyze and visualization the benchmark data, collected from previous experiments. Importantly, we __do support__ the widely used [COCO](https://github.com/numbbo/coco) data format (aka Black-Box Optimization Benchmarking).
 
@@ -23,8 +23,8 @@ devtools::install_github("ropensci/plotly")
 Please make sure those packages are correctly installed by monitoring the (verbose) prompting messages on the console.
 
 Then, please clone this repository into your own system. To start the post-processing module, please execute the following commands in the R console:
-```r
-shiny::runApp('/path/to/the/clone/folder')
+```console
+> shiny::runApp('/path/to/the/clone/folder')
 ```
 
 # Online Service
@@ -64,8 +64,13 @@ The return value is a list of __DataSets__. Each data set consists of:
 * To get a summary of one data set (e.g., the runtime distribution):
 ```console
 > summarise_runtime(ds[[1]], ftarget = 1e-1, maximization = FALSE)
-               algId       f(x) runs  mean median       sd 2% 5% 10% 25% 50% 75% 90% 95% 98%
-1 (1+1)-Cholesky-CMA 0.09986529   80 36.55   37.5 17.11236  4  5  14  22  37  49  57  67  68
+             algId       f(x) runs  mean median       sd 2% 5% 10% 25% 50% 75% 90% 95% 98%
+(1+1)-Cholesky-CMA 0.09986529   80 36.55   37.5 17.11236  4  5  14  22  37  49  57  67  68
+```
+```
+> summarise_target(ds[[1]], runtimes = 100, maximization = FALSE)
+             algId runtime runs           mean       median           sd           2%           5%          10%          25%          50%          75%          90%         95%         98%
+(1+1)-Cholesky-CMA     100   80   0.0002333208 3.797025e-05 0.0004581431 9.843261e-08 4.168509e-07 8.343177e-07 6.090179e-06 3.797025e-05 0.0001831323 0.0006597004 0.001072814 0.001900295
 ```
 
 # TODO

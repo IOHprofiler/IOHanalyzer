@@ -309,8 +309,8 @@ $(document).ready(function () {
 </div>
 
 
-<div id="post-procesing-tool" class="section level1">
-<h1>Post-procesing Tool</h1>
+<div id="iohprofiler-post-processing" class="section level1">
+<h1>IOHProfiler: Post-Processing</h1>
 <p>This is the post-processing tool of the project <strong>Iterative Optimization Heuristics Profiler</strong> (IOHProfiler). This tool provides a web-based interface to analyze and visualization the benchmark data, collected from previous experiments. Importantly, we <strong>do support</strong> the widely used <a href="https://github.com/numbbo/coco">COCO</a> data format (aka Black-Box Optimization Benchmarking).</p>
 </div>
 <div id="installation" class="section level1">
@@ -330,7 +330,7 @@ install.packages(&#39;Rcpp&#39;)
 devtools::install_github(&quot;ropensci/plotly&quot;)</code></pre>
 <p>Please make sure those packages are correctly installed by monitoring the (verbose) prompting messages on the console.</p>
 <p>Then, please clone this repository into your own system. To start the post-processing module, please execute the following commands in the R console:</p>
-<pre class="r"><code>shiny::runApp(&#39;/path/to/the/clone/folder&#39;)</code></pre>
+<pre class="console"><code>&gt; shiny::runApp(&#39;/path/to/the/clone/folder&#39;)</code></pre>
 </div>
 <div id="online-service" class="section level1">
 <h1>Online Service</h1>
@@ -368,9 +368,12 @@ DataSetList:
 <ul>
 <li>To get a summary of one data set (e.g., the runtime distribution):</li>
 </ul>
-<pre class="console"><code>&gt; summarise_runtime(ds[[1]], ftarget = 1e-1, maximization = TRUE)
-               algId       f(x) runs  mean median       sd 2% 5% 10% 25% 50% 75% 90% 95% 98%
-1 (1+1)-Cholesky-CMA 0.09986529   80 36.55   37.5 17.11236  4  5  14  22  37  49  57  67  68</code></pre>
+<pre class="console"><code>&gt; summarise_runtime(ds[[1]], ftarget = 1e-1, maximization = FALSE)
+             algId       f(x) runs  mean median       sd 2% 5% 10% 25% 50% 75% 90% 95% 98%
+(1+1)-Cholesky-CMA 0.09986529   80 36.55   37.5 17.11236  4  5  14  22  37  49  57  67  68</code></pre>
+<pre><code>&gt; summarise_target(ds[[1]], runtimes = 100, maximization = FALSE)
+             algId runtime runs           mean       median           sd           2%           5%          10%          25%          50%          75%          90%         95%         98%
+(1+1)-Cholesky-CMA     100   80   0.0002333208 3.797025e-05 0.0004581431 9.843261e-08 4.168509e-07 8.343177e-07 6.090179e-06 3.797025e-05 0.0001831323 0.0006597004 0.001072814 0.001900295</code></pre>
 </div>
 <div id="todo" class="section level1">
 <h1>TODO</h1>

@@ -1,6 +1,8 @@
 # IOHProfiler: Post-Processing
 
-This is the post-processing tool of the project __Iterative Optimization Heuristics Profiler__ (IOHProfiler). This tool provides a web-based interface to analyze and visualization the benchmark data, collected from previous experiments. Importantly, we __do support__ the widely used [COCO](https://github.com/numbbo/coco) data format (aka Black-Box Optimization Benchmarking).
+[This is](https://github.com/wangronin/IOHProfiler) the post-processing tool of the project __Iterative Optimization Heuristics Profiler__ (IOHProfiler). This tool provides a web-based interface to analyze and visualization the benchmark data, collected from previous experiments. Importantly, we __do support__ the widely used [COCO](https://github.com/numbbo/coco) data format (aka Black-Box Optimization Benchmarking).
+
+This tool is built on R package [Shiny](https://shiny.rstudio.com/).
 
 # Installation
 This software is mainly written in __R__ To run it directly from the source code, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/).
@@ -28,7 +30,7 @@ Then, please clone this repository into your own system. To start the post-proce
 ```
 
 # Online Service
-Alternatively, we have built a server to put this tool online, which is currently hosted in __Leiden University__. The server can be accessed via
+Alternatively, we have built a server to put this tool online, which is currently hosted in __Leiden University__. The server can be accessed via [TBD](https://github.com/wangronin/IOHProfiler).
 
 
 # Data Preparation
@@ -67,26 +69,52 @@ The return value is a list of __DataSets__. Each data set consists of:
              algId       f(x) runs  mean median       sd 2% 5% 10% 25% 50% 75% 90% 95% 98%
 (1+1)-Cholesky-CMA 0.09986529   80 36.55   37.5 17.11236  4  5  14  22  37  49  57  67  68
 ```
-```
+```console
 > summarise_target(ds[[1]], runtimes = 100, maximization = FALSE)
              algId runtime runs           mean       median           sd           2%           5%          10%          25%          50%          75%          90%         95%         98%
 (1+1)-Cholesky-CMA     100   80   0.0002333208 3.797025e-05 0.0004581431 9.843261e-08 4.168509e-07 8.343177e-07 6.090179e-06 3.797025e-05 0.0001831323 0.0006597004 0.001072814 0.001900295
+```
+```console
+> get_runtime_sample(ds[[1]], ftarget = 1e-1, maximization = F, format = 'long')
+                algId          f(x) run RT
+1  (1+1)-Cholesky-CMA 0.09986528573   1 69
+2  (1+1)-Cholesky-CMA 0.09986528573   2 39
+3  (1+1)-Cholesky-CMA 0.09986528573   3 38
+4  (1+1)-Cholesky-CMA 0.09986528573   4 34
+5  (1+1)-Cholesky-CMA 0.09986528573   5 67
+6  (1+1)-Cholesky-CMA 0.09986528573   6  3
+7  (1+1)-Cholesky-CMA 0.09986528573   7 36
+8  (1+1)-Cholesky-CMA 0.09986528573   8 41
+9  (1+1)-Cholesky-CMA 0.09986528573   9 14
+10 (1+1)-Cholesky-CMA 0.09986528573  10 30
 ```
 
 # TODO
 * [ ] convert data processing code into a package
 * [ ] add more stastistical tests
+* [ ] add _ggplot2_ based static plotting procedures for the programming interface
 
 # Contact
 If you have any questions, comments or suggestions, please don't hesitate contacting us via <wangronin@gmail.com> or <h.wang@liacs.leidenuniv.nl>.  
 
 # Cite us
+The development team is:
+
+* [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang#tab-1), <i>Leiden Institute of Advanced Computer Science</i>, <h.wang@liacs.leidenuniv.nl>.
+
+* [Carola Doerr](http://www-desir.lip6.fr/~doerr/), <i>CNRS and Sorbonne University</i>, <Carola.Doerr@mpi-inf.mpg.de>.
+
+* [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye#tab-1), <i>Leiden Institute of Advanced Computer Science</i>, <f.ye@liacs.leidenuniv.nl>.
+
+* [Sander van Rijn](https://www.universiteitleiden.nl/en/staffmembers/sander-van-rijn#tab-1), <i>Leiden Institute of Advanced Computer Science</i>, <s.j.van.rijn@liacs.leidenuniv.nl>.
+
+* [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back#tab-1), <i>Leiden Institute of Advanced Computer Science</i>, <t.h.w.baeck@liacs.leidenuniv.nl>.
 
 When using IOHProfiler and parts thereof, please kindly cite this work as 
 
 Hao Wang, Furong Ye, Carola Doerr, Sander van Rijn, Thomas Bäck: <i>IOHProfiler: A New Tool for Benchmarking and Profiling Iterative Optimization Heuristics</i>, arXiv, 2018
 
-```
+```bibtex
 @article{IOHProfiler,
   author = {Hao Wang, Furong Ye, Carola Doerr, Sander van Rijn, Thomas Bäck},
   title = {IOHProfiler: A New Tool for Benchmarking and Profiling Iterative Optimization Heuristics},

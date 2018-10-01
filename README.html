@@ -311,7 +311,8 @@ $(document).ready(function () {
 
 <div id="iohprofiler-post-processing" class="section level1">
 <h1>IOHProfiler: Post-Processing</h1>
-<p>This is the post-processing tool of the project <strong>Iterative Optimization Heuristics Profiler</strong> (IOHProfiler). This tool provides a web-based interface to analyze and visualization the benchmark data, collected from previous experiments. Importantly, we <strong>do support</strong> the widely used <a href="https://github.com/numbbo/coco">COCO</a> data format (aka Black-Box Optimization Benchmarking).</p>
+<p><a href="https://github.com/wangronin/IOHProfiler">This is</a> the post-processing tool of the project <strong>Iterative Optimization Heuristics Profiler</strong> (IOHProfiler). This tool provides a web-based interface to analyze and visualization the benchmark data, collected from previous experiments. Importantly, we <strong>do support</strong> the widely used <a href="https://github.com/numbbo/coco">COCO</a> data format (aka Black-Box Optimization Benchmarking).</p>
+<p>This tool is built on R package <a href="https://shiny.rstudio.com/">Shiny</a>.</p>
 </div>
 <div id="installation" class="section level1">
 <h1>Installation</h1>
@@ -334,7 +335,7 @@ devtools::install_github(&quot;ropensci/plotly&quot;)</code></pre>
 </div>
 <div id="online-service" class="section level1">
 <h1>Online Service</h1>
-<p>Alternatively, we have built a server to put this tool online, which is currently hosted in <strong>Leiden University</strong>. The server can be accessed via</p>
+<p>Alternatively, we have built a server to put this tool online, which is currently hosted in <strong>Leiden University</strong>. The server can be accessed via <a href="https://github.com/wangronin/IOHProfiler">TBD</a>.</p>
 </div>
 <div id="data-preparation" class="section level1">
 <h1>Data Preparation</h1>
@@ -371,15 +372,28 @@ DataSetList:
 <pre class="console"><code>&gt; summarise_runtime(ds[[1]], ftarget = 1e-1, maximization = FALSE)
              algId       f(x) runs  mean median       sd 2% 5% 10% 25% 50% 75% 90% 95% 98%
 (1+1)-Cholesky-CMA 0.09986529   80 36.55   37.5 17.11236  4  5  14  22  37  49  57  67  68</code></pre>
-<pre><code>&gt; summarise_target(ds[[1]], runtimes = 100, maximization = FALSE)
+<pre class="console"><code>&gt; summarise_target(ds[[1]], runtimes = 100, maximization = FALSE)
              algId runtime runs           mean       median           sd           2%           5%          10%          25%          50%          75%          90%         95%         98%
 (1+1)-Cholesky-CMA     100   80   0.0002333208 3.797025e-05 0.0004581431 9.843261e-08 4.168509e-07 8.343177e-07 6.090179e-06 3.797025e-05 0.0001831323 0.0006597004 0.001072814 0.001900295</code></pre>
+<pre class="console"><code>&gt; get_runtime_sample(ds[[1]], ftarget = 1e-1, maximization = F, format = &#39;long&#39;)
+                algId          f(x) run RT
+1  (1+1)-Cholesky-CMA 0.09986528573   1 69
+2  (1+1)-Cholesky-CMA 0.09986528573   2 39
+3  (1+1)-Cholesky-CMA 0.09986528573   3 38
+4  (1+1)-Cholesky-CMA 0.09986528573   4 34
+5  (1+1)-Cholesky-CMA 0.09986528573   5 67
+6  (1+1)-Cholesky-CMA 0.09986528573   6  3
+7  (1+1)-Cholesky-CMA 0.09986528573   7 36
+8  (1+1)-Cholesky-CMA 0.09986528573   8 41
+9  (1+1)-Cholesky-CMA 0.09986528573   9 14
+10 (1+1)-Cholesky-CMA 0.09986528573  10 30</code></pre>
 </div>
 <div id="todo" class="section level1">
 <h1>TODO</h1>
 <ul>
 <li>[ ] convert data processing code into a package</li>
 <li>[ ] add more stastistical tests</li>
+<li>[ ] add <em>ggplot2</em> based static plotting procedures for the programming interface</li>
 </ul>
 </div>
 <div id="contact" class="section level1">
@@ -388,9 +402,17 @@ DataSetList:
 </div>
 <div id="cite-us" class="section level1">
 <h1>Cite us</h1>
+<p>The development team is:</p>
+<ul>
+<li><p><a href="https://www.universiteitleiden.nl/en/staffmembers/hao-wang#tab-1">Hao Wang</a>, <i>Leiden Institute of Advanced Computer Science</i>, <a href="mailto:h.wang@liacs.leidenuniv.nl" class="email">h.wang@liacs.leidenuniv.nl</a>.</p></li>
+<li><p><a href="http://www-desir.lip6.fr/~doerr/">Carola Doerr</a>, <i>CNRS and Sorbonne University</i>, <a href="mailto:Carola.Doerr@mpi-inf.mpg.de" class="email">Carola.Doerr@mpi-inf.mpg.de</a>.</p></li>
+<li><p><a href="https://www.universiteitleiden.nl/en/staffmembers/furong-ye#tab-1">Furong Ye</a>, <i>Leiden Institute of Advanced Computer Science</i>, <a href="mailto:f.ye@liacs.leidenuniv.nl" class="email">f.ye@liacs.leidenuniv.nl</a>.</p></li>
+<li><p><a href="https://www.universiteitleiden.nl/en/staffmembers/sander-van-rijn#tab-1">Sander van Rijn</a>, <i>Leiden Institute of Advanced Computer Science</i>, <a href="mailto:s.j.van.rijn@liacs.leidenuniv.nl" class="email">s.j.van.rijn@liacs.leidenuniv.nl</a>.</p></li>
+<li><p><a href="https://www.universiteitleiden.nl/en/staffmembers/thomas-back#tab-1">Thomas Bäck</a>, <i>Leiden Institute of Advanced Computer Science</i>, <a href="mailto:t.h.w.baeck@liacs.leidenuniv.nl" class="email">t.h.w.baeck@liacs.leidenuniv.nl</a>.</p></li>
+</ul>
 <p>When using IOHProfiler and parts thereof, please kindly cite this work as</p>
 <p>Hao Wang, Furong Ye, Carola Doerr, Sander van Rijn, Thomas Bäck: <i>IOHProfiler: A New Tool for Benchmarking and Profiling Iterative Optimization Heuristics</i>, arXiv, 2018</p>
-<pre><code>@article{IOHProfiler,
+<pre class="bibtex"><code>@article{IOHProfiler,
   author = {Hao Wang, Furong Ye, Carola Doerr, Sander van Rijn, Thomas Bäck},
   title = {IOHProfiler: A New Tool for Benchmarking and Profiling Iterative Optimization Heuristics},
   journal = {CoRR}, 

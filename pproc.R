@@ -12,12 +12,13 @@ library(reshape2)
 library(data.table)
 
 source('readFiles.R')
+source('global.R')
 
 # TODO: perhaps migrate to data.table for speed concern and simplicity
 # TODO: find better name to replace FCE
 # TODO: general issue: maybe separate DataSetList class from DataSet class
 
-# constructor of S3 class 'DataSet' ---------------------------
+# constructor of S3 class 'DataSet'
 # Attributes
 #   funId
 #   DIM
@@ -30,7 +31,7 @@ source('readFiles.R')
 #   comment
 #   
 #   TODO: maybe also store the raw data sets
-DataSet <- function(info, verbose = F, maximization = TRUE, format = 'IOHProfiler',
+DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler,
                     subsampling = FALSE) {
   if (!is.null(info)) {
     datFile <- info$datafile
@@ -38,21 +39,21 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = 'IOHProfile
     filename <- basename(info$datafile)
     
     # TODO: do we need to read .idat file here?
-    if (format == 'IOHProfiler') {
+    if (format == IOHprofiler) {
       idatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.idat'))
       tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
       cdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.cdat'))
       cdatFile <- ifelse(file.exists(cdatFile), cdatFile, tdatFile)
-    } else if (format == 'COCO') {
+    } else if (format == COCO.name) {
       datFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
       tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
     }
     
     # TODO: whether to keep the raw data set list?
-    if (format == 'IOHProfiler') {
+    if (format == IOHprofiler) {
       tar_data <- read_dat(tdatFile, subsampling)        # read the tdat file
       rt_data <- read_dat(cdatFile, subsampling)         # read the cdat file
-    } else if (format == 'COCO') {
+    } else if (format == COCO.name) {
       tar_data <- read_COCO_dat(datFile, subsampling)    # read the tdat file
       rt_data <- read_COCO_dat(tdatFile, subsampling)    # read the cdat file
     }
@@ -398,7 +399,7 @@ EPAR.DataSet <- function(data) {
 
 # read all raw data files in a give directory
 read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE, 
-                     format = 'IOHProfiler', subsampling = FALSE) {
+                     format = IOHprofiler, subsampling = FALSE) {
   DataSetList(path, verbose, print_fun, maximization = maximization,
               format = format, subsampling = subsampling)
 }
@@ -415,7 +416,7 @@ load_index <- function(file) {
 #   DIM
 #   algId
 DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization = TRUE,
-                        format = 'IOHProfiler', subsampling = FALSE) {
+                        format = IOHprofiler, subsampling = FALSE) {
   if (is.null(path))
     return(structure(list(), class = c('DataSetList', 'list')))
   

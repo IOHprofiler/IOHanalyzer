@@ -6,6 +6,7 @@
 *.ipynb
 *.bk
 *.pdf
+*.html
 .*
 
 !/.gitignore

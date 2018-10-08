@@ -2,9 +2,12 @@
 
 [This is](https://github.com/wangronin/IOHProfiler) the post-processing tool of the project __Iterative Optimization Heuristics Profiler__ (IOHProfiler). This tool provides a web-based interface to analyze and visualization the benchmark data, collected from previous experiments. Importantly, we __do support__ the widely used [COCO](https://github.com/numbbo/coco) data format (aka. Black-Box Optimization Benchmarking).
 
-This tool is built on R package [Shiny](https://shiny.rstudio.com/).
+This tool is built on R package [Shiny](https://shiny.rstudio.com/). To use this tool, two options are available: 
 
-# Installation
+1. local installation and execution (see [installation instructions](#install)) and 
+2. a [web-based service](#server) that you can use right away.
+
+# <a name="install"></a>Installation
 This software is mainly written in __R__ To run it directly from the source code, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/).
 
 After R environment is correctly installed on you machine, several R packages are needed to execute the sorftware. Please start up the __R console__, which can be done (in case you're not familiar with R) by either executing command `R` in your system terminal or open the R application. Once it is done, please copy-paste and execute the following commands into the R console to install all depedencies.
@@ -44,17 +47,18 @@ Then, please clone (or downlaod) this repository into your own system. To clone 
 ```Shell
 > git clone https://github.com/IOHprofiler/Post-Processing.git
 ```
-To download, please click the green button on this page.
+To download, please click the green download button on this page.
 
 To start the post-processing tool, please execute the following commands in the __R console__:
 ```r
 > shiny::runApp('/path/to/the/clone/folder')
 ```
 
-# Online Service
-:construction:
-Alternatively, we have built a server to put this tool online, which is currently hosted in __Leiden University__. The server can be accessed via [TBD](https://github.com/wangronin/IOHProfiler).
+# <a name="server"></a>:construction: Online Service
+Alternatively, we have built a server to put this tool online, which is currently hosted in [Leiden Institute of Advanced Computer Science](https://liacs.leidenuniv.nl/), Leiden University. The server can be accessed via [this link](https://github.com/wangronin/IOHProfiler).
 
+# :construction: Documentation
+The details on the experimentation and post-processing tool can be found in [this link]().
 
 # Data Preparation
 Data preparation is fairly easy for this tool. Just compress the data folder obtained from the experiment and uploaded it. Currently, we support two data format:
@@ -65,7 +69,7 @@ Data preparation is fairly easy for this tool. Just compress the data folder obt
 In addition to the graphical user interface, it is possible to directly call several procedures to analyze the data.
 
 * To read and align all the data set in a folder
-```r
+```Shell
 > ds <- read_dir('/path/to/data/folder')
 > ds
 DataSetList:
@@ -87,17 +91,17 @@ The return value is a list of __DataSets__. Each data set consists of:
   3. aligned endogenous parameter values of your optimization algorithm (aligned by target values).
 
 * To get a summary of one data set (e.g., the runtime distribution):
-```r
+```Shell
 > summarise_runtime(ds[[1]], ftarget = 1e-1, maximization = FALSE)
              algId       f(x) runs  mean median       sd 2% 5% 10% 25% 50% 75% 90% 95% 98%
 (1+1)-Cholesky-CMA 0.09986529   80 36.55   37.5 17.11236  4  5  14  22  37  49  57  67  68
 ```
-```console
+```Shell
 > summarise_target(ds[[1]], runtimes = 100, maximization = FALSE)
              algId runtime runs           mean       median           sd           2%           5%          10%          25%          50%          75%          90%         95%         98%
 (1+1)-Cholesky-CMA     100   80   0.0002333208 3.797025e-05 0.0004581431 9.843261e-08 4.168509e-07 8.343177e-07 6.090179e-06 3.797025e-05 0.0001831323 0.0006597004 0.001072814 0.001900295
 ```
-```r
+```Shell
 > get_runtime_sample(ds[[1]], ftarget = 1e-1, maximization = F, format = 'long')
                 algId          f(x) run RT
 1  (1+1)-Cholesky-CMA 0.09986528573   1 69
@@ -113,19 +117,21 @@ The return value is a list of __DataSets__. Each data set consists of:
 ```
 
 # TODO
+The technical tasks to do are listed as follows:
 * [ ] convert data processing code into a package
 * [ ] add more stastistical tests
+* [ ] implement the standard R `summary` method for `DataSet` and `DataSetList` classes
 * [ ] add _ggplot2_ based static plotting procedures for the programming interface
 
 # Contact
-If you have any questions, comments, suggestions or pull requests, please don't hesitate contacting us.
+If you have any questions, comments, suggestions or pull requests, please don't hesitate contacting us <IOHprofiler@liacs.leidenuniv.nl>!
 
 # Cite us
 The development team is:
 
 * [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang#tab-1), <i>Leiden Institute of Advanced Computer Science</i>, <h.wang@liacs.leidenuniv.nl>.
 
-* [Carola Doerr](http://www-desir.lip6.fr/~doerr/), <i>CNRS and Sorbonne University</i>, <Carola.Doerr@mpi-inf.mpg.de>.
+* [Carola Dörr](http://www-desir.lip6.fr/~doerr/), <i>CNRS and Sorbonne University</i>, <Carola.Doerr@mpi-inf.mpg.de>.
 
 * [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye#tab-1), <i>Leiden Institute of Advanced Computer Science</i>, <f.ye@liacs.leidenuniv.nl>.
 

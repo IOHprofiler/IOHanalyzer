@@ -13,6 +13,7 @@ library(data.table)
 library(Rcpp)
 
 sourceCpp('C/align.cc')
+source('global.R')
 
 # reduce the size of the data set by evenly subsampling the records
 limit.data.frame <- function(df, n) {
@@ -96,9 +97,9 @@ check_format <- function(path) {
   format <- lapply(datafile, function(file) {
     first_line <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
     if (startsWith(first_line, '%'))
-      'COCO'
+      COCO
     else if (startsWith(first_line, 'function'))
-      'IOHProfiler'
+      IOHprofiler
   }) %>% unlist 
   
   res <- data.frame(datafile = datafile, format = format)
@@ -186,10 +187,13 @@ n_data_column <- 5
 
 # align all instances at a given target/precision
 align_by_target <- function(data, targets = 'full', nrow = 100, maximization = TRUE,
-                            format = 'IOHProfiler') {
-  idxTarget <- switch(format,
-                      IOHProfiler = 5,
-                      COCO = 3)
+                            format = IOHprofiler) {
+  
+  if (format == IOHprofiler)
+    idxTarget <- 5
+  else if (format == COCO)
+    idxTarget <- 3
+  
   N <- length(data) 
   data <- lapply(data, as.matrix)   # TODO: matrices are faster for indexing?
   next_lines <- lapply(data, function(x) x[1, ]) %>% unlist %>% 
@@ -198,7 +202,7 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
   n_rows <- sapply(data, nrow)
   n_column <- sapply(data, . %>% ncol) %>% unique
   
-  if (format == 'COCO')
+  if (format == COCO)
     n_param <- 0
   else
     n_param <- n_column - n_data_column
@@ -384,17 +388,20 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
 }
 
 # TODO: find a better way to organize the output
-align_by_runtime <- function(data, runtime = 'full', format = 'IOHProfiler') {
-  idxTarget <- switch(format,
-                      IOHProfiler = 5,
-                      COCO = 3)
+align_by_runtime <- function(data, runtime = 'full', format = IOHprofiler) {
+  
+  if (format == IOHprofiler)
+    idxTarget <- 5
+  else if (format == COCO)
+    idxTarget <- 3
+  
   N <- length(data) 
   data <- lapply(data, as.matrix)   # matrices are faster for indexing?
   
   n_rows <- sapply(data, nrow)
   n_column <- sapply(data, . %>% ncol) %>% unique
   
-  if (format == 'COCO')
+  if (format == COCO)
     n_param <- 0
   else
     n_param <- n_column - n_data_column

@@ -22,8 +22,8 @@ F_MIN_LABEL <- HTML('<p>\\(f_{\\text{min}}:\\) smallest target value</p>')
 F_MAX_LABEL <- HTML('<p>\\(f_{\\text{max}}:\\) largest target value</p>')
 F_STEP_LABEL <- HTML('<p>\\(\\Delta f:\\) granularity (step size)</p>')
 
-header <- dashboardHeader(title = HTML('<h4><div align="center"><b>IOHProfiler</b><br>
-                                       <i>Post-Processing</i></div></h4>'))
+header <- dashboardHeader(title = HTML(paste0('<h4><div align="center"><b>', IOHprofiler, '</b><br>
+                                       <i>Post-Processing</i></div></h4>')))
 
 HTML_P <- function(s) HTML(paste0('<p align="left" style="font-size:120%;">', s, '</p>'))
 
@@ -97,7 +97,7 @@ body <- dashboardBody(
   
   tags$script(HTML('
       $(document).ready(function() {
-        $("header").find("nav").append(\'<span class="myClass"> <b>I</b>terative <b>O</b>ptimization <b>H</b>euristics <b>P</b>rofiler</span>\');
+        $("header").find("nav").append(\'<span class="myClass"> Post-Processing Part for Performance Evaluation</span>\');
       })
      ')),
   
@@ -134,7 +134,7 @@ body <- dashboardBody(
                            width = 12,
                            
                            selectInput('DATA_SRC_FORMAT', label = HTML('<p align="left" style="font-size:120%;">Please choose the format of your data sets</p>'),
-                                       choices = c('IOHProfiler', 'COCO'), selected = 'IOHProfiler', width = '50%'),
+                                       choices = c(IOHprofiler, 'COCO'), selected = IOHprofiler, width = '50%'),
                            HTML('<p align="justify" style="font-size:120%;">When the data set is huge, the alignment
                                 can take a very long time. In this case, you could toggle the efficient mode to subsample 
                                 the data set. However, the precision of data will be compromised.</p>'),
@@ -824,4 +824,4 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
 )
 
 # -----------------------------------------------------------
-dashboardPage(title = 'IOHProfiler', header, sidebar, body)
+dashboardPage(title = IOHprofiler, header, sidebar, body)

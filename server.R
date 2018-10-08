@@ -27,7 +27,7 @@ symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
 
 # TODO: put it as an option such that the user can select
 maximization <- TRUE
-src_format <- 'IOHProfiler' # TODO: this shoule be taken from the data set
+src_format <- IOHprofiler # TODO: this shoule be taken from the data set
 sub_sampling <- TRUE
 
 # Formatter for function values
@@ -37,7 +37,7 @@ format_funeval <- function(v) format(as.integer(as.numeric(v)))
 funeval_grid <- function(v, ...) {
   from <- min(v)
   to <- max(v)
-  if (src_format == 'IOHProfiler') {
+  if (src_format == IOHprofiler) {
     from <- round(from)
     to <- round(to)
     grid <- seq(from, to, ...)
@@ -76,7 +76,7 @@ shinyServer(function(input, output, session) {
   # update maximization indication, trans_funeval according to src_format 
   observe({
     src_format <<- input$DATA_SRC_FORMAT
-    if (input$DATA_SRC_FORMAT == 'IOHProfiler') {
+    if (input$DATA_SRC_FORMAT == IOHprofiler) {
       maximization <<- TRUE
       trans_funeval <<- . %>% return
       reverse_trans_runtime <<- . %>% return

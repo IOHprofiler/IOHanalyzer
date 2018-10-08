@@ -184,7 +184,7 @@ shinyServer(function(input, output, session) {
   # remove all uploaded data set
   observeEvent(input$RM_DATA, {
     if (length(DataList$data) != 0) {
-      DataList$data <- list()
+      DataList$data <- DataSetList() # must be a 'DataSetList'
       folderList$data <- list() 
       shinyjs::html("process_data_promt", '<p style="color:red;">all data are removed!</p>', add = FALSE)
       shinyjs::html("upload_data_promt", "", add = FALSE)
@@ -234,6 +234,7 @@ shinyServer(function(input, output, session) {
       return(NULL)
     
     # filter(DataList$data, by = c(DIM = dim, funcId = id))
+    
     subset(DataList$data, DIM == dim, funcId == id)
   })
   

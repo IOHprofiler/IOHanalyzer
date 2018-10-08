@@ -1,6 +1,6 @@
-# IOHProfiler: Post-Processing
+# IOHprofiler: Post-Processing
 
-[This is](https://github.com/wangronin/IOHProfiler) the post-processing tool of the project __Iterative Optimization Heuristics Profiler__ (IOHProfiler). This tool provides a web-based interface to analyze and visualization the benchmark data, collected from previous experiments. Importantly, we __do support__ the widely used [COCO](https://github.com/numbbo/coco) data format (aka Black-Box Optimization Benchmarking).
+[This is](https://github.com/wangronin/IOHProfiler) the post-processing tool of the project __Iterative Optimization Heuristics Profiler__ (IOHProfiler). This tool provides a web-based interface to analyze and visualization the benchmark data, collected from previous experiments. Importantly, we __do support__ the widely used [COCO](https://github.com/numbbo/coco) data format (aka. Black-Box Optimization Benchmarking).
 
 This tool is built on R package [Shiny](https://shiny.rstudio.com/).
 
@@ -18,18 +18,41 @@ install.packages('dplyr')
 install.packages('reshape2')
 install.packages('data.table')
 install.packages('markdown')
-install.packages('devtools')
 install.packages('Rcpp')
-devtools::install_github("ropensci/plotly")
+install.packages('plotly')
 ```
-Please make sure those packages are correctly installed by monitoring the (verbose) prompting messages on the console.
+Note that it is important to check if aforementioned packages are correctly installed. The easiest method is to test if those packasges can be loaded:
+```r
+library('shiny')
+library('shinyjs')
+library('shinydashboard')
+library('magrittr')
+library('dplyr')
+library('reshape2')
+library('data.table')
+library('markdown')
+library('Rcpp')
+library('plotly')
+```
+Error messages will be shown in your R console if there is any installation issue.
 
-Then, please clone this repository into your own system. To start the post-processing module, please execute the following commands in the R console:
-```console
+Then, please clone (or downlaod) this repository into your own system. To clone the repository, please execute the following command in your __system console__ (terminal):
+```Shell
+> git clone git@github.com:IOHprofiler/Post-Processing.git
+```
+
+```Shell
+> git clone https://github.com/IOHprofiler/Post-Processing.git
+```
+To download, please click the green button on this page.
+
+To start the post-processing tool, please execute the following commands in the __R console__:
+```r
 > shiny::runApp('/path/to/the/clone/folder')
 ```
 
 # Online Service
+:construction:
 Alternatively, we have built a server to put this tool online, which is currently hosted in __Leiden University__. The server can be accessed via [TBD](https://github.com/wangronin/IOHProfiler).
 
 
@@ -42,7 +65,7 @@ Data preparation is fairly easy for this tool. Just compress the data folder obt
 In addition to the graphical user interface, it is possible to directly call several procedures to analyze the data.
 
 * To read and align all the data set in a folder
-```console
+```r
 > ds <- read_dir('/path/to/data/folder')
 > ds
 DataSetList:
@@ -64,7 +87,7 @@ The return value is a list of __DataSets__. Each data set consists of:
   3. aligned endogenous parameter values of your optimization algorithm (aligned by target values).
 
 * To get a summary of one data set (e.g., the runtime distribution):
-```console
+```r
 > summarise_runtime(ds[[1]], ftarget = 1e-1, maximization = FALSE)
              algId       f(x) runs  mean median       sd 2% 5% 10% 25% 50% 75% 90% 95% 98%
 (1+1)-Cholesky-CMA 0.09986529   80 36.55   37.5 17.11236  4  5  14  22  37  49  57  67  68
@@ -74,7 +97,7 @@ The return value is a list of __DataSets__. Each data set consists of:
              algId runtime runs           mean       median           sd           2%           5%          10%          25%          50%          75%          90%         95%         98%
 (1+1)-Cholesky-CMA     100   80   0.0002333208 3.797025e-05 0.0004581431 9.843261e-08 4.168509e-07 8.343177e-07 6.090179e-06 3.797025e-05 0.0001831323 0.0006597004 0.001072814 0.001900295
 ```
-```console
+```r
 > get_runtime_sample(ds[[1]], ftarget = 1e-1, maximization = F, format = 'long')
                 algId          f(x) run RT
 1  (1+1)-Cholesky-CMA 0.09986528573   1 69
@@ -95,7 +118,7 @@ The return value is a list of __DataSets__. Each data set consists of:
 * [ ] add _ggplot2_ based static plotting procedures for the programming interface
 
 # Contact
-If you have any questions, comments or suggestions, please don't hesitate contacting us via <wangronin@gmail.com> or <h.wang@liacs.leidenuniv.nl>.  
+If you have any questions, comments, suggestions or pull requests, please don't hesitate contacting us.
 
 # Cite us
 The development team is:
@@ -112,7 +135,7 @@ The development team is:
 
 When using IOHProfiler and parts thereof, please kindly cite this work as 
 
-Hao Wang, Furong Ye, Carola Doerr, Sander van Rijn, Thomas Bäck: <i>IOHProfiler: A New Tool for Benchmarking and Profiling Iterative Optimization Heuristics</i>, arXiv, 2018
+Hao Wang, Furong Ye, Carola Doerr, Sander van Rijn, Thomas Bäck: <i>IOHprofiler: A New Tool for Benchmarking and Profiling Iterative Optimization Heuristics</i>, arXiv, 2018
 
 ```bibtex
 @article{IOHProfiler,

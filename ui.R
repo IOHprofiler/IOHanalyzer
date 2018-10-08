@@ -136,7 +136,7 @@ body <- dashboardBody(
                            selectInput('DATA_SRC_FORMAT', label = HTML('<p align="left" style="font-size:120%;">Please choose the format of your data sets</p>'),
                                        choices = c('IOHProfiler', 'COCO'), selected = 'IOHProfiler', width = '50%'),
                            HTML('<p align="justify" style="font-size:120%;">When the data set is huge, the alignment
-                                can take a lone time. In this case, you could toggle the efficient mode to subsample 
+                                can take a very long time. In this case, you could toggle the efficient mode to subsample 
                                 the data set. However, the precision of data will be compromised.</p>'),
                            checkboxInput('SUBSAMPLING', label = HTML('<p align="left" style="font-size:120%;">Efficient mode</p>'), value = T),
                            

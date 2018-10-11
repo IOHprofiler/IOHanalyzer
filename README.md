@@ -67,7 +67,7 @@ Alternatively, we have built a server to put this tool online, which is currentl
 
 ## :construction: Documentation
 
-The details on the experimentation and post-processing tool can be found [on Carola's homepage](www-ia.lip6.fr/~doerr/IOHprofiler-v1.pdf) (and soon also on arXiv).
+The details on the experimentation and post-processing tool can be found on [Carola's homepage](www-ia.lip6.fr/~doerr/IOHprofiler-v1.pdf) (and soon also on arXiv).
 
 ## Data Preparation
 

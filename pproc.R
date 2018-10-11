@@ -38,12 +38,21 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     path <- dirname(info$datafile)
     filename <- basename(info$datafile)
     
-    # TODO: do we need to read .idat file here?
+    # Data source:  
+    # alignment by target values:
+    #   IOHprofiler: *.dat
+    #   COCO: *.dat
+    # alignment by runtimes:
+    #   IHprofiler: *.cdat
+    #   COCO: *.tdat
     if (format == IOHprofiler) {
-      idatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.idat'))
+      datFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
       tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
       cdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.cdat'))
+      
+      # priority for the runtime alignment: *.cdat > *.tdat > *.dat
       cdatFile <- ifelse(file.exists(cdatFile), cdatFile, tdatFile)
+      cdatFile <- ifelse(file.exists(cdatFile), cdatFile, datFile)
     } else if (format == COCO.name) {
       datFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
       tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
@@ -51,7 +60,7 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     
     # TODO: whether to keep the raw data set list?
     if (format == IOHprofiler) {
-      tar_data <- read_dat(tdatFile, subsampling)        # read the tdat file
+      tar_data <- read_dat(datFile, subsampling)        # read the tdat file
       rt_data <- read_dat(cdatFile, subsampling)         # read the cdat file
     } else if (format == COCO.name) {
       tar_data <- read_COCO_dat(datFile, subsampling)    # read the tdat file
@@ -176,7 +185,8 @@ get_runtime_sample <- function(dataset, ftarget, format = 'wide', maximization =
   df <- lapply(ftarget, 
                function(f) {
                  matched <- idx[`op`(f_aligned, f)][1] 
-                 target <- ifelse(is.na(matched), f, f_aligned[matched])
+                 if (is.na(matched)) c(algId, target, rep(NaN, N))
+                 target <- f_aligned[matched]
                  df[matched, ] %>% 
                    as.vector %>% 
                    c(algId, target, .)
@@ -436,7 +446,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
     indexInfo <- read_IndexFile(file)
     
     if (verbose) {
-      print_fun(paste('processing', file, '...\n'))
+      print_fun(paste('Processing', file, '...\n'))
       print_fun(sprintf('   algorithm %s...\n', indexInfo[[1]]$algId))
     }
     
@@ -475,6 +485,10 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
         object[[i]] <- data
         i <- i + 1
       }
+    }
+    
+    if (verbose) {
+      print_fun("\n")
     }
   }
   

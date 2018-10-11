@@ -378,6 +378,7 @@ shinyServer(function(input, output, session) {
         .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     }
     
+    req(length(fseq) != 0)
     probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
     res <- list()
     
@@ -430,10 +431,10 @@ shinyServer(function(input, output, session) {
     fstop <- format_funeval(input$F_MAX_SAMPLE) %>% as.numeric
     fstep <- format_funeval(input$F_STEP_SAMPLE) %>% as.numeric
     
-    if (input$F_SAMPLE_SINGLE)
+    if (input$F_SAMPLE_SINGLE) 
       fseq <- c(fstart) %>% 
-      reverse_trans_funeval %>% 
-      .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+        reverse_trans_funeval %>% 
+        .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     else {
       # when initializing or incorrect input
       if (is.na(fstart) || is.na(fstop) || is.na(fstep))
@@ -446,6 +447,10 @@ shinyServer(function(input, output, session) {
         reverse_trans_funeval %>% 
         .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     }
+    
+    # TODO: determine if we should leave the validation of the input value to
+    # `get_runtime_sample`
+    req(length(fseq) != 0)
     
     data <- DATA()
     res <- list()
@@ -931,6 +936,7 @@ shinyServer(function(input, output, session) {
         .[. >= min(rt)] %>% .[. <= max(rt)] 
     }
     
+    req(length(rt_seq) != 0)
     probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
     res <- list()
     
@@ -1005,6 +1011,7 @@ shinyServer(function(input, output, session) {
         .[. >= min(rt)] %>% .[. <= max(rt)] 
     }
     
+    req(length(rt_seq) != 0)
     res <- list()
     n_runs_max <- sapply(data, function(x) length(attr(x, 'instance'))) %>% max
     

@@ -117,7 +117,7 @@ check_format <- function(path) {
 # for IOHProfiler format
 # Return: a list of data.frames
 read_dat <- function(fname, subsampling = FALSE) {
-  # TODO: use the same method as in read_COCO_dat
+  # TODO: use the same data loading method as in read_COCO_dat
   df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
   idx <- which(df[, 1] == 'function evaluation')
 

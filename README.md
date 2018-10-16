@@ -153,23 +153,26 @@ If you have any questions, comments, suggestions or pull requests, please don't 
 
 The development team is:
 
-* [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang#tab-1), <i>Leiden Institute of Advanced Computer Science</i>, <h.wang@liacs.leidenuniv.nl>.
-* [Carola Dörr](http://www-desir.lip6.fr/~doerr/), <i>CNRS and Sorbonne University</i>, <Carola.Doerr@mpi-inf.mpg.de>.
-* [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye#tab-1), <i>Leiden Institute of Advanced Computer Science</i>, <f.ye@liacs.leidenuniv.nl>.
-* [Sander van Rijn](https://www.universiteitleiden.nl/en/staffmembers/sander-van-rijn#tab-1), <i>Leiden Institute of Advanced Computer Science</i>, <s.j.van.rijn@liacs.leidenuniv.nl>.
-* [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back#tab-1), <i>Leiden Institute of Advanced Computer Science</i>, <t.h.w.baeck@liacs.leidenuniv.nl>.
+* [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
+* [Carola Doerr](http://www-desir.lip6.fr/~doerr/), <i>CNRS and Sorbonne University</i>, 
+* [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
+* [Sander van Rijn](https://www.universiteitleiden.nl/en/staffmembers/sander-van-rijn#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
+* [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back#tab-1), <i>Leiden Institute of Advanced Computer Science</i>.
 
 When using IOHprofiler and parts thereof, please kindly cite this work as
 
-Hao Wang, Furong Ye, Carola Doerr, Sander van Rijn, Thomas Bäck: <i>IOHprofiler: A New Tool for Benchmarking and Profiling Iterative Optimization Heuristics</i>, arXiv, 2018
+Carola Doerr, Hao Wang, Furong Ye, Sander van Rijn, Thomas Bäck: <i>IOHprofiler: A Benchmarking and Profiling Tool for Iterative Optimization Heuristics</i>, arXiv, 2018.
 
 ```bibtex
-@article{IOHprofiler,
-  author = {Hao Wang, Furong Ye, Carola Doerr, Sander van Rijn, Thomas Bäck},
-  title = {IOHprofiler: A New Tool for Benchmarking and Profiling Iterative Optimization Heuristics},
-  journal = {CoRR},
-  volume = {tbd},  
-  year = {2018},
-  url = {tbd}
+@ARTICLE{IOHprofiler,
+  author = {Carola Doerr and Hao Wang and Furong Ye and Sander van Rijn and Thomas B{\"a}ck},
+  title = {IOHprofiler: A Benchmarking and Profiling Tool for Iterative Optimization Heuristics},
+  journal = {ArXiv e-prints},
+  archivePrefix = "arXiv",
+  eprint = {1810.05281},
+  year = 2018,
+  month = oct,
+  keywords = {Computer Science - Neural and Evolutionary Computing},
+  url = {https://arxiv.org/abs/1810.05281}
 }
 ```

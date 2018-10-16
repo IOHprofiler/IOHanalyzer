@@ -59,7 +59,7 @@ trans_runtime <- . %>% return
 reverse_trans_runtime <- . %>% return
 
 # directory where data are extracted from the zip file
-exdir <- './data'
+exdir <- file.path(Sys.getenv('HOME'), 'data')
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {

@@ -67,7 +67,11 @@ Alternatively, we have built a server to put this tool online, which is currentl
 
 ## Documentation
 
+<<<<<<< HEAD
 The details on the experimentation and post-processing tool can be found in [https://arxiv.org/abs/1810.05281(https://arxiv.org/abs/1810.05281).
+=======
+The details on the experimentation and post-processing tool can be found on www-ia.lip6.fr/~doerr/IOHprofiler-v1.pdf (and soon also on arXiv).
+>>>>>>> e4a9afc27b6524310c92a2acf4930ffc12d44f89
 
 ## Data Preparation
 

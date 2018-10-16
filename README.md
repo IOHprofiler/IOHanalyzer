@@ -61,13 +61,13 @@ To start the post-processing tool, please execute the following commands in the 
 > shiny::runApp('/path/to/the/clone/folder')
 ```
 
-## <a name="server"></a>:construction: Online Service
+## <a name="server"></a> Online Service
 
-Alternatively, we have built a server to put this tool online, which is currently hosted in [Leiden Institute of Advanced Computer Science](https://liacs.leidenuniv.nl/), Leiden University. The server can be accessed via [this link](https://iohprofiler.liacs.nl).
+Alternatively, we have built a server to put this tool online, which is currently hosted in [Leiden Institute of Advanced Computer Science](https://liacs.leidenuniv.nl/), Leiden University. The server can be accessed via [https://iohprofiler.liacs.nl:3838](https://iohprofiler.liacs.nl:3838).
 
-## :construction: Documentation
+## Documentation
 
-The details on the experimentation and post-processing tool can be found in [this link]().
+The details on the experimentation and post-processing tool can be found in [https://arxiv.org/abs/1810.05281(https://arxiv.org/abs/1810.05281).
 
 ## Data Preparation
 

@@ -29,16 +29,16 @@ install.packages('plotly')
 Note that it is important to check if aforementioned packages are correctly installed. The easiest method is to test if those packasges can be loaded:
 
 ```r
-library('shiny')
-library('shinyjs')
-library('shinydashboard')
-library('magrittr')
-library('dplyr')
-library('reshape2')
-library('data.table')
-library('markdown')
-library('Rcpp')
-library('plotly')
+library(shiny)
+library(shinyjs)
+library(shinydashboard)
+library(magrittr)
+library(dplyr)
+library(reshape2)
+library(data.table)
+library(markdown)
+library(Rcpp)
+library(plotly)
 ```
 
 Error messages will be shown in your R console if there is any installation issue.
@@ -161,13 +161,13 @@ The development team is:
 
 When using IOHprofiler and parts thereof, please kindly cite this work as
 
-Carola Doerr, Hao Wang, Furong Ye, Sander van Rijn, Thomas Bäck: <i>IOHprofiler: A Benchmarking and Profiling Tool for Iterative Optimization Heuristics</i>, arXiv, 2018.
+Carola Doerr, Hao Wang, Furong Ye, Sander van Rijn, Thomas Bäck: <i>IOHprofiler: A Benchmarking and Profiling Tool for Iterative Optimization Heuristics</i>, arXiv e-prints:1810.05281, 2018.
 
 ```bibtex
 @ARTICLE{IOHprofiler,
   author = {Carola Doerr and Hao Wang and Furong Ye and Sander van Rijn and Thomas B{\"a}ck},
-  title = {IOHprofiler: A Benchmarking and Profiling Tool for Iterative Optimization Heuristics},
-  journal = {ArXiv e-prints},
+  title = {{IOHprofiler: A Benchmarking and Profiling Tool for Iterative Optimization Heuristics}},
+  journal = {arXiv e-prints:1810.05281},
   archivePrefix = "arXiv",
   eprint = {1810.05281},
   year = 2018,

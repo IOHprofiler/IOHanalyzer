@@ -106,7 +106,7 @@ The return value is a list of __DataSets__. Each data set consists of:
 
 * To get a general summary of one data set, you can use function `summary`:
 
-```r
+```bash
 > summary(ds[[1]])
 DataSet Object: ((1+1)-Cholesky-CMA, f1, 2D)
 80 instance are contained: 1,2,3,4,5,6,7,...,73,74,75,76,77,78,79,80
@@ -179,10 +179,10 @@ show data aligned by runtime?
 
 <div class="row">
   <div class="column">
-    <img src="1.png" style="float: left; width: 48%; margin-right: 1%; margin-bottom: 0.5em;">
+    <img src="img/1.png" style="float: left; width: 48%; margin-right: 1%; margin-bottom: 0.5em;">
   </div>
   <div class="column">
-    <img src="2.png" style="float: left; width: 48%; margin-right: 1%; margin-bottom: 0.5em;">
+    <img src="img/2.png" style="float: left; width: 48%; margin-right: 1%; margin-bottom: 0.5em;">
   </div>
 </div>
 

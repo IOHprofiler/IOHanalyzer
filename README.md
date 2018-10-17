@@ -63,11 +63,11 @@ To start the post-processing tool, please execute the following commands in the 
 
 ## <a name="server"></a> Online Service
 
-Alternatively, we have built a server to put this tool online, which is currently hosted in [Leiden Institute of Advanced Computer Science](https://liacs.leidenuniv.nl/), Leiden University. The server can be accessed via [http://iohprofiler.liacs.nl:3838](http://iohprofiler.liacs.nl:3838).
+Alternatively, we have built a server to put this tool online, which is currently hosted in [Leiden Institute of Advanced Computer Science](https://liacs.leidenuniv.nl/), Leiden University. The server can be accessed via [http://iohprofiler.liacs.nl](http://iohprofiler.liacs.nl).
 
 ## Documentation
 
-The details on the experimentation and post-processing tool can be found on [www-ia.lip6.fr/~doerr/IOHprofiler-v1.pdf](www-ia.lip6.fr/~doerr/IOHprofiler-v1.pdf) or [arXiv.org](https://arxiv.org/abs/1810.05281).
+The details on the experimentation and post-processing tool can be found on [arXiv.org](https://arxiv.org/abs/1810.05281).
 
 ## Data Preparation
 

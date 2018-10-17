@@ -44,14 +44,14 @@ sidebar <- dashboardSidebar(
               menuItem("Fixed-Target Results", tabName = "ERT", icon = icon("file-text-o"),
                        menuSubItem("Data Summary", tabName = "ERT_data", icon = icon("table")),
                        menuSubItem("Expected Runtime", tabName = "ERT_convergence", icon = icon("line-chart"), selected = F),
-                       menuSubItem("Probility Mass Function", tabName = "RT_PMF", icon = icon("bar-chart"), selected = F),
+                       menuSubItem("Probability Mass Function", tabName = "RT_PMF", icon = icon("bar-chart"), selected = F),
                        menuSubItem("Cumulative Distribution", tabName = "RT_ECDF", icon = icon("line-chart"), selected = F)
                        ),
               
               menuItem("Fixed-Budget Results", tabName = "FCE", icon = icon("file-text-o"),
                        menuSubItem("Data Summary", tabName = "FCE_DATA", icon = icon("table")),
                        menuSubItem("Expected Target Value", tabName = "FCE_convergence", icon = icon("bar-chart")),
-                       menuSubItem("Probility Density Function", tabName = "FCE_PDF", icon = icon("bar-chart"), selected = F),
+                       menuSubItem("Probability Density Function", tabName = "FCE_PDF", icon = icon("bar-chart"), selected = F),
                        menuSubItem("Cumulative Distribution", tabName = "FCE_ECDF", icon = icon("line-chart"))
               ),
               

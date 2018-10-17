@@ -106,7 +106,7 @@ The return value is a list of __DataSets__. Each data set consists of:
 
 * To get a general summary of one data set, you can use function `summary`:
 
-```Shell
+```r
 > summary(ds[[1]])
 DataSet Object: ((1+1)-Cholesky-CMA, f1, 2D)
 80 instance are contained: 1,2,3,4,5,6,7,...,73,74,75,76,77,78,79,80
@@ -142,19 +142,19 @@ Attributes: names, class, funcId, DIM, Precision, algId, comment, datafile, inst
 
 * To get a summary of one data set __at target values/budget values__ (e.g., the runtime distribution), you can use function `summarise_runtime` and `summarise_target`:
   
-```Shell
+```bash
 > summarise_runtime(ds[[1]], ftarget = 1e-1, maximization = FALSE)
              algId       f(x) runs  mean median       sd 2% 5% 10% 25% 50% 75% 90% 95% 98%
 (1+1)-Cholesky-CMA 0.09986529   80 36.55   37.5 17.11236  4  5  14  22  37  49  57  67  68
 ```
 
-```Shell
+```bash
 > summarise_target(ds[[1]], runtimes = 100, maximization = FALSE)
              algId runtime runs           mean       median           sd           2%           5%          10%          25%          50%          75%          90%         95%         98%
 (1+1)-Cholesky-CMA     100   80   0.0002333208 3.797025e-05 0.0004581431 9.843261e-08 4.168509e-07 8.343177e-07 6.090179e-06 3.797025e-05 0.0001831323 0.0006597004 0.001072814 0.001900295
 ```
 
-```Shell
+```bash
 > get_runtime_sample(ds[[1]], ftarget = 1e-1, maximization = F, format = 'long')
                 algId          f(x) run RT
 1  (1+1)-Cholesky-CMA 0.09986528573   1 69
@@ -168,6 +168,23 @@ Attributes: names, class, funcId, DIM, Precision, algId, comment, datafile, inst
 9  (1+1)-Cholesky-CMA 0.09986528573   9 14
 10 (1+1)-Cholesky-CMA 0.09986528573  10 30
 ```
+
+* It is also possible to generate some diagnostic plots (using `ggplot2`):
+
+```bash
+> ds <- read_dir('~/Dropbox/data/LO_adap_lambda/')
+> plot(ds[[1]])
+show data aligned by runtime?
+```
+
+<div class="row">
+  <div class="column">
+    <img src="1.png" style="float: left; width: 48%; margin-right: 1%; margin-bottom: 0.5em;">
+  </div>
+  <div class="column">
+    <img src="2.png" style="float: left; width: 48%; margin-right: 1%; margin-bottom: 0.5em;">
+  </div>
+</div>
 
 ## :construction: TODO
 

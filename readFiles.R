@@ -189,10 +189,13 @@ n_data_column <- 5
 align_by_target <- function(data, targets = 'full', nrow = 100, maximization = TRUE,
                             format = IOHprofiler) {
   
-  if (format == IOHprofiler)
+  if (format == IOHprofiler) {
+    maximization <- TRUE
     idxTarget <- 5
-  else if (format == COCO)
+  } else if (format == COCO) {
+    maximization <- FALSE
     idxTarget <- 3
+  }
   
   N <- length(data) 
   data <- lapply(data, as.matrix)   # TODO: matrices are faster for indexing?
@@ -390,10 +393,13 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
 # TODO: find a better way to organize the output
 align_by_runtime <- function(data, runtime = 'full', format = IOHprofiler) {
   
-  if (format == IOHprofiler)
+  if (format == IOHprofiler) {
+    maximization <- TRUE
     idxTarget <- 5
-  else if (format == COCO)
+  } else if (format == COCO) {
+    maximization <- FALSE
     idxTarget <- 3
+  }
   
   N <- length(data) 
   data <- lapply(data, as.matrix)   # matrices are faster for indexing?

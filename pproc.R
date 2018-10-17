@@ -13,6 +13,7 @@ library(data.table)
 
 source('readFiles.R')
 source('global.R')
+source('plot.R')
 
 # TODO: perhaps migrate to data.table for speed concern and simplicity
 # TODO: find better name to replace FCE
@@ -53,16 +54,16 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
       # priority for the runtime alignment: *.cdat > *.tdat > *.dat
       cdatFile <- ifelse(file.exists(cdatFile), cdatFile, tdatFile)
       cdatFile <- ifelse(file.exists(cdatFile), cdatFile, datFile)
-    } else if (format == COCO.name) {
+    } else if (format == COCO) {
       datFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
       tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
     }
     
     # TODO: whether to keep the raw data set list?
     if (format == IOHprofiler) {
-      tar_data <- read_dat(datFile, subsampling)        # read the tdat file
+      tar_data <- read_dat(datFile, subsampling)         # read the tdat file
       rt_data <- read_dat(cdatFile, subsampling)         # read the cdat file
-    } else if (format == COCO.name) {
+    } else if (format == COCO) {
       tar_data <- read_COCO_dat(datFile, subsampling)    # read the tdat file
       rt_data <- read_COCO_dat(tdatFile, subsampling)    # read the cdat file
     }
@@ -70,7 +71,11 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     # aligned by target values
     by_target <- align_by_target(tar_data, maximization = maximization, format = format) 
     # aligned by runtime
-    by_runtime <- align_by_runtime(rt_data, format = format)   
+    by_runtime <- align_by_runtime(rt_data, format = format)  
+    
+    # check if the number of instances does not match
+    stopifnot(length(tar_data) == length(rt_data), 
+              length(info$instance) == length(tar_data))
     
     # TODO: remove this and include the parameters that are aligned by runtimes
     # TODO: implement two different alignments for the parameter
@@ -110,14 +115,93 @@ as.character.DataSet <- function(data, verbose = F) {
           attr(data, 'DIM'))
 }
 
-# TODO:
 summary.DataSet <- function(data) {
+  data_attr <- attributes(data)
+  cat(sprintf('DataSet Object: (%s, f%d, %dD)\n', data_attr$algId, data_attr$funcId, 
+          data_attr$DIM))
   
+  n_instance <- length(data_attr$instance)
+  if (n_instance >= 15) {
+    inst <- paste0(paste(data_attr$instance[1:7], collapse = ','), 
+                   ',...,', 
+                   paste(data_attr$instance[(n_instance - 7):n_instance], collapse = ','))
+    cat(sprintf('%d instance are contained: %s\n\n', n_instance, inst))
+  }
+  else
+    cat(sprintf('%d instance are contained: %s\n\n', n_instance, paste(data_attr$instance, collapse = ',')))
+  
+  .mean <- function(x) mean(x, na.rm = T)
+  .median <- function(x) median(x, na.rm = T)
+  .sd <- function(x) sd(x, na.rm = T)
+  sum1 <- data.table(target = rownames(data$by_target),
+                     runtime.mean = apply(data$by_target, 1, .mean),
+                     runtime.median = apply(data$by_target, 1, .median),
+                     runtime.sd = apply(data$by_target, 1, .sd),
+                     succ_rate = apply(data$by_target, 1, function(x) sum(!is.na(x)) / n_instance))
+  
+  print(sum1)
+  cat('\n')
+  
+  df <- data$by_runtime
+  sum2 <- data.table(budget = rownames(df),
+                     Fvalue.mean = apply(df, 1, .mean),
+                     Fvalue.median = apply(df, 1, .median),
+                     Fvalue.sd = apply(df, 1, .sd))
+  
+  print(sum2)
+  cat('\n')
+  
+  cat(paste('Attributes:', paste0(names(data_attr), collapse = ', ')))
 }
 
-# TODO:
-plot.DataSet <- function(data) {
+plot.DataSet <- function(data, ask = TRUE) {
+  dt <- data.table(data$by_target) 
+  colnames(dt) <- as.character(seq(ncol(dt)))
+  dt[, target := as.numeric(rownames(data$by_target))]
   
+  target <- dt[, target]
+  N <- length(target)
+  if (N >= 15) 
+    target <- as.numeric(target[seq(1, N, by = ceiling(N / 15))])
+  
+  # plot by_target curves
+  p <- melt(dt, id.vars = 'target', variable.name = 'instance', value.name = 'runtime') %>% 
+    ggplot(aes(target, runtime, colour = instance)) + 
+    geom_line(aes(group = instance)) +
+    scale_x_continuous(breaks = target) + 
+    guides(colour = FALSE)
+    
+  print(p)
+  
+  if (ask) x <- readline("show data aligned by runtime?")
+  
+  df <- data$by_runtime
+  if (nrow(df) > 500) {
+    idx <- c(1, seq(1, nrow(df), length.out = 500), nrow(df)) %>% unique
+    df <- df[idx, ]
+  }
+  
+  dt <- data.table(df)
+  colnames(dt) <- as.character(seq(ncol(dt)))
+  dt[, budget := as.numeric(rownames(df))]
+  
+  budget <- dt[, budget]
+  N <- length(budget)
+  if (N >= 15) {
+    N.log10 <- log10(N)
+    index <- floor(10 ^ seq(0, N.log10, by = N.log10 / 15))
+    budget <- as.numeric(budget[index])
+  }
+  
+  # plot by_runtime curves
+  p <- melt(dt, id.vars = 'budget', variable.name = 'instance', value.name = 'Fvalue') %>%
+    ggplot(aes(budget, Fvalue, colour = instance)) +
+    geom_line(aes(group = instance)) +
+    # scale_x_continuous(breaks = budget) + 
+    scale_x_log10() +
+    guides(colour = FALSE)
+
+  print(p)
 }
 
 `==.DataSet` <- function(dsL, dsR) {
@@ -420,6 +504,7 @@ load_index <- function(file) {
   
 }
 
+# TODO: put class DataSetList in a separate file
 # S3 constructor of the 'DataSetList' 
 # Attributes
 #   funId

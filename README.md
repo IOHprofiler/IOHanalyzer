@@ -69,7 +69,6 @@ Alternatively, we have built a server to put this tool online, which is currentl
 
 The details on the experimentation and post-processing tool can be found on [www-ia.lip6.fr/~doerr/IOHprofiler-v1.pdf](www-ia.lip6.fr/~doerr/IOHprofiler-v1.pdf) or [arXiv.org](https://arxiv.org/abs/1810.05281).
 
-
 ## Data Preparation
 
 Data preparation is fairly easy for this tool. Just compress the data folder obtained from the experiment into a __zip__ file and uploaded it. Currently, we support two data formats:
@@ -101,11 +100,47 @@ DataSetList:
 
 The return value is a list of __DataSets__. Each data set consists of:
 
-  1. runtime samples (aligned by target values),
-  2. target values (aligned by runtime) and
-  3. aligned endogenous parameter values of your optimization algorithm (aligned by target values).
+  1. __runtime samples__ (aligned by target values),
+  2. __function values samples__ (aligned by runtime) and
+  3. __endogenous parameter samples__ of your optimization algorithm (aligned by target values).
 
-* To get a summary of one data set (e.g., the runtime distribution):
+* To get a general summary of one data set, you can use function `summary`:
+
+```Shell
+> summary(ds[[1]])
+DataSet Object: ((1+1)-Cholesky-CMA, f1, 2D)
+80 instance are contained: 1,2,3,4,5,6,7,...,73,74,75,76,77,78,79,80
+
+               target runtime.mean runtime.median runtime.sd succ_rate
+   1:     70.10819126       1.0000            1.0  0.0000000    1.0000
+   2:     66.42131777       1.0125            1.0  0.1118034    1.0000
+   3:     62.98712083       1.1125            1.0  0.8999824    1.0000
+   4:     62.54395893       1.1375            1.0  0.9242684    1.0000
+   5:     61.73051944       1.2000            1.0  1.1295793    1.0000
+  ---                                                                 
+1478: 9.473524187e-10     182.6000          182.0 24.0894168    0.0625
+1479: 2.759534823e-10     192.0000          188.5 13.5892114    0.0500
+1480: 2.463309556e-10     195.6667          195.0 14.0118997    0.0375
+1481: 5.223910193e-11     196.0000          196.0 19.7989899    0.0250
+1482: 1.638511549e-11     210.0000          210.0         NA    0.0125
+
+    budget  Fvalue.mean Fvalue.median    Fvalue.sd
+ 1:      1 1.672518e+01  1.171157e+01 1.626487e+01
+ 2:      2 1.341813e+01  7.960940e+00 1.466877e+01
+ 3:      3 1.100825e+01  6.439678e+00 1.261937e+01
+ 4:      4 9.326633e+00  5.492333e+00 1.213908e+01
+ 5:      5 7.501883e+00  2.946388e+00 1.204200e+01
+---                                               
+90:    229 4.902827e-09  4.506106e-09 2.863671e-09
+91:    231 4.902827e-09  4.506106e-09 2.863671e-09
+92:    238 4.902827e-09  4.506106e-09 2.863671e-09
+93:    251 4.737548e-09  4.461953e-09 2.526087e-09
+94:    257 4.737548e-09  4.461953e-09 2.526087e-09
+
+Attributes: names, class, funcId, DIM, Precision, algId, comment, datafile, instance, maxEvals, finalFunvals
+```
+
+* To get a summary of one data set __at target values/budget values__ (e.g., the runtime distribution), you can use function `summarise_runtime` and `summarise_target`:
   
 ```Shell
 > summarise_runtime(ds[[1]], ftarget = 1e-1, maximization = FALSE)

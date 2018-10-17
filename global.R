@@ -6,3 +6,5 @@
 
 IOHprofiler <- 'IOHprofiler'
 COCO <- 'COCO'
+
+options(datatable.print.nrows = 20)

@@ -28,7 +28,7 @@ header <- dashboardHeader(title = HTML(paste0('<h4><div align="center"><b>', IOH
 HTML_P <- function(s) HTML(paste0('<p align="left" style="font-size:120%;">', s, '</p>'))
 
 aspect_ratio <-  4 / 3
-fig_height <- 900
+fig_height <- 700
 fig_width <- fig_height * aspect_ratio
 plotly_height <- paste0(fig_height, "px")
 plotly_width <- paste0(fig_width, "px")

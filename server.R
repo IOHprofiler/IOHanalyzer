@@ -519,23 +519,26 @@ shinyServer(function(input, output, session) {
       
       p %<>% 
         add_trace(data = df_plot, x = ~BestF, y = ~upper, type = 'scatter', mode = 'lines',
-                  line = list(color = rgba_str, width = 0),  legendgroup = algId,
+                  line = list(color = rgba_str, width = 0),  
+	          #legendgroup = algId,
                   showlegend = F, name = 'mean +/- sd') %>% 
         add_trace(x = ~BestF, y = ~lower, type = 'scatter', mode = 'lines',
                   fill = 'tonexty',  line = list(color = 'transparent'),
-                  legendgroup = algId,
+                  #legendgroup = algId,
                   fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd')
       
       if (input$show.mean)
         p %<>% add_trace(data = df_plot, x = ~BestF, y = ~ERT, type = 'scatter', 
                          mode = 'lines+markers', name = paste0(algId, '.mean'), 
-                         marker = list(color = rgb_str), legendgroup = algId,
+                         marker = list(color = rgb_str), 
+			 #legendgroup = algId,
                          line = list(color = rgb_str))
       
       if (input$show.median)
         p %<>% add_trace(data = df_plot, x = ~BestF, y = ~median, type = 'scatter',
                          name = paste0(algId, '.median'), mode = 'lines+markers', 
-                         marker = list(color = rgb_str),  legendgroup = algId,
+                         marker = list(color = rgb_str),  
+			 #legendgroup = algId,
                          line = list(color = rgb_str, dash = 'dash'))
     }
     p %<>%

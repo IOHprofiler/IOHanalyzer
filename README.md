@@ -7,6 +7,10 @@ This tool is mainly built on R package [Shiny](https://shiny.rstudio.com/), [plo
 1. local installation and execution (see [installation instructions](#install)) and
 2. a [web-based service](#server) that you can use right away.
 
+## Documentation
+
+The details on the experimentation and post-processing tool can be found on [arXiv.org](https://arxiv.org/abs/1810.05281).
+
 ## <a name="install"></a>Installation
 
 This software is mainly written in __R__. To run it directly from the source code, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/).
@@ -64,10 +68,6 @@ To start the post-processing tool, please execute the following commands in the 
 ## <a name="server"></a> Online Service
 
 Alternatively, we have built a server to put this tool online, which is currently hosted in [Leiden Institute of Advanced Computer Science](https://liacs.leidenuniv.nl/), Leiden University. The server can be accessed via [http://iohprofiler.liacs.nl](http://iohprofiler.liacs.nl).
-
-## Documentation
-
-The details on the experimentation and post-processing tool can be found on [arXiv.org](https://arxiv.org/abs/1810.05281).
 
 ## Data Preparation
 

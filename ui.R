@@ -296,7 +296,9 @@ body <- dashboardBody(
                               The displayed elements (mean, median, standard deviations) 
                               can be switched on and off by clicking on the legend on the right. 
                               A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                         mainPanel(plotlyOutput('ERT_PER_FUN', height = plotly_height, width = plotly_width))
+                         mainPanel(HTML('<div align="right">'),
+                                   plotlyOutput('ERT_PER_FUN', height = plotly_height, width = plotly_width),
+                                   HTML('</div>'))
                      )
                      
                      # box(title = HTML('<p style="font-size:120%;">Expected Runtime 

@@ -34,7 +34,6 @@ NumericVector align_by_target_inner_loop(double t, int idxEvals, int idxTarget,
   return out;
 }
 
-// TODO: verify this function
 // [[Rcpp::export]]
 void align_by_runtime_inner_loop(int r, int idxEvals, int idxTarget, 
   List data, NumericVector n_rows, NumericVector index, NumericMatrix next_lines,
@@ -48,7 +47,7 @@ void align_by_runtime_inner_loop(int r, int idxEvals, int idxTarget,
     int n_col = d.ncol();
 
     while (!NumericVector::is_na(next_lines(k, idxEvals))) {
-      if (next_lines(k, idxEvals) > r) {
+      if (next_lines(k, idxEvals) >= r) {
         curr_fvalues[k] = next_lines(k, idxTarget);
         break;
       }
@@ -65,4 +64,21 @@ void align_by_runtime_inner_loop(int r, int idxEvals, int idxTarget,
     }
     index[k] = iter;
   }
+}
+
+// [[Rcpp::export]]
+NumericVector c_impute(NumericVector x, NumericVector y, NumericVector rowname) {
+  int N = rowname.size();
+  NumericVector res(N, NA_REAL);
+
+  int j = 0;
+  for (int i = 0; i < N; ++i) {
+    if (rowname[i] == y[j]) {
+      res[i] = x[j];
+      ++j;
+    } else {
+      res[i] = x[j - 1];
+    }
+  }
+  return res;
 }

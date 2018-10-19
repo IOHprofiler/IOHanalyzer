@@ -79,7 +79,7 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     
     # TODO: remove this and include the parameters that are aligned by runtimes
     # TODO: implement two different alignments for the parameter
-    by_runtime <- by_runtime[1]            
+    by_runtime <- list(by_runtime = by_runtime$Fvalue)         
     
     maxEvals <- sapply(tar_data, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
     finalFunvals <- sapply(rt_data, function(d) d[nrow(d), idxTarget]) %>% set_names(NULL)

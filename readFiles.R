@@ -140,11 +140,11 @@ read_dat <- function(fname, subsampling = FALSE) {
     i2 <- idx[i + 1] - 1
     ans <- df[i1:i2, ]
     if (i1 == i2)
-      ans <- t(ans)
+      ans <- t(ans) %>% as.matrix
     
     # TODO: determine the number of record in the 'efficient mode'
     if (subsampling)
-      ans %<>% limit.data.frame(n = 500)
+      ans <- limit.data.frame(ans, n = 500)
     else 
       ans
   })
@@ -390,8 +390,93 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
     list(by_target = res)
 }
 
-# TODO: find a better way to organize the output
-align_by_runtime <- function(data, runtime = 'full', format = IOHprofiler) {
+check_contiguous <- function (data) {
+  sapply(data, 
+         function (d) {
+           v <- d[, idxEvals]
+           N <- length(v)
+           v[1] == 1 && v[N] == N
+         }) %>% 
+    all
+}
+
+align_contiguous <- function(data, idx, rownames) {
+  N <- length(data)
+  nrow <- length(rownames)
+  lapply(data, 
+         function (d) {
+           v <- d[, idx]
+           r <- nrow - length(v)
+           if (r > 0) {
+             v <- c(v, rep(v[length(v)], r))
+           }
+           v
+         }) %>% 
+    unlist %>%
+    matrix(nrow = nrow, ncol = N) %>%
+    set_rownames(rownames)
+}
+
+align_non_contiguous <- function(data, idx, rownames) {
+  N <- length(data)
+  nrow <- length(rownames)
+  lapply(data, 
+         function (d) {
+           c_impute(d[, idx], d[, idxEvals], rownames)
+         }) %>% 
+    unlist %>%
+    matrix(nrow = nrow, ncol = N) %>%
+    set_rownames(rownames)
+}
+
+align_by_runtime <- function(data, include_param = TRUE, format = IOHprofiler) {
+  N <- length(data) 
+  n_column <- sapply(data, ncol) %>% unique
+  stopifnot(length(n_column) == 1)
+  
+  if (format == COCO) {
+    maximization <- FALSE
+    idxTarget <- 3
+    n_param <- 0
+  } else if (format == IOHprofiler) {
+    maximization <- TRUE
+    idxTarget <- 5
+    n_param <- n_column - n_data_column
+  }
+  
+  include_param <- include_param && (n_param > 0)
+  
+  if (check_contiguous(data)) {
+    nrow <- sapply(data, nrow) %>% max
+    runtime <- seq(nrow)
+    align_func <- align_contiguous
+  } else {
+    runtime <- lapply(data, function(x) x[, idxEvals]) %>% unlist %>% unique %>% sort
+    nrow <- length(runtime)
+    align_func <- align_non_contiguous
+  }
+  
+  Fvalue <- align_func(data, idxTarget, runtime)
+  
+  if (include_param) {
+    param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
+    param <- list()
+    for (i in seq(n_param)) {
+      name <- param_names[i]
+      param[[name]] <- align_func(data, i + n_data_column, runtime)
+    }
+  }
+  
+  if (include_param) {
+    c(list(Fvalue = Fvalue), param)
+  } else {
+    list(Fvalue = Fvalue)
+  }
+}
+
+# NOTE: this is slow and incorrect...
+# TODO: remove this in the next commit
+align_by_runtime_old <- function(data, type = 'full', format = IOHprofiler) {
   
   if (format == IOHprofiler) {
     maximization <- TRUE
@@ -420,7 +505,8 @@ align_by_runtime <- function(data, runtime = 'full', format = IOHprofiler) {
   next_lines <- lapply(data, function(x) x[1, ]) %>% 
     unlist %>% matrix(nrow = N, byrow = T)
   
-  nrow_max <- lapply(data, function(x) x[, idxEvals]) %>% unlist %>% unique %>% length 
+  runtime <- lapply(data, function(x) x[, idxEvals]) %>% unlist %>% unique %>% sort
+  nrow_max <- length(runtime)
   res <- matrix(NA, nrow = nrow_max, ncol = N)  # the aligned data
   
   if (n_param > 0) { # the aligned parameters
@@ -429,13 +515,12 @@ align_by_runtime <- function(data, runtime = 'full', format = IOHprofiler) {
       set_names(param_names)  
   }
   
-  if (runtime == 'full') {
-    runtime <- rep(NA, nrow_max)
-    r <- min(next_lines[, idxEvals], na.rm = T)
-    i <- 1
-    while (TRUE) {
+  if (type == 'full') {
+    for (i in seq(nrow_max)) {
+      r <- runtime[i]
+      
       # Rcpp implementation
-      align_by_runtime_inner_loop(r, idxEvals - 1, idxTarget - 1, data, n_rows, 
+      align_by_runtime_inner_loop(r, idxEvals - 1, idxTarget - 1, data, n_rows,
                                   index - 1, next_lines, curr_fvalues)
       
       # the slower implementation
@@ -443,13 +528,13 @@ align_by_runtime <- function(data, runtime = 'full', format = IOHprofiler) {
       #   d <- data[[k]]
       #   n_row <- n_rows[k]
       #   iter <- index[k]
-      #   
+      # 
       #   while (!is.na(next_lines[k, idxEvals])) {
-      #     if (next_lines[k, idxEvals] > r) {
+      #     if (next_lines[k, idxEvals] >= r) {
       #       curr_fvalues[k] <- next_lines[k, idxTarget]
       #       break
       #     }
-      #     
+      # 
       #     if (iter < n_row) {
       #       iter <- iter + 1
       #       next_lines[k, ] <- d[iter, ]
@@ -460,7 +545,7 @@ align_by_runtime <- function(data, runtime = 'full', format = IOHprofiler) {
       #   }
       #   index[k] <- iter
       # }
-      
+      # 
       runtime[i] <- r
       res[i, ] <- curr_fvalues
       
@@ -473,9 +558,6 @@ align_by_runtime <- function(data, runtime = 'full', format = IOHprofiler) {
       
       if (all(is.na(next_lines[, idxEvals])))
         break 
-      
-      i <- i + 1
-      r <- min(next_lines[, idxEvals], na.rm = T)
     }
   }
   

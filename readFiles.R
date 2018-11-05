@@ -11,6 +11,7 @@ library(dplyr)
 library(reshape2)
 library(data.table)
 library(Rcpp)
+library(ggplot2)
 
 sourceCpp('C/align.cc')
 source('global.R')
@@ -390,9 +391,9 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
     list(by_target = res)
 }
 
-check_contiguous <- function (data) {
+check_contiguous <- function(data) {
   sapply(data, 
-         function (d) {
+         function(d) {
            v <- d[, idxEvals]
            N <- length(v)
            v[1] == 1 && v[N] == N
@@ -404,7 +405,7 @@ align_contiguous <- function(data, idx, rownames) {
   N <- length(data)
   nrow <- length(rownames)
   lapply(data, 
-         function (d) {
+         function(d) {
            v <- d[, idx]
            r <- nrow - length(v)
            if (r > 0) {
@@ -421,7 +422,7 @@ align_non_contiguous <- function(data, idx, rownames) {
   N <- length(data)
   nrow <- length(rownames)
   lapply(data, 
-         function (d) {
+         function(d) {
            c_impute(d[, idx], d[, idxEvals], rownames)
          }) %>% 
     unlist %>%

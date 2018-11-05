@@ -496,6 +496,11 @@ shinyServer(function(input, output, session) {
   
   # The expected runtime plot ---------------------
   output$ERT_PER_FUN <- renderPlotly({
+    
+    # require non-empty input
+    req(input$ERT_FSTART != "")
+    req(input$ERT_FSTOP != "")
+    
     Fmin <- format_funeval(input$ERT_FSTART) %>% as.numeric %>% reverse_trans_funeval
     Fmax <- format_funeval(input$ERT_FSTOP) %>% as.numeric %>% reverse_trans_funeval
     
@@ -504,7 +509,8 @@ shinyServer(function(input, output, session) {
     colors <- colorspace::rainbow_hcl(n_algorithm)
     
     p <- plot_ly_default(#title = "Expected Runtime Comparison",
-                         x.title = "best-so-far f(x)-value", y.title = "function evaluations")
+                         x.title = "best-so-far f(x)-value", 
+                         y.title = "function evaluations")
     
     for (i in seq_along(data)) {
       df <- data[[i]]
@@ -531,14 +537,12 @@ shinyServer(function(input, output, session) {
         p %<>% add_trace(data = df_plot, x = ~BestF, y = ~ERT, type = 'scatter', 
                          mode = 'lines+markers', name = paste0(algId, '.mean'), 
                          marker = list(color = rgb_str), 
-			 #legendgroup = algId,
                          line = list(color = rgb_str))
       
       if (input$show.median)
         p %<>% add_trace(data = df_plot, x = ~BestF, y = ~median, type = 'scatter',
                          name = paste0(algId, '.median'), mode = 'lines+markers', 
                          marker = list(color = rgb_str),  
-			 #legendgroup = algId,
                          line = list(color = rgb_str, dash = 'dash'))
     }
     p %<>%
@@ -553,6 +557,8 @@ shinyServer(function(input, output, session) {
   
   # empirical p.m.f. of the runtime
   output$RT_PMF <- renderPlotly({
+    
+    req(input$RT_PMF_FTARGET != "") # require non-empty input
     ftarget <- format_funeval(input$RT_PMF_FTARGET) %>% as.numeric %>% reverse_trans_funeval
     points <- ifelse(input$RT_SHOW_SAMPLE, 'all', FALSE)
     
@@ -622,6 +628,7 @@ shinyServer(function(input, output, session) {
   
   # historgram of the running time
   output$RT_HIST <- renderPlotly({
+    req(input$RT_PMF_HIST_FTARGET != "")   # require non-empty input
     ftarget <- format_funeval(input$RT_PMF_HIST_FTARGET) %>% as.numeric %>% reverse_trans_funeval
     plot_mode <- input$ERT_illu_mode
     
@@ -689,12 +696,14 @@ shinyServer(function(input, output, session) {
       as.numeric %>% 
       reverse_trans_funeval
     
+    ftargets <- ftargets[!is.na(ftargets)]
+    req(length(ftargets) != 0)
+    
     data <- DATA()
     n_algorithm <- length(data)
     colors <- colorspace::rainbow_hcl(n_algorithm)
     
     p <- plot_ly_default(title = NULL,
-      # title = "Empirical Cumulative Distribution of the runtime",
                          x.title = "function evaluations",
                          y.title = "Proportion of runs")
     
@@ -774,6 +783,8 @@ shinyServer(function(input, output, session) {
       c(fstart, ., fstop) %>% unique %>% 
       reverse_trans_funeval %>% 
       .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+    
+    req(length(fseq) != 0)
     
     data <- DATA()
     n_algorithm <- length(data)
@@ -1061,6 +1072,7 @@ shinyServer(function(input, output, session) {
   
   # empirical p.d.f. of the target value
   output$FCE_PDF <- renderPlotly({
+    req(input$FCE_PDF_RUNTIME != "")   # require non-empty input
     runtime <- input$FCE_PDF_RUNTIME %>% as.integer %>% reverse_trans_runtime
     points <- ifelse(input$FCE_SHOW_SAMPLE, 'all', FALSE)
     
@@ -1097,6 +1109,7 @@ shinyServer(function(input, output, session) {
   
   # historgram of the target values -----------
   output$FCE_HIST <- renderPlotly({
+    req(input$FCE_HIST_RUNTIME != "")   # require non-empty input
     runtime <- input$FCE_HIST_RUNTIME %>% as.integer %>% reverse_trans_runtime
     plot_mode <- input$FCE_illu_mode
     
@@ -1157,6 +1170,8 @@ shinyServer(function(input, output, session) {
   
   # Expected Target Value Convergence 
   output$FCE_PER_FUN <- renderPlotly({
+    req(input$FCE_RT_MIN != "")   # require non-empty input
+    req(input$FCE_RT_MAX != "")
     rt_min <- input$FCE_RT_MIN %>% as.integer %>% reverse_trans_runtime
     rt_max <- input$FCE_RT_MAX %>% as.integer %>% reverse_trans_runtime
     
@@ -1214,6 +1229,9 @@ shinyServer(function(input, output, session) {
       as.integer(input$FCE_ECDF_RT2),
       as.integer(input$FCE_ECDF_RT3)) %>% 
       reverse_trans_runtime
+    
+    runtimes <- runtimes[!is.na(runtimes)]
+    req(length(runtimes) != 0)
     
     data <- DATA()
     n_algorithm <- length(data)
@@ -1450,6 +1468,8 @@ shinyServer(function(input, output, session) {
   
   # Expected Evolution of parameters in the algorithm
   output$PAR_PER_FUN <- renderPlotly({
+    req(input$PAR_F_MIN != "")   # require non-empty input
+    req(input$PAR_F_MAX != "")
     f_min <- input$PAR_F_MIN %>% as.numeric %>% reverse_trans_funeval
     f_max <- input$PAR_F_MAX %>% as.numeric %>% reverse_trans_funeval
     

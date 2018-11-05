@@ -241,7 +241,8 @@ summarise_runtime <- function(dataset, ftarget, maximization = TRUE, probs = NUL
                  mean(., na.rm = T), 
                  median(., na.rm = T), 
                  sd(., na.rm = T),
-                 quantile(., probs = probs, names = F, type = 3, na.rm = T) # type 1 ~ 3 for the discrete r.v.
+                 # type 1 ~ 3 for the discrete r.v.
+                 quantile(., probs = probs, names = F, type = 3, na.rm = T) 
                  ) 
              }
          }) %>% 

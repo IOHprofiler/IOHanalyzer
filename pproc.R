@@ -30,7 +30,6 @@ source('plot.R')
 #   maxEvals
 #   finalFunEvals
 #   comment
-#   
 #   TODO: maybe also store the raw data sets
 DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler,
                     subsampling = FALSE) {

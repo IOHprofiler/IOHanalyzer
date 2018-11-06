@@ -2,7 +2,6 @@
 # 
 # Author: Hao Wang
 # Email: wangronin@gmail.com
-# 
 
 IOHprofiler <- 'IOHprofiler'
 COCO <- 'COCO'

@@ -69,11 +69,12 @@ void align_by_runtime_inner_loop(int r, int idxEvals, int idxTarget,
 // [[Rcpp::export]]
 NumericVector c_impute(NumericVector x, NumericVector y, NumericVector rowname) {
   int N = rowname.size();
+  int L = x.size();
   NumericVector res(N, NA_REAL);
 
   int j = 0;
   for (int i = 0; i < N; ++i) {
-    if (rowname[i] == y[j]) {
+    if (rowname[i] == y[j] && j < L) {
       res[i] = x[j];
       ++j;
     } else {

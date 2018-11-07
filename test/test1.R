@@ -1,6 +1,7 @@
-source('pproc.R')
+setwd('../')
+source('readFiles.R')
 
-path <- '~/Dropbox/data/LO_adap_mutationrate/data_f2/IOHProfilerexp_f2_DIM100_i1.cdat'
+path <- 'test/test1.cdat'
 N <- 1e5
 
 idxEvals <- 1

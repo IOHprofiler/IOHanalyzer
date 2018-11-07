@@ -7,9 +7,9 @@
 # Remark:
 #   2. Rcpp is used for the data alignment function
 
-library(magrittr)
-library(reshape2)
-library(data.table)
+suppressMessages(library(magrittr))
+suppressMessages(library(reshape2))
+suppressMessages(library(data.table))
 
 source('readFiles.R')
 source('global.R')

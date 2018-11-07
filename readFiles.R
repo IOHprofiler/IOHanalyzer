@@ -6,12 +6,12 @@
 # 
 # TODO: maybe I should always use data.table as it is very fast
 
-library(magrittr)
-library(dplyr)
-library(reshape2)
-library(data.table)
-library(Rcpp)
-library(ggplot2)
+suppressMessages(library(magrittr))
+suppressMessages(library(dplyr))
+suppressMessages(library(reshape2))
+suppressMessages(library(data.table))
+suppressMessages(library(Rcpp))
+suppressMessages(library(ggplot2))
 
 sourceCpp('C/align.cc')
 source('global.R')

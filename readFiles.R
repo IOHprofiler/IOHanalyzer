@@ -17,7 +17,7 @@ sourceCpp('C/align.cc')
 source('global.R')
 
 # reduce the size of the data set by evenly subsampling the records
-limit.data.frame <- function(df, n) {
+limit.data <- function(df, n) {
   N <- nrow(df)
   if (N > n) {
     idx <- c(1, seq(1, N, length.out = n), N) %>% unique
@@ -74,14 +74,15 @@ read_IndexFile <- function(fname) {
     
     datafile <- file.path(path, record[1])
     # TODO: check the name of the attributes and fix them!
-    data[[i]] <- c(header,
-                   list(comment = lines[2], 
-                        datafile = datafile,
-                        # TODO: REMOVE this in the future for Furong's data set
-                        instance = seq(ncol(res)))  
-                   # instance = as.numeric(res[1, ]),
-                   # maxEvals = as.numeric(info[1, ]),
-                   # bestdeltaf = as.numeric(info[2, ]))
+    data[[i]] <- c(
+      header,
+      list(
+        comment = lines[2], 
+        datafile = datafile,
+        instance = as.numeric(res[1, ]),
+        maxRT = as.numeric(info[1, ]),
+        finalFV = as.numeric(info[2, ])
+      )
     )
     i <- i + 1
   }
@@ -113,10 +114,8 @@ check_format <- function(path) {
     levels(res$format)[1]
 }
 
-# reading .dat, .rdat, .tdat files ----
-
-# for IOHProfiler format
-# Return: a list of data.frames
+# read IOHProfiler *.dat files
+# Return a list of data.frames
 read_dat <- function(fname, subsampling = FALSE) {
   # TODO: use the same data loading method as in read_COCO_dat
   df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
@@ -145,7 +144,7 @@ read_dat <- function(fname, subsampling = FALSE) {
     
     # TODO: determine the number of record in the 'efficient mode'
     if (subsampling)
-      ans <- limit.data.frame(ans, n = 500)
+      ans <- limit.data(ans, n = 500)
     else 
       ans
   })
@@ -173,13 +172,11 @@ read_COCO_dat <- function(fname, subsampling = FALSE) {
            
            # TODO: determine the number of records automatically, the same here
            if (subsampling)
-             ans %<>% limit.data.frame(n = 500)
+             ans %<>% limit.data(n = 500)
            else 
              ans
          })
 }
-
-# functions to align the raw data ----
 
 # global variables for the alignment
 idxEvals <- 1
@@ -386,9 +383,9 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
       param[[k]] <- param[[k]][1:i, ] %>% 
         set_rownames(Fvalues) 
     }
-    c(list(by_target = res), param)
+    c(list(RT = res), param)
   } else 
-    list(by_target = res)
+    list(RT = res)
 }
 
 check_contiguous <- function(data) {
@@ -457,7 +454,7 @@ align_by_runtime <- function(data, include_param = TRUE, format = IOHprofiler) {
     align_func <- align_non_contiguous
   }
   
-  Fvalue <- align_func(data, idxTarget, runtime)
+  FV <- align_func(data, idxTarget, runtime)
   
   if (include_param) {
     param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
@@ -469,9 +466,9 @@ align_by_runtime <- function(data, include_param = TRUE, format = IOHprofiler) {
   }
   
   if (include_param) {
-    c(list(Fvalue = Fvalue), param)
+    c(list(FV = FV), param)
   } else {
-    list(Fvalue = Fvalue)
+    list(FV = FV)
   }
 }
 

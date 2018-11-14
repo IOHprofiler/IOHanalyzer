@@ -115,7 +115,7 @@ body <- dashboardBody(
                    }, 20);
   ')),
   
-  # include MathJax
+  # using MathJax
   HTML("<head><script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML'
        async></script></head>"),
   
@@ -179,7 +179,7 @@ body <- dashboardBody(
             )
     ),
     
-    # RT: Data Summary -----------------
+    # RT (RunTime): Data Summary -----------------
     tabItem(tabName = 'ERT_data', 
       fluidRow(
         column(width = 12,

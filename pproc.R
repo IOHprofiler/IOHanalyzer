@@ -5,7 +5,11 @@
 # Email: wangronin@gmail.com
 # 
 # Remark:
-#   2. Rcpp is used for the data alignment function
+#   1. Rcpp is used for the data alignment function
+# TODO:
+#   1. add Roxygen docs
+#   2. perhaps migrate to data.table completely for speed concern and simplicity
+#   3. maybe separate DataSetList class from DataSet class
 
 suppressMessages(library(magrittr))
 suppressMessages(library(reshape2))
@@ -15,22 +19,51 @@ source('readFiles.R')
 source('global.R')
 source('plot.R')
 
-# TODO: perhaps migrate to data.table for speed concern and simplicity
-# TODO: find better name to replace FCE
-# TODO: general issue: maybe separate DataSetList class from DataSet class
+#' SP Estimator for ERT
+#'
+#' @param data A dataframe or matrix
+#' @param max_runtime A Numerical vector. Should has the same size as columns of data 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+SP <- function(data, max_runtime) {
+  N <- ncol(data)
+  succ <- apply(data, 1, function(x) sum(!is.na(x)))
+  succ_rate <- succ / N
+  
+  idx <- is.na(data)
+  for (i in seq(N)) {
+    data[idx[, i], i] <- max_runtime[i]
+  }
+  
+  list(ERT = rowSums(data) / succ, succ_rate = succ_rate)
+}
 
-# constructor of S3 class 'DataSet'
-# Attributes
-#   funId
-#   DIM
-#   algId
-#   Precision
-#   datafile
-#   instance
-#   maxEvals
-#   finalFunEvals
-#   comment
-#   TODO: maybe also store the raw data sets
+#' Constructor of S3 class 'DataSet'
+#'
+#' DataSet contains the following attributes
+#'  * funId
+#'  * DIM
+#'  * algId
+#'  * Precision
+#'  * datafile
+#'  * instance
+#'  * maxEvals
+#'  * finalFunEvals
+#'  * comment
+#'  
+#' @param info A List. Contains a set of in a *.info file.
+#' @param verbose Logical. 
+#' @param maximization Logical. Whether the underlying optimization algorithm performs a maximization?
+#' @param format A character. The format of data source, either 'IOHProfiler' or 'COCO'.
+#' @param subsampling Logical. Whether *.cdat files are subsampled?
+#'
+#' @return A S3 object 'DataSet'
+#' @export
+#'
+#' @examples
 DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler,
                     subsampling = FALSE) {
   if (!is.null(info)) {
@@ -60,103 +93,125 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     
     # TODO: whether to keep the raw data set list?
     if (format == IOHprofiler) {
-      tar_data <- read_dat(datFile, subsampling)         # read the tdat file
-      rt_data <- read_dat(cdatFile, subsampling)         # read the cdat file
+      dat <- read_dat(datFile, subsampling)         # read the dat file
+      cdat <- read_dat(cdatFile, subsampling)       # read the cdat file
     } else if (format == COCO) {
-      tar_data <- read_COCO_dat(datFile, subsampling)    # read the tdat file
-      rt_data <- read_COCO_dat(tdatFile, subsampling)    # read the cdat file
+      dat <- read_COCO_dat(datFile, subsampling)    # read the dat file
+      cdat <- read_COCO_dat(tdatFile, subsampling)   # read the tdat file
     }
-    
-    # aligned by target values
-    by_target <- align_by_target(tar_data, maximization = maximization, format = format) 
-    # aligned by runtime
-    by_runtime <- align_by_runtime(rt_data, format = format)  
     
     # check if the number of instances does not match
-    stopifnot(length(tar_data) == length(rt_data), 
-              length(info$instance) == length(tar_data))
+    stopifnot(length(dat) == length(cdat))
     
-    # TODO: remove this and include the parameters that are aligned by runtimes
-    # TODO: implement two different alignments for the parameter
-    by_runtime <- list(by_runtime = by_runtime$Fvalue)         
+    if (format == IOHprofiler)
+      maximization <- TRUE
+    else if (format == COCO)
+      maximization <- FALSE
     
-    maxEvals <- sapply(tar_data, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
-    finalFunvals <- sapply(rt_data, function(d) d[nrow(d), idxTarget]) %>% set_names(NULL)
+    RT <- align_by_target(dat, maximization = maximization, format = format) # runtime
+    FV <- align_by_runtime(cdat, format = format)  # function value
     
-    if (length(info$instance) == 0 || length(info$instance) != length(tar_data)) {
+    # TODO: remove this and incorporate the parameters aligned by runtimes
+    FV[names(FV) != 'FV'] <- NULL
+    
+    maxRT <- sapply(cdat, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
+    if (any(maxRT != info$maxRT))
+      warning('Inconsitent maxRT in *.info file and *.cdat file')
+    
+    finalFV <- sapply(dat, function(d) d[nrow(d), idxTarget]) %>% set_names(NULL)
+    if (any(finalFV != info$finalFV))
+      warning('Inconsitent finalFvalue in *.info file and *.dat file')
+    
+    if (length(info$instance) != length(dat)) {
       warning('The number of instances found in the info is inconsistent with the data!')
-      info$instance <- seq(length(tar_data))
+      info$instance <- seq(length(dat))
     }
     
-    # if (any(maxEvals != info$maxEvals))
-    #   warning('Inconsitent maxEvals in .info file and .dat file')
+    # TODO: unify FV.summary here with the get_FV_summary function below
+    # Runtime / FValue summaries
+    AUX <- list()
+    data <- RT$RT
+    n_instance <- length(info$instance)
+    res <- SP(data, maxRT)
+    RT.summary <- data.table(target = rownames(data) %>% as.double,
+                             mean = apply(data, 1, .mean),
+                             median = apply(data, 1, .median),
+                             sd = apply(data, 1, .sd))
     
-    do.call(function(...) structure(c(by_target, by_runtime), class = c('DataSet'), ...), 
-            c(info, list(maxEvals = maxEvals, finalFunvals = finalFunvals)))
+    names <- paste0(probs * 100, '%')
+    RT.summary[, (names) := t(apply(data, 1, D_quantile)) %>% split(c(col(.)))]
+    RT.summary[, c('ps', 'ERT') := list(res$succ_rate, res$ERT)]
+    AUX$RT.summary <- RT.summary
+    
+    data <- FV$FV
+    if (nrow(data) > 500) {
+      data <- limit.data(data, n = 500)
+    }
+    
+    FV.summary <- data.table(budget = rownames(data) %>% as.double,
+                             mean = apply(data, 1, .mean),
+                             median = apply(data, 1, .median),
+                             sd = apply(data, 1, .sd))
+    
+    names <- paste0(probs * 100, '%')
+    FV.summary[, (names) := t(apply(data, 1, C_quantile)) %>% split(c(col(.)))]
+    AUX$FV.summary  <- FV.summary
+        
+    do.call(function(...) structure(c(RT, FV, AUX), class = c('DataSet'), ...), 
+            c(info, list(maxRT = maxRT, finalFV = finalFV, src = format,
+                         maximization = maximization)))
      
   } else {
     structure(list(), class = c('DataSet'))
   }
 }
 
-getParId2 <- function(data) {
-  setdiff(names(data), c('by_runtime', 'by_target'))
-}
-
-print.DataSet <- function(data, verbose = F) {
+print.DataSet <- function(ds, verbose = F) {
   # TODO: implement the verbose mode
-  cat(as.character.DataSet(data))
+  print(as.character.DataSet(ds))
 }
 
-as.character.DataSet <- function(data, verbose = F) {
+cat.DataSet <- function(ds) cat(as.character(ds))
+
+as.character.DataSet <- function(ds, verbose = F) {
   # TODO: implement the verbose mode
-  sprintf('DataSet(%s on f%s %dD)', attr(data, 'algId'), attr(data, 'funcId'),
-          attr(data, 'DIM'))
+  sprintf('DataSet(%s on f%s %dD)', attr(ds, 'algId'), attr(ds, 'funcId'),
+          attr(ds, 'DIM'))
 }
 
-summary.DataSet <- function(data) {
-  data_attr <- attributes(data)
-  cat(sprintf('DataSet Object: (%s, f%d, %dD)\n', data_attr$algId, data_attr$funcId, 
-          data_attr$DIM))
+summary.DataSet <- function(ds) {
+  ds_attr <- attributes(ds)
+  cat('DataSet Object:\n')
+  cat(sprintf('Source: %s\n', ds_attr$src))
+  cat(sprintf('Algorithm: %s\n', ds_attr$algId))
+  cat(sprintf('Function ID: %d\n', ds_attr$funcId))
+  cat(sprintf('Dimension: %dD\n', ds_attr$DIM))
   
-  n_instance <- length(data_attr$instance)
+  n_instance <- length(ds_attr$instance)
   if (n_instance >= 15) {
-    inst <- paste0(paste(data_attr$instance[1:7], collapse = ','), 
+    inst <- paste0(paste(ds_attr$instance[1:7], collapse = ','), 
                    ',...,', 
-                   paste(data_attr$instance[(n_instance - 7):n_instance], collapse = ','))
-    cat(sprintf('%d instance are contained: %s\n\n', n_instance, inst))
+                   paste(ds_attr$instance[(n_instance - 7):n_instance], collapse = ','))
+    cat(sprintf('%d instance found: %s\n\n', n_instance, inst))
   }
   else
-    cat(sprintf('%d instance are contained: %s\n\n', n_instance, paste(data_attr$instance, collapse = ',')))
+    cat(sprintf('%d instance found: %s\n\n', n_instance, paste(ds_attr$instance, collapse = ',')))
   
-  .mean <- function(x) mean(x, na.rm = T)
-  .median <- function(x) median(x, na.rm = T)
-  .sd <- function(x) sd(x, na.rm = T)
-  sum1 <- data.table(target = rownames(data$by_target),
-                     runtime.mean = apply(data$by_target, 1, .mean),
-                     runtime.median = apply(data$by_target, 1, .median),
-                     runtime.sd = apply(data$by_target, 1, .sd),
-                     succ_rate = apply(data$by_target, 1, function(x) sum(!is.na(x)) / n_instance))
-  
-  print(sum1)
+  cat('runtime summary:\n')
+  print(ds$RT.summary)
   cat('\n')
   
-  df <- data$by_runtime
-  sum2 <- data.table(budget = rownames(df),
-                     Fvalue.mean = apply(df, 1, .mean),
-                     Fvalue.median = apply(df, 1, .median),
-                     Fvalue.sd = apply(df, 1, .sd))
-  
-  print(sum2)
+  cat('function value summary:\n')
+  print(ds$FV.summary)
   cat('\n')
   
-  cat(paste('Attributes:', paste0(names(data_attr), collapse = ', ')))
+  cat(paste('Attributes:', paste0(names(ds_attr), collapse = ', ')))
 }
 
-plot.DataSet <- function(data, ask = TRUE) {
-  dt <- data.table(data$by_target) 
+plot.DataSet <- function(ds, ask = TRUE) {
+  dt <- data.table(ds$RT) 
   colnames(dt) <- as.character(seq(ncol(dt)))
-  dt[, target := as.numeric(rownames(data$by_target))]
+  dt[, target := as.numeric(rownames(ds$RT))]
   
   target <- dt[, target]
   N <- length(target)
@@ -174,7 +229,7 @@ plot.DataSet <- function(data, ask = TRUE) {
   
   if (ask) x <- readline("show data aligned by runtime?")
   
-  df <- data$by_runtime
+  df <- ds$FV
   if (nrow(df) > 500) {
     idx <- c(1, seq(1, nrow(df), length.out = 500), nrow(df)) %>% unique
     df <- df[idx, ]
@@ -199,7 +254,7 @@ plot.DataSet <- function(data, ask = TRUE) {
     # scale_x_continuous(breaks = budget) + 
     scale_x_log10() +
     guides(colour = FALSE)
-
+  
   print(p)
 }
 
@@ -214,156 +269,134 @@ plot.DataSet <- function(data, ask = TRUE) {
     attr(dsL, 'comment') == attr(dsR, 'comment')
 }
 
-# calculate the basic statistics of the runtime samples from an aligned data set
-summarise_runtime <- function(dataset, ftarget, maximization = TRUE, probs = NULL) {
-  df <- dataset$by_target
-  algId <- attr(dataset, 'algId')
+get_RT_summary <- function(ds, ftarget) {
+  data <- ds$RT.summary
+  maximization <- attr(ds, 'maximization')
   
-  ftarget <- c(ftarget) %>% as.double
-  f_aligned <- rownames(df) %>% as.double
-  idx <- seq_along(f_aligned)
+  ftarget <- c(ftarget) %>% as.double %>% sort(decreasing = !maximization)
+  FValues <- data[, target]
+  idx <- seq_along(FValues)
   op <- ifelse(maximization, `>=`, `<=`)
   
-  if (is.null(algId)) 
-    algId <- 'unknown'
-  if (is.null(probs))
-    probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
+  matched <- sapply(
+    ftarget,
+    function(f) {
+      idx[`op`(FValues, f)][1]
+    }
+  )
   
-  lapply(ftarget, 
-         function(f) {
-           matched <- idx[`op`(f_aligned, f)][1]
-           target <- ifelse(is.na(matched), f, f_aligned[matched])
-           df[matched, ] %>% 
-             as.vector %>% {
-               c(target, 
-                 length(.[!is.na(.)]), 
-                 mean(., na.rm = T), 
-                 median(., na.rm = T), 
-                 sd(., na.rm = T),
-                 # type 1 ~ 3 for the discrete r.v.
-                 quantile(., probs = probs, names = F, type = 3, na.rm = T) 
-                 ) 
-             }
-         }) %>% 
-    do.call(rbind, .) %>% 
-    as.data.frame %>% 
-    cbind(algId, .) %>%
-    set_colnames(c('algId', 'f(x)', 'runs', 'mean', 'median', 'sd', paste0(probs * 100, '%')))
+  NAs <- is.na(matched)
+  if (any(NAs)) {
+    rbindlist(
+      list(
+        data[matched[!NAs], ],
+        data.table(cbind(t(t(ftarget[NAs])), matrix(NA, sum(NAs), ncol(data) - 1)))
+      )
+    )
+  } else {
+    data[matched, ]
+  }
 }
 
 # Retrieve the runtime samples from an aligned data set
 # wide-format is set by default
-get_runtime_sample <- function(dataset, ftarget, format = 'wide', maximization = TRUE) {
-  df <- dataset$by_target
-  N <- ncol(df)
-  algId <- attr(dataset, 'algId')
+get_RT_sample <- function(ds, ftarget, output = 'wide') {
+  data <- ds$RT
+  N <- ncol(data)
+  algId <- attr(ds, 'algId')
+  maximization <- attr(ds, 'maximization')
   
-  ftarget <- c(ftarget) %>% as.double
-  f_aligned <- rownames(df) %>% as.double
-  idx <- seq_along(f_aligned)
+  ftarget <- c(ftarget) %>% unique %>% as.double %>% sort(decreasing = !maximization)
+  FValues <- rownames(data) %>% as.double
+  idx <- seq_along(FValues)
   op <- ifelse(maximization, `>=`, `<=`)
   
-  if (is.null(algId)) 
-    algId <- 'unknown'
+  matched <- sapply(
+    ftarget,
+    function(f) {
+      idx[`op`(FValues, f)][1]
+    }
+  )
   
-  df <- lapply(ftarget, 
-               function(f) {
-                 matched <- idx[`op`(f_aligned, f)][1] 
-                 if (is.na(matched)) c(algId, target, rep(NaN, N))
-                 target <- f_aligned[matched]
-                 df[matched, ] %>% 
-                   as.vector %>% 
-                   c(algId, target, .)
-               }) %>% 
-    do.call(rbind, .) %>% 
-    as.data.frame %>% 
+  res <- data[matched, , drop = FALSE] %>% 
+    as.data.table %>% 
+    cbind(algId, ftarget, .) %>% 
     set_colnames(c('algId', 'f(x)', paste0('run.', seq(N))))
   
   if (format == 'long') {
-    df <- melt(df, id = c('algId', 'f(x)'), variable.name = 'run', value.name = 'RT') %>% 
-      mutate(run = as.numeric(gsub('run.', '', run)) %>% as.integer,
-             RT = as.integer(RT)) %>% 
-      dplyr::arrange(`f(x)`, run)
+    res <- melt(res, id = c('algId', 'f(x)'), variable.name = 'run', value.name = 'RT')
+    res[, run := as.numeric(gsub('run.', '', run)) %>% as.integer
+        ][, RT := as.integer(RT)
+          ][order(`f(x)`, run)]
   }
-  df
+  res
 }
 
 # calculate the basic statistics of the runtime samples from an aligned data set
-summarise_target <- function(dataset, runtimes, maximization = TRUE, probs = NULL) {
-  df <- as.data.frame(dataset$by_runtime)
-  N <- nrow(df)
-  algId <- attr(dataset, 'algId')
+get_FV_summary <- function(ds, runtimes) {
+  data <- ds$FV
+  NC <- ncol(data)
+  NR <- nrow(data)
+  algId <- attr(ds, 'algId')
+  maximization <- attr(ds, 'maximization')
   
-  runtimes <- c(runtimes)
-  runtimes_aligned <- rownames(df) %>% as.numeric
-  idx <- seq_along(runtimes_aligned)
-  op <- ifelse(maximization, max, min)
-  
-  if (is.null(algId)) 
-    algId <- 'unknown'
-  
-  if (is.null(probs))
-    probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
+  runtimes <- c(runtimes) %>% unique %>% as.numeric %>% sort
+  RT <- rownames(data) %>% as.numeric
+  idx <- seq_along(RT)
   
   matched <- sapply(runtimes, function(r) {
-    res <- idx[runtimes_aligned >= r]
-    ifelse(length(res) == 0, N, res[1]) 
-  }) %>% unique
+    res <- idx[RT >= r][1]
+    ifelse(is.na(res), NR, res)
+  })
   
-  if (length(matched) == 0)
-    return(data.frame())
-  
-  df <- df[matched, ]
-  q <- apply(df, 1, . %>% quantile(., probs = probs, names = F, na.rm = T)) %>% 
-    as.data.frame %>% 
-    t %>%
-    set_colnames(paste0(probs * 100, '%'))
-  
-  tmp <- summarise_runtime(dataset, op(attributes(dataset)$finalFunvals))
-  
-  data.frame(algId = algId,
-             runtime = runtimes_aligned[matched],
-             runs = apply(df, 1, . %>% {length(.[!is.na(.)])}),
-             runs.MaxFunvals = tmp$runs,
-             mean = apply(df, 1, . %>% mean(., na.rm = T)), 
-             median = apply(df, 1, . %>% median(., na.rm = T)), 
-             sd = apply(df, 1, function(x) sd(x, na.rm = T))) %>% 
-    cbind(q)
+  data <- data[matched, , drop = FALSE]
+  apply(data, 1, C_quantile) %>% 
+    t %>% 
+    as.data.table %>% 
+    cbind(algId, runtimes, NC, 
+          apply(data, 1, .mean),
+          apply(data, 1, .median),
+          apply(data, 1, .sd), .) %>% 
+    set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', 'sd', paste0(probs * 100, '%')))
 }
 
-get_target_sample <- function(dataset, runtimes, format = 'wide', maximization = TRUE) {
-  df <- as.data.frame(dataset$by_runtime)
-  n_run <- ncol(df)
-  n_row <- nrow(df)
-  algId <- attr(dataset, 'algId')
+#' Get Funtion Value Samples
+#'
+#' @param ds A DataSet object
+#' @param runtimes A Numerical vector. Function values reached taking the given runtime are extracted from the data
+#' @param output A character. The format of the output data: 'wide' or 'long' 
+#'
+#' @return A data.table object
+#' @export
+#'
+#' @examples
+get_FV_sample <- function(ds, runtimes, output = 'wide') {
+  data <- ds$FV
+  N <- ncol(data)
+  n_row <- nrow(data)
+  algId <- attr(ds, 'algId')
+  maximization <- attr(ds, 'maximization')
   
-  runtimes <- c(runtimes)
-  runtimes_aligned <- rownames(df) %>% as.numeric
-  idx <- seq_along(runtimes_aligned)
-  
-  if (is.null(algId)) 
-    algId <- 'unknown'
+  runtimes <- c(runtimes) %>% unique %>% as.numeric %>% sort
+  RT <- rownames(data) %>% as.numeric
+  idx <- seq_along(RT)
   
   matched <- sapply(runtimes, function(r) {
-    res <- idx[runtimes_aligned >= r]
-    ifelse(length(res) == 0, n_row, res[1])
-  }) %>% 
-    unique
+    res <- idx[RT >= r][1]
+    ifelse(is.na(res), n_row, res)
+  })
   
-  if (length(matched) == 0)
-    return(data.frame())
-  
-  df <- df[matched, ] %>% 
-    cbind(data.frame(algId = algId, runtime = runtimes_aligned[matched]), .) %>% 
-    set_colnames(c('algId', 'runtime', paste0('run.', seq(n_run))))
+  res <- data[matched, , drop = FALSE] %>% 
+    as.data.table %>% 
+    cbind(algId, runtimes, .) %>% 
+    set_colnames(c('algId', 'runtime', paste0('run.', seq(N))))
   
   if (format == 'long') {
-    df <- melt(df, id = c('algId', 'runtime'), variable.name = 'run', 
-               value.name = 'f(x)') %>% 
-      mutate(run = as.numeric(gsub('run.', '', run)) %>% as.integer) %>% 
-      arrange(runtime, run)
+    res <- melt(res, id = c('algId', 'runtime'), variable.name = 'run', value.name = 'f(x)')
+    res[, run := as.numeric(gsub('run.', '', run)) %>% as.integer
+        ][order(runtime, run)]
   }
-  df
+  res
 }
 
 summarise_par <- function(data, ftarget, maximization = TRUE, probs = NULL) {

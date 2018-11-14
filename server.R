@@ -387,7 +387,7 @@ shinyServer(function(input, output, session) {
       if (input$ALGID_INPUT != 'all' && attr(df, 'algId') != input$ALGID_INPUT)
         next
       
-      res[[i]] <- summarise_runtime(df, fseq, probs = probs, maximization = maximization)
+      res[[i]] <- get_RT_summary(df, fseq, probs = probs, maximization = maximization)
     }
     do.call(rbind.data.frame, res)
   })
@@ -449,7 +449,7 @@ shinyServer(function(input, output, session) {
     }
     
     # TODO: determine if we should leave the validation of the input value to
-    # `get_runtime_sample`
+    # `get_RT_sample`
     req(length(fseq) != 0)
     
     data <- DATA()
@@ -462,7 +462,7 @@ shinyServer(function(input, output, session) {
       if (input$ALGID_RAW_INPUT != 'all' && attr(df, 'algId') != input$ALGID_RAW_INPUT)
         next
       
-      rt <- get_runtime_sample(df, fseq, format = input$RT_download_format, 
+      rt <- get_RT_sample(df, fseq, format = input$RT_download_format, 
                                maximization = maximization)
       if (input$RT_download_format == 'wide') {
         n <- ncol(rt) - 2
@@ -577,7 +577,7 @@ shinyServer(function(input, output, session) {
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.5)')
       
       p %<>%
-        add_trace(data = get_runtime_sample(df, ftarget, format = 'long'),
+        add_trace(data = get_RT_sample(df, ftarget, format = 'long'),
                   x = ~algId, y = ~RT, split = ~algId, type = 'violin',
                   hoveron = "points+kde",
                   box = list(visible = T),
@@ -654,7 +654,7 @@ shinyServer(function(input, output, session) {
       
       df <- data[[i]]
       algId <- attr(df, 'algId')
-      rt <- get_runtime_sample(df, ftarget, format = 'long')
+      rt <- get_RT_sample(df, ftarget, format = 'long')
       
       # skip if all runtime samples are NA
       if (sum(!is.na(rt$RT)) < 2)
@@ -715,7 +715,7 @@ shinyServer(function(input, output, session) {
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.35)')
       
       for (i in seq_along(ftargets)) {
-        res <- get_runtime_sample(df, ftargets[i], format = 'long') 
+        res <- get_RT_sample(df, ftargets[i], format = 'long') 
         rt <- sort(res$RT)
         
         if (all(is.na(rt)))
@@ -806,7 +806,7 @@ shinyServer(function(input, output, session) {
       rgba_str2 <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.8)')
       
       m <- lapply(fseq, function(f) {
-        rt <- get_runtime_sample(df, f, format = 'long') %>% '$'('RT')
+        rt <- get_RT_sample(df, f, format = 'long') %>% '$'('RT')
         if (all(is.na(rt)))
           return(rep(0, length(x)))
         fun <- ecdf(rt)
@@ -835,7 +835,7 @@ shinyServer(function(input, output, session) {
       
       if (input$RT_ECDF_per_target) {
         for (f in fseq) {
-          rt <- get_runtime_sample(df, f, format = 'long') %>% '$'('RT') %>% sort
+          rt <- get_RT_sample(df, f, format = 'long') %>% '$'('RT') %>% sort
           # TODO: plot the unsuccessful ECDF
           if (all(is.na(rt)))
             next
@@ -890,7 +890,7 @@ shinyServer(function(input, output, session) {
       
       # calculate ECDFs on user specified targets
       funs <- lapply(fseq, function(f) {
-        get_runtime_sample(df, f, format = 'long') %>% 
+        get_RT_sample(df, f, format = 'long') %>% 
           '$'('RT') %>% {
           if (all(is.na(.))) NULL
           else  RT.ECDF(.)
@@ -959,7 +959,7 @@ shinyServer(function(input, output, session) {
       if (input$FCE_ALGID_INPUT != 'all' && attr(df, 'algId') != input$FCE_ALGID_INPUT)
         next
       
-      res[[i]] <- summarise_target(df, rt_seq, probs = probs, maximization = maximization)
+      res[[i]] <- get_FV_summary(df, rt_seq, probs = probs, maximization = maximization)
     }
     do.call(rbind.data.frame, res)
   })
@@ -1036,7 +1036,7 @@ shinyServer(function(input, output, session) {
           && attr(df, 'algId') != input$FCE_ALGID_RAW_INPUT)
         next
       
-      rt <- get_target_sample(df, rt_seq, format = input$download_format_FCE, 
+      rt <- get_FV_sample(df, rt_seq, format = input$download_format_FCE, 
                               maximization = maximization)
       if (input$download_format_FCE == 'wide') {
         # impute the missing records
@@ -1091,7 +1091,7 @@ shinyServer(function(input, output, session) {
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.5)')
       
       p %<>%
-        add_trace(data = get_target_sample(df, runtime, format = 'long'),
+        add_trace(data = get_FV_sample(df, runtime, format = 'long'),
                   x = ~algId, y = ~`f(x)`, split = ~algId, type = 'violin',
                   hoveron = "points+kde",
                   box = list(visible = T),
@@ -1135,7 +1135,7 @@ shinyServer(function(input, output, session) {
       
       df <- data[[i]]
       algId <- attr(df, 'algId')
-      fce <- get_target_sample(df, runtime, format = 'long', maximization = maximization)
+      fce <- get_FV_sample(df, runtime, format = 'long', maximization = maximization)
       # skip if all target samples are NA
       if (sum(!is.na(fce$`f(x)`)) < 2)
         next
@@ -1249,7 +1249,7 @@ shinyServer(function(input, output, session) {
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.35)')
       
       for (i in seq_along(runtimes)) {
-        res <- get_target_sample(df, runtimes[i], format = 'long') 
+        res <- get_FV_sample(df, runtimes[i], format = 'long') 
         funvals <- sort(res$`f(x)`)
         
         if (all(is.na(funvals)))
@@ -1336,11 +1336,11 @@ shinyServer(function(input, output, session) {
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.15)')
       rgba_str2 <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.8)')
       
-      fun <- get_target_sample(df, rt_seq, format = 'long',  maximization = maximization)$`f(x)` %>% 
+      fun <- get_FV_sample(df, rt_seq, format = 'long',  maximization = maximization)$`f(x)` %>% 
         ecdf
       m <- fun(x)
       # m <- lapply(rt_seq, function(r) {
-      #   ce <- get_target_sample(df, r, format = 'long',  maximization = maximization) %>% '$'(`f(x)`)
+      #   ce <- get_FV_sample(df, r, format = 'long',  maximization = maximization) %>% '$'(`f(x)`)
       #   if (all(is.na(ce)))
       #     return(rep(0, length(x)))
       #   fun <- ecdf(ce)
@@ -1369,7 +1369,7 @@ shinyServer(function(input, output, session) {
       
       if (input$FCE_ECDF_per_target) {
         for (r in rt_seq) {
-          ce <- get_target_sample(df, r, format = 'long') %>% '$'(`f(x)`) %>% sort
+          ce <- get_FV_sample(df, r, format = 'long') %>% '$'(`f(x)`) %>% sort
           if (all(is.na(ce)))
             next
           else {
@@ -1432,7 +1432,7 @@ shinyServer(function(input, output, session) {
 
       # calculate ECDFs on user specified targets
       funs <- lapply(rt_seq, function(r) {
-        get_target_sample(df, r, format = 'long') %>%
+        get_FV_sample(df, r, format = 'long') %>%
           '$'(`f(x)`) %>% {
             if (all(is.na(.))) NULL
             else  {
@@ -1641,7 +1641,7 @@ shinyServer(function(input, output, session) {
   #     if (input$ALGID_RAW_INPUT != 'all' && attr(df, 'algId') != input$ALGID_RAW_INPUT)
   #       next
   #     
-  #     rt <- get_runtime_sample(df, fseq, format = input$RT_download_format, 
+  #     rt <- get_RT_sample(df, fseq, format = input$RT_download_format, 
   #                              maximization = maximization)
   #     if (input$RT_download_format == 'wide') {
   #       n <- ncol(rt) - 2

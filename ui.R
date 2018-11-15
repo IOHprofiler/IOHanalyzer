@@ -290,15 +290,17 @@ body <- dashboardBody(
                            )
                          ),
                          
-                         HTML('<p style="font-size:120%";>The <b><i>mean, median 
-                              and standard deviation</i></b> of the runtime samples 
-                              are depicted against the best objective values. 
-                              The displayed elements (mean, median, standard deviations) 
-                              can be switched on and off by clicking on the legend on the right. 
-                              A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                         mainPanel(HTML('<div align="right">'),
-                                   plotlyOutput('ERT_PER_FUN', height = plotly_height, width = plotly_width),
-                                   HTML('</div>'))
+                         mainPanel(width = 9,
+                                   column(width = 12, align = "center",
+                                          HTML_P('<p style="font-size:120%";>The <b><i>mean, median 
+                                               and standard deviation</i></b> of the runtime samples 
+                                               are depicted against the best objective values. 
+                                               The displayed elements (mean, median, standard deviations) 
+                                               can be switched on and off by clicking on the legend on the right. 
+                                               A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
+                                          plotlyOutput('ERT_PER_FUN', height = plotly_height, width = plotly_width)
+                                          )
+                                   )
                      )
                      
                      # box(title = HTML('<p style="font-size:120%;">Expected Runtime 
@@ -413,24 +415,25 @@ body <- dashboardBody(
                                          value = F)
                          ),
                          
-                         mainPanel(
-                           width = 9,
-                           HTML('<p style="font-size:120%;">The evenly spaced target values are:</p>'),
-                           verbatimTextOutput('RT_GRID'),
-                           HTML('<p style="font-size:120%;">The fraction of (run,target value)
-                                pairs \\((i,v)\\) satisfying that the best solution that the algorithm has 
-                                found in the \\(i\\)-th run within the given time budget \\(t\\) has quality at least
-                                \\(v\\) is plotted against the available budget \\(t\\). The displayed elements can be switched 
-                                on and off by clicking on the legend on the right. A <b>tooltip</b> 
-                                and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                           plotlyOutput('RT_ECDF_AGGR', height = plotly_height, width = plotly_width),
-                           hr()
+                         mainPanel(width = 9,
+                                   column(width = 12, align = "center",
+                                          HTML_P('The evenly spaced target values are:'),
+                                          verbatimTextOutput('RT_GRID'),
+                                          HTML_P('The fraction of (run,target value)
+                                                 pairs \\((i,v)\\) satisfying that the best solution that the algorithm has 
+                                                 found in the \\(i\\)-th run within the given time budget \\(t\\) has quality at least
+                                                 \\(v\\) is plotted against the available budget \\(t\\). The displayed elements can be switched 
+                                                 on and off by clicking on the legend on the right. A <b>tooltip</b> 
+                                                 and <b>toolbar</b> appears when hovering over the figure.'),
+                                          plotlyOutput('RT_ECDF_AGGR', height = plotly_height, width = plotly_width),
+                                          hr()
+                                          )
+                                   )
                            
                            # HTML('<p>The <b>Kolmogorov–Smirnov test</b> is used to investigate
                            # how the ditribution of runtimes of one algorithm differs from the other:</p><br>'),
                            # column(10, align = "center", verbatimTextOutput('ks'))
                          )
-                     )
               ),
               
               column(width = 12,
@@ -446,15 +449,16 @@ body <- dashboardBody(
                          ),
                          
                          mainPanel(width = 9,
-                                   HTML('<p align="left" style="font-size:120%;">The <b>area under the ECDF</b> is 
-                                        caculated for the sequence of target values specified on the left. The displayed
-                                        values are normalized against the maximal number of function evaluations for 
-                                        each algorithm.
-                                        Intuitively, the larger the area, the better the algorithm. 
-                                        The displayed algorithms can be selected by clicking on the legend on the right. 
-                                        A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.
-                                        This also includes the option to download the plot as png file.</p>'),
-                                   plotlyOutput("RT_AUC", height = plotly_height, width = plotly_width)
+                                   column(width = 12, align = "center",
+                                          HTML_P('The <b>area under the ECDF</b> is 
+                                                  caculated for the sequence of target values specified on the left. The displayed
+                                                  values are normalized against the maximal number of function evaluations for 
+                                                  each algorithm. Intuitively, the larger the area, the better the algorithm. 
+                                                  The displayed algorithms can be selected by clicking on the legend on the right. 
+                                                  A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.
+                                                  This also includes the option to download the plot as png file.'),
+                                          plotlyOutput("RT_AUC", height = plotly_height, width = plotly_width)
+                                         )
                                    )
                      )
               ),
@@ -478,14 +482,16 @@ body <- dashboardBody(
                            ), 
                            
                            mainPanel(width = 9,
-                                     HTML('<p align="left" style="font-size:120%;">
-                                          Each EDCF curve shows the proportion of the runs 
-                                          that have found a solution of at least the required 
-                                          target value within the budget given by the \\(x\\)-axis. 
-                                          The displayed curves can be selected by clicking on the legend on the right. A <b>tooltip</b> 
-                                          and <b>toolbar</b> appears when hovering over the figure. 
-                                          This also includes the option to download the plot as png file.</p>'),
-                                     plotlyOutput("RT_ECDF", height = plotly_height, width = plotly_width))
+                                     column(width = 12, align = "center",
+                                            HTML_P('Each EDCF curve shows the proportion of the runs 
+                                                    that have found a solution of at least the required 
+                                                    target value within the budget given by the \\(x\\)-axis. 
+                                                    The displayed curves can be selected by clicking on the legend on the right. A <b>tooltip</b> 
+                                                    and <b>toolbar</b> appears when hovering over the figure. 
+                                                    This also includes the option to download the plot as png file.'),
+                                                    plotlyOutput("RT_ECDF", height = plotly_height, width = plotly_width)
+                                            )
+                                    )
                          )
                      )
               )
@@ -657,13 +663,17 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                              )
                          ),
                          
-                         HTML('<p style="font-size:120%";>The <b><i>mean, median 
-                              and standard deviation</i></b> of the best function values
-                              found with a fixed-budget of evaluations are depicted against the budget. 
-                              The displayed elements 
-                              can be switched on and off by clicking on the legend on the right. 
-                              A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                         mainPanel(plotlyOutput('FCE_PER_FUN', height = plotly_height, width = plotly_width))
+                         
+                         mainPanel(width = 9, 
+                                   column(width = 12, align = "center",
+                                          HTML_P('The <b><i>mean, median 
+                                                  and standard deviation</i></b> of the best function values
+                                                  found with a fixed-budget of evaluations are depicted against the budget. 
+                                                  The displayed elements can be switched on and off by clicking on the legend on the right. 
+                                                  A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
+                                          plotlyOutput('FCE_PER_FUN', height = plotly_height, width = plotly_width)
+                                          )
+                                  )
                      )
                 )
               )
@@ -695,17 +705,18 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                                          value = F)
                            ),
                          
-                         mainPanel(
-                           width = 9,
-                           HTML('<p style="font-size:120%;">The evenly spaced budget values are:</p>'),
-                           verbatimTextOutput('FCE_RT_GRID'),
-                           HTML('<p style="font-size:120%;">The fraction of (run,budget) pairs \\((i,B)\\) satisfying 
+                         mainPanel(width = 9,
+                                   column(width = 12, align = "center",
+                                          HTML_P('The evenly spaced budget values are:'),
+                                          verbatimTextOutput('FCE_RT_GRID'),
+                                          HTML_P('The fraction of (run,budget) pairs \\((i,B)\\) satisfying 
 that the best solution that the algorithm has found in the \\(i\\)-th run within the first \\(B\\) evaluations has quality at 
 <b>most</b> \\(v\\) is plotted against the target value \\(v\\). The displayed elements can be switched on and off by clicking on the 
-legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                           plotlyOutput('FCE_ECDF_AGGR', height = plotly_height, width = plotly_width),
-                           hr()
-                           )
+legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
+                                          plotlyOutput('FCE_ECDF_AGGR', height = plotly_height, width = plotly_width),
+                                          hr()
+                                         )
+                                   )
                     )
               ),
               
@@ -721,13 +732,15 @@ legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering o
                            ),
                          
                          mainPanel(width = 9,
-                                   HTML('<p align="left" style="font-size:120%;">The <b>area under the ECDF</b> is 
-                                        caculated for the sequence of budget values specified on the left. The displayed
-                                        values are normalized against the maximal target value recorded for 
-                                        each algorithm. Intuitively, the <b>smaller</b> the area, the <b>better</b> the algorithm. 
-                                        The displayed algorithms can be selected by clicking on the legend on the right. 
-                                        A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                                   plotlyOutput("FCE_AUC", height = plotly_height, width = plotly_width)
+                                   column(width = 12, align = "center",
+                                          HTML_P('The <b>area under the ECDF</b> is 
+                                                  caculated for the sequence of budget values specified on the left. The displayed
+                                                  values are normalized against the maximal target value recorded for 
+                                                  each algorithm. Intuitively, the <b>smaller</b> the area, the <b>better</b> the algorithm. 
+                                                  The displayed algorithms can be selected by clicking on the legend on the right. 
+                                                  A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
+                                          plotlyOutput("FCE_AUC", height = plotly_height, width = plotly_width)
+                                         )
                                    )
                          )
               ),
@@ -749,11 +762,13 @@ legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering o
                            ), 
                            
                            mainPanel(width = 9,
-                                     HTML('<p align="left" style="font-size:120%;">
-                                          Each EDCF curve shows the proportion of the runs that have found within the 
+                                     column(width = 12, align = "center",
+                                            HTML_P('Each EDCF curve shows the proportion of the runs that have found within the 
 given budget B a solution of at least the required target value given by the x-axis. The displayed curves can be selected
 by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                                     plotlyOutput("FCE_ECDF_PER_TARGET", height = plotly_height, width = plotly_width))
+                                            plotlyOutput("FCE_ECDF_PER_TARGET", height = plotly_height, width = plotly_width)
+                                            )
+                                     )
                            )
                         )
                     )

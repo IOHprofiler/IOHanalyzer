@@ -15,7 +15,6 @@ suppressMessages(library(reshape2))
 suppressMessages(library(magrittr))
 suppressMessages(library(dplyr))
 suppressMessages(library(plotly))
-suppressMessages(library(colorspace))
 
 source('pproc.R')
 source('plot.R')
@@ -226,7 +225,7 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, 'PAR_INPUT', choices = parId, selected = 'all')
   })
   
-  # the filtered DataSets 
+  # filter DataSets 
   DATA <- reactive({
     dim <- input$DIM_INPUT
     id <- input$FUNCID_INPUT
@@ -234,7 +233,6 @@ shinyServer(function(input, output, session) {
     if (length(DataList$data) == 0)
       return(NULL)
     
-    # TODO: verify and remove this 
     # filter(DataList$data, by = c(DIM = dim, funcId = id))
     subset(DataList$data, DIM == dim, funcId == id)
   })
@@ -352,35 +350,31 @@ shinyServer(function(input, output, session) {
   })
   
   # Data summary for Fixed-Target Runtime (ERT)  --------------
-  # TODO: mover this part to pproc.R
   runtime_summary <- reactive({
-    data <- DATA()
-    fall <- getFunvals(data)
+    req(input$fstart, input$fstop, input$fstep)
     
     fstart <- format_funeval(input$fstart) %>% as.numeric
     fstop <- format_funeval(input$fstop) %>% as.numeric
     fstep <- format_funeval(input$fstep) %>% as.numeric
+    
+    req(fstart <= fstop, fstep <= fstop - fstart)
+    
+    data <- DATA()
+    fall <- getFunvals(data)
     
     if (input$singleF)
       fseq <- c(fstart) %>% 
         reverse_trans_funeval %>%
         .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     else {
-      # TODO: change this to 'req'
-      # when initializing or incorrect input
-      if (is.na(fstart) || is.na(fstop) || is.na(fstep))
-        return(data.frame())
-      if (fstart >= fstop || fstep > fstop - fstart)
-        return(data.frame())
-      
       fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
-        c(fstart, ., fstop) %>% unique %>% 
+        c(fstart, ., fstop) %>% 
+        unique %>% 
         reverse_trans_funeval %>%
         .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     }
     
     req(length(fseq) != 0)
-    probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
     res <- list()
     
     for (i in seq_along(data)) {
@@ -399,9 +393,6 @@ shinyServer(function(input, output, session) {
     df$runs %<>% as.integer
     df$median %<>% as.integer
     df$target <- format_funeval(df$target)
-    
-    # TODO: make probs as a global option
-    probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
     
     # format the integers
     for (p in paste0(probs * 100, '%')) {
@@ -426,45 +417,39 @@ shinyServer(function(input, output, session) {
   )
   
   get_RT <- reactive({
-    data <- DATA()
-    fall <- getFunvals(data)
+    req(input$fstart, input$fstop, input$fstep)
     
     fstart <- format_funeval(input$F_MIN_SAMPLE) %>% as.numeric
     fstop <- format_funeval(input$F_MAX_SAMPLE) %>% as.numeric
     fstep <- format_funeval(input$F_STEP_SAMPLE) %>% as.numeric
+    
+    req(fstart <= fstop, fstep <= fstop - fstart)
+    
+    data <- DATA()
+    fall <- getFunvals(data)
     
     if (input$F_SAMPLE_SINGLE) 
       fseq <- c(fstart) %>% 
         reverse_trans_funeval %>% 
         .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     else {
-      # when initializing or incorrect input
-      if (is.na(fstart) || is.na(fstop) || is.na(fstep))
-        return(data.frame())
-      if (fstart >= fstop || fstep > fstop - fstart)
-        return(data.frame())
-      
       fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
         c(fstart, ., fstop) %>% unique %>% 
         reverse_trans_funeval %>% 
         .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     }
     
-    # TODO: determine if we should leave the validation of the input value to
-    # `get_RT_sample`
     req(length(fseq) != 0)
-    
-    data <- DATA()
     res <- list()
     n_runs_max <- sapply(data, function(ds) length(attr(ds, 'instance'))) %>% max
     
     for (i in seq_along(data)) {
-      df <- data[[i]]
-      algId <- attr(df, 'algId')
+      ds <- data[[i]]
+      algId <- attr(ds, 'algId')
       if (input$ALGID_RAW_INPUT != 'all' && algId != input$ALGID_RAW_INPUT)
         next
       
-      rt <- get_RT_sample(df, fseq, output = input$RT_download_format)
+      rt <- get_RT_sample(ds, fseq, output = input$RT_download_format)
       if (input$RT_download_format == 'wide') {
         n <- ncol(rt) - 2
         if (n < n_runs_max) 
@@ -497,51 +482,50 @@ shinyServer(function(input, output, session) {
   
   # The expected runtime plot ---------------------
   output$ERT_PER_FUN <- renderPlotly({
-    # require non-empty input
-    req(input$ERT_FSTART != "")
-    req(input$ERT_FSTOP != "")
+    req(input$ERT_FSTART, input$ERT_FSTOP)
     
     Fmin <- format_funeval(input$ERT_FSTART) %>% as.numeric %>% reverse_trans_funeval
     Fmax <- format_funeval(input$ERT_FSTOP) %>% as.numeric %>% reverse_trans_funeval
     
+    req(Fmin <= Fmax)
+    
     data <- DATA()
+    fall <- getFunvals(data)
+    fseq <- seq(from = Fmin, to = Fmax, length.out = 60) %>% 
+      c(Fmin, ., Fmax) %>% unique %>% 
+      reverse_trans_funeval %>% 
+      .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+    
     n_algorithm <- length(data)
     colors <- colorspace::rainbow_hcl(n_algorithm)
     
-    p <- plot_ly_default(#title = "Expected Runtime Comparison",
-                         x.title = "best-so-far f(x)-value", 
+    p <- plot_ly_default(x.title = "best-so-far f(x)-value", 
                          y.title = "function evaluations")
     
     for (i in seq_along(data)) {
-      ds <- data[[i]]$RT.summary
-      algId <- attr(ds, 'algId')
-      # TODO: maybe convert the following dplyr code to data.table
-      df_plot <- ds %>% 
-        mutate(upper = ERT + sd, lower = ERT - sd) %>% 
-        filter(target >= Fmin, target <= Fmax) %>% 
-        limit.data(n = 50)
+      ds_ERT <- get_RT_summary(data[[i]], fseq)
+      ds_ERT[, `:=`(upper = ERT + sd, lower = ERT - sd)]
+      algId <- attr(data[[i]], 'algId')
       
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
       
       p %<>% 
-        add_trace(data = df_plot, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
+        add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
                   line = list(color = rgba_str, width = 0),  
-	          #legendgroup = algId,
                   showlegend = F, name = 'mean +/- sd') %>% 
         add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
                   fill = 'tonexty',  line = list(color = 'transparent'),
-                  #legendgroup = algId,
                   fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd')
       
       if (input$show.mean)
-        p %<>% add_trace(data = df_plot, x = ~target, y = ~ERT, type = 'scatter', 
+        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter', 
                          mode = 'lines+markers', name = paste0(algId, '.mean'), 
                          marker = list(color = rgb_str), 
                          line = list(color = rgb_str))
       
       if (input$show.median)
-        p %<>% add_trace(data = df_plot, x = ~target, y = ~median, type = 'scatter',
+        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~median, type = 'scatter',
                          name = paste0(algId, '.median'), mode = 'lines+markers', 
                          marker = list(color = rgb_str),  
                          line = list(color = rgb_str, dash = 'dash'))
@@ -558,7 +542,7 @@ shinyServer(function(input, output, session) {
   
   # empirical p.m.f. of the runtime
   output$RT_PMF <- renderPlotly({
-    req(input$RT_PMF_FTARGET != "") # require non-empty input
+    req(input$RT_PMF_FTARGET) 
     ftarget <- format_funeval(input$RT_PMF_FTARGET) %>% as.numeric %>% reverse_trans_funeval
     points <- ifelse(input$RT_SHOW_SAMPLE, 'all', FALSE)
     
@@ -566,18 +550,17 @@ shinyServer(function(input, output, session) {
     n_algorithm <- length(data)
     colors <- colorspace::rainbow_hcl(n_algorithm)
     
-    p <- plot_ly_default(#title = "p.m.f. of the runtime",
-                         x.title = "algorithms",
+    p <- plot_ly_default(x.title = "algorithms",
                          y.title = "runtime / function evaluations")
   
     for (i in seq_along(data)) {
-      df <- data[[i]]
+      ds <- data[[i]]
       
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.5)')
       
       p %<>%
-        add_trace(data = get_RT_sample(df, ftarget, output = 'long'),
+        add_trace(data = get_RT_sample(ds, ftarget, output = 'long'),
                   x = ~algId, y = ~RT, split = ~algId, type = 'violin',
                   hoveron = "points+kde",
                   box = list(visible = T),
@@ -589,7 +572,7 @@ shinyServer(function(input, output, session) {
                   line = list(color = rgb_str, width = 1),
                   marker = list(color = rgb_str))
       
-      # rt <- RT(df, ftarget, format = 'long') %>% 
+      # rt <- RT(ds, ftarget, format = 'long') %>% 
       #   mutate(label = i)
       
       # kernel estimation of p.m.f.
@@ -628,7 +611,7 @@ shinyServer(function(input, output, session) {
   
   # historgram of the running time
   output$RT_HIST <- renderPlotly({
-    req(input$RT_PMF_HIST_FTARGET != "")   # require non-empty input
+    req(input$RT_PMF_HIST_FTARGET)
     ftarget <- format_funeval(input$RT_PMF_HIST_FTARGET) %>% as.numeric %>% reverse_trans_funeval
     plot_mode <- input$ERT_illu_mode
     
@@ -638,13 +621,10 @@ shinyServer(function(input, output, session) {
     nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
     
     if (plot_mode == 'overlay') {
-      p <- plot_ly_default(#title = "Histogram of the runtime",
-                           x.title = "function evaluations", y.title = "runs")
-      
+      p <- plot_ly_default(x.title = "function evaluations", y.title = "runs")
     } else if (plot_mode == 'subplot') {
       p <- lapply(seq(n_algorithm), function(x) {
-        plot_ly_default(#title = "Histogram of the runtime",
-                        x.title = "function evaluations", y.title = "runs")
+        plot_ly_default(x.title = "function evaluations", y.title = "runs")
       })
     }
     
@@ -689,6 +669,7 @@ shinyServer(function(input, output, session) {
   
   # The ECDF plots for the runtime ----------------
   output$RT_ECDF <- renderPlotly({
+    req(input$RT_ECDF_FTARGET1, input$RT_ECDF_FTARGET2, input$RT_ECDF_FTARGET3)
     ftargets <- c(
       format_funeval(input$RT_ECDF_FTARGET1),
       format_funeval(input$RT_ECDF_FTARGET2),
@@ -715,9 +696,7 @@ shinyServer(function(input, output, session) {
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.35)')
       
       for (i in seq_along(ftargets)) {
-        res <- get_RT_sample(df, ftargets[i], output = 'long') 
-        rt <- sort(res$RT)
-        
+        rt <- get_RT_sample(df, ftargets[i], output = 'long')$RT %>% sort
         if (all(is.na(rt)))
           next
         
@@ -728,11 +707,11 @@ shinyServer(function(input, output, session) {
         y <- sapply(x, function(x) ecdf[rt == x][1])
         
         p %<>%
-          add_trace(data = res, x = rt, y = ecdf, type = 'scatter',
+          add_trace(data = NULL, x = rt, y = ecdf, type = 'scatter',
                     mode = 'lines', name = algId, showlegend = F,
                     legendgroup = paste0(k),
                     line = list(color = rgb_str, width = 3)) %>% 
-          add_trace(data = res, x = x, y = y, type = 'scatter',
+          add_trace(data = NULL, x = x, y = y, type = 'scatter',
                     mode = 'markers',  legendgroup = paste0(k),
                     name = sprintf('(%s, %.2e)', algId, ftargets[i]),
                     marker = list(color = rgb_str, symbol = symbols[i], size = 13))
@@ -745,18 +724,15 @@ shinyServer(function(input, output, session) {
   })
   
   output$RT_GRID <- renderPrint({
-    data <- DATA()
-    fall <- getFunvals(data)
+    req(input$RT_fstart, input$RT_fstop, input$RT_fstep)
     
     fstart <- format_funeval(input$RT_fstart) %>% as.numeric
     fstop <- format_funeval(input$RT_fstop) %>% as.numeric 
     fstep <- format_funeval(input$RT_fstep) %>% as.numeric
     
-    # when initializing or incorrect input
-    if (is.na(fstart) || is.na(fstop) || is.na(fstep))
-      return(data.frame())
-    if (fstart >= fstop || fstep > fstop - fstart)
-      return(data.frame())
+    req(fstart <= fstop, fstep <= fstop - fstart)
+    data <- DATA()
+    fall <- getFunvals(data)
     
     fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
       c(fstart, ., fstop) %>% unique %>% 
@@ -766,18 +742,15 @@ shinyServer(function(input, output, session) {
   })
   
   output$RT_ECDF_AGGR <- renderPlotly({
-    data <- DATA()
-    fall <- getFunvals(data)
+    req(input$RT_fstart, input$RT_fstop, input$RT_fstep)
     
     fstart <- format_funeval(input$RT_fstart) %>% as.numeric
     fstop <- format_funeval(input$RT_fstop) %>% as.numeric 
     fstep <- format_funeval(input$RT_fstep) %>% as.numeric
     
-    # when initializing or incorrect input
-    if (is.na(fstart) || is.na(fstop) || is.na(fstep))
-      return(data.frame())
-    if (fstart >= fstop || fstep > fstop - fstart)
-      return(data.frame())
+    req(fstart <= fstop, fstep <= fstop - fstart)
+    data <- DATA()
+    fall <- getFunvals(data)
     
     fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
       c(fstart, ., fstop) %>% unique %>% 
@@ -788,13 +761,12 @@ shinyServer(function(input, output, session) {
     
     data <- DATA()
     n_algorithm <- length(data)
-    colors <- rainbow_hcl(n_algorithm)
+    colors <- colorspace::rainbow_hcl(n_algorithm)
     
     RT.max <- sapply(data, function(ds) max(ds$RT, na.rm = T)) %>% max
     RT.min <- sapply(data, function(ds) min(ds$RT, na.rm = T)) %>% min
     x <- seq(RT.min, RT.max, length.out = 50)
-    p <- plot_ly_default(#title = "Empirical Cumulative Distribution of the runtime",
-                         x.title = "function evaluations",
+    p <- plot_ly_default(x.title = "function evaluations",
                          y.title = "Proportion of (run, target) pairs")
     
     for (k in seq_along(data)) {
@@ -857,18 +829,15 @@ shinyServer(function(input, output, session) {
   
   # evaluation rake of all courses 
   output$RT_AUC <- renderPlotly({
-    data <- DATA()
-    fall <- getFunvals(data)
+    req(input$RT_AUC_FSTART, input$RT_AUC_FSTOP, input$RT_AUC_FSTEP)
     
     fstart <- format_funeval(input$RT_AUC_FSTART) %>% as.numeric
     fstop <- format_funeval(input$RT_AUC_FSTOP) %>% as.numeric 
     fstep <- format_funeval(input$RT_AUC_FSTEP) %>% as.numeric
     
-    # when initializing or incorrect input
-    if (is.na(fstart) || is.na(fstop) || is.na(fstep))
-      return(data.frame())
-    if (fstart >= fstop || fstep > fstop - fstart)
-      return(data.frame())
+    req(fstart <= fstop, fstep <= fstop - fstart)
+    data <- DATA()
+    fall <- getFunvals(data)
     
     fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
       c(fstart, ., fstop) %>% unique %>% 
@@ -876,7 +845,7 @@ shinyServer(function(input, output, session) {
       .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)]  
 
     n_algorithm <- length(data)
-    colors <- rainbow_hcl(n_algorithm)
+    colors <- colorspace::rainbow_hcl(n_algorithm)
     
     RT.max <- sapply(data, function(ds) max(attr(ds, 'maxRT'))) %>% max
     p <- plot_ly_default()
@@ -922,36 +891,27 @@ shinyServer(function(input, output, session) {
   # TODO: rename 'FCE'...
   # Data summary for Fixed-Budget target (FCE)  --------------
   get_FCE_summary <- reactive({
-    data <- DATA()
-    rt <- getRuntimes(data)
+    req(input$RT_MIN, input$RT_MAX, input$RT_STEP)
     
     rt_min <- input$RT_MIN %>% as.integer
     rt_max <- input$RT_MAX %>% as.integer
     rt_step <- input$RT_STEP %>% as.integer
     
-    # check for requirements
-    req(rt_min < rt_max)
-    req(rt_step > 0)
+    req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
+    data <- DATA()
+    rt <- getRuntimes(data)
     
     if (input$RT_SINGLE)
       rt_seq <- c(rt_min) %>% 
       reverse_trans_runtime %>% 
       .[. >= (min(rt))] %>% .[. <= (max(rt))] 
     else {
-      # TODO: remove this part and replace it with shiny::req
-      # when initializing or incorrect input
-      if (is.na(rt_min) || is.na(rt_max) || is.na(rt_step))
-        return(data.frame())
-      if (rt_min >= rt_max || rt_step > rt_max - rt_min)
-        return(data.frame())
-      
       rt_seq <- seq(from = rt_min, to = rt_max, by = rt_step) %>% 
         reverse_trans_runtime %>% 
         .[. >= min(rt)] %>% .[. <= max(rt)] 
     }
     
     req(length(rt_seq) != 0)
-    probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
     res <- list()
     
     for (i in seq_along(data)) {
@@ -999,28 +959,20 @@ shinyServer(function(input, output, session) {
   )
   
   get_FCE <- reactive({
-    data <- DATA()
-    rt <- getRuntimes(data)
-    
+    req(input$RT_MIN_SAMPLE, input$RT_MAX_SAMPLE, input$RT_STEP_SAMPLE)
     rt_min <- input$RT_MIN_SAMPLE %>% as.integer
     rt_max <- input$RT_MAX_SAMPLE %>% as.integer
     rt_step <- input$RT_STEP_SAMPLE %>% as.integer
     
-    # check for requirements
-    req(rt_min <= rt_max)
-    req(rt_step > 0)
+    req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
+    data <- DATA()
+    rt <- getRuntimes(data)
     
     if (input$RT_SINGLE_SAMPLE)
       rt_seq <- c(rt_min) %>% 
       reverse_trans_runtime %>% 
       .[. >= (min(rt))] %>% .[. <= (max(rt))] 
     else {
-      # when initializing or incorrect input
-      if (is.na(rt_min) || is.na(rt_max) || is.na(rt_step))
-        return(data.frame())
-      if (rt_min >= rt_max || rt_step > rt_max - rt_min)
-        return(data.frame())
-      
       rt_seq <- seq(from = rt_min, to = rt_max, by = rt_step) %>% 
         reverse_trans_runtime %>% 
         .[. >= min(rt)] %>% .[. <= max(rt)] 
@@ -1031,12 +983,12 @@ shinyServer(function(input, output, session) {
     n_runs_max <- sapply(data, function(x) length(attr(x, 'instance'))) %>% max
     
     for (i in seq_along(data)) {
-      df <- data[[i]]
-      algId <- attr(df, 'algId') 
+      ds <- data[[i]]
+      algId <- attr(ds, 'algId') 
       if (input$FCE_ALGID_RAW_INPUT != 'all' && algId != input$FCE_ALGID_RAW_INPUT)
         next
       
-      rt <- get_FV_sample(df, rt_seq, output = input$download_format_FCE)
+      rt <- get_FV_sample(ds, rt_seq, output = input$download_format_FCE)
       if (input$download_format_FCE == 'wide') {
         # impute the missing records
         n <- ncol(rt) - 2
@@ -1069,117 +1021,18 @@ shinyServer(function(input, output, session) {
     df[is.na(df)] <- 'NA'
     df}, options = list(pageLength = 20, scrollX = T))
   
-  # empirical p.d.f. of the target value
-  output$FCE_PDF <- renderPlotly({
-    req(input$FCE_PDF_RUNTIME != "")   # require non-empty input
-    runtime <- input$FCE_PDF_RUNTIME %>% as.integer %>% reverse_trans_runtime
-    points <- ifelse(input$FCE_SHOW_SAMPLE, 'all', FALSE)
-    
-    data <- DATA()
-    n_algorithm <- length(data)
-    colors <- rainbow_hcl(n_algorithm)
-    
-    p <- plot_ly_default(
-      x.title = "algorithms",
-      y.title = "Target value")
-    
-    for (i in seq_along(data)) {
-      df <- data[[i]]
-      
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.5)')
-      
-      p %<>%
-        add_trace(data = get_FV_sample(df, runtime, output = 'long'),
-                  x = ~algId, y = ~`f(x)`, split = ~algId, type = 'violin',
-                  hoveron = "points+kde",
-                  box = list(visible = T),
-                  points = points,
-                  pointpos = 1,
-                  jitter = 0.1,
-                  scalemode = 'count',
-                  meanline = list(visible = T),
-                  line = list(color = rgb_str, width = 1),
-                  marker = list(color = rgb_str))
-    }
-    p %<>%
-      layout(yaxis = list(type = switch(input$FCE_LOGY, T = 'log', F = 'linear')))
-  })
-  
-  # historgram of the target values -----------
-  output$FCE_HIST <- renderPlotly({
-    req(input$FCE_HIST_RUNTIME != "")   # require non-empty input
-    runtime <- input$FCE_HIST_RUNTIME %>% as.integer %>% reverse_trans_runtime
-    plot_mode <- input$FCE_illu_mode
-    
-    data <- DATA()
-    n_algorithm <- length(data)
-    colors <- colorspace::rainbow_hcl(n_algorithm)
-    nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
-    
-    if (plot_mode == 'overlay') {
-      p <- plot_ly_default(#title = "Histogram of the runtime",
-        x.title = "target values", y.title = "runs")
-      
-    } else if (plot_mode == 'subplot') {
-      p <- lapply(seq(n_algorithm), function(x) {
-        plot_ly_default(#title = "Histogram of the runtime",
-          x.title = "target values", y.title = "runs")
-      })
-    }
-    
-    for (i in seq_along(data)) {
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.35)')
-      
-      df <- data[[i]]
-      algId <- attr(df, 'algId')
-      fce <- get_FV_sample(df, runtime, output = 'long')
-      # skip if all target samples are NA
-      if (sum(!is.na(fce$`f(x)`)) < 2)
-        next
-      
-      res <- hist(fce$`f(x)`, breaks = nclass.FD, plot = F)
-      breaks <- res$breaks
-      plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
-                              text = paste0('<b>count</b>: ', res$counts, 
-                                            '<br><b>breaks</b>: [', 
-                                            breaks[-length(breaks)], ',', breaks[-1], ']')) 
-      
-      if (plot_mode == 'overlay') {
-        p %<>%
-          add_trace(data = plot_data, x = ~x, y = ~y, width = ~width, type = 'bar',
-                    name = algId, text = ~text, hoverinfo = 'text',
-                    marker = list(color = rgba_str,
-                                  line = list(color = 'rgb(8,48,107)', width = 1.5)))
-      } else if (plot_mode == 'subplot') {
-        p[[i]] %<>% 
-          add_trace(data = plot_data, x = ~x, y = ~y, width = ~width, type = 'bar',
-                    name = algId, text = ~text, hoverinfo = 'text',
-                    marker = list(color = rgba_str,
-                                  line = list(color = 'rgb(8,48,107)', width = 1.5)))
-      }
-    }
-    
-    if (plot_mode == 'subplot') 
-      p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.03)
-    
-    p
-  })
-  
   # Expected Target Value Convergence 
   output$FCE_PER_FUN <- renderPlotly({
-    req(input$FCE_RT_MIN != "")   # require non-empty input
-    req(input$FCE_RT_MAX != "")
+    req(input$FCE_RT_MIN, input$FCE_RT_MAX)
+    
     rt_min <- input$FCE_RT_MIN %>% as.integer %>% reverse_trans_runtime
     rt_max <- input$FCE_RT_MAX %>% as.integer %>% reverse_trans_runtime
     
+    req(rt_min <= rt_max)
+    
     data <- DATA()
     rt <- getRuntimes(data)
-    
-    # check for requirements
-    req(rt_min <= rt_max)
-    rt_seq <- seq(from = rt_min, to = rt_max, length.out = 60) %>% 
+    rt_seq <- seq(from = rt_min, to = rt_max, length.out = 70) %>% 
       reverse_trans_runtime %>% 
       .[. >= min(rt)] %>% .[. <= max(rt)]
     
@@ -1188,8 +1041,7 @@ shinyServer(function(input, output, session) {
     n_algorithm <- length(data)
     colors <- colorspace::rainbow_hcl(n_algorithm)
     
-    p <- plot_ly_default(#title = "Expected Runtime Comparison",
-      y.title = "best-so-far f(x)-value", x.title = "runtime")
+    p <- plot_ly_default(y.title = "best-so-far f(x)-value", x.title = "runtime")
     
     for (i in seq_along(data)) {
       algId <- attr(data[[i]], 'algId')
@@ -1227,8 +1079,104 @@ shinyServer(function(input, output, session) {
              yaxis = list(type = switch(input$FCE_semilogy, T = 'log', F = 'linear')))
   })
   
+  # empirical p.d.f. of the target value
+  output$FCE_PDF <- renderPlotly({
+    req(input$FCE_PDF_RUNTIME)  
+    runtime <- input$FCE_PDF_RUNTIME %>% as.integer %>% reverse_trans_runtime
+    points <- ifelse(input$FCE_SHOW_SAMPLE, 'all', FALSE)
+    
+    data <- DATA()
+    n_algorithm <- length(data)
+    colors <- colorspace::rainbow_hcl(n_algorithm)
+    
+    p <- plot_ly_default(x.title = "algorithms",
+                         y.title = "Target value")
+    
+    for (i in seq_along(data)) {
+      df <- data[[i]]
+      
+      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.5)')
+      
+      p %<>%
+        add_trace(data = get_FV_sample(df, runtime, output = 'long'),
+                  x = ~algId, y = ~`f(x)`, split = ~algId, type = 'violin',
+                  hoveron = "points+kde",
+                  box = list(visible = T),
+                  points = points,
+                  pointpos = 1,
+                  jitter = 0.1,
+                  scalemode = 'count',
+                  meanline = list(visible = T),
+                  line = list(color = rgb_str, width = 1),
+                  marker = list(color = rgb_str))
+    }
+    p %<>%
+      layout(yaxis = list(type = switch(input$FCE_LOGY, T = 'log', F = 'linear')))
+  })
+  
+  # historgram of the target values -----------
+  output$FCE_HIST <- renderPlotly({
+    req(input$FCE_HIST_RUNTIME != "")   # require non-empty input
+    runtime <- input$FCE_HIST_RUNTIME %>% as.integer %>% reverse_trans_runtime
+    plot_mode <- input$FCE_illu_mode
+    
+    data <- DATA()
+    n_algorithm <- length(data)
+    colors <- colorspace::rainbow_hcl(n_algorithm)
+    nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
+    
+    if (plot_mode == 'overlay') {
+      p <- plot_ly_default(x.title = "target values", y.title = "runs")
+      
+    } else if (plot_mode == 'subplot') {
+      p <- lapply(seq(n_algorithm), function(x) {
+        plot_ly_default(x.title = "target values", y.title = "runs")
+      })
+    }
+    
+    for (i in seq_along(data)) {
+      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.35)')
+      
+      ds <- data[[i]]
+      algId <- attr(ds, 'algId')
+      fce <- get_FV_sample(ds, runtime, output = 'long')
+      # skip if all target samples are NA
+      if (sum(!is.na(fce$`f(x)`)) < 2)
+        next
+      
+      res <- hist(fce$`f(x)`, breaks = nclass.FD, plot = F)
+      breaks <- res$breaks
+      plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
+                              text = paste0('<b>count</b>: ', res$counts, 
+                                            '<br><b>breaks</b>: [', 
+                                            breaks[-length(breaks)], ',', breaks[-1], ']')) 
+      
+      if (plot_mode == 'overlay') {
+        p %<>%
+          add_trace(data = plot_data, x = ~x, y = ~y, width = ~width, type = 'bar',
+                    name = algId, text = ~text, hoverinfo = 'text',
+                    marker = list(color = rgba_str,
+                                  line = list(color = 'rgb(8,48,107)', width = 1.5)))
+      } else if (plot_mode == 'subplot') {
+        p[[i]] %<>% 
+          add_trace(data = plot_data, x = ~x, y = ~y, width = ~width, type = 'bar',
+                    name = algId, text = ~text, hoverinfo = 'text',
+                    marker = list(color = rgba_str,
+                                  line = list(color = 'rgb(8,48,107)', width = 1.5)))
+      }
+    }
+    
+    if (plot_mode == 'subplot') 
+      p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.03)
+    
+    p
+  })
+  
   # The ECDF plots for the target value ----------------
   output$FCE_ECDF_PER_TARGET <- renderPlotly({
+    req(input$FCE_ECDF_RT1, input$FCE_ECDF_RT2, input$FCE_ECDF_RT3)
     runtimes <- c(
       as.integer(input$FCE_ECDF_RT1),
       as.integer(input$FCE_ECDF_RT2),
@@ -1240,22 +1188,21 @@ shinyServer(function(input, output, session) {
     
     data <- DATA()
     n_algorithm <- length(data)
-    colors <- rainbow_hcl(n_algorithm)
+    colors <- colorspace::rainbow_hcl(n_algorithm)
     
     p <- plot_ly_default(title = NULL,
                          x.title = "target value",
                          y.title = "Proportion of runs")
     
     for (k in seq_along(data)) {
-      df <- data[[k]]
-      algId <- attr(df, 'algId')
+      ds <- data[[k]]
+      algId <- attr(ds, 'algId')
       
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.35)')
       
       for (i in seq_along(runtimes)) {
-        res <- get_FV_sample(df, runtimes[i], output = 'long') 
-        funvals <- sort(res$`f(x)`)
+        funvals <- get_FV_sample(ds, runtimes[i], output = 'long')$`f(x)` %>% sort
         
         if (all(is.na(funvals)))
           next
@@ -1268,11 +1215,11 @@ shinyServer(function(input, output, session) {
         y <- sapply(x, function(xx) density[funvals == xx])
         
         p %<>%
-          add_trace(data = res, x = funvals, y = density, type = 'scatter',
+          add_trace(data = NULL, x = funvals, y = density, type = 'scatter',
                     mode = 'lines', name = algId, showlegend = F,
                     legendgroup = paste0(k),
                     line = list(color = rgb_str, width = 3)) %>% 
-          add_trace(data = res, x = x, y = y, type = 'scatter',
+          add_trace(data = NULL, x = x, y = y, type = 'scatter',
                     mode = 'markers',  legendgroup = paste0(k),
                     name = sprintf('%s, %.2e', algId, runtimes[i]),
                     marker = list(color = rgb_str, symbol = symbols[i], size = 13))
@@ -1285,18 +1232,15 @@ shinyServer(function(input, output, session) {
   })
   
   output$FCE_RT_GRID <- renderPrint({
-    data <- DATA()
-    rt <- getRuntimes(data)
+    req(input$FCE_ECDF_RT_MIN, input$FCE_ECDF_RT_MAX, input$FCE_ECDF_RT_STEP)
     
     rt_min <- input$FCE_ECDF_RT_MIN %>% as.integer
     rt_max <- input$FCE_ECDF_RT_MAX %>% as.integer
     rt_step <- input$FCE_ECDF_RT_STEP %>% as.integer
     
-    # when initializing or incorrect input
-    if (is.na(rt_min) || is.na(rt_max) || is.na(rt_step))
-      return(data.frame())
-    if (rt_min >= rt_max || rt_step > rt_max - rt_min)
-      return(data.frame())
+    req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
+    data <- DATA()
+    rt <- getRuntimes(data)
     
     rt_seq <- seq(from = rt_min, to = rt_max, by = rt_step) %>% 
       reverse_trans_runtime %>% 
@@ -1305,19 +1249,16 @@ shinyServer(function(input, output, session) {
   })
   
   output$FCE_ECDF_AGGR <- renderPlotly({
-    data <- DATA()
-    rt <- getRuntimes(data)
+    req(input$FCE_ECDF_RT_MIN, input$FCE_ECDF_RT_MAX, input$FCE_ECDF_RT_STEP)
     
     rt_min <- input$FCE_ECDF_RT_MIN %>% as.integer
     rt_max <- input$FCE_ECDF_RT_MAX %>% as.integer
     rt_step <- input$FCE_ECDF_RT_STEP %>% as.integer
     
-    # when initializing or incorrect input
-    if (is.na(rt_min) || is.na(rt_max) || is.na(rt_step))
-      return(data.frame())
-    if (rt_min >= rt_max || rt_step > rt_max - rt_min)
-      return(data.frame())
+    req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     
+    data <- DATA()
+    rt <- getRuntimes(data)
     rt_seq <- seq(from = rt_min, to = rt_max, by = rt_step) %>% 
       reverse_trans_runtime %>% 
       .[. >= min(rt)] %>% .[. <= max(rt)]
@@ -1329,20 +1270,18 @@ shinyServer(function(input, output, session) {
     funevals.min <- sapply(data, function(ds) min(ds$FV, na.rm = T)) %>% min
     
     x <- seq(funevals.min, funevals.max, length.out = 40)
-    p <- plot_ly_default(#title = "Empirical Cumulative Distribution of the runtime",
-      x.title = "target value",
-      y.title = "Proportion of (run, budget) pairs")
+    p <- plot_ly_default(x.title = "target value",
+                         y.title = "Proportion of (run, budget) pairs")
     
     for (k in seq_along(data)) {
-      df <- data[[k]]
-      algId <- attr(df, 'algId')
+      ds <- data[[k]]
+      algId <- attr(ds, 'algId')
       
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.15)')
       rgba_str2 <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.8)')
       
-      fun <- get_FV_sample(df, rt_seq, output = 'long')$`f(x)` %>% 
-        ecdf
+      fun <- get_FV_sample(ds, rt_seq, output = 'long')$`f(x)` %>% ecdf
       m <- fun(x)
       # m <- lapply(rt_seq, function(r) {
       #   ce <- get_FV_sample(df, r, format = 'long',  maximization = maximization) %>% '$'(`f(x)`)
@@ -1374,7 +1313,7 @@ shinyServer(function(input, output, session) {
       
       if (input$FCE_ECDF_per_target) {
         for (r in rt_seq) {
-          ce <- get_FV_sample(df, r, output = 'long') %>% '$'(`f(x)`) %>% sort
+          ce <- get_FV_sample(ds, r, output = 'long') %>% '$'(`f(x)`) %>% sort
           if (all(is.na(ce)))
             next
           else {
@@ -1395,29 +1334,17 @@ shinyServer(function(input, output, session) {
                                         T = 'log', F = 'linear')))
   })
   
-  # TODO: remove this useless function
-  # plot.DATA <- reactive({
-  #   data <- DATA()
-  #   for (k in seq_along(data)) {
-  #     data[[k]]$by_runtime <- limit.data(data[[k]]$by_runtime, n = 100)
-  #   }
-  #   data
-  # })
-  
   # evaluation rake of all courses 
   output$FCE_AUC <- renderPlotly({
-    data <- DATA()
-    rt <- getRuntimes(data)
-
+    req(input$FCE_AUC_RT_MIN, input$FCE_AUC_RT_MAX, input$FCE_AUC_RT_STEP)
+    
     rt_min <- input$FCE_AUC_RT_MIN %>% as.integer
     rt_max <- input$FCE_AUC_RT_MAX %>% as.integer
     rt_step <- input$FCE_AUC_RT_STEP %>% as.integer
-
-    # when initializing or incorrect input
-    if (is.na(rt_min) || is.na(rt_max) || is.na(rt_step))
-      return(data.frame())
-    if (rt_min >= rt_max || rt_step > rt_max - rt_min)
-      return(data.frame())
+    
+    req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
+    data <- DATA()
+    rt <- getRuntimes(data)
 
     rt_seq <- seq(from = rt_min, to = rt_max, by = rt_step) %>%
       reverse_trans_runtime %>%

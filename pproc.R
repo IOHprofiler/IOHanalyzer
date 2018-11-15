@@ -126,8 +126,6 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     }
     
     # NOTE: the RT summary is always pre-computed 
-    # TODO: unify FV.summary here with the get_FV_summary function below
-    # Runtime / FValue summaries
     AUX <- list()
     data <- RT$RT
     n_instance <- length(info$instance)
@@ -278,6 +276,8 @@ get_RT_sample <- function(ds, ...) UseMethod("get_RT_sample", ds)
 get_RT_summary <- function(ds, ...) UseMethod("get_RT_summary", ds)
 get_FV_sample <- function(ds, ...) UseMethod("get_FV_sample", ds)
 get_FV_summary <- function(ds, ...) UseMethod("get_FV_summary", ds)
+get_PAR_sample <- function(ds, ...) UseMethod("get_PAR_sample", ds)
+get_PAR_summary <- function(ds, ...) UseMethod("get_PAR_summary", ds)
 
 #' Get RunTime Summary
 #'
@@ -480,25 +480,8 @@ summarise_par <- function(data, ftarget, maximization = TRUE, probs = NULL) {
   do.call(rbind.data.frame, res)
 }
 
-get_PAR_sample <- function() {}
-
-# TODO: remove ERT and the fuctions below
-# the estimator for the expected running time
-# TODO: add the variance of the estimate
-ERT <- function(x, succ = NULL, maxEval = Inf) {
-  x <- na.omit(x)
-  drop <- attr(x, 'na.action')
-  N <- length(x)
-  
-  if (!is.null(succ) && !is.null(drop))
-    succ <- succ[-drop]
-  
-  if (is.null(succ))
-    succ <- x < maxEval
-  
-  N_succ <- sum(succ)
-  list(ps = N_succ / N, ERT = sum(x) / N_succ, N_succ = N_succ)
-}
+get_PAR_sample.DataSet <- function() {}
+get_PAR_summary.DataSet <- function() {}
 
 # compute the expected running time for a single DataSet
 ERT.DataSet <- function(data) {
@@ -516,23 +499,6 @@ ERT.DataSet <- function(data) {
                      median = apply(df, 1, . %>% median(na.rm = T))))
   
   class(object) %<>% c('ERT')
-  attr(object, 'DIM') <- attr(data, 'DIM')
-  attr(object, 'algId') <- attr(data, 'algId')
-  attr(object, 'funcId') <- attr(data, 'funcId')
-  object
-}
-
-# compute the fixed cost error for a single DataSet
-FCE.DataSet <- function(data) {
-  df <- data$by_runtime
-  object <- data.frame(runtime = row.names(df) %>% as.integer,
-                       FCE = apply(df, 1, . %>% mean(na.rm = T)),
-                       median = apply(df, 1, . %>% median(na.rm = T)),
-                       sd = apply(df, 1, . %>% sd(na.rm = T)),
-                       se = apply(df, 1, . %>% {sd(., na.rm = T) / sqrt(length(.))})
-                       )
-  
-  class(object) %<>% c('FCE')
   attr(object, 'DIM') <- attr(data, 'DIM')
   attr(object, 'algId') <- attr(data, 'algId')
   attr(object, 'funcId') <- attr(data, 'funcId')

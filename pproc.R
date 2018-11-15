@@ -4,8 +4,6 @@
 # Author: Hao Wang
 # Email: wangronin@gmail.com
 # 
-# Remark:
-#   1. Rcpp is used for the data alignment function
 # TODO:
 #   1. add Roxygen docs
 #   2. perhaps migrate to data.table completely for speed concern and simplicity
@@ -19,7 +17,7 @@ source('readFiles.R')
 source('global.R')
 source('plot.R')
 
-#' SP Estimator for ERT
+#' Estimator 'SP' for the Expected Running Time (ERT)
 #'
 #' @param data A dataframe or matrix
 #' @param max_runtime A Numerical vector. Should has the same size as columns of data 
@@ -38,7 +36,7 @@ SP <- function(data, max_runtime) {
     data[idx[, i], i] <- max_runtime[i]
   }
   
-  list(ERT = rowSums(data) / succ, succ_rate = succ_rate)
+  list(ERT = rowSums(data) / succ, runs = succ, succ_rate = succ_rate)
 }
 
 #' Constructor of S3 class 'DataSet'
@@ -127,12 +125,12 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
       info$instance <- seq(length(dat))
     }
     
+    # NOTE: the RT summary is always pre-computed 
     # TODO: unify FV.summary here with the get_FV_summary function below
     # Runtime / FValue summaries
     AUX <- list()
     data <- RT$RT
     n_instance <- length(info$instance)
-    res <- SP(data, maxRT)
     RT.summary <- data.table(target = rownames(data) %>% as.double,
                              mean = apply(data, 1, .mean),
                              median = apply(data, 1, .median),
@@ -140,22 +138,22 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     
     names <- paste0(probs * 100, '%')
     RT.summary[, (names) := t(apply(data, 1, D_quantile)) %>% split(c(col(.)))]
-    RT.summary[, c('ps', 'ERT') := list(res$succ_rate, res$ERT)]
+    RT.summary[, c('ERT', 'runs', 'ps') := SP(data, maxRT)]
     AUX$RT.summary <- RT.summary
     
-    data <- FV$FV
-    if (nrow(data) > 500) {
-      data <- limit.data(data, n = 500)
-    }
-    
-    FV.summary <- data.table(budget = rownames(data) %>% as.double,
-                             mean = apply(data, 1, .mean),
-                             median = apply(data, 1, .median),
-                             sd = apply(data, 1, .sd))
-    
-    names <- paste0(probs * 100, '%')
-    FV.summary[, (names) := t(apply(data, 1, C_quantile)) %>% split(c(col(.)))]
-    AUX$FV.summary  <- FV.summary
+    # data <- FV$FV
+    # if (nrow(data) > 500) {
+    #   data <- limit.data(data, n = 500)
+    # }
+    # 
+    # FV.summary <- data.table(budget = rownames(data) %>% as.double,
+    #                          mean = apply(data, 1, .mean),
+    #                          median = apply(data, 1, .median),
+    #                          sd = apply(data, 1, .sd))
+    # 
+    # names <- paste0(probs * 100, '%')
+    # FV.summary[, (names) := t(apply(data, 1, C_quantile)) %>% split(c(col(.)))]
+    # AUX$FV.summary  <- FV.summary
         
     do.call(function(...) structure(c(RT, FV, AUX), class = c('DataSet'), ...), 
             c(info, list(maxRT = maxRT, finalFV = finalFV, src = format,
@@ -202,7 +200,13 @@ summary.DataSet <- function(ds) {
   cat('\n')
   
   cat('function value summary:\n')
-  print(ds$FV.summary)
+  runtimes <- rownames(ds$FV) %>% as.numeric
+  if (length(runtimes) > 100) {
+    runtimes <- runtimes[seq(1, length(runtimes), length.out = 100)]
+  }
+  
+  FV.summary <- get_FV_summary(ds, runtimes)
+  print(FV.summary)
   cat('\n')
   
   cat(paste('Attributes:', paste0(names(ds_attr), collapse = ', ')))
@@ -215,7 +219,7 @@ plot.DataSet <- function(ds, ask = TRUE) {
   
   target <- dt[, target]
   N <- length(target)
-  if (N >= 15) 
+  if (N >= 15) # limit the number of point to plot
     target <- as.numeric(target[seq(1, N, by = ceiling(N / 15))])
   
   # plot by_target curves
@@ -269,8 +273,24 @@ plot.DataSet <- function(ds, ask = TRUE) {
     attr(dsL, 'comment') == attr(dsR, 'comment')
 }
 
-get_RT_summary <- function(ds, ftarget) {
+# S3 generics
+get_RT_sample <- function(ds, ...) UseMethod("get_RT_sample", ds)
+get_RT_summary <- function(ds, ...) UseMethod("get_RT_summary", ds)
+get_FV_sample <- function(ds, ...) UseMethod("get_FV_sample", ds)
+get_FV_summary <- function(ds, ...) UseMethod("get_FV_summary", ds)
+
+#' Get RunTime Summary
+#'
+#' @param ds 
+#' @param ftarget 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_RT_summary.DataSet <- function(ds, ftarget) {
   data <- ds$RT.summary
+  algId <- attr(ds, 'algId')
   maximization <- attr(ds, 'maximization')
   
   ftarget <- c(ftarget) %>% as.double %>% sort(decreasing = !maximization)
@@ -292,15 +312,23 @@ get_RT_summary <- function(ds, ftarget) {
         data[matched[!NAs], ],
         data.table(cbind(t(t(ftarget[NAs])), matrix(NA, sum(NAs), ncol(data) - 1)))
       )
-    )
+    ) %>% cbind(algId, .)
   } else {
-    data[matched, ]
+    data[matched, ] %>% cbind(algId, .)
   }
 }
 
-# Retrieve the runtime samples from an aligned data set
-# wide-format is set by default
-get_RT_sample <- function(ds, ftarget, output = 'wide') {
+#' Get RunTime Sample
+#'
+#' @param ds 
+#' @param ftarget 
+#' @param output 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide') {
   data <- ds$RT
   N <- ncol(data)
   algId <- attr(ds, 'algId')
@@ -321,19 +349,27 @@ get_RT_sample <- function(ds, ftarget, output = 'wide') {
   res <- data[matched, , drop = FALSE] %>% 
     as.data.table %>% 
     cbind(algId, ftarget, .) %>% 
-    set_colnames(c('algId', 'f(x)', paste0('run.', seq(N))))
+    set_colnames(c('algId', 'target', paste0('run.', seq(N))))
   
-  if (format == 'long') {
-    res <- melt(res, id = c('algId', 'f(x)'), variable.name = 'run', value.name = 'RT')
+  if (output == 'long') {
+    res <- melt(res, id = c('algId', 'target'), variable.name = 'run', value.name = 'RT')
     res[, run := as.numeric(gsub('run.', '', run)) %>% as.integer
         ][, RT := as.integer(RT)
-          ][order(`f(x)`, run)]
+          ][order(target, run)]
   }
   res
 }
 
-# calculate the basic statistics of the runtime samples from an aligned data set
-get_FV_summary <- function(ds, runtimes) {
+#' Get Function Value Summary
+#'
+#' @param ds 
+#' @param runtimes 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_FV_summary.DataSet <- function(ds, runtimes) {
   data <- ds$FV
   NC <- ncol(data)
   NR <- nrow(data)
@@ -370,7 +406,7 @@ get_FV_summary <- function(ds, runtimes) {
 #' @export
 #'
 #' @examples
-get_FV_sample <- function(ds, runtimes, output = 'wide') {
+get_FV_sample.DataSet <- function(ds, runtimes, output = 'wide') {
   data <- ds$FV
   N <- ncol(data)
   n_row <- nrow(data)
@@ -391,7 +427,7 @@ get_FV_sample <- function(ds, runtimes, output = 'wide') {
     cbind(algId, runtimes, .) %>% 
     set_colnames(c('algId', 'runtime', paste0('run.', seq(N))))
   
-  if (format == 'long') {
+  if (output == 'long') {
     res <- melt(res, id = c('algId', 'runtime'), variable.name = 'run', value.name = 'f(x)')
     res[, run := as.numeric(gsub('run.', '', run)) %>% as.integer
         ][order(runtime, run)]
@@ -444,6 +480,9 @@ summarise_par <- function(data, ftarget, maximization = TRUE, probs = NULL) {
   do.call(rbind.data.frame, res)
 }
 
+get_PAR_sample <- function() {}
+
+# TODO: remove ERT and the fuctions below
 # the estimator for the expected running time
 # TODO: add the variance of the estimate
 ERT <- function(x, succ = NULL, maxEval = Inf) {
@@ -538,11 +577,25 @@ load_index <- function(file) {
 }
 
 # TODO: put class DataSetList in a separate file
-# S3 constructor of the 'DataSetList' 
-# Attributes
-#   funId
-#   DIM
-#   algId
+
+#' S3 constructor of the 'DataSetList' 
+#'
+#' Attributes
+#'   funId
+#'   DIM
+#'   algId
+#   
+#' @param path 
+#' @param verbose 
+#' @param print_fun 
+#' @param maximization 
+#' @param format 
+#' @param subsampling 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization = TRUE,
                         format = IOHprofiler, subsampling = FALSE) {
   if (is.null(path))
@@ -680,18 +733,18 @@ getAlgId <- function(data) {
 }
 
 getParId <- function(data) {
-  lapply(data, function(d) setdiff(names(d), c('by_runtime', 'by_target'))) %>% unlist %>% unique
+  lapply(data, function(d) setdiff(names(d), c('RT', 'FV', 'RT.summary'))) %>% unlist %>% unique
 }
 
 # TODO: let the user choose/detect whether the problem is subject to maximization
 # and determine whether to sort the function values in ascending/desceding order
 getFunvals <- function(data) {
-  lapply(data, function(x) rownames(x$by_target)) %>% unlist %>%
+  lapply(data, function(x) rownames(x$RT)) %>% unlist %>%
     as.numeric %>% unique %>% sort %>% rev
 }
 
 getRuntimes <- function(data) {
-  lapply(data, function(x) rownames(x$by_runtime)) %>% unlist %>%
+  lapply(data, function(x) rownames(x$FV)) %>% unlist %>%
     as.numeric %>% unique %>% sort
 }
 

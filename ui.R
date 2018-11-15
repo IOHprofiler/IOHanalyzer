@@ -5,9 +5,9 @@
 # Author: Hao Wang
 # Email: wangronin@gmail.com
 
-library(shinyjs)
-library(shinydashboard)
-library(plotly)
+suppressMessages(library(shinyjs))
+suppressMessages(library(shinydashboard))
+suppressMessages(library(plotly))
 
 # TODO: rename most of the id of the control widgets
 FCE_GRID_INPUT_TEXT <- '<p align="justify">Set the range and the granularity of the results. 

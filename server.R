@@ -1032,7 +1032,7 @@ shinyServer(function(input, output, session) {
     
     data <- DATA()
     rt <- getRuntimes(data)
-    rt_seq <- seq(from = rt_min, to = rt_max, length.out = 70) %>% 
+    rt_seq <- seq(from = rt_min, to = rt_max, length.out = 60) %>% 
       reverse_trans_runtime %>% 
       .[. >= min(rt)] %>% .[. <= max(rt)]
     

@@ -292,12 +292,12 @@ body <- dashboardBody(
                          
                          mainPanel(width = 9,
                                    column(width = 12, align = "center",
-                                          HTML_P('<p style="font-size:120%";>The <b><i>mean, median 
-                                               and standard deviation</i></b> of the runtime samples 
-                                               are depicted against the best objective values. 
-                                               The displayed elements (mean, median, standard deviations) 
-                                               can be switched on and off by clicking on the legend on the right. 
-                                               A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
+                                          HTML_P('The <b><i>mean, median 
+                                                  and standard deviation</i></b> of the runtime samples 
+                                                  are depicted against the best objective values. 
+                                                  The displayed elements (mean, median, standard deviations) 
+                                                  can be switched on and off by clicking on the legend on the right. 
+                                                  A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
                                           plotlyOutput('ERT_PER_FUN', height = plotly_height, width = plotly_width)
                                           )
                                    )

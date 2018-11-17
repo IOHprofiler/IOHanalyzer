@@ -133,26 +133,12 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
                              mean = apply(data, 1, .mean),
                              median = apply(data, 1, .median),
                              sd = apply(data, 1, .sd))
-    
+
     names <- paste0(probs * 100, '%')
     RT.summary[, (names) := t(apply(data, 1, D_quantile)) %>% split(c(col(.)))]
     RT.summary[, c('ERT', 'runs', 'ps') := SP(data, maxRT)]
     AUX$RT.summary <- RT.summary
     
-    # data <- FV$FV
-    # if (nrow(data) > 500) {
-    #   data <- limit.data(data, n = 500)
-    # }
-    # 
-    # FV.summary <- data.table(budget = rownames(data) %>% as.double,
-    #                          mean = apply(data, 1, .mean),
-    #                          median = apply(data, 1, .median),
-    #                          sd = apply(data, 1, .sd))
-    # 
-    # names <- paste0(probs * 100, '%')
-    # FV.summary[, (names) := t(apply(data, 1, C_quantile)) %>% split(c(col(.)))]
-    # AUX$FV.summary  <- FV.summary
-        
     do.call(function(...) structure(c(RT, FV, AUX), class = c('DataSet'), ...), 
             c(info, list(maxRT = maxRT, finalFV = finalFV, src = format,
                          maximization = maximization)))
@@ -278,6 +264,7 @@ get_FV_sample <- function(ds, ...) UseMethod("get_FV_sample", ds)
 get_FV_summary <- function(ds, ...) UseMethod("get_FV_summary", ds)
 get_PAR_sample <- function(ds, ...) UseMethod("get_PAR_sample", ds)
 get_PAR_summary <- function(ds, ...) UseMethod("get_PAR_summary", ds)
+get_PAR_name <- function(ds) UseMethod("get_PAR_name", ds)
 
 #' Get RunTime Summary
 #'
@@ -290,11 +277,12 @@ get_PAR_summary <- function(ds, ...) UseMethod("get_PAR_summary", ds)
 #' @examples
 get_RT_summary.DataSet <- function(ds, ftarget) {
   data <- ds$RT.summary
+  # maxRT <- attr(ds, 'maxRT')
   algId <- attr(ds, 'algId')
   maximization <- attr(ds, 'maximization')
   
   ftarget <- c(ftarget) %>% as.double %>% sort(decreasing = !maximization)
-  FValues <- data[, target]
+  FValues <- rownames(data) %>% as.numeric
   idx <- seq_along(FValues)
   op <- ifelse(maximization, `>=`, `<=`)
   
@@ -304,6 +292,18 @@ get_RT_summary.DataSet <- function(ds, ftarget) {
       idx[`op`(FValues, f)][1]
     }
   )
+  
+  # data <- data[matched, , drop = FALSE]
+  # apply(data, 1, D_quantile) %>% 
+  #   t %>% 
+  #   as.data.table %>% 
+  #   cbind(as.data.table(SP(data, maxRT))) %>% 
+  #   cbind(algId, ftarget, 
+  #         apply(data, 1, .mean),
+  #         apply(data, 1, .median),
+  #         apply(data, 1, .sd), .) %>% 
+  #   set_colnames(c('algId', 'target', 'mean', 'median', 
+  #                  'sd', paste0(probs * 100, '%'), 'ERT', 'runs', 'ps'))
   
   NAs <- is.na(matched)
   if (any(NAs)) {
@@ -435,53 +435,61 @@ get_FV_sample.DataSet <- function(ds, runtimes, output = 'wide') {
   res
 }
 
-summarise_par <- function(data, ftarget, maximization = TRUE, probs = NULL) {
-  algId <- attr(data, 'algId')
-  data <- data[!(names(data) %in% c('by_runtime', 'by_target'))] # drop the aligned data set
-  par_name <- names(data)
-  n_par <- length(par_name)
+get_PAR_name.DataSet <- function(ds) {
+  name <- names(ds)
+  name[!(name %in% c('RT', 'RT.summary', 'FV'))]
+}
+
+#' Title
+#'
+#' @param ds 
+#' @param ftarget 
+#' @param parId 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_PAR_summary.DataSet <- function(ds, ftarget, parId = 'all') {
+  FValues <- rownames(ds$RT) %>% as.numeric
+  idx <- seq_along(FValues)
   
+  algId <- attr(ds, 'algId')
+  par_name <- get_PAR_name(ds)
+  if (parId != 'all')
+    par_name <- intersect(par_name, parId)
+  if (length(par_name) == 0)
+    return(data.table())
+  
+  maximization <- attr(ds, 'maximization')
+  ftarget <- c(ftarget) %>% as.numeric %>% sort(decreasing = !maximization)
   op <- ifelse(maximization, `>=`, `<=`)
-  ftarget <- c(ftarget) %>% as.double
   
-  if (is.null(algId)) 
-    algId <- 'unknown'
-  if (is.null(probs))
-    probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
+  matched <- sapply(
+    ftarget,
+    function(f) {
+      idx[`op`(FValues, f)][1]
+    }
+  )
   
-  res <- list()
-  for (i in seq(n_par)) {
-    par <- par_name[i]
-    df <- data[[par]]
-    
-    f_aligned <- rownames(df) %>% as.double
-    idx <- seq_along(f_aligned)
-    
-    res[[i]] <- lapply(ftarget, 
-                       function(f) {
-                         matched <- idx[`op`(f_aligned, f)][1]
-                         target <- ifelse(is.na(matched), f, f_aligned[matched])
-                         df[matched, ] %>% 
-                           as.vector %>% {
-                             c(target, 
-                               length(.[!is.na(.)]), 
-                               mean(., na.rm = T), 
-                               median(., na.rm = T), 
-                               sd(., na.rm = T),
-                               quantile(., probs = probs, names = F, na.rm = T)
-                             ) 
-                           }
-                       }) %>% 
-      do.call(rbind, .) %>% 
-      as.data.frame %>% 
-      cbind(algId, par, .) %>% 
-      set_colnames(c('algId', 'parId', 'f(x)', 'runs', 'mean', 'median', 'sd', paste0(probs * 100, '%'))) 
-  }
-  do.call(rbind.data.frame, res)
+  lapply(par_name,
+         function(par) {
+           data <- ds[[par]][matched, , drop = FALSE]
+           apply(data, 1, C_quantile) %>% 
+             t %>% 
+             as.data.table %>% 
+             cbind(algId, par, ftarget,
+                   apply(data, 1, function(x) length(x[!is.na(x)])),
+                   apply(data, 1, .mean),
+                   apply(data, 1, .median),
+                   apply(data, 1, .sd), .) %>% 
+             set_colnames(c('algId', 'parId', 'target', 'runs', 'mean', 'median', 'sd', 
+                            paste0(probs * 100, '%')))
+         }) %>% 
+    rbindlist
 }
 
 get_PAR_sample.DataSet <- function() {}
-get_PAR_summary.DataSet <- function() {}
 
 # compute the expected running time for a single DataSet
 ERT.DataSet <- function(data) {
@@ -684,6 +692,13 @@ summary.DataSetList <- function(data) {
   }) %>% 
     t %>% 
     as.data.frame
+}
+
+get_PAR_summary.DataSetList <- function(dsList, fseq, algorithm = 'all', parId = 'all') {
+  if (algorithm != 'all')
+    dsList <- subset(dsList, algId == algorithm)
+  
+  lapply(dsList, function(ds) get_PAR_summary(ds, fseq, parId)) %>% rbindlist
 }
 
 getDIM <- function(data) {

@@ -83,3 +83,24 @@ NumericVector c_impute(NumericVector x, NumericVector y, NumericVector rowname) 
   }
   return res;
 }
+
+// [[Rcpp::export]]
+NumericVector c_impute_runtime(NumericVector index, NumericVector value, NumericVector FV) {
+  int N = FV.size();
+  int L = index.size();
+  NumericVector res(N, NA_REAL);
+
+  int j = 0;
+  for (int i = 0; i < N; ++i) {
+    while (j < L) {
+      if (FV[i] > index[j]) {
+        ++j;
+      } else {
+        res[i] = value[j];
+        break;
+      }
+    }
+  }
+  return res;
+}
+

@@ -30,8 +30,10 @@ HTML_P <- function(s) HTML(paste0('<p align="left" style="font-size:120%;">', s,
 aspect_ratio <-  4 / 3
 fig_height <- 700
 fig_width <- fig_height * aspect_ratio
+fig_width2 <- fig_height * (16 / 10)
 plotly_height <- paste0(fig_height, "px")
 plotly_width <- paste0(fig_width, "px")
+plotly_width2 <- paste0(fig_width2, "px")
 
 # The side bar layout ---------------------------------------------
 sidebar <- dashboardSidebar(
@@ -806,19 +808,23 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                           )
                       ),
                       
-                      HTML('<p style="font-size:120%";>The <b><i>mean or median</i></b> of internal parameters of the algorithm
-                           found with a fixed-budget of evaluations are depicted against the budget. 
-                           The displayed elements can be switched on and off by clicking on the legend on the right. 
-                           A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                      mainPanel(plotlyOutput('PAR_PER_FUN', height = plotly_height, width = plotly_width))
+                      mainPanel(width = 9,
+                                HTML_P('The <b><i>mean or median</i></b> of internal parameters of the algorithm
+                                        found with a fixed-budget of evaluations are depicted against the budget. 
+                                        The displayed elements can be switched on and off by clicking on the legend on the right. 
+                                        A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
+                                column(width = 12, align = "center",
+                                       plotlyOutput('PAR_PER_FUN', height = plotly_height, width = plotly_width2)
+                                       )
+                                )
                       ),
                      
                      box(title = HTML('<p style="font-size:120%;">Parameter Statistics at Chosen Target Values</p>'), width = 12,
                          solidHeader = T, status = "primary", collapsible = T,
                          sidebarPanel(
                            width = 3,
-                           HTML('<p align="justify">Set the range and the granularity of the results.
-                                The table will show fixed-target parameter values for evenly spaced target values.</p>'),
+                           HTML_P('Set the range and the granularity of the results.
+                                The table will show fixed-target parameter values for evenly spaced target values.'),
                            
                            textInput('PAR_F_MIN_SUMMARY', label = F_MIN_LABEL, value = ''),
                            textInput('PAR_F_MAX_SUMMARY', label = F_MAX_LABEL, value = ''),

@@ -183,6 +183,39 @@ idxEvals <- 1
 idxTarget <- 5
 n_data_column <- 5
 
+# TODO: finish this new function
+align_RT <- function(data, format = IOHprofiler) {
+  Fvalues <- lapply(data, function(x) x[, idxTarget]) %>%
+    unlist %>% unique %>% sort
+  
+  if (format == IOHprofiler) {
+    maximization <- TRUE
+    idxTarget <- 5
+  } else if (format == COCO) {
+    maximization <- FALSE
+    idxTarget <- 3
+  }
+  
+  n_rows <- sapply(data, nrow)
+  n_column <- sapply(data, . %>% ncol) %>% unique
+  
+  if (format == COCO)
+    n_param <- 0
+  else
+    n_param <- n_column - n_data_column
+  
+  N <- length(data)
+  nrow <- length(FV)
+  
+  lapply(data,
+         function(d) {
+           c_impute_runtime(d[, idxTarget], d[, idxEvals], FV)
+         }) %>%
+    unlist %>%
+    matrix(nrow = nrow, ncol = N) %>%
+    set_rownames(FV)
+}
+
 # align all instances at a given target/precision
 align_by_target <- function(data, targets = 'full', nrow = 100, maximization = TRUE,
                             format = IOHprofiler) {
@@ -207,7 +240,7 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
     n_param <- 0
   else
     n_param <- n_column - n_data_column
-    
+  
   if (length(n_column) > 1)
     stop('inconsistent number of columns in each run!')
   
@@ -333,30 +366,30 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
       curr_eval[1:N] <- NA
       
       # Rcpp implementation
-      # curr_eval[] <- align_by_target_inner_loop(t, idxEvals - 1, idxTarget - 1,
-      #                                           data, index, next_lines, curr_eval)
+      curr_eval[] <- align_by_target_inner_loop(t, idxEvals - 1, idxTarget - 1,
+                                                data, index, next_lines, curr_eval)
   
-      for (k in seq_along(data)) {
-        d <- data[[k]]
-        iter <- index[k]
-        while (TRUE) {
-          # if hitting the target
-          # TODO: solve this issue (+0.001) precision issue!
-          if (`op`(next_lines[k, idxTarget], t)) {
-            curr_eval[k] <- next_lines[k, idxEvals]
-            break
-          }
-          
-          # otherwise, is the iterator finished?
-          if (iter < nrow(d)) {
-            iter <- iter + 1
-            next_lines[k, ] <- d[iter, ]
-          } else {
-            break
-          }
-        }
-        index[k] <- iter
-      }
+      # for (k in seq_along(data)) {
+      #   d <- data[[k]]
+      #   iter <- index[k]
+      #   while (TRUE) {
+      #     # if hitting the target
+      #     # TODO: solve this issue (+0.001) precision issue!
+      #     if (`op`(next_lines[k, idxTarget], t)) {
+      #       curr_eval[k] <- next_lines[k, idxEvals]
+      #       break
+      #     }
+      #     
+      #     # otherwise, is the iterator finished?
+      #     if (iter < nrow(d)) {
+      #       iter <- iter + 1
+      #       next_lines[k, ] <- d[iter, ]
+      #     } else {
+      #       break
+      #     }
+      #   }
+      #   index[k] <- iter
+      # }
       
       res[i, ] <- curr_eval[1:N]
       if (n_param > 0) {

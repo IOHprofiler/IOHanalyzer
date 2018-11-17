@@ -1400,63 +1400,99 @@ shinyServer(function(input, output, session) {
   
   # Expected Evolution of parameters in the algorithm
   output$PAR_PER_FUN <- renderPlotly({
-    req(input$PAR_F_MIN != "")   # require non-empty input
-    req(input$PAR_F_MAX != "")
-    f_min <- input$PAR_F_MIN %>% as.numeric %>% reverse_trans_funeval
-    f_max <- input$PAR_F_MAX %>% as.numeric %>% reverse_trans_funeval
+    req(input$PAR_F_MIN, input$PAR_F_MAX)
     
-    data <- EPAR.DATA()
-    req(any(!is.null(data)))
+    f_min <- format_funeval(input$PAR_F_MIN) %>% as.numeric %>% reverse_trans_funeval
+    f_max <- format_funeval(input$PAR_F_MAX) %>% as.numeric %>% reverse_trans_funeval
     
-    n_algorithm <- length(data)
-    n_param <- sapply(data, function(d) length(unique(d$par))) %>% max
-    colors <- colorspace::rainbow_hcl(n_algorithm * n_param)
+    req(f_min <= f_max)
     
-    p <- plot_ly_default(x.title = "best-so-far f(x) value", y.title = "parameters")
-    i <- 1
+    data <- DATA()
+    fall <- getFunvals(data)
+    fseq <- seq(from = f_min, to = f_max, length.out = 50) %>% 
+      c(f_min, ., f_max) %>% unique %>% 
+      reverse_trans_funeval %>% 
+      .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     
-    for (df in data) {
-      algId <- attr(df, 'algId')
-      if (input$PAR_ALGID_INPUT != 'all' && algId != input$PAR_ALGID_INPUT)
-        next
+    dt <- get_PAR_summary(data, fseq, input$PAR_ALGID_INPUT)
+    dt[, `:=`(upper = mean + sd, lower = mean - sd)]
+    
+    par_name <- dt[, parId] %>% unique
+    n_param <- length(par_name)
+    algorithms <- dt[, algId] %>% unique
+    n_alg <- length(algorithms)
+    colors <- colorspace::rainbow_hcl(n_alg)
+    
+    nrows <- ceiling(n_param / 2) # two columns
+    # styles <- lapply(seq(n_alg), 
+    #                  function(i) {
+    #                    list(target = algorithms[i], 
+    #                         value = list(name = algorithms[i], 
+    #                                      marker = list(color = paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')),
+    #                                      line = list(color = paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')'))))
+    #                  })
       
-      ddf <- df %>% 
-        mutate(upper = mean + sd, lower = mean - sd) %>% 
-        filter(BestF >= f_min, BestF <= f_max)
+    p <- lapply(seq(n_param), 
+                  function(i) {
+                    plot_ly_default(y.title = par_name[i]) %>% 
+                      layout(xaxis = list(type = switch(input$PAR_semilogx, T = 'log', F = 'linear')),
+                             yaxis = list(type = switch(input$PAR_semilogy, T = 'log', F = 'linear')))
+                  })
+    
+    for (i in seq(n_alg)) {
+      alg <- algorithms[i]
       
-      par_name <- unique(df$par)
-      for (name in par_name) {
-        dddf <- filter(ddf, par == name)
-        req(nrow(dddf) > 0)
+      for (j in seq(n_param)) {
+        if (j == 1)
+          showlegend <- T
+        else 
+          showlegend <- F
         
-        # p %<>% 
-        #   add_trace(data = dddf, x = ~runtime, y = ~upper, type = 'scatter', mode = 'lines',
-        #             line = list(color = rgba_str, width = 0), 
-        #             showlegend = F, name = paste0(name, '.mean +/- sd')) %>% 
-        #   add_trace(x = ~runtime, y = ~lower, type = 'scatter', mode = 'lines',
-        #             fill = 'tonexty',  line = list(color = 'transparent'),
-        #             fillcolor = rgba_str, showlegend = T, paste0(name, '.mean +/- sd')) 
-        
+        name <- par_name[j]
+        dt_plot <- dt[parId == name & algId == alg]
         rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-        rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
         
         if (input$PAR_show.mean == 'mean')
-          p %<>% add_trace(data = dddf, x = ~BestF, y = ~mean, type = 'scatter', 
-                           mode = 'lines+markers', name = paste0(algId, '.', name, '.mean'), 
-                           marker = list(color = rgb_str),
-                           line = list(color = rgb_str))
+          p[[j]] %<>% add_trace(data = dt_plot, x = ~target, y = ~mean, 
+                                type = 'scatter', 
+                                mode = 'lines+markers', 
+                                marker = list(color = rgb_str),
+                                line = list(color = rgb_str),
+                                name = alg,
+                                legendgroup = ~algId,
+                                showlegend = showlegend
+                                )
         
+                                # transforms = list(
+                                #   list(type = 'groupby',
+                                #        groups = ~algId,
+                                #        styles = styles)
+                                # )
         else if (input$PAR_show.mean == 'median')
-          p %<>% add_trace(data = dddf, x = ~BestF, y = ~median, type = 'scatter',
-                           name = paste0(algId, '.', name, '.mean'), mode = 'lines+markers', 
-                           marker = list(color = rgb_str),
-                           line = list(color = rgb_str, dash = 'dash'))
-        i <- i + 1
+          p[[j]] %<>% add_trace(data = dt_plot, x = ~target, y = ~median, 
+                                type = 'scatter', 
+                                mode = 'lines+markers', 
+                                marker = list(color = rgb_str),
+                                line = list(color = rgb_str, dash = 'dash'),
+                                name = alg,
+                                legendgroup = ~algId,
+                                showlegend = showlegend
+          )
       }
     }
-    p %<>%
-      layout(xaxis = list(type = switch(input$PAR_semilogx, T = 'log', F = 'linear')),
-             yaxis = list(type = switch(input$PAR_semilogy, T = 'log', F = 'linear')))
+        # p %<>%
+        #   add_trace(data = dt_plot, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
+        #             line = list(color = rgba_str, width = 0),
+        #             showlegend = F, name = paste0(name, '.mean +/- sd')) %>%
+        #   add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
+        #             fill = 'tonexty',  line = list(color = 'transparent'),
+        #             fillcolor = rgba_str, showlegend = T, paste0(name, '.mean +/- sd'))
+        
+      # rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
+    subplot(p, nrows = nrows, titleX = F, titleY = T, margin = 0.05) %>% 
+      add_annotations(x = 0.5 , y = -0.18, text = "best-so-far f(x)-value", 
+                      showarrow = F, xref = 'paper', yref = 'paper',
+                      font = list(size = 22, family = 'sans-serif'))
   })
   
   # output$ks <- renderPrint({
@@ -1477,56 +1513,39 @@ shinyServer(function(input, output, session) {
   # })
   # 
   
-  get_PAR_summary <- reactive({
-    data <- DATA()
-    fall <- getFunvals(data)
+  parameter_summary <- reactive({
+    req(input$PAR_F_MIN_SUMMARY, input$PAR_F_MAX_SUMMARY, input$PAR_F_STEP_SUMMARY)
     
     fstart <- format_funeval(input$PAR_F_MIN_SUMMARY) %>% as.numeric
     fstop <- format_funeval(input$PAR_F_MAX_SUMMARY) %>% as.numeric
     fstep <- format_funeval(input$PAR_F_STEP_SUMMARY) %>% as.numeric
     
-    # when initializing or incorrect input
-    if (is.na(fstart) || is.na(fstop) || is.na(fstep))
-      return(data.frame())
-    if (fstart >= fstop || fstep > fstop - fstart)
-      return(data.frame())
+    req(fstart <= fstop, fstep <= fstop - fstart)
+    data <- DATA()
+    fall <- getFunvals(data)
     
     fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
       c(fstart, ., fstop) %>% unique %>% 
       reverse_trans_funeval %>% 
       .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     
-    probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
-    res <- list()
-    
-    for (i in seq_along(data)) {
-      df <- data[[i]]
-      
-      if (input$PAR_ALGID_INPUT_SUMMARY != 'all' 
-          && attr(df, 'algId') != input$PAR_ALGID_INPUT_SUMMARY)
-        next
-      
-      res[[i]] <- summarise_par(df, fseq, probs = probs, maximization = maximization)
-      if (input$PAR_INPUT != 'all')
-        res[[i]] %<>% filter(parId == input$PAR_INPUT)
-    }
-    do.call(rbind, res)
+    get_PAR_summary(data, fseq, input$PAR_ALGID_INPUT_SUMMARY, input$PAR_INPUT)
   })
   
   output$table_PAR_summary <- renderTable({
-    df <- get_PAR_summary()
-    df$runs %<>% as.integer
-    df$mean %<>% format(digits = 2, nsmall = 2)
-    df$median %<>% format(digits = 2, nsmall = 2)
+    dt <- parameter_summary()
+    dt$runs %<>% as.integer
+    dt$mean %<>% format(digits = 2, nsmall = 2)
+    dt$median %<>% format(digits = 2, nsmall = 2)
     
     # TODO: make probs as a global option
     probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
     
     # format the integers
-    for (p in paste0(probs * 100, '%')) {
-      df[[p]] %<>% format(digits = 2, nsmall = 2)
-    }
-    df
+    # for (p in paste0(probs * 100, '%')) {
+    #   df[[p]] %<>% format(digits = 2, nsmall = 2)
+    # }
+    dt
   })
   
   output$PAR_downloadData <- downloadHandler(
@@ -1539,7 +1558,7 @@ shinyServer(function(input, output, session) {
               fstart, fstop, fstep)
     },
     content = function(file) {
-      write.csv(get_PAR_summary(), file, row.names = F)
+      write.csv(parameter_summary(), file, row.names = F)
     },
     contentType = "text/csv"
   )

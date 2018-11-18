@@ -237,24 +237,6 @@ shinyServer(function(input, output, session) {
     subset(DataList$data, DIM == dim, funcId == id)
   })
   
-  # # compute the ERT for all DataSets after filtering
-  # ERT.DATA <- reactive({
-  #   data <- DATA()
-  #   lapply(data, ERT.DataSet)
-  # })
-  # 
-  # # compute the FCE for all DataSets after filtering
-  # FCE.DATA <- reactive({
-  #   data <- DATA()
-  #   lapply(data, FCE.DataSet)
-  # })
-  
-  # compute the expected parameter value for all DataSets after filtering
-  EPAR.DATA <- reactive({
-    data <- DATA()
-    lapply(data, EPAR.DataSet)
-  })
-  
   # update the values for the grid of target values
   observe({
     data <- DATA()

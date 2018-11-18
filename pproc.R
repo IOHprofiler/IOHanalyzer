@@ -139,7 +139,7 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     RT.summary[, c('ERT', 'runs', 'ps') := SP(data, maxRT)]
     AUX$RT.summary <- RT.summary
     
-    do.call(function(...) structure(c(RT, FV, AUX), class = c('DataSet'), ...), 
+    do.call(function(...) structure(c(RT, FV, AUX), class = c('DataSet', 'list'), ...), 
             c(info, list(maxRT = maxRT, finalFV = finalFV, src = format,
                          maximization = maximization)))
      
@@ -196,20 +196,25 @@ summary.DataSet <- function(ds) {
   cat(paste('Attributes:', paste0(names(ds_attr), collapse = ', ')))
 }
 
-plot.DataSet <- function(ds, ask = TRUE) {
+# TODO: implement save
+plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
   dt <- data.table(ds$RT) 
+  NC <- ncol(dt)
   colnames(dt) <- as.character(seq(ncol(dt)))
   dt[, target := as.numeric(rownames(ds$RT))]
+  dt_mean <- data.table(target = dt$target, mean = rowMeans(dt[, -c('target')], na.rm = T))
   
   target <- dt[, target]
   N <- length(target)
-  if (N >= 15) # limit the number of point to plot
-    target <- as.numeric(target[seq(1, N, by = ceiling(N / 15))])
+  if (N >= 30) # limit the number of point to plot
+    target <- as.numeric(target[seq(1, N, by = ceiling(N / 30))])
   
-  # plot by_target curves
+  # plot runtime curves
   p <- melt(dt, id.vars = 'target', variable.name = 'instance', value.name = 'runtime') %>% 
-    ggplot(aes(target, runtime, colour = instance)) + 
-    geom_line(aes(group = instance)) +
+    ggplot(aes(target, runtime, colour = as.factor(instance))) + 
+    geom_line(aes(group = instance), alpha = 0.8) +
+    geom_line(data = dt_mean, aes(target, mean), colour = 'black', size = 1.5, alpha = 0.8) +
+    scale_colour_manual(values = colorspace::rainbow_hcl(NC)) + 
     scale_x_continuous(breaks = target) + 
     guides(colour = FALSE)
     
@@ -226,19 +231,22 @@ plot.DataSet <- function(ds, ask = TRUE) {
   dt <- data.table(df)
   colnames(dt) <- as.character(seq(ncol(dt)))
   dt[, budget := as.numeric(rownames(df))]
+  dt_mean <- data.table(budget = dt$budget, mean = rowMeans(dt[, -c('budget')], na.rm = T))
   
   budget <- dt[, budget]
   N <- length(budget)
-  if (N >= 15) {
+  if (N >= 30) {
     N.log10 <- log10(N)
-    index <- floor(10 ^ seq(0, N.log10, by = N.log10 / 15))
+    index <- floor(10 ^ seq(0, N.log10, by = N.log10 / 30))
     budget <- as.numeric(budget[index])
   }
   
-  # plot by_runtime curves
+  # plot function value curves
   p <- melt(dt, id.vars = 'budget', variable.name = 'instance', value.name = 'Fvalue') %>%
     ggplot(aes(budget, Fvalue, colour = instance)) +
-    geom_line(aes(group = instance)) +
+    geom_line(aes(group = instance), alpha = 0.8) +
+    geom_line(data = dt_mean, aes(budget, mean), colour = 'black', size = 1.5, alpha = 0.8) +
+    scale_colour_manual(values = colorspace::rainbow_hcl(NC)) + 
     # scale_x_continuous(breaks = budget) + 
     scale_x_log10() +
     guides(colour = FALSE)
@@ -435,18 +443,19 @@ get_FV_sample.DataSet <- function(ds, runtimes, output = 'wide') {
   res
 }
 
+# TODO: perhaps this function can be removed...
 get_PAR_name.DataSet <- function(ds) {
   name <- names(ds)
   name[!(name %in% c('RT', 'RT.summary', 'FV'))]
 }
 
-#' Title
+#' Get Parameter Value Summary
 #'
-#' @param ds 
-#' @param ftarget 
-#' @param parId 
+#' @param ds A DataSet object
+#' @param ftarget A Numerical vector. Function values used to align parameter values
+#' @param parId A character vector. Either 'all' or the name of parameters to be retrieved
 #'
-#' @return
+#' @return A data.table object containing basic statistics of parameter values aligned at each given target value
 #' @export
 #'
 #' @examples
@@ -489,52 +498,56 @@ get_PAR_summary.DataSet <- function(ds, ftarget, parId = 'all') {
     rbindlist
 }
 
-get_PAR_sample.DataSet <- function() {}
-
-# compute the expected running time for a single DataSet
-ERT.DataSet <- function(data) {
-  df <- data$by_target
-  N <- ncol(df)
-  N_succ <- apply(df, 1, function(x) sum(!is.na(x)))
+#' Get Parameter Value Samples
+#'
+#' @param ds A DataSet object
+#' @param ftarget A Numerical vector. Function values used to align parameter values
+#' @param parId A character vector. Either 'all' or the name of parameters to be retrieved
+#' @param output A character. The format of the output data: 'wide' or 'long' 
+#'
+#' @return A data.table object containing parameter values aligned at each given target value
+#' @export
+#'
+#' @examples
+get_PAR_sample.DataSet <- function(ds, ftarget, parId = 'all', output = 'wide') {
+  N <- length(attr(ds, 'instance'))
+  FValues <- rownames(ds$RT) %>% as.numeric
+  idx <- seq_along(FValues)
   
-  # ERT = apply(df, 1, . %>% sum(na.rm = T)) / N_succ
-  object <- data.frame(ERT = rowSums(df, na.rm = T) / N_succ,
-                       ps = N_succ / N,
-                       N_succ = N_succ) %>% 
-    cbind(data.frame(BestF = row.names(df) %>% as.numeric,
-                     sd = apply(df, 1, . %>% sd(na.rm = T)),
-                     se = apply(df, 1, . %>% {sd(., na.rm = T) / sqrt(length(.))}),
-                     median = apply(df, 1, . %>% median(na.rm = T))))
+  algId <- attr(ds, 'algId')
+  par_name <- get_PAR_name(ds)
+  if (parId != 'all')
+    par_name <- intersect(par_name, parId)
+  if (length(par_name) == 0)
+    return(data.table())
   
-  class(object) %<>% c('ERT')
-  attr(object, 'DIM') <- attr(data, 'DIM')
-  attr(object, 'algId') <- attr(data, 'algId')
-  attr(object, 'funcId') <- attr(data, 'funcId')
-  object
-}
-
-EPAR.DataSet <- function(data) {
-  data.ori <- data
-  data <- data[!(names(data) %in% c('by_runtime', 'by_target'))] # drop the aligned data set
-  par_name <- names(data)
-  n_par <- length(par_name)
+  maximization <- attr(ds, 'maximization')
+  ftarget <- c(ftarget) %>% as.numeric %>% sort(decreasing = !maximization)
+  op <- ifelse(maximization, `>=`, `<=`)
   
-  if (n_par == 0) return(NULL)
+  matched <- sapply(
+    ftarget,
+    function(f) {
+      idx[`op`(FValues, f)][1]
+    }
+  )
   
-  df <- lapply(names(data), function(n) as.data.frame(data[[n]])) %>% 
-    do.call(rbind.data.frame, .)
+  res <- lapply(par_name,
+         function(parId) {
+           data <- ds[[parId]]
+           data[matched, , drop = FALSE] %>% 
+             as.data.table %>% 
+             cbind(algId, parId, ftarget, .) %>% 
+             set_colnames(c('algId', 'parId', 'target', paste0('run.', seq(N))))
+         }) %>% 
+    rbindlist
   
-  object <- data.frame(BestF = rep(rownames(data[[1]]), n_par) %>% as.numeric,
-                       mean = apply(df, 1, . %>% mean(na.rm = T)),
-                       median = apply(df, 1, . %>% median(na.rm = T)),
-                       sd = apply(df, 1, . %>% sd(na.rm = T))) %>% 
-    cbind(par = rep(par_name, each = nrow(data[[1]])), .)
-  
-  class(object) %<>% c('EPAR')
-  attr(object, 'DIM') <- attr(data.ori, 'DIM')
-  attr(object, 'algId') <- attr(data.ori, 'algId')
-  attr(object, 'funcId') <- attr(data.ori, 'funcId')
-  object
+  if (output == 'long') {
+    res <- melt(res, id = c('algId', 'parId', 'target'), variable.name = 'run', value.name = 'value')
+    res[, run := as.numeric(gsub('run.', '', run)) %>% as.integer
+        ][order(target, run)]
+  }
+  res
 }
 
 # read all raw data files in a give directory
@@ -694,11 +707,46 @@ summary.DataSetList <- function(data) {
     as.data.frame
 }
 
-get_PAR_summary.DataSetList <- function(dsList, fseq, algorithm = 'all', parId = 'all') {
+get_RT_summary.DataSetList <- function(dsList, fseq, algorithm = 'all') {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_PAR_summary(ds, fseq, parId)) %>% rbindlist
+  lapply(dsList, function(ds) get_RT_summary(ds, fseq)) %>% rbindlist
+}
+
+get_RT_sample.DataSetList <- function(dsList, fseq, algorithm = 'all', ...) {
+  if (algorithm != 'all')
+    dsList <- subset(dsList, algId == algorithm)
+  
+  lapply(dsList, function(ds) get_RT_sample(ds, fseq, ...)) %>% rbindlist
+}
+
+get_FV_summary.DataSetList <- function(dsList, runtimes, algorithm = 'all') {
+  if (algorithm != 'all')
+    dsList <- subset(dsList, algId == algorithm)
+  
+  lapply(dsList, function(ds) get_RT_summary(ds, runtimes)) %>% rbindlist
+}
+
+get_FV_sample.DataSetList <- function(dsList, runtimes, algorithm = 'all', ...) {
+  if (algorithm != 'all')
+    dsList <- subset(dsList, algId == algorithm)
+  
+  lapply(dsList, function(ds) get_RT_sample(ds, runtimes, ...)) %>% rbindlist
+}
+
+get_PAR_summary.DataSetList <- function(dsList, fseq, algorithm = 'all', ...) {
+  if (algorithm != 'all')
+    dsList <- subset(dsList, algId == algorithm)
+  
+  lapply(dsList, function(ds) get_PAR_summary(ds, fseq, ...)) %>% rbindlist
+}
+
+get_PAR_sample.DataSetList <- function(dsList, fseq, algorithm = 'all', ...) {
+  if (algorithm != 'all')
+    dsList <- subset(dsList, algId == algorithm)
+  
+  lapply(dsList, function(ds) get_PAR_sample(ds, fseq, ...)) %>% rbindlist
 }
 
 getDIM <- function(data) {

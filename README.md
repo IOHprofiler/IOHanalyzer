@@ -181,11 +181,12 @@ show data aligned by runtime?
 
 The technical tasks to do are listed as follows:
 
-* [ ] convert data processing code into a package
+* [ ] add version number
+* [ ] perhaps add stochastic process modelling / analysis on the performance data (e.g., to test if it is a martingale)
+* [ ] convert data processing code into a package (make the data analysis part as a separate R package)
 * [ ] add more stastistical tests
-* [ ] implement the standard R `summary` method for `DataSet` and `DataSetList` classes
-* [ ] add _ggplot2_ based static plotting procedures for the programming interface
-* [ ] make the data analysis part as a separate R package
+* [x] implement the standard R `summary` method for `DataSet` and `DataSetList` classes
+* [x] add _ggplot2_ based static plotting procedures for the programming interface
 * [ ] to determine the data source to align the data set using runtimes
 
 ## Contact

@@ -366,30 +366,30 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
       curr_eval[1:N] <- NA
       
       # Rcpp implementation
-      curr_eval[] <- align_by_target_inner_loop(t, idxEvals - 1, idxTarget - 1,
-                                                data, index, next_lines, curr_eval)
+      # curr_eval[] <- align_by_target_inner_loop(t, idxEvals - 1, idxTarget - 1,
+                                                # data, index, next_lines, curr_eval)
   
-      # for (k in seq_along(data)) {
-      #   d <- data[[k]]
-      #   iter <- index[k]
-      #   while (TRUE) {
-      #     # if hitting the target
-      #     # TODO: solve this issue (+0.001) precision issue!
-      #     if (`op`(next_lines[k, idxTarget], t)) {
-      #       curr_eval[k] <- next_lines[k, idxEvals]
-      #       break
-      #     }
-      #     
-      #     # otherwise, is the iterator finished?
-      #     if (iter < nrow(d)) {
-      #       iter <- iter + 1
-      #       next_lines[k, ] <- d[iter, ]
-      #     } else {
-      #       break
-      #     }
-      #   }
-      #   index[k] <- iter
-      # }
+      for (k in seq_along(data)) {
+        d <- data[[k]]
+        iter <- index[k]
+        while (TRUE) {
+          # if hitting the target
+          # TODO: solve this issue (+0.001) precision issue!
+          if (`op`(next_lines[k, idxTarget], t)) {
+            curr_eval[k] <- next_lines[k, idxEvals]
+            break
+          }
+
+          # otherwise, is the iterator finished?
+          if (iter < nrow(d)) {
+            iter <- iter + 1
+            next_lines[k, ] <- d[iter, ]
+          } else {
+            break
+          }
+        }
+        index[k] <- iter
+      }
       
       res[i, ] <- curr_eval[1:N]
       if (n_param > 0) {

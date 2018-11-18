@@ -71,11 +71,11 @@ Data preparation is fairly easy for this tool. Just compress the data folder obt
 
 In addition to the graphical user interface, it is possible to directly call several procedures to analyze the data.
 
-* To read and align all the data set in a folder
+* To read and align all the data set in a folder, e.g., a COCO (BBOB) can be loaded as follows:
   
 ```Shell
-> ds <- read_dir('/path/to/data/folder')
-> ds
+> dsList <- read_dir('/path/to/data/folder', format = 'COCO')
+> dsList
 DataSetList:
 1: DataSet((1+1)-Cholesky-CMA on f1 2D)
 2: DataSet((1+1)-Cholesky-CMA on f1 5D)
@@ -98,66 +98,118 @@ The return value is a list of __DataSets__. Each data set consists of:
 * To get a general summary of one data set, you can use function `summary`:
 
 ```bash
-> summary(ds[[1]])
-DataSet Object: ((1+1)-Cholesky-CMA, f1, 2D)
-80 instance are contained: 1,2,3,4,5,6,7,...,73,74,75,76,77,78,79,80
+> summary(dsList[[1]])
+DataSet Object:
+Source: COCO
+Algorithm: (1+1)-Cholesky-CMA
+Function ID: 1
+Dimension: 2D
+80 instance found: 1,2,3,4,5,6,7,...,73,74,75,76,77,78,79,80
 
-               target runtime.mean runtime.median runtime.sd succ_rate
-   1:     70.10819126       1.0000            1.0  0.0000000    1.0000
-   2:     66.42131777       1.0125            1.0  0.1118034    1.0000
-   3:     62.98712083       1.1125            1.0  0.8999824    1.0000
-   4:     62.54395893       1.1375            1.0  0.9242684    1.0000
-   5:     61.73051944       1.2000            1.0  1.1295793    1.0000
-  ---                                                                 
-1478: 9.473524187e-10     182.6000          182.0 24.0894168    0.0625
-1479: 2.759534823e-10     192.0000          188.5 13.5892114    0.0500
-1480: 2.463309556e-10     195.6667          195.0 14.0118997    0.0375
-1481: 5.223910193e-11     196.0000          196.0 19.7989899    0.0250
-1482: 1.638511549e-11     210.0000          210.0         NA    0.0125
+runtime summary:
+            target     mean median       sd  2%  5% 10% 25% 50% 75% 90% 95% 98%        ERT runs     ps
+   1: 7.010819e+01   1.0000      1       NA   1   1   1   1   1   1   1   1   1 15007.0000    1 0.0125
+   2: 6.642132e+01   1.0000      1       NA   1   1   1   1   1   1   1   1   1 15007.0000    1 0.0125
+   3: 6.298712e+01   1.0000      1       NA   1   1   1   1   1   1   1   1   1 15007.0000    1 0.0125
+   4: 6.254396e+01   1.0000      1       NA   1   1   1   1   1   1   1   1   1 15007.0000    1 0.0125
+   5: 6.173052e+01   1.0000      1       NA   1   1   1   1   1   1   1   1   1 15007.0000    1 0.0125
+  ---                                                                                                 
+1478: 9.473524e-10 187.3553    191 35.84660 140 142 150 167 191 212 226 231 238   197.4605   76 0.9500
+1479: 2.759535e-10 187.2727    191 35.61735 140 142 150 167 187 212 226 231 238   194.8961   77 0.9625
+1480: 2.463310e-10 187.3718    191 35.39613 140 142 150 168 191 209 226 231 238   192.3974   78 0.9750
+1481: 5.223910e-11 187.3038    191 35.17369 140 142 150 168 191 209 226 231 238   189.9620   79 0.9875
+1482: 1.638512e-11 187.5875    191 35.04236 140 142 150 168 191 210 226 231 238   187.5875   80 1.0000
 
-    budget  Fvalue.mean Fvalue.median    Fvalue.sd
- 1:      1 1.672518e+01  1.171157e+01 1.626487e+01
- 2:      2 1.341813e+01  7.960940e+00 1.466877e+01
- 3:      3 1.100825e+01  6.439678e+00 1.261937e+01
- 4:      4 9.326633e+00  5.492333e+00 1.213908e+01
- 5:      5 7.501883e+00  2.946388e+00 1.204200e+01
----                                               
-90:    229 4.902827e-09  4.506106e-09 2.863671e-09
-91:    231 4.902827e-09  4.506106e-09 2.863671e-09
-92:    238 4.902827e-09  4.506106e-09 2.863671e-09
-93:    251 4.737548e-09  4.461953e-09 2.526087e-09
-94:    257 4.737548e-09  4.461953e-09 2.526087e-09
+function value summary:
+                 algId runtime runs         mean       median           sd           2%           5%          10%
+ 1: (1+1)-Cholesky-CMA       1   80 2.019164e+01 1.313629e+01 1.872005e+01 3.976009e-01 1.186758e+00 2.267215e+00
+ 2: (1+1)-Cholesky-CMA       2   80 1.672518e+01 1.171157e+01 1.626487e+01 3.412261e-01 5.649713e-01 1.313165e+00
+ 3: (1+1)-Cholesky-CMA       3   80 1.341813e+01 7.960940e+00 1.466877e+01 1.177243e-01 1.778454e-01 5.553242e-01
+ 4: (1+1)-Cholesky-CMA       4   80 1.100825e+01 6.439678e+00 1.261937e+01 9.206390e-02 1.492565e-01 5.221506e-01
+ 5: (1+1)-Cholesky-CMA       5   80 9.326633e+00 5.492333e+00 1.213908e+01 7.246194e-02 1.031687e-01 3.482309e-01
+---                                                                                                              
+90: (1+1)-Cholesky-CMA     229   80 6.321111e-09 4.609703e-09 8.318463e-09 1.648124e-10 9.137825e-10 1.336938e-09
+91: (1+1)-Cholesky-CMA     231   80 5.823366e-09 4.609703e-09 7.618201e-09 1.648124e-10 9.137825e-10 1.336938e-09
+92: (1+1)-Cholesky-CMA     238   80 5.549184e-09 4.506106e-09 7.258216e-09 1.648124e-10 9.137825e-10 1.336938e-09
+93: (1+1)-Cholesky-CMA     251   80 4.902827e-09 4.506106e-09 2.863671e-09 1.648124e-10 9.137825e-10 1.336938e-09
+94: (1+1)-Cholesky-CMA     257   80 4.737548e-09 4.461953e-09 2.526087e-09 1.648124e-10 9.137825e-10 1.336938e-09
+             25%          50%          75%          90%          95%          98%
+ 1: 5.166078e+00 1.313629e+01 2.922941e+01 5.004596e+01 5.895140e+01 6.442948e+01
+ 2: 3.506037e+00 1.171157e+01 2.470745e+01 3.956328e+01 5.012620e+01 6.002245e+01
+ 3: 2.786120e+00 7.960940e+00 2.103983e+01 3.251354e+01 4.030147e+01 5.690653e+01
+ 4: 1.284869e+00 6.439678e+00 1.636467e+01 2.453239e+01 3.043178e+01 4.718666e+01
+ 5: 9.886750e-01 5.492333e+00 1.317642e+01 2.216466e+01 2.913811e+01 4.718666e+01
+---                                                                              
+90: 2.799292e-09 4.609703e-09 6.554838e-09 8.992768e-09 1.235938e-08 2.771700e-08
+91: 2.799292e-09 4.609703e-09 6.321677e-09 8.916086e-09 9.326487e-09 1.785183e-08
+92: 2.799292e-09 4.506106e-09 6.099065e-09 8.854852e-09 9.180278e-09 1.041480e-08
+93: 2.799292e-09 4.506106e-09 6.099065e-09 8.659254e-09 8.982758e-09 9.377720e-09
+94: 2.799292e-09 4.461953e-09 5.970504e-09 8.547357e-09 8.925389e-09 9.234526e-09
 
-Attributes: names, class, funcId, DIM, Precision, algId, comment, datafile, instance, maxEvals, finalFunvals
+Attributes: names, class, funcId, DIM, Precision, algId, comment, datafile, instance, maxRT, finalFV, src, maximization
 ```
 
-* To get a summary of one data set __at target values/budget values__ (e.g., the runtime distribution), you can use function `get_RT_summary` and `get_FV_summary`:
+* To get a __summary__ of one data set at some function values / runtimes (e.g., the runtime distribution), you can use function `get_RT_summary` (RunTime) and `get_FV_summary` (FunctionValue):
   
 ```bash
-> get_RT_summary(ds[[1]], ftarget = 1e-1, maximization = FALSE)
-             algId       f(x) runs  mean median       sd 2% 5% 10% 25% 50% 75% 90% 95% 98%
-(1+1)-Cholesky-CMA 0.09986529   80 36.55   37.5 17.11236  4  5  14  22  37  49  57  67  68
+> get_RT_summary(dsList[[1]], ftarget = 1e-1)
+                algId     target  mean median       sd 2% 5% 10% 25% 50% 75% 90% 95% 98%   ERT runs ps
+1: (1+1)-Cholesky-CMA 0.09986529 36.55   37.5 17.11236  4  5  14  22  37  49  57  67  68 36.55   80  1
 ```
 
 ```bash
-> get_FV_summary(ds[[1]], runtimes = 100, maximization = FALSE)
-             algId runtime runs           mean       median           sd           2%           5%          10%          25%          50%          75%          90%         95%         98%
-(1+1)-Cholesky-CMA     100   80   0.0002333208 3.797025e-05 0.0004581431 9.843261e-08 4.168509e-07 8.343177e-07 6.090179e-06 3.797025e-05 0.0001831323 0.0006597004 0.001072814 0.001900295
+> get_FV_summary(dsList[[1]], runtime = 100)
+                algId runtime runs         mean       median          sd           2%           5%          10%          25%          50%          75%         90%         95%         98%
+1: (1+1)-Cholesky-CMA     100   80 0.0005886303 8.307195e-05 0.001165899 7.233939e-07 3.708489e-06 8.776148e-06 2.409768e-05 8.307195e-05 0.0004779061 0.001991386 0.002923357 0.004207976
+```
+
+* To get the __sample__ at some function values / runtimes, you can use function `get_RT_sample` (RunTime) and `get_FV_sample` (FunctionValue):
+
+```bash
+> get_RT_sample(dsList[[1]], ftarget = 1e-1, output = 'long')
+                 algId target run RT
+ 1: (1+1)-Cholesky-CMA    0.1   1 69
+ 2: (1+1)-Cholesky-CMA    0.1   2 39
+ 3: (1+1)-Cholesky-CMA    0.1   3 38
+ 4: (1+1)-Cholesky-CMA    0.1   4 34
+ 5: (1+1)-Cholesky-CMA    0.1   5 67
+---                                 
+76: (1+1)-Cholesky-CMA    0.1  76 52
+77: (1+1)-Cholesky-CMA    0.1  77 22
+78: (1+1)-Cholesky-CMA    0.1  78 26
+79: (1+1)-Cholesky-CMA    0.1  79 33
+80: (1+1)-Cholesky-CMA    0.1  80 25
 ```
 
 ```bash
-> get_RT_sample(ds[[1]], ftarget = 1e-1, maximization = F, format = 'long')
-                algId          f(x) run RT
-1  (1+1)-Cholesky-CMA 0.09986528573   1 69
-2  (1+1)-Cholesky-CMA 0.09986528573   2 39
-3  (1+1)-Cholesky-CMA 0.09986528573   3 38
-4  (1+1)-Cholesky-CMA 0.09986528573   4 34
-5  (1+1)-Cholesky-CMA 0.09986528573   5 67
-6  (1+1)-Cholesky-CMA 0.09986528573   6  3
-7  (1+1)-Cholesky-CMA 0.09986528573   7 36
-8  (1+1)-Cholesky-CMA 0.09986528573   8 41
-9  (1+1)-Cholesky-CMA 0.09986528573   9 14
-10 (1+1)-Cholesky-CMA 0.09986528573  10 30
+> get_FV_sample(dsList[[1]], runtime = 100, output = 'long')
+                 algId runtime run         f(x)
+ 1: (1+1)-Cholesky-CMA     100   1 4.007000e-03
+ 2: (1+1)-Cholesky-CMA     100   2 5.381801e-04
+ 3: (1+1)-Cholesky-CMA     100   3 3.970844e-05
+ 4: (1+1)-Cholesky-CMA     100   4 5.345724e-04
+ 5: (1+1)-Cholesky-CMA     100   5 1.458869e-03
+---                                            
+76: (1+1)-Cholesky-CMA     100  76 1.817090e-03
+77: (1+1)-Cholesky-CMA     100  77 3.850201e-06
+78: (1+1)-Cholesky-CMA     100  78 1.330411e-05
+79: (1+1)-Cholesky-CMA     100  79 3.933669e-05
+80: (1+1)-Cholesky-CMA     100  80 5.658113e-07
+```
+
+Or output a wide format...
+```bash
+> get_RT_sample(dsList[[1]], ftarget = 1e-1, output = 'wide')
+                algId target run.1 run.2 run.3 run.4 run.5 run.6 run.7 run.8 run.9 run.10 run.11 run.12 run.13 run.14 run.15
+1: (1+1)-Cholesky-CMA    0.1    69    39    38    34    67     3    36    41    14     30     41     47     31     48     53
+   run.16 run.17 run.18 run.19 run.20 run.21 run.22 run.23 run.24 run.25 run.26 run.27 run.28 run.29 run.30 run.31 run.32
+1:      8     19     18     57     16     28     51     53     22     47     53     17      5     48     13     63     45
+   run.33 run.34 run.35 run.36 run.37 run.38 run.39 run.40 run.41 run.42 run.43 run.44 run.45 run.46 run.47 run.48 run.49
+1:     15     24     46     65     44     71     52     31     17     18     45     19      5     37     50     33     24
+   run.50 run.51 run.52 run.53 run.54 run.55 run.56 run.57 run.58 run.59 run.60 run.61 run.62 run.63 run.64 run.65 run.66
+1:     40     49     55     48     50     33     20     33     35     49     37      4     22     68     57     19     44
+   run.67 run.68 run.69 run.70 run.71 run.72 run.73 run.74 run.75 run.76 run.77 run.78 run.79 run.80
+1:     38     48     31     14     41     50     67     21     43     52     22     26     33     25
 ```
 
 * It is also possible to generate some diagnostic plots (using `ggplot2`):
@@ -165,15 +217,14 @@ Attributes: names, class, funcId, DIM, Precision, algId, comment, datafile, inst
 ```bash
 > ds <- read_dir('~/Dropbox/data/LO_adap_lambda/')
 > plot(ds[[1]])
-show data aligned by runtime?
 ```
 
 <div class="row">
   <div class="column">
-    <img src="img/1.png" style="float: left; width: 48%; margin-right: 1%; margin-bottom: 0.5em;">
+    <img src="img/RT.png" style="float: left; width: 48%; margin-right: 1%; margin-bottom: 0.5em;">
   </div>
   <div class="column">
-    <img src="img/2.png" style="float: left; width: 48%; margin-right: 1%; margin-bottom: 0.5em;">
+    <img src="img/FV.png" style="float: left; width: 48%; margin-right: 1%; margin-bottom: 0.5em;">
   </div>
 </div>
 

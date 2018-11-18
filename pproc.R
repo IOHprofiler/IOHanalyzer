@@ -290,7 +290,8 @@ get_RT_summary.DataSet <- function(ds, ftarget) {
   maximization <- attr(ds, 'maximization')
   
   ftarget <- c(ftarget) %>% as.double %>% sort(decreasing = !maximization)
-  FValues <- rownames(data) %>% as.numeric
+  # FValues <- rownames(data) %>% as.numeric
+  FValues <- data[, target]
   idx <- seq_along(FValues)
   op <- ifelse(maximization, `>=`, `<=`)
   
@@ -377,18 +378,18 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide') {
 #' @export
 #'
 #' @examples
-get_FV_summary.DataSet <- function(ds, runtimes) {
+get_FV_summary.DataSet <- function(ds, runtime) {
   data <- ds$FV
   NC <- ncol(data)
   NR <- nrow(data)
   algId <- attr(ds, 'algId')
   maximization <- attr(ds, 'maximization')
   
-  runtimes <- c(runtimes) %>% unique %>% as.numeric %>% sort
+  runtime <- c(runtime) %>% unique %>% as.numeric %>% sort
   RT <- rownames(data) %>% as.numeric
   idx <- seq_along(RT)
   
-  matched <- sapply(runtimes, function(r) {
+  matched <- sapply(runtime, function(r) {
     res <- idx[RT >= r][1]
     ifelse(is.na(res), NR, res)
   })
@@ -397,7 +398,7 @@ get_FV_summary.DataSet <- function(ds, runtimes) {
   apply(data, 1, C_quantile) %>% 
     t %>% 
     as.data.table %>% 
-    cbind(algId, runtimes, NC, 
+    cbind(algId, runtime, NC, 
           apply(data, 1, .mean),
           apply(data, 1, .median),
           apply(data, 1, .sd), .) %>% 
@@ -414,25 +415,25 @@ get_FV_summary.DataSet <- function(ds, runtimes) {
 #' @export
 #'
 #' @examples
-get_FV_sample.DataSet <- function(ds, runtimes, output = 'wide') {
+get_FV_sample.DataSet <- function(ds, runtime, output = 'wide') {
   data <- ds$FV
   N <- ncol(data)
   n_row <- nrow(data)
   algId <- attr(ds, 'algId')
   maximization <- attr(ds, 'maximization')
   
-  runtimes <- c(runtimes) %>% unique %>% as.numeric %>% sort
+  runtime <- c(runtime) %>% unique %>% as.numeric %>% sort
   RT <- rownames(data) %>% as.numeric
   idx <- seq_along(RT)
   
-  matched <- sapply(runtimes, function(r) {
+  matched <- sapply(runtime, function(r) {
     res <- idx[RT >= r][1]
     ifelse(is.na(res), n_row, res)
   })
   
   res <- data[matched, , drop = FALSE] %>% 
     as.data.table %>% 
-    cbind(algId, runtimes, .) %>% 
+    cbind(algId, runtime, .) %>% 
     set_colnames(c('algId', 'runtime', paste0('run.', seq(N))))
   
   if (output == 'long') {
@@ -707,46 +708,46 @@ summary.DataSetList <- function(data) {
     as.data.frame
 }
 
-get_RT_summary.DataSetList <- function(dsList, fseq, algorithm = 'all') {
+get_RT_summary.DataSetList <- function(dsList, ftarget, algorithm = 'all') {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_RT_summary(ds, fseq)) %>% rbindlist
+  lapply(dsList, function(ds) get_RT_summary(ds, ftarget)) %>% rbindlist
 }
 
-get_RT_sample.DataSetList <- function(dsList, fseq, algorithm = 'all', ...) {
+get_RT_sample.DataSetList <- function(dsList, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_RT_sample(ds, fseq, ...)) %>% rbindlist
+  lapply(dsList, function(ds) get_RT_sample(ds, ftarget, ...)) %>% rbindlist
 }
 
-get_FV_summary.DataSetList <- function(dsList, runtimes, algorithm = 'all') {
+get_FV_summary.DataSetList <- function(dsList, runtime, algorithm = 'all') {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_RT_summary(ds, runtimes)) %>% rbindlist
+  lapply(dsList, function(ds) get_RT_summary(ds, runtime)) %>% rbindlist
 }
 
-get_FV_sample.DataSetList <- function(dsList, runtimes, algorithm = 'all', ...) {
+get_FV_sample.DataSetList <- function(dsList, runtime, algorithm = 'all', ...) {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_RT_sample(ds, runtimes, ...)) %>% rbindlist
+  lapply(dsList, function(ds) get_RT_sample(ds, runtime, ...)) %>% rbindlist
 }
 
-get_PAR_summary.DataSetList <- function(dsList, fseq, algorithm = 'all', ...) {
+get_PAR_summary.DataSetList <- function(dsList, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_PAR_summary(ds, fseq, ...)) %>% rbindlist
+  lapply(dsList, function(ds) get_PAR_summary(ds, ftarget, ...)) %>% rbindlist
 }
 
-get_PAR_sample.DataSetList <- function(dsList, fseq, algorithm = 'all', ...) {
+get_PAR_sample.DataSetList <- function(dsList, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_PAR_sample(ds, fseq, ...)) %>% rbindlist
+  lapply(dsList, function(ds) get_PAR_sample(ds, ftarget, ...)) %>% rbindlist
 }
 
 getDIM <- function(data) {

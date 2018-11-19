@@ -1,0 +1,9 @@
+This table summarizes for each algorithm and each target value chosen on the left:
+
+  * runs: the number of runs where non-missing parameter values are observed, for each required target value $f(x)$, 
+  * mean: the average value of the specified __parameter__ when target value $f(x)$ is hit.
+  * median, $2\%, 5\%,\ldots,98\%$ : the quantiles of these parameter values
+
+When not all runs managed to find the target value, the statistics hold only for those runs that did. That is, the mean value is the mean of the successful runs. Same for the quantiles. An alternative version with simulated restarts is currently in preparation. 
+
+

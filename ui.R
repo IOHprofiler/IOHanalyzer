@@ -836,8 +836,32 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                          
                          mainPanel(
                            width = 9,
-                           HTML(paste0('<div style="font-size:120%;">', includeMarkdown('RMD/RT_SUMMARY_TABLE.Rmd'),'</div>')),
+                           HTML(paste0('<div style="font-size:120%;">', includeMarkdown('RMD/PAR_SUMMARY_TABLE.Rmd'),'</div>')),
                            tableOutput('table_PAR_summary')
+                         )
+                     ),
+                     
+                     box(title = HTML('<p style="font-size:120%;">Parameter Sample at Chosen Target Values</p>'), width = 12,
+                         solidHeader = T, status = "primary", collapsible = T,
+                         sidebarPanel(
+                           width = 3,
+                           HTML_P('Set the range and the granularity of the results.
+                                The table will show fixed-target parameter values for evenly spaced target values.'),
+
+                           textInput('PAR_F_MIN_SAMPLE', label = F_MIN_LABEL, value = ''),
+                           textInput('PAR_F_MAX_SAMPLE', label = F_MAX_LABEL, value = ''),
+                           textInput('PAR_F_STEP_SAMPLE', label = F_STEP_LABEL, value = ''),
+                           selectInput('PAR_ALGID_INPUT_SAMPLE', 'Algorithms', choices = NULL, selected = NULL),
+                           selectInput('PAR_INPUT_SAMPLE', 'Parameters', choices = NULL, selected = NULL),
+                           downloadButton("PAR_SAMPLE_downloadData", "Save this table as csv")
+                         ),
+
+                         mainPanel(
+                           width = 9,
+                           HTML('<p style="font-size:120%;">This table shows for each selected algorithm \\(A\\), 
+                                 each selected target value \\(f(x)\\), and each run \\(r\\) 
+                                 the parameter value observed when the target value \\(f(x)\\) is reached for the first time.</p>'),
+                           dataTableOutput('table_PAR_SAMPLE')
                          )
                      )
                   )

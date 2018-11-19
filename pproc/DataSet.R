@@ -13,31 +13,10 @@ suppressMessages(library(magrittr))
 suppressMessages(library(reshape2))
 suppressMessages(library(data.table))
 
-source('readFiles.R')
-source('global.R')
-source('plot.R')
-
-#' Estimator 'SP' for the Expected Running Time (ERT)
-#'
-#' @param data A dataframe or matrix
-#' @param max_runtime A Numerical vector. Should has the same size as columns of data 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-SP <- function(data, max_runtime) {
-  N <- ncol(data)
-  succ <- apply(data, 1, function(x) sum(!is.na(x)))
-  succ_rate <- succ / N
-  
-  idx <- is.na(data)
-  for (i in seq(N)) {
-    data[idx[, i], i] <- max_runtime[i]
-  }
-  
-  list(ERT = rowSums(data) / succ, runs = succ, succ_rate = succ_rate)
-}
+# source('readFiles.R')
+# source('../global.R')
+# source('../plot.R')
+# source('stats.R')
 
 #' Constructor of S3 class 'DataSet'
 #'
@@ -125,7 +104,7 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
       info$instance <- seq(length(dat))
     }
     
-    # NOTE: the RT summary is always pre-computed 
+    # TODO: maybe the RT summary should not be always pre-computed 
     AUX <- list()
     data <- RT$RT
     n_instance <- length(info$instance)
@@ -150,7 +129,7 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
 
 print.DataSet <- function(ds, verbose = F) {
   # TODO: implement the verbose mode
-  print(as.character.DataSet(ds))
+  cat(as.character.DataSet(ds))
 }
 
 cat.DataSet <- function(ds) cat(as.character(ds))
@@ -196,7 +175,7 @@ summary.DataSet <- function(ds) {
   cat(paste('Attributes:', paste0(names(ds_attr), collapse = ', ')))
 }
 
-# TODO: implement save
+# TODO: implement the save option
 plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
   dt <- data.table(ds$RT) 
   NC <- ncol(dt)
@@ -265,7 +244,7 @@ plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
     attr(dsL, 'comment') == attr(dsR, 'comment')
 }
 
-# S3 generics
+# adding S3 generics
 get_RT_sample <- function(ds, ...) UseMethod("get_RT_sample", ds)
 get_RT_summary <- function(ds, ...) UseMethod("get_RT_summary", ds)
 get_FV_sample <- function(ds, ...) UseMethod("get_FV_sample", ds)
@@ -284,14 +263,15 @@ get_PAR_name <- function(ds) UseMethod("get_PAR_name", ds)
 #'
 #' @examples
 get_RT_summary.DataSet <- function(ds, ftarget) {
-  data <- ds$RT.summary
-  # maxRT <- attr(ds, 'maxRT')
+  # data <- ds$RT.summary
+  data <- ds$RT
+  maxRT <- attr(ds, 'maxRT')
   algId <- attr(ds, 'algId')
   maximization <- attr(ds, 'maximization')
   
   ftarget <- c(ftarget) %>% as.double %>% sort(decreasing = !maximization)
-  # FValues <- rownames(data) %>% as.numeric
-  FValues <- data[, target]
+  FValues <- rownames(data) %>% as.numeric
+  # FValues <- data[, target]
   idx <- seq_along(FValues)
   op <- ifelse(maximization, `>=`, `<=`)
   
@@ -302,36 +282,38 @@ get_RT_summary.DataSet <- function(ds, ftarget) {
     }
   )
   
-  # data <- data[matched, , drop = FALSE]
-  # apply(data, 1, D_quantile) %>% 
-  #   t %>% 
-  #   as.data.table %>% 
-  #   cbind(as.data.table(SP(data, maxRT))) %>% 
-  #   cbind(algId, ftarget, 
-  #         apply(data, 1, .mean),
-  #         apply(data, 1, .median),
-  #         apply(data, 1, .sd), .) %>% 
-  #   set_colnames(c('algId', 'target', 'mean', 'median', 
-  #                  'sd', paste0(probs * 100, '%'), 'ERT', 'runs', 'ps'))
-  
-  NAs <- is.na(matched)
-  if (any(NAs)) {
-    rbindlist(
-      list(
-        data[matched[!NAs], ],
-        data.table(cbind(t(t(ftarget[NAs])), matrix(NA, sum(NAs), ncol(data) - 1)))
-      )
-    ) %>% cbind(algId, .)
+  if (1 < 2) {
+    data <- data[matched, , drop = FALSE]
+    apply(data, 1, D_quantile) %>%
+      t %>%
+      as.data.table %>%
+      cbind(as.data.table(SP(data, maxRT))) %>%
+      cbind(algId, ftarget,
+            apply(data, 1, .mean),
+            apply(data, 1, .median),
+            apply(data, 1, .sd), .) %>%
+      set_colnames(c('algId', 'target', 'mean', 'median',
+                     'sd', paste0(probs * 100, '%'), 'ERT', 'runs', 'ps'))
   } else {
-    data[matched, ] %>% cbind(algId, .)
+    NAs <- is.na(matched)
+    if (any(NAs)) {
+      rbindlist(
+        list(
+          data[matched[!NAs], ],
+          data.table(cbind(t(t(ftarget[NAs])), matrix(NA, sum(NAs), ncol(data) - 1)))
+        )
+      ) %>% cbind(algId, .)
+    } else {
+      data[matched, -c('target')] %>% cbind(algId, ftarget, .)
+    }
   }
 }
 
 #' Get RunTime Sample
 #'
-#' @param ds 
-#' @param ftarget 
-#' @param output 
+#' @param ds A DataSet object
+#' @param ftarget A Numerical vector. Function values at which runtime values are consumed
+#' @param output A character determining the format of output data.table: 'wide' or 'long'
 #'
 #' @return
 #' @export
@@ -371,8 +353,8 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide') {
 
 #' Get Function Value Summary
 #'
-#' @param ds 
-#' @param runtimes 
+#' @param ds A DataSet object
+#' @param runtimes A Numerical vector. Runtimes at which function values are reached
 #'
 #' @return
 #' @export
@@ -408,7 +390,7 @@ get_FV_summary.DataSet <- function(ds, runtime) {
 #' Get Funtion Value Samples
 #'
 #' @param ds A DataSet object
-#' @param runtimes A Numerical vector. Function values reached taking the given runtime are extracted from the data
+#' @param runtimes A Numerical vector. Runtimes at which function values are reached
 #' @param output A character. The format of the output data: 'wide' or 'long' 
 #'
 #' @return A data.table object
@@ -453,7 +435,7 @@ get_PAR_name.DataSet <- function(ds) {
 #' Get Parameter Value Summary
 #'
 #' @param ds A DataSet object
-#' @param ftarget A Numerical vector. Function values used to align parameter values
+#' @param ftarget A Numerical vector. Function values at which parameter values are observed
 #' @param parId A character vector. Either 'all' or the name of parameters to be retrieved
 #'
 #' @return A data.table object containing basic statistics of parameter values aligned at each given target value
@@ -502,7 +484,7 @@ get_PAR_summary.DataSet <- function(ds, ftarget, parId = 'all') {
 #' Get Parameter Value Samples
 #'
 #' @param ds A DataSet object
-#' @param ftarget A Numerical vector. Function values used to align parameter values
+#' @param ftarget A Numerical vector. Function values at which parameter values are observed
 #' @param parId A character vector. Either 'all' or the name of parameters to be retrieved
 #' @param output A character. The format of the output data: 'wide' or 'long' 
 #'
@@ -547,301 +529,6 @@ get_PAR_sample.DataSet <- function(ds, ftarget, parId = 'all', output = 'wide') 
     res <- melt(res, id = c('algId', 'parId', 'target'), variable.name = 'run', value.name = 'value')
     res[, run := as.numeric(gsub('run.', '', run)) %>% as.integer
         ][order(target, run)]
-  }
-  res
-}
-
-# read all raw data files in a give directory
-read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE, 
-                     format = IOHprofiler, subsampling = FALSE) {
-  DataSetList(path, verbose, print_fun, maximization = maximization,
-              format = format, subsampling = subsampling)
-}
-
-# TODO: find a better name for this function
-# TODO: implement this
-load_index <- function(file) {
-  
-}
-
-# TODO: put class DataSetList in a separate file
-
-#' S3 constructor of the 'DataSetList' 
-#'
-#' Attributes
-#'   funId
-#'   DIM
-#'   algId
-#   
-#' @param path 
-#' @param verbose 
-#' @param print_fun 
-#' @param maximization 
-#' @param format 
-#' @param subsampling 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization = TRUE,
-                        format = IOHprofiler, subsampling = FALSE) {
-  if (is.null(path))
-    return(structure(list(), class = c('DataSetList', 'list')))
-  
-  path <- trimws(path)
-  indexFiles <- file.path(path, dir(path, pattern = '.info'))  # scan all .info files
-  
-  if (is.null(print_fun))
-    print_fun <- cat
-  
-  object <- list()
-  DIM <- c()
-  algId <- c()
-  funcId <- c()
-  i <- 1
-  
-  for (file in indexFiles) {
-    indexInfo <- read_IndexFile(file)
-    
-    if (verbose) {
-      print_fun(paste('Processing', file, '...\n'))
-      print_fun(sprintf('   algorithm %s...\n', indexInfo[[1]]$algId))
-    }
-    
-    for (info in indexInfo) {
-      if (verbose) {
-        print_fun(sprintf('      %d instances on f%d %dD...\n',
-                          length(info$instance), info$funcId, info$DIM))
-      }
-      
-      copy_flag <- TRUE
-      data <- DataSet(info, maximization = maximization, format = format, 
-                      subsampling = subsampling)
-      DIM[i] <- attr(data, 'DIM')
-      funcId[i] <- attr(data, 'funcId')
-      algId[i] <- attr(data, 'algId')
-      instance <- attr(data, 'instance')
-      
-      # check for duplicated instances
-      if (length(object) != 0) {
-        idx <- sapply(object, . %>% `==`(data)) %>% which
-        for (k in idx) {
-          instance_ <- attr(object[[k]], 'instance')
-          if (all(instance == instance_)) {
-            copy_flag <- FALSE
-            warning('duplicated instances!')
-            break
-          }
-          
-          if (length(intersect(instance, instance_)) != 0) {
-            warning('duplicated instances!')
-          }
-        }
-      }
-      
-      if (copy_flag) {
-        object[[i]] <- data
-        i <- i + 1
-      }
-    }
-    
-    if (verbose) {
-      print_fun("\n")
-    }
-  }
-  
-  # TODO: sort all DataSet by multiple attributes: algId, funcId and DIM
-  class(object) %<>% c('DataSetList')
-  attr(object, 'DIM') <- DIM
-  attr(object, 'funcId') <- funcId
-  attr(object, 'algId') <- algId
-  object
-}
-
-c.DataSetList <- function(...) {
-  # TODO: maybe remove duplicated dataset in the further
-  # remove the empty list first
-  dsl <- list(...)
-  dsl <- dsl[sapply(dsl, length) != 0]  
-  
-  if (length(dsl) == 0)
-    return()
-  
-  object <- unlist(dsl, recursive = F)
-  class(object) %<>% c('DataSetList')
-  
-  for (attr_str in c('DIM', 'funcId', 'algId')) {
-    attr(object, attr_str) <- unlist(lapply(dsl, function(x) attr(x, attr_str)))
-  }
-  object
-}
-
-`[.DataSetList` <- function(x, i, drop = FALSE) {
-  # remove the attributes firstly
-  obj <- unclass(x)[i] 
-  class(obj) %<>% c('DataSetList')
-  
-  # also slice the attributes accordingly
-  attr(obj, 'DIM') <- attr(x, 'DIM')[i]
-  attr(obj, 'funcId') <- attr(x, 'funcId')[i]
-  attr(obj, 'algId') <- attr(x, 'algId')[i]
-  obj
-}
-
-print.DataSetList <- function(ds) {
-  cat('DataSetList:\n')
-  for (i in seq_along(ds)) {
-    cat(sprintf('%d: %s\n', i, as.character(ds[[i]])))
-  }
-}
-
-summary.DataSetList <- function(data) {
-  sapply(data, function(d) {
-    list(funcId = attr(d, 'funcId'), 
-      DIM = attr(d, 'DIM'),
-      algId = attr(d, 'algId'),
-      datafile = attr(d, 'datafile'),
-      comment = attr(d, 'comment'))
-  }) %>% 
-    t %>% 
-    as.data.frame
-}
-
-get_RT_summary.DataSetList <- function(dsList, ftarget, algorithm = 'all') {
-  if (algorithm != 'all')
-    dsList <- subset(dsList, algId == algorithm)
-  
-  lapply(dsList, function(ds) get_RT_summary(ds, ftarget)) %>% rbindlist
-}
-
-get_RT_sample.DataSetList <- function(dsList, ftarget, algorithm = 'all', ...) {
-  if (algorithm != 'all')
-    dsList <- subset(dsList, algId == algorithm)
-  
-  lapply(dsList, function(ds) get_RT_sample(ds, ftarget, ...)) %>% rbindlist
-}
-
-get_FV_summary.DataSetList <- function(dsList, runtime, algorithm = 'all') {
-  if (algorithm != 'all')
-    dsList <- subset(dsList, algId == algorithm)
-  
-  lapply(dsList, function(ds) get_RT_summary(ds, runtime)) %>% rbindlist
-}
-
-get_FV_sample.DataSetList <- function(dsList, runtime, algorithm = 'all', ...) {
-  if (algorithm != 'all')
-    dsList <- subset(dsList, algId == algorithm)
-  
-  lapply(dsList, function(ds) get_RT_sample(ds, runtime, ...)) %>% rbindlist
-}
-
-get_PAR_summary.DataSetList <- function(dsList, ftarget, algorithm = 'all', ...) {
-  if (algorithm != 'all')
-    dsList <- subset(dsList, algId == algorithm)
-  
-  lapply(dsList, function(ds) get_PAR_summary(ds, ftarget, ...)) %>% rbindlist
-}
-
-get_PAR_sample.DataSetList <- function(dsList, ftarget, algorithm = 'all', ...) {
-  if (algorithm != 'all')
-    dsList <- subset(dsList, algId == algorithm)
-  
-  lapply(dsList, function(ds) get_PAR_sample(ds, ftarget, ...)) %>% rbindlist
-}
-
-getDIM <- function(data) {
-  sapply(data, function(d) attr(d, 'DIM')) %>% unique %>% sort
-}
-
-getfuncId <- function(data) {
-  sapply(data, function(d) attr(d, 'funcId')) %>% unique %>% sort
-}
-
-getAlgId <- function(data) {
-  sapply(data, function(d) attr(d, 'algId')) %>% unique %>% sort
-}
-
-getParId <- function(data) {
-  lapply(data, function(d) setdiff(names(d), c('RT', 'FV', 'RT.summary'))) %>% unlist %>% unique
-}
-
-# TODO: let the user choose/detect whether the problem is subject to maximization
-# and determine whether to sort the function values in ascending/desceding order
-getFunvals <- function(data) {
-  lapply(data, function(x) rownames(x$RT)) %>% unlist %>%
-    as.numeric %>% unique %>% sort %>% rev
-}
-
-getRuntimes <- function(data) {
-  lapply(data, function(x) rownames(x$FV)) %>% unlist %>%
-    as.numeric %>% unique %>% sort
-}
-
-filter.DataSetList <- function(data, by) {
-  on <- names(by)
-  idx <- rep(TRUE, length(data))
-  for (i in seq_along(on)) {
-    idx <- idx & sapply(data, . %>% attr(on[i])) == by[i]
-  }
-  data[idx]
-}
-
-# filter the DataSetList
-subset.DataSetList <- function(dsList, ...) {
-  n <- nargs() - 1
-  condition_call <- substitute(list(...))
-  enclos <- parent.frame()
-  idx <- sapply(dsList, 
-                function(ds) 
-                  eval(condition_call, attributes(ds), enclos) %>% 
-                  unlist %>% 
-                  all
-                )
-  dsList[idx]
-}
- 
-# functions to compute statistics from the data set
-RT.ECDF <- function(x) {
-  x <- sort(x)
-  x.unique <- unique(x)
-  p <- seq_along(x) / length(x)
-  for (v in x.unique) {
-    p[x == v] <- max(p[x == v])
-  }
-  
-  f <- ecdf(x)
-  attr(f, 'x') <- x.unique
-  attr(f, 'p') <- p
-  attr(f, 'min') <- min(x)
-  attr(f, 'max') <- max(x)
-  f
-}
-
-# calculate the area under ECDFs on user specified targets
-ECDF_AUC <- function(df, ftargets) {
-  funs <- lapply(ftargets, function(f) {
-    RT(df, f, format = 'long') %>% 
-      '$'('RT') %>% {
-        if (all(is.na(.))) NULL
-        else  RT.ECDF(.)
-      }
-  })
-  
-  auc <- sapply(funs,
-                function(fun) {
-                  if (is.null(fun)) 0
-                  else integrate(fun, lower = attr(fun, 'min') - 1, upper = RT.max, 
-                                 subdivisions = 5e3) %>% {'$'(., 'value') / RT.max}
-                })
-}
-
-CDF_discrete <- function(x) {
-  x <- sort(x)
-  x.unique <- unique(x)
-  res <- seq_along(x) / length(x)
-  for (v in x.unique) {
-    res[x == v] <- max(res[x == v])
   }
   res
 }

@@ -233,12 +233,13 @@ Or output a wide format...
 
 The technical tasks to do are listed as follows:
 
+* [ ] implement fast row-wise quantile function as apply is a bit slow (maybe not worthwhile)
 * [ ] add version number
 * [ ] perhaps add stochastic process modelling / analysis on the performance data (e.g., to test if it is a martingale)
 * [ ] convert data processing code into a package (make the data analysis part as a separate R package)
 * [ ] add more stastistical tests
 * [x] implement the standard R `summary` method for `DataSet` and `DataSetList` classes
-* [x] add _ggplot2_ based static plotting procedures for the programming interface
+* [x] add `ggplot2` based static plotting procedures for the programming interface
 * [ ] to determine the data source to align the data set using runtimes
 
 ## Contact

@@ -354,7 +354,7 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide') {
 #' Get Function Value Summary
 #'
 #' @param ds A DataSet object
-#' @param runtimes A Numerical vector. Runtimes at which function values are reached
+#' @param runtime A Numerical vector. Runtimes at which function values are reached
 #'
 #' @return
 #' @export
@@ -390,7 +390,7 @@ get_FV_summary.DataSet <- function(ds, runtime) {
 #' Get Funtion Value Samples
 #'
 #' @param ds A DataSet object
-#' @param runtimes A Numerical vector. Runtimes at which function values are reached
+#' @param runtime A Numerical vector. Runtimes at which function values are reached
 #' @param output A character. The format of the output data: 'wide' or 'long' 
 #'
 #' @return A data.table object

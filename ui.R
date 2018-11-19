@@ -853,6 +853,8 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                            textInput('PAR_F_STEP_SAMPLE', label = F_STEP_LABEL, value = ''),
                            selectInput('PAR_ALGID_INPUT_SAMPLE', 'Algorithms', choices = NULL, selected = NULL),
                            selectInput('PAR_INPUT_SAMPLE', 'Parameters', choices = NULL, selected = NULL),
+                           selectInput('PAR_download_format', 'Format of the csv', 
+                                       choices = c('long', 'wide'), selected = 'wide'),
                            downloadButton("PAR_SAMPLE_downloadData", "Save this table as csv")
                          ),
 

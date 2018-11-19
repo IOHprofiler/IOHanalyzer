@@ -19,6 +19,7 @@ suppressMessages(library(plotly))
 for (f in list.files('pproc', pattern = '.R', full.names = T)) {
   source(f)
 }
+
 source('plot.R')
 
 options(width = 80)
@@ -1560,7 +1561,10 @@ shinyServer(function(input, output, session) {
       reverse_trans_funeval %>% 
       .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     
-    get_PAR_sample(data, fseq, input$PAR_ALGID_INPUT_SAMPLE, input$PAR_INPUT_SAMPLE)
+    get_PAR_sample(data, ftarget = fseq, 
+                   algorithm = input$PAR_ALGID_INPUT_SAMPLE, 
+                   parId = input$PAR_INPUT_SAMPLE,
+                   output = input$PAR_download_format)
   })
   
   output$table_PAR_SAMPLE <- renderDataTable({

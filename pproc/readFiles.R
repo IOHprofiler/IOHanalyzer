@@ -159,8 +159,7 @@ read_COCO_dat <- function(fname, subsampling = FALSE) {
   
   idx <- which(startsWith(X, '%'))
   df <- paste(X[-idx], collapse = '\n') %>% 
-    fread(header = FALSE, sep = ' ', colClasses = 'numeric') %>% 
-    as.data.frame
+    fread(header = FALSE, sep = ' ', colClasses = 'numeric')
   
   idx %<>% c(length(X) + 1) %>% `-`(seq(0, length(idx)))
   
@@ -168,7 +167,7 @@ read_COCO_dat <- function(fname, subsampling = FALSE) {
          function(i) {
            i1 <- idx[i]
            i2 <- idx[i + 1] - 1
-           ans <-  df[i1:i2, ]
+           ans <-  df[i1:i2, ] %>% as.matrix
            
            # TODO: determine the number of records automatically, the same here
            if (subsampling)
@@ -178,42 +177,85 @@ read_COCO_dat <- function(fname, subsampling = FALSE) {
          })
 }
 
+# TODO: double check the index of the target column
 # global variables for the alignment
 idxEvals <- 1
-idxTarget <- 5
+idxTarget <- 3  
 n_data_column <- 5
 
-# TODO: finish this new function
+# faster alignment for runtimes
+# align_RT <- function(data, format = IOHprofiler) {
+#   
+#   if (format == IOHprofiler) {
+#     maximization <- TRUE
+#     idxTarget <- 3
+#   } else if (format == COCO) {
+#     maximization <- FALSE
+#     idxTarget <- 3
+#   }
+#   
+#   FV <- lapply(data, function(x) x[, idxTarget]) %>%
+#     unlist %>% unique %>% sort(decreasing = !maximization)
+#   
+#   n_rows <- sapply(data, nrow)
+#   n_column <- sapply(data, ncol) %>% unique
+#   
+#   if (format == COCO) {
+#     n_param <- 0
+#     idxValue <- idxEvals
+#     param_names <- NULL
+#   } else {
+#     idxValue <- c(idxEvals, (n_data_column + 1):n_column)
+#     n_param <- n_column - n_data_column
+#     param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
+#   }
+#     
+#   N <- length(data)
+#   NR <- length(FV)
+#   
+#   tmp <- lapply(data,
+#          function(d) {
+#            c_impute_runtime(d[, idxTarget], d[, idxValue, drop = F], FV, maximization)
+#          })
+#   
+#   res <- list()
+#   for (k in seq(length(n_param + 1))) {
+#     res[[k]] <- lapply(tmp, function(col) col[, k]) %>% 
+#       unlist %>%
+#       matrix(nrow = NR, ncol = N) %>%
+#       set_rownames(FV)
+#   }
+#   set_names(res, c('RT', param_names))
+# }
+
+# faster alignment for runtimes
 align_RT <- function(data, format = IOHprofiler) {
-  Fvalues <- lapply(data, function(x) x[, idxTarget]) %>%
-    unlist %>% unique %>% sort
   
   if (format == IOHprofiler) {
     maximization <- TRUE
-    idxTarget <- 5
+    idxTarget <- 3
   } else if (format == COCO) {
     maximization <- FALSE
     idxTarget <- 3
   }
   
+  FV <- lapply(data, function(x) x[, idxTarget]) %>%
+    unlist %>% unique %>% sort(decreasing = !maximization)
+  
   n_rows <- sapply(data, nrow)
-  n_column <- sapply(data, . %>% ncol) %>% unique
+  n_column <- sapply(data, ncol) %>% unique
   
-  if (format == COCO)
+  if (format == COCO) {
     n_param <- 0
-  else
+    idxValue <- idxEvals
+    param_names <- NULL
+  } else {
+    idxValue <- c(idxEvals, (n_data_column + 1):n_column)
     n_param <- n_column - n_data_column
+    param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
+  }
   
-  N <- length(data)
-  nrow <- length(FV)
-  
-  lapply(data,
-         function(d) {
-           c_impute_runtime(d[, idxTarget], d[, idxEvals], FV)
-         }) %>%
-    unlist %>%
-    matrix(nrow = nrow, ncol = N) %>%
-    set_rownames(FV)
+  c_align_RT(data, FV, idxValue - 1, maximization) %>% set_names(c('RT', param_names))
 }
 
 # align all instances at a given target/precision
@@ -366,30 +408,31 @@ align_by_target <- function(data, targets = 'full', nrow = 100, maximization = T
       curr_eval[1:N] <- NA
       
       # Rcpp implementation
-      # curr_eval[] <- align_by_target_inner_loop(t, idxEvals - 1, idxTarget - 1,
-                                                # data, index, next_lines, curr_eval)
-  
-      for (k in seq_along(data)) {
-        d <- data[[k]]
-        iter <- index[k]
-        while (TRUE) {
-          # if hitting the target
-          # TODO: solve this issue (+0.001) precision issue!
-          if (`op`(next_lines[k, idxTarget], t)) {
-            curr_eval[k] <- next_lines[k, idxEvals]
-            break
-          }
-
-          # otherwise, is the iterator finished?
-          if (iter < nrow(d)) {
-            iter <- iter + 1
-            next_lines[k, ] <- d[iter, ]
-          } else {
-            break
-          }
-        }
-        index[k] <- iter
-      }
+      curr_eval[] <- align_by_target_inner_loop(t, idxEvals - 1, idxTarget - 1,
+                                                data, index - 1, next_lines, curr_eval,
+                                                maximization)
+      
+      # slow R alternative
+      # for (k in seq_along(data)) {
+      #   d <- data[[k]]
+      #   iter <- index[k]
+      #   while (TRUE) {
+      #     # if hitting the target
+      #     if (`op`(next_lines[k, idxTarget], t)) {
+      #       curr_eval[k] <- next_lines[k, idxEvals]
+      #       break
+      #     }
+      # 
+      #     # otherwise, is the iterator finished?
+      #     if (iter < nrow(d)) {
+      #       iter <- iter + 1
+      #       next_lines[k, ] <- d[iter, ]
+      #     } else {
+      #       break
+      #     }
+      #   }
+      #   index[k] <- iter
+      # }
       
       res[i, ] <- curr_eval[1:N]
       if (n_param > 0) {

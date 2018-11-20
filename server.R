@@ -176,8 +176,6 @@ shinyServer(function(input, output, session) {
                                                    format = src_format,
                                                    subsampling = sub_sampling))
         
-        # TODO: fix this urgly part by implementing 'c()' for DataSetList
-        # class(DataList$data) <- 'DataSetList'
         shinyjs::html("upload_data_promt", 
                       sprintf('%d: %s\n', length(folderList$data), folder), add = TRUE)
       }
@@ -369,16 +367,6 @@ shinyServer(function(input, output, session) {
     
     req(length(fseq) != 0)
     get_RT_summary(data, fseq, algorithm = input$ALGID_INPUT)
-    
-    # for (i in seq_along(data)) {
-    #   ds <- data[[i]]
-    #   algId <- attr(ds, 'algId')
-    #   if (input$ALGID_INPUT != 'all' && algId != input$ALGID_INPUT)
-    #     next
-    #   
-    #   res[[i]] <- get_RT_summary(data, fseq)
-    # }
-    # do.call(rbind, res)
   })
   
   output$table_RT_summary <- renderTable({

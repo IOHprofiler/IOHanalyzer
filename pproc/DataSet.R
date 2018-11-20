@@ -85,7 +85,8 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     else if (format == COCO)
       maximization <- FALSE
     
-    RT <- align_by_target(dat, maximization = maximization, format = format) # runtime
+    # RT <- align_by_target(dat, maximization = maximization, format = format) # runtime
+    RT <- align_RT(dat, format = format)
     FV <- align_by_runtime(cdat, format = format)  # function value
     
     # TODO: remove this and incorporate the parameters aligned by runtimes
@@ -106,17 +107,17 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     
     # TODO: maybe the RT summary should not be always pre-computed 
     AUX <- list()
-    data <- RT$RT
-    n_instance <- length(info$instance)
-    RT.summary <- data.table(target = rownames(data) %>% as.double,
-                             mean = apply(data, 1, .mean),
-                             median = apply(data, 1, .median),
-                             sd = apply(data, 1, .sd))
-
-    names <- paste0(probs * 100, '%')
-    RT.summary[, (names) := t(apply(data, 1, D_quantile)) %>% split(c(col(.)))]
-    RT.summary[, c('ERT', 'runs', 'ps') := SP(data, maxRT)]
-    AUX$RT.summary <- RT.summary
+    # data <- RT$RT
+    # n_instance <- length(info$instance)
+    # RT.summary <- data.table(target = rownames(data) %>% as.double,
+    #                          mean = apply(data, 1, .mean),
+    #                          median = apply(data, 1, .median),
+    #                          sd = apply(data, 1, .sd))
+    # 
+    # names <- paste0(probs * 100, '%')
+    # RT.summary[, (names) := t(apply(data, 1, D_quantile)) %>% split(c(col(.)))]
+    # RT.summary[, c('ERT', 'runs', 'ps') := SP(data, maxRT)]
+    # AUX$RT.summary <- RT.summary
     
     do.call(function(...) structure(c(RT, FV, AUX), class = c('DataSet', 'list'), ...), 
             c(info, list(maxRT = maxRT, finalFV = finalFV, src = format,
@@ -294,7 +295,7 @@ get_RT_summary.DataSet <- function(ds, ftarget) {
             apply(data, 1, .sd), .) %>%
       set_colnames(c('algId', 'target', 'mean', 'median',
                      'sd', paste0(probs * 100, '%'), 'ERT', 'runs', 'ps'))
-  } else {
+  } else {# TODO: remove this case, deprecated...
     NAs <- is.na(matched)
     if (any(NAs)) {
       rbindlist(

@@ -45,7 +45,7 @@ List data, NumericVector index, NumericMatrix next_lines, NumericVector curr_eva
 
 // TODO: remove this
 // [[Rcpp::export]]
-void align_by_runtime_inner_loop(int r, int idxEvals, int idxTarget, 
+void align_function_value_inner_loop(int r, int idxEvals, int idxTarget, 
   List data, NumericVector n_rows, NumericVector index, NumericMatrix next_lines,
   NumericVector curr_fvalues) {
   
@@ -129,7 +129,7 @@ NumericMatrix c_impute_runtime(NumericVector index, // index value recorded
 }
 
 // [[Rcpp::export]]
-List c_align_RT(List data, NumericVector FV, NumericVector idxValue, bool maximization) {
+List c_align_runtime(List data, NumericVector FV, NumericVector idxValue, bool maximization) {
   int NC = data.size();
   int NR = FV.size();
   int M = idxValue.size();

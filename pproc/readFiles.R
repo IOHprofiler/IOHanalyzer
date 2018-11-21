@@ -14,6 +14,7 @@ suppressMessages(library(Rcpp))
 suppressMessages(library(ggplot2))
 
 sourceCpp('C/align.cc')
+sourceCpp('C/read.cc')
 source('global.R')
 
 # reduce the size of the data set by evenly subsampling the records
@@ -151,30 +152,33 @@ read_dat <- function(fname, subsampling = FALSE) {
   res 
 }
 
+# TODO: maybe not subsampling for COCO data
 # read COCO '.dat'-like file
 read_COCO_dat <- function(fname, subsampling = FALSE) {
   # read the file as a character vector (one string per row)
-  X <- fread(fname, header = FALSE, sep = '\n', colClasses = 'character') %>% 
-    apply(1, as.character)
-  
-  idx <- which(startsWith(X, '%'))
-  df <- paste(X[-idx], collapse = '\n') %>% 
-    fread(header = FALSE, sep = ' ', colClasses = 'numeric')
-  
-  idx %<>% c(length(X) + 1) %>% `-`(seq(0, length(idx)))
-  
-  lapply(seq(length(idx) - 1), 
-         function(i) {
-           i1 <- idx[i]
-           i2 <- idx[i + 1] - 1
-           ans <-  df[i1:i2, ] %>% as.matrix
-           
-           # TODO: determine the number of records automatically, the same here
-           if (subsampling)
-             ans %<>% limit.data(n = 500)
-           else 
-             ans
-         })
+  # X <- fread(fname, header = FALSE, sep = '\n', colClasses = 'character') %>% 
+  #   apply(1, as.character)
+  # 
+  # idx <- which(startsWith(X, '%'))
+  # df <- paste(X[-idx], collapse = '\n') %>% 
+  #   fread(header = FALSE, sep = ' ', colClasses = 'numeric')
+  # 
+  # idx %<>% c(length(X) + 1) %>% `-`(seq(0, length(idx)))
+  # 
+  # lapply(seq(length(idx) - 1), 
+  #        function(i) {
+  #          i1 <- idx[i]
+  #          i2 <- idx[i + 1] - 1
+  #          ans <-  df[i1:i2, ] %>% as.matrix
+  #          
+  #          # TODO: determine the number of records automatically, the same here
+  #          if (subsampling)
+  #            ans %<>% limit.data(n = 500)
+  #          else 
+  #            ans
+  #        })
+  # NOTE: the C implementation is only fast for small data set
+  c_read_dat(path.expand(fname), 7, '%')
 }
 
 # TODO: double check the index of the target column
@@ -184,52 +188,7 @@ idxTarget <- 3
 n_data_column <- 5
 
 # faster alignment for runtimes
-# align_RT <- function(data, format = IOHprofiler) {
-#   
-#   if (format == IOHprofiler) {
-#     maximization <- TRUE
-#     idxTarget <- 3
-#   } else if (format == COCO) {
-#     maximization <- FALSE
-#     idxTarget <- 3
-#   }
-#   
-#   FV <- lapply(data, function(x) x[, idxTarget]) %>%
-#     unlist %>% unique %>% sort(decreasing = !maximization)
-#   
-#   n_rows <- sapply(data, nrow)
-#   n_column <- sapply(data, ncol) %>% unique
-#   
-#   if (format == COCO) {
-#     n_param <- 0
-#     idxValue <- idxEvals
-#     param_names <- NULL
-#   } else {
-#     idxValue <- c(idxEvals, (n_data_column + 1):n_column)
-#     n_param <- n_column - n_data_column
-#     param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
-#   }
-#     
-#   N <- length(data)
-#   NR <- length(FV)
-#   
-#   tmp <- lapply(data,
-#          function(d) {
-#            c_impute_runtime(d[, idxTarget], d[, idxValue, drop = F], FV, maximization)
-#          })
-#   
-#   res <- list()
-#   for (k in seq(length(n_param + 1))) {
-#     res[[k]] <- lapply(tmp, function(col) col[, k]) %>% 
-#       unlist %>%
-#       matrix(nrow = NR, ncol = N) %>%
-#       set_rownames(FV)
-#   }
-#   set_names(res, c('RT', param_names))
-# }
-
-# faster alignment for runtimes
-align_RT <- function(data, format = IOHprofiler) {
+align_runtime <- function(data, format = IOHprofiler) {
   
   if (format == IOHprofiler) {
     maximization <- TRUE
@@ -255,9 +214,10 @@ align_RT <- function(data, format = IOHprofiler) {
     param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
   }
   
-  c_align_RT(data, FV, idxValue - 1, maximization) %>% set_names(c('RT', param_names))
+  c_align_runtime(data, FV, idxValue - 1, maximization) %>% set_names(c('RT', param_names))
 }
 
+# TODO: deprecated! this function should be also removed...
 # align all instances at a given target/precision
 align_by_target <- function(data, targets = 'full', nrow = 100, maximization = TRUE,
                             format = IOHprofiler) {
@@ -503,7 +463,7 @@ align_non_contiguous <- function(data, idx, rownames) {
     set_rownames(rownames)
 }
 
-align_by_runtime <- function(data, include_param = TRUE, format = IOHprofiler) {
+align_function_value <- function(data, include_param = TRUE, format = IOHprofiler) {
   N <- length(data) 
   n_column <- sapply(data, ncol) %>% unique
   stopifnot(length(n_column) == 1)
@@ -550,7 +510,7 @@ align_by_runtime <- function(data, include_param = TRUE, format = IOHprofiler) {
 
 # NOTE: this is slow and incorrect...
 # TODO: remove this in the next commit
-align_by_runtime_old <- function(data, type = 'full', format = IOHprofiler) {
+align_function_value_old <- function(data, type = 'full', format = IOHprofiler) {
   
   if (format == IOHprofiler) {
     maximization <- TRUE
@@ -594,7 +554,7 @@ align_by_runtime_old <- function(data, type = 'full', format = IOHprofiler) {
       r <- runtime[i]
       
       # Rcpp implementation
-      align_by_runtime_inner_loop(r, idxEvals - 1, idxTarget - 1, data, n_rows,
+      align_function_value_inner_loop(r, idxEvals - 1, idxTarget - 1, data, n_rows,
                                   index - 1, next_lines, curr_fvalues)
       
       # the slower implementation
@@ -650,3 +610,47 @@ align_by_runtime_old <- function(data, type = 'full', format = IOHprofiler) {
     list(by_runtime = res)
   }
 }
+
+# align_runtime <- function(data, format = IOHprofiler) {
+#   
+#   if (format == IOHprofiler) {
+#     maximization <- TRUE
+#     idxTarget <- 3
+#   } else if (format == COCO) {
+#     maximization <- FALSE
+#     idxTarget <- 3
+#   }
+#   
+#   FV <- lapply(data, function(x) x[, idxTarget]) %>%
+#     unlist %>% unique %>% sort(decreasing = !maximization)
+#   
+#   n_rows <- sapply(data, nrow)
+#   n_column <- sapply(data, ncol) %>% unique
+#   
+#   if (format == COCO) {
+#     n_param <- 0
+#     idxValue <- idxEvals
+#     param_names <- NULL
+#   } else {
+#     idxValue <- c(idxEvals, (n_data_column + 1):n_column)
+#     n_param <- n_column - n_data_column
+#     param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
+#   }
+#     
+#   N <- length(data)
+#   NR <- length(FV)
+#   
+#   tmp <- lapply(data,
+#          function(d) {
+#            c_impute_runtime(d[, idxTarget], d[, idxValue, drop = F], FV, maximization)
+#          })
+#   
+#   res <- list()
+#   for (k in seq(length(n_param + 1))) {
+#     res[[k]] <- lapply(tmp, function(col) col[, k]) %>% 
+#       unlist %>%
+#       matrix(nrow = NR, ncol = N) %>%
+#       set_rownames(FV)
+#   }
+#   set_names(res, c('RT', param_names))
+# }

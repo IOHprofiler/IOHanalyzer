@@ -86,8 +86,8 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
       maximization <- FALSE
     
     # RT <- align_by_target(dat, maximization = maximization, format = format) # runtime
-    RT <- align_RT(dat, format = format)
-    FV <- align_by_runtime(cdat, format = format)  # function value
+    RT <- align_runtime(dat, format = format)
+    FV <- align_function_value(cdat, format = format)  # function value
     
     # TODO: remove this and incorporate the parameters aligned by runtimes
     FV[names(FV) != 'FV'] <- NULL

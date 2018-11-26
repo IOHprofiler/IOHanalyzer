@@ -1,3 +1,4 @@
+// [[Rcpp::plugins(cpp11)]]
 #include <Rcpp.h>
 #include <fstream>
 #include <iostream>

@@ -209,9 +209,14 @@ align_runtime <- function(data, format = IOHprofiler) {
     idxValue <- idxEvals
     param_names <- NULL
   } else {
-    idxValue <- c(idxEvals, (n_data_column + 1):n_column)
     n_param <- n_column - n_data_column
-    param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
+    if (n_param > 0) {
+      param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
+      idxValue <- c(idxEvals, (n_data_column + 1):n_column)
+    } else {
+      param_names <- NULL
+      idxValue <- idxEvals
+    }
   }
   
   c_align_runtime(data, FV, idxValue - 1, maximization) %>% set_names(c('RT', param_names))

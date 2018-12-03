@@ -16,7 +16,7 @@ The details on the experimentation and post-processing tool can be found on [arX
 This software is mainly written in __R__. To run it directly from the source code, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/).
 
 After R environment is correctly installed on you machine, several R packages are needed to execute the sorftware. Please start up the __R console__, which can be done (in case you're not familiar with R) by either executing command `R` in your system terminal or open the R application. Once it is done, please copy-paste and execute the following commands into the R console to install all depedencies.
-  
+
 ```r
 install.packages(c('shiny', 'shinyjs', 'shinydashboard', 'magrittr', 'dplyr', 'reshape2', 'data.table', 'markdown', 'Rcpp', 'plotly'))
 ```
@@ -72,8 +72,8 @@ Data preparation is fairly easy for this tool. Just compress the data folder obt
 In addition to the graphical user interface, it is possible to directly call several procedures to analyze the data.
 
 * To read and align all the data set in a folder, e.g., a COCO (BBOB) can be loaded as follows:
-  
-```Shell
+
+```shell
 > dsList <- read_dir('/path/to/data/folder', format = 'COCO')
 > dsList
 DataSetList:
@@ -113,7 +113,7 @@ runtime summary:
    3: 6.298712e+01   1.1125    1.0  0.8999824   1   1   1   1   1   1   1   1   1     1.1125   80 1.0000
    4: 6.254396e+01   1.1375    1.0  0.9242684   1   1   1   1   1   1   1   1   2     1.1375   80 1.0000
    5: 6.173052e+01   1.2000    1.0  1.1295793   1   1   1   1   1   1   1   1   3     1.2000   80 1.0000
-  ---                                                                                                   
+  ---
 1478: 9.473524e-10 182.6000  182.0 24.0894168 145 145 145 145 181 195 195 210 210  3039.6000    5 0.0625
 1479: 2.759535e-10 192.0000  188.5 13.5892114 181 181 181 181 182 195 210 210 210  3799.5000    4 0.0500
 1480: 2.463310e-10 195.6667  195.0 14.0118997 182 182 182 182 195 195 210 210 210  5066.0000    3 0.0375
@@ -127,7 +127,7 @@ function value summary:
  3: (1+1)-Cholesky-CMA       3   80 1.341813e+01 7.960940e+00 1.466877e+01 1.177243e-01 1.778454e-01 5.553242e-01
  4: (1+1)-Cholesky-CMA       4   80 1.100825e+01 6.439678e+00 1.261937e+01 9.206390e-02 1.492565e-01 5.221506e-01
  5: (1+1)-Cholesky-CMA       5   80 9.326633e+00 5.492333e+00 1.213908e+01 7.246194e-02 1.031687e-01 3.482309e-01
----                                                                                                              
+---
 90: (1+1)-Cholesky-CMA     229   80 6.321111e-09 4.609703e-09 8.318463e-09 1.648124e-10 9.137825e-10 1.336938e-09
 91: (1+1)-Cholesky-CMA     231   80 5.823366e-09 4.609703e-09 7.618201e-09 1.648124e-10 9.137825e-10 1.336938e-09
 92: (1+1)-Cholesky-CMA     238   80 5.549184e-09 4.506106e-09 7.258216e-09 1.648124e-10 9.137825e-10 1.336938e-09
@@ -139,7 +139,7 @@ function value summary:
  3: 2.786120e+00 7.960940e+00 2.103983e+01 3.251354e+01 4.030147e+01 5.690653e+01
  4: 1.284869e+00 6.439678e+00 1.636467e+01 2.453239e+01 3.043178e+01 4.718666e+01
  5: 9.886750e-01 5.492333e+00 1.317642e+01 2.216466e+01 2.913811e+01 4.718666e+01
----                                                                              
+---
 90: 2.799292e-09 4.609703e-09 6.554838e-09 8.992768e-09 1.235938e-08 2.771700e-08
 91: 2.799292e-09 4.609703e-09 6.321677e-09 8.916086e-09 9.326487e-09 1.785183e-08
 92: 2.799292e-09 4.506106e-09 6.099065e-09 8.854852e-09 9.180278e-09 1.041480e-08
@@ -150,7 +150,7 @@ Attributes: names, class, funcId, DIM, Precision, algId, comment, datafile, inst
 ```
 
 * To get a __summary__ of one data set at some function values / runtimes (e.g., the runtime distribution), you can use function `get_RT_summary` (RunTime) and `get_FV_summary` (FunctionValue):
-  
+
 ```bash
 > get_RT_summary(dsList[[1]], ftarget = 1e-1)
                 algId     target  mean median       sd 2% 5% 10% 25% 50% 75% 90% 95% 98%   ERT runs ps
@@ -173,7 +173,7 @@ Attributes: names, class, funcId, DIM, Precision, algId, comment, datafile, inst
  3: (1+1)-Cholesky-CMA    0.1   3 38
  4: (1+1)-Cholesky-CMA    0.1   4 34
  5: (1+1)-Cholesky-CMA    0.1   5 67
----                                 
+---
 76: (1+1)-Cholesky-CMA    0.1  76 52
 77: (1+1)-Cholesky-CMA    0.1  77 22
 78: (1+1)-Cholesky-CMA    0.1  78 26
@@ -189,7 +189,7 @@ Attributes: names, class, funcId, DIM, Precision, algId, comment, datafile, inst
  3: (1+1)-Cholesky-CMA     100   3 3.970844e-05
  4: (1+1)-Cholesky-CMA     100   4 5.345724e-04
  5: (1+1)-Cholesky-CMA     100   5 1.458869e-03
----                                            
+---
 76: (1+1)-Cholesky-CMA     100  76 1.817090e-03
 77: (1+1)-Cholesky-CMA     100  77 3.850201e-06
 78: (1+1)-Cholesky-CMA     100  78 1.330411e-05
@@ -198,6 +198,7 @@ Attributes: names, class, funcId, DIM, Precision, algId, comment, datafile, inst
 ```
 
 Or output a wide format...
+
 ```bash
 > get_RT_sample(dsList[[1]], ftarget = 1e-1, output = 'wide')
                 algId target run.1 run.2 run.3 run.4 run.5 run.6 run.7 run.8 run.9 run.10 run.11 run.12 run.13 run.14 run.15

@@ -54,11 +54,9 @@ List c_read_dat(std::string dat, int NC, std::string leading) {
         }
            
         std::stringstream ss(line);
-        i = 0;
         for (i = 0; i < NC; ++i) {
             std::getline(ss, val, ' ');
             row[i] = std::stod(val);
-            ++i;
         }
         one_run.push_back(Rcpp::clone(row));
     }

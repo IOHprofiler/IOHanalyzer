@@ -504,17 +504,23 @@ shinyServer(function(input, output, session) {
                   fill = 'tonexty',  line = list(color = 'transparent'),
                   fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd')
       
+      if (input$show.ERT)
+        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
+                         name = paste0(algId, '.ERT'), mode = 'lines+markers', 
+                         marker = list(color = rgb_str),  
+                         line = list(color = rgb_str))
+      
       if (input$show.mean)
-        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter', 
+        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~mean, type = 'scatter', 
                          mode = 'lines+markers', name = paste0(algId, '.mean'), 
                          marker = list(color = rgb_str), 
-                         line = list(color = rgb_str))
+                         line = list(color = rgb_str, dash = 'dash'))
       
       if (input$show.median)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~median, type = 'scatter',
                          name = paste0(algId, '.median'), mode = 'lines+markers', 
                          marker = list(color = rgb_str),  
-                         line = list(color = rgb_str, dash = 'dash'))
+                         line = list(color = rgb_str, dash = 'dot'))
     }
     p %<>%
       layout(xaxis = list(type = switch(input$semilogx, T = 'log', F = 'linear')),
@@ -1523,10 +1529,16 @@ shinyServer(function(input, output, session) {
     data <- DATA()
     fall <- getFunvals(data)
     
-    fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
-      c(fstart, ., fstop) %>% unique %>% 
-      reverse_trans_funeval %>% 
-      .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+    if (input$PAR_F_SINGLE) {
+      fseq <- c(fstart) %>% 
+        reverse_trans_funeval %>% 
+        .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+    } else {
+      fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
+        c(fstart, ., fstop) %>% unique %>% 
+        reverse_trans_funeval %>% 
+        .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+    }
     
     get_PAR_summary(data, fseq, input$PAR_ALGID_INPUT_SUMMARY, input$PAR_INPUT)
   })
@@ -1544,10 +1556,16 @@ shinyServer(function(input, output, session) {
     data <- DATA()
     fall <- getFunvals(data)
     
-    fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
-      c(fstart, ., fstop) %>% unique %>% 
-      reverse_trans_funeval %>% 
-      .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+    if (input$PAR_SAMPLE_F_SINGLE) {
+      fseq <- c(fstart) %>% 
+        reverse_trans_funeval %>% 
+        .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+    } else {
+      fseq <- seq(from = fstart, to = fstop, by = fstep) %>% 
+        c(fstart, ., fstop) %>% unique %>% 
+        reverse_trans_funeval %>% 
+        .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
+    }
     
     get_PAR_sample(data, ftarget = fseq, 
                    algorithm = input$PAR_ALGID_INPUT_SAMPLE, 

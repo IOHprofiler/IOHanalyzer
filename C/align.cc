@@ -43,40 +43,6 @@ List data, NumericVector index, NumericMatrix next_lines, NumericVector curr_eva
     return out;
 }
 
-// TODO: remove this
-// [[Rcpp::export]]
-void align_function_value_inner_loop(int r, int idxEvals, int idxTarget, 
-  List data, NumericVector n_rows, NumericVector index, NumericMatrix next_lines,
-  NumericVector curr_fvalues) {
-  
-  int n_row, iter, n_col, N;
-  N = data.size();
-  for (int k = 0; k < N; k++) {
-    NumericMatrix d = as<NumericMatrix>(data[k]);
-    n_row = n_rows[k];
-    iter = index[k];
-    n_col = d.ncol();
-
-    while (!NumericVector::is_na(next_lines(k, idxEvals))) {
-      if (next_lines(k, idxEvals) >= r) {
-        curr_fvalues[k] = next_lines(k, idxTarget);
-        break;
-      }
-
-      if (iter < (n_row - 1)) {
-        iter++;
-        for (int j = 0; j < n_col; j++) {
-          next_lines(k, j) = d(iter, j);
-        }
-      } else {
-        curr_fvalues[k] = next_lines(k, idxTarget);
-        next_lines(k, idxEvals) = NA_REAL;
-      }
-    }
-    index[k] = iter;
-  }
-}
-
 // [[Rcpp::export]]
 NumericVector c_impute(NumericVector x, NumericVector y, NumericVector rowname) {
   int N = rowname.size();

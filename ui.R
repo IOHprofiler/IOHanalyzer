@@ -141,7 +141,7 @@ body <- dashboardBody(
                            HTML('<p align="justify" style="font-size:120%;">When the data set is huge, the alignment
                                 can take a very long time. In this case, you could toggle the efficient mode to subsample 
                                 the data set. However, the precision of data will be compromised.</p>'),
-                           checkboxInput('SUBSAMPLING', label = HTML('<p align="left" style="font-size:120%;">Efficient mode</p>'), value = T),
+                           checkboxInput('SUBSAMPLING', label = HTML('<p align="left" style="font-size:120%;">Efficient mode</p>'), value = F),
                            
                            fileInput("ZIP", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>zip file</i> containing the benchmark data</p>'),
                                      multiple = TRUE, accept = c("Application/zip", ".zip")),
@@ -271,9 +271,13 @@ body <- dashboardBody(
                                        label = F_MAX_LABEL, 
                                        value = ''),
                              
+                             checkboxInput('show.ERT', 
+                                           label = 'show/hide ERT',
+                                           value = T),
+                             
                              checkboxInput('show.mean', 
                                            label = 'show/hide mean',
-                                           value = T),
+                                           value = F),
                              
                              checkboxInput('show.median', 
                                            label = 'show/hide median',
@@ -830,6 +834,9 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                            textInput('PAR_F_MIN_SUMMARY', label = F_MIN_LABEL, value = ''),
                            textInput('PAR_F_MAX_SUMMARY', label = F_MAX_LABEL, value = ''),
                            textInput('PAR_F_STEP_SUMMARY', label = F_STEP_LABEL, value = ''),
+                           checkboxInput('PAR_F_SINGLE', label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
+                                                                       Once toggled, only \\(f_{\\text{min}}\\) is 
+                                                                       used to generate the table on the right.</p>'), value = FALSE),
                            selectInput('PAR_ALGID_INPUT_SUMMARY', 'Algorithms', choices = NULL, selected = NULL),
                            selectInput('PAR_INPUT', 'Parameters', choices = NULL, selected = NULL),
                            downloadButton("PAR_downloadData", "Save this table as csv")
@@ -852,6 +859,9 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                            textInput('PAR_F_MIN_SAMPLE', label = F_MIN_LABEL, value = ''),
                            textInput('PAR_F_MAX_SAMPLE', label = F_MAX_LABEL, value = ''),
                            textInput('PAR_F_STEP_SAMPLE', label = F_STEP_LABEL, value = ''),
+                           checkboxInput('PAR_SAMPLE_F_SINGLE', label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
+                                                                             Once toggled, only \\(f_{\\text{min}}\\) is 
+                                                                             used to generate the table on the right.</p>'), value = FALSE),
                            selectInput('PAR_ALGID_INPUT_SAMPLE', 'Algorithms', choices = NULL, selected = NULL),
                            selectInput('PAR_INPUT_SAMPLE', 'Parameters', choices = NULL, selected = NULL),
                            selectInput('PAR_download_format', 'Format of the csv', 

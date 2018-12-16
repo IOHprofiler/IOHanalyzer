@@ -160,7 +160,9 @@ summary.DataSet <- function(ds) {
     cat(sprintf('%d instance found: %s\n\n', n_instance, paste(ds_attr$instance, collapse = ',')))
   
   cat('runtime summary:\n')
-  print(ds$RT.summary)
+  function_values <- rownames(ds$RT) %>% as.numeric
+  RT.summary <- get_RT_summary(ds, function_values)
+  print(RT.summary)
   cat('\n')
   
   cat('function value summary:\n')

@@ -388,8 +388,9 @@ shinyServer(function(input, output, session) {
       fstart <- format_funeval(input$fstart)
       fstop <- format_funeval(input$fstop)
       fstep <- format_funeval(input$fstep) 
-      sprintf('runtime_summary_(%s,%s,%s).csv',
-              fstart, fstop, fstep)
+      eval(RT_csv_name)
+      # sprintf('runtime_summary_(%s,%s,%s).csv',
+      #         fstart, fstop, fstep)
     }, 
     content = function(file) {
       write.csv(runtime_summary(), file, row.names = F)
@@ -451,7 +452,8 @@ shinyServer(function(input, output, session) {
       fstart <- input$F_MIN_SAMPLE %>% format_funeval
       fstop <- input$F_MAX_SAMPLE %>% format_funeval
       fstep <- input$F_STEP_SAMPLE %>% format_funeval
-      sprintf('runtime_(%s,%s,%s).csv', fstart, fstop, fstep)
+      eval(RTSample_csv_name)
+      # sprintf('runtime_(%s,%s,%s).csv', fstart, fstop, fstep)
     },
     content = function(file) {
       write.csv(get_RT(), file, row.names = F)
@@ -933,7 +935,8 @@ shinyServer(function(input, output, session) {
       rt_min <- input$RT_MIN %>% as.integer %>% as.character
       rt_max <- input$RT_MAX %>% as.integer %>% as.character
       rt_step <- input$RT_STEP %>% as.integer %>% as.character
-      sprintf('target_summary_(%s,%s,%s).csv', rt_min, rt_max, rt_step)
+      eval(FV_csv_name)
+      # sprintf('target_summary_(%s,%s,%s).csv', rt_min, rt_max, rt_step)
     },
     content = function(file) {
       write.csv(get_FCE_summary(), file, row.names = F)
@@ -993,8 +996,9 @@ shinyServer(function(input, output, session) {
       rt_min <- input$RT_MIN %>% as.integer %>% as.character
       rt_max <- input$RT_MAX %>% as.integer %>% as.character
       rt_step <- input$RT_STEP %>% as.integer %>% as.character
-      sprintf('target_sample_(%s,%s,%s).csv', 
-              rt_min, rt_max, rt_step)
+      eval(FVSample_csv_name)
+      # sprintf('target_sample_(%s,%s,%s).csv', 
+      #         rt_min, rt_max, rt_step)
     },
     content = function(file) {
       write.csv(get_FCE(), file, row.names = F)
@@ -1599,8 +1603,9 @@ shinyServer(function(input, output, session) {
       fstart <- format_funeval(input$PAR_F_MIN_SAMPLE)
       fstop <- format_funeval(input$PAR_F_MAX_SAMPLE)
       fstep <- format_funeval(input$PAR_F_STEP_SAMPLE)
-      sprintf('parameter_sample_(%s,%s,%s).csv',
-              fstart, fstop, fstep)
+      eval(PARSample_csv_name)
+      # sprintf('parameter_sample_(%s,%s,%s).csv',
+      #         fstart, fstop, fstep)
     },
     content = function(file) {
       write.csv(parameter_sample(), file, row.names = F)
@@ -1613,8 +1618,9 @@ shinyServer(function(input, output, session) {
       fstart <- format_funeval(input$PAR_F_MIN_SUMMARY)
       fstop <- format_funeval(input$PAR_F_MAX_SUMMARY)
       fstep <- format_funeval(input$PAR_F_STEP_SUMMARY) 
-      sprintf('parameter_summary_(%s,%s,%s).csv',
-              fstart, fstop, fstep)
+      eval(PAR_csv_name)
+      # sprintf('parameter_summary_(%s,%s,%s).csv',
+      #         fstart, fstop, fstep)
     }, 
     content = function(file) {
       write.csv(parameter_summary(), file, row.names = F)

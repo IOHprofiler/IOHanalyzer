@@ -495,7 +495,7 @@ get_PAR_summary.DataSet <- function(ds, ftarget, parId = 'all') {
   if (parId != 'all')
     par_name <- intersect(par_name, parId)
   if (length(par_name) == 0)
-    return(data.table())
+    return(NULL)
   
   maximization <- attr(ds, 'maximization')
   ftarget <- c(ftarget) %>% as.numeric %>% sort(decreasing = !maximization)
@@ -546,7 +546,7 @@ get_PAR_sample.DataSet <- function(ds, ftarget, parId = 'all', output = 'wide') 
   if (parId != 'all')
     par_name <- intersect(par_name, parId)
   if (length(par_name) == 0)
-    return(data.table())
+    return(NULL)
   
   maximization <- attr(ds, 'maximization')
   ftarget <- c(ftarget) %>% as.numeric %>% sort(decreasing = !maximization)

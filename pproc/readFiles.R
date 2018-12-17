@@ -120,7 +120,7 @@ check_format <- function(path) {
 read_dat <- function(fname, subsampling = FALSE) {
   # TODO: use the same data loading method as in read_COCO_dat
   df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
-  idx <- which(df[, 1] == 'function evaluation')
+  idx <- which(!grepl('\\d+', df[[1]], perl = T))
 
   # check for data consistence
   header_len <- apply(df[idx, ] != "", 1, sum) %>% min

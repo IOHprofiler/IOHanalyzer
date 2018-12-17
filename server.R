@@ -308,7 +308,7 @@ shinyServer(function(input, output, session) {
     q <- quantile(v, probs = c(.25, .5, .75), names = F, type = 3)
     
     grid <- seq(min(v), max(v), length.out = 15) %>% as.integer
-    step <- min(grid[-1] - grid[-length(grid)]) 
+    step <- max(1, min(grid[-1] - grid[-length(grid)])) 
     
     updateTextInput(session, 'RT_MIN', value = min(v))
     updateTextInput(session, 'RT_MAX', value = max(v))
@@ -1406,6 +1406,7 @@ shinyServer(function(input, output, session) {
       .[. >= (min(fall) - 0.1)] %>% .[. <= (max(fall) + 0.1)] 
     
     dt <- get_PAR_summary(data, fseq, input$PAR_ALGID_INPUT)
+    req(length(dt) != 0)
     dt[, `:=`(upper = mean + sd, lower = mean - sd)]
     
     par_name <- dt[, parId] %>% unique
@@ -1579,11 +1580,13 @@ shinyServer(function(input, output, session) {
   
   output$table_PAR_SAMPLE <- renderDataTable({
     dt <- parameter_sample()
+    req(length(dt) != 0)
     dt[is.na(dt)] <- 'NA'
     dt}, options = list(pageLength = 20, scrollX = T))
   
   output$table_PAR_summary <- renderTable({
     dt <- parameter_summary()
+    req(length(dt) != 0)
     dt$runs %<>% as.integer
     dt$mean %<>% format(digits = 2, nsmall = 2)
     dt$median %<>% format(digits = 2, nsmall = 2)

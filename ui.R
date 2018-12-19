@@ -283,6 +283,10 @@ body <- dashboardBody(
                                            label = 'show/hide median',
                                            value = F),
                              
+                             checkboxInput('show.all',
+                                           label = 'show/hide multiple runs',
+                                           value = F),
+                             
                              checkboxInput('semilogx', 
                                            label = 'scale x axis log10',
                                            value = T),
@@ -658,6 +662,10 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                                
                                checkboxInput('FCE_show.median', 
                                              label = 'show/hide median',
+                                             value = F),
+                               
+                               checkboxInput('FCE_show.all',
+                                             label = 'show/hide multiple runs',
                                              value = F),
                                
                                checkboxInput('FCE_semilogx', 

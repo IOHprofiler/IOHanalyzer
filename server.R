@@ -488,6 +488,8 @@ shinyServer(function(input, output, session) {
     dt <- get_RT_summary(data, fseq)
     dt[, `:=`(upper = ERT + sd, lower = ERT - sd)]
     
+    dr <- get_RT_runs(data, fseq)
+    
     p <- plot_ly_default(x.title = "best-so-far f(x)-value", 
                          y.title = "function evaluations")
     
@@ -523,6 +525,16 @@ shinyServer(function(input, output, session) {
                          name = paste0(algId, '.median'), mode = 'lines+markers', 
                          marker = list(color = rgb_str),  
                          line = list(color = rgb_str, dash = 'dot'))
+      if (input$show.all){
+        dr_ERT <- dr[algId == attr(data[[i]], 'algId')]
+        for (run_v in colnames(dr_ERT))
+          if (and(run_v != 'algId', run_v != 'target')){
+            p %<>% add_trace(data = dr_ERT, x = ~target, y = dr_ERT[[run_v]], type = 'scatter', mode = 'lines',
+                             line = list(color = rgb_str, width = 0.5), 
+                             showlegend = F, name = paste(run_v,".", algId))
+          }
+        
+      }
     }
     p %<>%
       layout(xaxis = list(type = switch(input$semilogx, T = 'log', F = 'linear')),
@@ -1033,6 +1045,8 @@ shinyServer(function(input, output, session) {
     fce <- get_FV_summary(data, rt_seq)
     fce[, `:=`(upper = mean + sd, lower = mean - sd)]
     
+    fce_runs <- get_FV_runs(data, rt_seq)
+    
     p <- plot_ly_default(y.title = "best-so-far f(x)-value", x.title = "runtime")
     
     for (i in seq_along(data)) {
@@ -1064,6 +1078,16 @@ shinyServer(function(input, output, session) {
                          name = sprintf("%s.median", algId), mode = 'lines+markers', 
                          marker = list(color = rgb_str),
                          line = list(color = rgb_str, dash = 'dash'))
+      if (input$FCE_show.all){
+        fce_runs_ERT <- fce_runs[algId == attr(data[[i]], 'algId')]
+        for (run_v in colnames(fce_runs_ERT)){
+          if (and(run_v != 'algId', run_v != 'runtime')){
+            p %<>% add_trace(data = fce_runs_ERT, x = ~runtime, y = fce_runs_ERT[[run_v]], type = 'scatter', mode = 'lines',
+                             line = list(color = rgb_str, width = 0.3), 
+                             showlegend = F, name = paste(run_v, ".", algId))
+          }
+        }
+      }
     }
     p %<>%
       layout(xaxis = list(type = switch(input$FCE_semilogx, T = 'log', F = 'linear')),

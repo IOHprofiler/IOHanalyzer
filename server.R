@@ -580,7 +580,7 @@ shinyServer(function(input, output, session) {
           mentioned = FALSE
           check_value = tail(best_parts, 1)
           for (run_v in names_to_show)
-            if (check_value >= tail(dr_ERT[[run_v]], 1)) {
+            if (check_value == tail(dr_ERT[[run_v]], 1)) {
               p %<>% add_trace(
                 data = dr_ERT,
                 x = ~ target,
@@ -602,7 +602,7 @@ shinyServer(function(input, output, session) {
             type = 'scatter',
             mode = 'lines',
             line = list(color = rgb_str, width = line_width *
-                          5),
+                          5, dash = 'dot'),
             showlegend = T,
             name = paste("pareto_optima.", algId)
           )
@@ -1152,15 +1152,78 @@ shinyServer(function(input, output, session) {
                          name = sprintf("%s.median", algId), mode = 'lines+markers', 
                          marker = list(color = rgb_str),
                          line = list(color = rgb_str, dash = 'dash'))
-      if (input$FCE_show.all){
+      
+      if (input$FCE_show_all) {
+        min_is_best = FALSE
+        line_width = 0.5
+        
         fce_runs_ERT <- fce_runs[algId == attr(data[[i]], 'algId')]
-        for (run_v in colnames(fce_runs_ERT)){
-          if (and(run_v != 'algId', run_v != 'runtime')){
-            p %<>% add_trace(data = fce_runs_ERT, x = ~runtime, y = fce_runs_ERT[[run_v]], type = 'scatter', mode = 'lines',
-                             line = list(color = rgb_str, width = 0.3), 
-                             showlegend = F, name = paste(run_v, ".", algId))
-          }
+        names_to_show = sample(colnames(fce_runs_ERT))
+        names_to_show <-
+          names_to_show[!names_to_show %in% c('algId', 'runtime')]
+        
+        dens <- input$FCE_show.density
+        counter = as.integer(length(names_to_show) * dens / 100)
+        
+        names_to_show <- head(names_to_show, counter)
+        
+        best_parts = NA
+        
+        mentioned = FALSE
+        
+        for (run_v in names_to_show) {
+          p %<>% add_trace(
+            data = fce_runs_ERT,
+            x = ~ runtime,
+            y = fce_runs_ERT[[run_v]],
+            type = 'scatter',
+            mode = 'lines',
+            line = list(color = rgb_str, width = line_width),
+            #legendgroup = paste("runs of ", algId),
+            #legend = list(traceorder = "grouped"),
+            text = paste(run_v),
+            hoverinfo = "x+y+text",
+            hoverlabel = list(font=list(size = 8)),
+            showlegend = !mentioned,
+            name = paste("runs of ", algId)
+          )
+          mentioned = TRUE
+          best_parts <-
+            insert_best_parts(best_parts, fce_runs_ERT[[run_v]], min_is_best)
         }
+        
+        if (input$FCE_show.best_of_all) {
+          mentioned = FALSE
+          check_value = tail(best_parts, 1)
+          for (run_v in names_to_show)
+            if (check_value == tail(fce_runs_ERT[[run_v]], 1)) {
+              p %<>% add_trace(
+                data = fce_runs_ERT,
+                x = ~ runtime,
+                y = fce_runs_ERT[[run_v]],
+                type = 'scatter',
+                mode = 'lines',
+                line = list(color = rgb_str, width = line_width *
+                              3),
+                showlegend = !mentioned,
+                name = paste("best.", algId)
+              )
+              mentioned = TRUE
+            }
+        }
+        if (input$FCE_show.pareto_optima) {
+          p %<>% add_trace(
+            x = fce_runs_ERT[['runtime']],
+            y = best_parts,
+            type = 'scatter',
+            mode = 'lines',
+            line = list(color = rgb_str, width = line_width *
+                          5, dash = 'dot'),
+            showlegend = T,
+            name = paste("pareto_optima.", algId)
+          )
+        }
+        
       }
     }
     p %<>%

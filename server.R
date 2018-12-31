@@ -34,12 +34,15 @@ src_format <- IOHprofiler # TODO: this shoule be taken from the data set
 sub_sampling <- TRUE
 
 # Inserts values from "from_data" to "to_data" that are better than were
-insert_best_parts <- function(from_data, to_data){
+insert_best_parts <- function(from_data, to_data, best_is_min){
   
   if (is.na(from_data))
     to_data
   else
-    pmin(from_data,to_data)
+    if (best_is_min)
+      pmin(from_data, to_data)
+    else
+      pmax(from_data, to_data)
 }
 
 # Formatter for function values
@@ -535,42 +538,74 @@ shinyServer(function(input, output, session) {
                          marker = list(color = rgb_str),  
                          line = list(color = rgb_str, dash = 'dot'))
       
-      if (input$show_all){
+      if (input$show_all) {
         line_width = 0.5
         
         dr_ERT <- dr[algId == attr(data[[i]], 'algId')]
         names_to_show = sample(colnames(dr_ERT))
-        names_to_show <- names_to_show[!names_to_show %in% c('algId', 'target')]
+        names_to_show <-
+          names_to_show[!names_to_show %in% c('algId', 'target')]
         
-        dens<- input$show.density
-        counter = as.integer(length(names_to_show)*dens/100)
+        dens <- input$show.density
+        counter = as.integer(length(names_to_show) * dens / 100)
         
         names_to_show <- head(names_to_show, counter)
         
         best_parts = NA
         
-        for (run_v in names_to_show){
-            p %<>% add_trace(data = dr_ERT, x = ~target, y = dr_ERT[[run_v]], type = 'scatter', mode = 'lines',
-                             line = list(color = rgb_str, width = line_width), 
-                             showlegend = F, name = paste(run_v,".", algId))
-            best_parts <- insert_best_parts(best_parts,dr_ERT[[run_v]])
+        mentioned = FALSE
+        
+        for (run_v in names_to_show) {
+          p %<>% add_trace(
+            data = dr_ERT,
+            x = ~ target,
+            y = dr_ERT[[run_v]],
+            type = 'scatter',
+            mode = 'lines',
+            line = list(color = rgb_str, width = line_width),
+            #legendgroup = paste("runs of ", algId),
+            #legend = list(traceorder = "grouped"),
+            text = paste(run_v),
+            hoverinfo = "x+y+text",
+            hoverlabel = list(font=list(size = 8)),
+            showlegend = !mentioned,
+            name = paste("runs of ", algId)
+          )
+          mentioned = TRUE
+          best_parts <-
+            insert_best_parts(best_parts, dr_ERT[[run_v]], TRUE)
         }
         
-        if (input$show.best_of_all){
+        if (input$show.best_of_all) {
           mentioned = FALSE
           check_value = tail(best_parts, 1)
           for (run_v in names_to_show)
-            if (check_value >= tail(dr_ERT[[run_v]],1)){
-              p %<>% add_trace(data = dr_ERT, x = ~target, y = dr_ERT[[run_v]], type = 'scatter', mode = 'lines',
-                               line = list(color = rgb_str, width = line_width*3), 
-                               showlegend = !mentioned, name = paste("best.", algId))
-              mentioned=TRUE
+            if (check_value >= tail(dr_ERT[[run_v]], 1)) {
+              p %<>% add_trace(
+                data = dr_ERT,
+                x = ~ target,
+                y = dr_ERT[[run_v]],
+                type = 'scatter',
+                mode = 'lines',
+                line = list(color = rgb_str, width = line_width *
+                              3),
+                showlegend = !mentioned,
+                name = paste("best.", algId)
+              )
+              mentioned = TRUE
             }
         }
-        if (input$show.pareto_optima){
-          p %<>% add_trace(x = dr_ERT[['target']], y = best_parts, type = 'scatter', mode = 'lines',
-                           line = list(color = rgb_str, width = line_width*5), 
-                           showlegend = T, name = paste("pareto_optima.", algId))
+        if (input$show.pareto_optima) {
+          p %<>% add_trace(
+            x = dr_ERT[['target']],
+            y = best_parts,
+            type = 'scatter',
+            mode = 'lines',
+            line = list(color = rgb_str, width = line_width *
+                          5),
+            showlegend = T,
+            name = paste("pareto_optima.", algId)
+          )
         }
         
       }

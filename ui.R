@@ -283,17 +283,36 @@ body <- dashboardBody(
                                            label = 'show/hide median',
                                            value = F),
                              
-                             checkboxInput('show.all',
-                                           label = 'show/hide multiple runs',
-                                           value = F),
-                             
                              checkboxInput('semilogx', 
                                            label = 'scale x axis log10',
                                            value = T),
                              
                              checkboxInput('semilogy', 
                                            label = 'scale y axis log10',
-                                           value = T)
+                                           value = T),
+                             
+                             checkboxInput('show_all',
+                                           label = 'show/hide multiple runs',
+                                           value = F),
+                             conditionalPanel(condition = "input.show_all == true",
+                                              
+                                              fluidRow(column(
+                                                11,
+                                                offset = 1,
+                                                sliderInput('show.density',
+                                                            label = "Runs density(%)",
+                                                            min = 1, max = 100, value = 50, step = 1),
+                                                checkboxInput('show.best_of_all',
+                                                              label = 'show/hide best run',
+                                                              value = F),
+                                                checkboxInput('show.pareto_optima',
+                                                              label = 'show/hide pareto optimal front',
+                                                              value = F)
+                                              )))
+                             
+                             
+                                              
+                                              
                              
                              # checkboxInput('show.instance', 
                              #               label = 'show each independent run',

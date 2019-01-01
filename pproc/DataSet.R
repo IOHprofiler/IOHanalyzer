@@ -307,6 +307,10 @@ get_PAR_name <- function(ds) UseMethod("get_PAR_name", ds)
 #'
 #' @examples
 get_RT_summary.DataSet <- function(ds, ftarget) {
+  # if (length(ftarget) == 0) {
+  #   return(data.table())
+  # }
+  
   # data <- ds$RT.summary
   data <- ds$RT
   maxRT <- attr(ds, 'maxRT')
@@ -325,6 +329,11 @@ get_RT_summary.DataSet <- function(ds, ftarget) {
       idx[`op`(FValues, f)][1]
     }
   )
+  
+  if (is.list(matched)) {
+    browser()
+    return(data.table())
+  }
   
   if (1 < 2) {
     data <- data[matched, , drop = FALSE]

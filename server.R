@@ -35,6 +35,7 @@ sub_sampling <- TRUE
 
 # Formatter for function values
 format_FV <- function(v) format(v, digits = 2, nsmall = 2)
+format_RT <- function(v) as.integer(v)
 
 # transformations applied on the function value
 # trans_funeval <- `log10`
@@ -48,6 +49,26 @@ reverse_trans_runtime <- . %>% return
 
 # directory where data are extracted from the zip file
 exdir <- file.path(Sys.getenv('HOME'), 'data')
+
+setTextInput <- function(session, id, name, alternative) {
+  v <- REG[[id]]
+  if (name %in% names(v)) {
+    updateTextInput(session, id, value = v[[name]])
+  } else
+    updateTextInput(session, id, value = alternative)
+}
+
+# register previous text inputs, which is used to restore those values
+REG <- lapply(widget_id, function(x) list())
+
+# TODO: maybe give this function a better name
+# get the current 'id' of the selected data: funcID + DIM 
+get_data_id <- function(dsList) {
+  if (is.null(dsList) | length(dsList) == 0)
+    return(NULL)
+  
+  paste(getfuncId(dsList), getDIM(dsList), sep = '-')
+}
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
@@ -213,7 +234,7 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, 'PAR_INPUT_SAMPLE', choices = parId, selected = 'all')
   })
   
-  # filter DataSets 
+  # update (filter) according to users selection DataSets 
   DATA <- reactive({
     dim <- input$DIM_INPUT
     id <- input$FUNCID_INPUT
@@ -221,9 +242,66 @@ shinyServer(function(input, output, session) {
     if (length(DataList$data) == 0)
       return(NULL)
     
-    # TODO: remove the old 'filter' function
-    # filter(DataList$data, by = c(DIM = dim, funcId = id))
     subset(DataList$data, DIM == dim, funcId == id)
+  })
+  
+  observeEvent({
+    input$fstart
+    input$fstop
+    input$fstep
+    input$F_MIN_SAMPLE
+    input$F_MAX_SAMPLE
+    input$F_STEP_SAMPLE 
+    input$RT_fstart
+    input$RT_fstop 
+    input$RT_fstep 
+    input$RT_fselect 
+    input$RT_PMF_FTARGET
+    input$RT_PMF_HIST_FTARGET
+    input$ERT_FSTART
+    input$ERT_FSTOP 
+    input$RT_ECDF_FTARGET1
+    input$RT_ECDF_FTARGET2 
+    input$RT_ECDF_FTARGET3 
+    input$RT_AUC_FSTART
+    input$RT_AUC_FSTOP 
+    input$RT_AUC_FSTEP 
+    input$PAR_F_MIN
+    input$PAR_F_MAX 
+    input$PAR_F_MIN_SUMMARY 
+    input$PAR_F_MAX_SUMMARY 
+    input$PAR_F_STEP_SUMMARY 
+    input$PAR_F_MIN_SAMPLE
+    input$PAR_F_MAX_SAMPLE 
+    input$PAR_F_STEP_SAMPLE
+    input$RT_MIN
+    input$RT_MAX
+    input$RT_STEP
+    input$RT_MIN_SAMPLE
+    input$RT_MAX_SAMPLE
+    input$RT_STEP_SAMPLE
+    input$FCE_HIST_RUNTIME
+    input$FCE_PDF_RUNTIME
+    input$FCE_RT_MIN
+    input$FCE_RT_MAX
+    input$FCE_ECDF_RT_MIN
+    input$FCE_ECDF_RT_MAX
+    input$FCE_ECDF_RT_STEP
+    input$FCE_AUC_RT_MIN
+    input$FCE_AUC_RT_MAX
+    input$FCE_AUC_RT_STEP
+    input$FCE_ECDF_RT1
+    input$FCE_ECDF_RT2
+    input$FCE_ECDF_RT3}, {
+      data <- DATA()
+      name <- get_data_id(data)
+    
+    if (is.null(name))
+      return()
+    
+    for (id in widget_id) {
+      REG[[id]][[name]] <<- input[[id]]
+    }
   })
   
   # update the values for the grid of target values
@@ -236,52 +314,54 @@ shinyServer(function(input, output, session) {
     v <- trans_funeval(v)    
     q <- quantile(v, probs = c(.25, .5, .75), names = F)
     
-    # TODO: we need to fix this!!!
+    # TODO: we need to fix this for the general case!!!
     length.out <- 10
     fseq <- seq_FV(v, length.out = length.out)
     start <- fseq[1]
     stop <- fseq[length.out]
     step <- fseq[3] - fseq[2]
     
-    updateTextInput(session, 'fstart', value = format_FV(start))
-    updateTextInput(session, 'fstop', value = format_FV(stop))
-    updateTextInput(session, 'fstep', value = format_FV(step))
+    name <- get_data_id(data)
+    setTextInput(session, 'fstart', name, alternative = format_FV(start))
+    setTextInput(session, 'fstop', name, alternative = format_FV(stop))
+    setTextInput(session, 'fstep', name, alternative = format_FV(step))
     
-    updateTextInput(session, 'F_MIN_SAMPLE', value = format_FV(start))
-    updateTextInput(session, 'F_MAX_SAMPLE', value = format_FV(stop))
-    updateTextInput(session, 'F_STEP_SAMPLE', value = format_FV(step))
+    setTextInput(session, 'F_MIN_SAMPLE', name, alternative = format_FV(start))
+    setTextInput(session, 'F_MAX_SAMPLE', name, alternative = format_FV(stop))
+    setTextInput(session, 'F_STEP_SAMPLE', name, alternative = format_FV(step))
     
-    updateTextInput(session, 'RT_fstart', value = format_FV(start))
-    updateTextInput(session, 'RT_fstop', value = format_FV(stop))
-    updateTextInput(session, 'RT_fstep', value = format_FV(step))
-    updateTextInput(session, 'RT_fselect', value = format_FV(median(v)))
+    setTextInput(session, 'RT_fstart', name, alternative = format_FV(start))
+    setTextInput(session, 'RT_fstop', name, alternative = format_FV(stop))
+    setTextInput(session, 'RT_fstep', name, alternative = format_FV(step))
+    setTextInput(session, 'RT_fselect', name, alternative = format_FV(median(v)))
     
-    updateTextInput(session, 'RT_PMF_FTARGET', value = format_FV(median(v)))
-    updateTextInput(session, 'RT_PMF_HIST_FTARGET', value = format_FV(median(v)))
+    setTextInput(session, 'RT_PMF_FTARGET', name, alternative = format_FV(median(v)))
+    setTextInput(session, 'RT_PMF_HIST_FTARGET', name, alternative = format_FV(median(v)))
     
     # s <- ((stop - start) * 0.1 + start)
     # e <- ((stop - start) * 0.9 + start)
-    updateTextInput(session, 'ERT_FSTART', value = format_FV(start))
-    updateTextInput(session, 'ERT_FSTOP', value = format_FV(stop))
+    setTextInput(session, 'ERT_FSTART', name, alternative = format_FV(start))
+    setTextInput(session, 'ERT_FSTOP', name, alternative = format_FV(stop))
     
-    updateTextInput(session, 'RT_ECDF_FTARGET1', value = format_FV(q[1]))
-    updateTextInput(session, 'RT_ECDF_FTARGET2', value = format_FV(q[2]))
-    updateTextInput(session, 'RT_ECDF_FTARGET3', value = format_FV(q[3]))
+    setTextInput(session, 'RT_ECDF_FTARGET1', name, alternative = format_FV(q[1]))
+    setTextInput(session, 'RT_ECDF_FTARGET2', name, alternative = format_FV(q[2]))
+    setTextInput(session, 'RT_ECDF_FTARGET3', name, alternative = format_FV(q[3]))
     
-    updateTextInput(session, 'RT_AUC_FSTART', value = format_FV(start))
-    updateTextInput(session, 'RT_AUC_FSTOP', value = format_FV(stop))
-    updateTextInput(session, 'RT_AUC_FSTEP', value = format_FV(step))
+    setTextInput(session, 'RT_AUC_FSTART', name, alternative = format_FV(start))
+    setTextInput(session, 'RT_AUC_FSTOP', name, alternative = format_FV(stop))
+    setTextInput(session, 'RT_AUC_FSTEP', name, alternative = format_FV(step))
     
-    updateTextInput(session, 'PAR_F_MIN', value = format_FV(start))
-    updateTextInput(session, 'PAR_F_MAX', value = format_FV(stop))
+    setTextInput(session, 'PAR_F_MIN', name, alternative = format_FV(start))
+    setTextInput(session, 'PAR_F_MAX', name, alternative = format_FV(stop))
     
-    updateTextInput(session, 'PAR_F_MIN_SUMMARY', value = format_FV(start))
-    updateTextInput(session, 'PAR_F_MAX_SUMMARY', value = format_FV(stop))
-    updateTextInput(session, 'PAR_F_STEP_SUMMARY', value = format_FV(step))
+    setTextInput(session, 'PAR_F_MIN_SUMMARY', name, alternative = format_FV(start))
+    setTextInput(session, 'PAR_F_MAX_SUMMARY', name, alternative = format_FV(stop))
+    setTextInput(session, 'PAR_F_STEP_SUMMARY', name, alternative = format_FV(step))
     
-    updateTextInput(session, 'PAR_F_MIN_SAMPLE', value = format_FV(start))
-    updateTextInput(session, 'PAR_F_MAX_SAMPLE', value = format_FV(stop))
-    updateTextInput(session, 'PAR_F_STEP_SAMPLE', value = format_FV(step))
+    setTextInput(session, 'PAR_F_MIN_SAMPLE', name, alternative = format_FV(start))
+    setTextInput(session, 'PAR_F_MAX_SAMPLE', name, alternative = format_FV(stop))
+    setTextInput(session, 'PAR_F_STEP_SAMPLE', name, alternative = format_FV(step))
+    
   })
   
   # update the values for the grid of running times
@@ -302,33 +382,34 @@ shinyServer(function(input, output, session) {
     start <- min(v)
     stop <- max(v)
     
-    updateTextInput(session, 'RT_MIN', value = min(v))
-    updateTextInput(session, 'RT_MAX', value = max(v))
-    updateTextInput(session, 'RT_STEP', value = step)
+    name <- get_data_id(data)
+    setTextInput(session, 'RT_MIN', name, alternative = min(v))
+    setTextInput(session, 'RT_MAX', name, alternative = max(v))
+    setTextInput(session, 'RT_STEP', name, alternative = step)
     
-    updateTextInput(session, 'RT_MIN_SAMPLE', value = min(v))
-    updateTextInput(session, 'RT_MAX_SAMPLE', value = max(v))
-    updateTextInput(session, 'RT_STEP_SAMPLE', value = step)
+    setTextInput(session, 'RT_MIN_SAMPLE', name, alternative = min(v))
+    setTextInput(session, 'RT_MAX_SAMPLE', name, alternative = max(v))
+    setTextInput(session, 'RT_STEP_SAMPLE', name, alternative = step)
     
-    updateTextInput(session, 'FCE_HIST_RUNTIME', value = median(v))
-    updateTextInput(session, 'FCE_PDF_RUNTIME', value = median(v))
+    setTextInput(session, 'FCE_HIST_RUNTIME', name, alternative = median(v))
+    setTextInput(session, 'FCE_PDF_RUNTIME', name, alternative = median(v))
     
     # s <- ((max(v) - min(v)) * 0.05 + min(v)) %>% as.integer
     # e <- ((max(v) - min(v)) * 0.95 + min(v)) %>% as.integer
-    updateTextInput(session, 'FCE_RT_MIN', value = start)
-    updateTextInput(session, 'FCE_RT_MAX', value = stop)
+    setTextInput(session, 'FCE_RT_MIN', name, alternative = start)
+    setTextInput(session, 'FCE_RT_MAX', name, alternative = stop)
     
-    updateTextInput(session, 'FCE_ECDF_RT_MIN', value = min(v))
-    updateTextInput(session, 'FCE_ECDF_RT_MAX', value = max(v))
-    updateTextInput(session, 'FCE_ECDF_RT_STEP', value = step)
+    setTextInput(session, 'FCE_ECDF_RT_MIN', name, alternative = min(v))
+    setTextInput(session, 'FCE_ECDF_RT_MAX', name, alternative = max(v))
+    setTextInput(session, 'FCE_ECDF_RT_STEP', name, alternative = step)
     
-    updateTextInput(session, 'FCE_AUC_RT_MIN', value = min(v))
-    updateTextInput(session, 'FCE_AUC_RT_MAX', value = max(v))
-    updateTextInput(session, 'FCE_AUC_RT_STEP', value = step)
+    setTextInput(session, 'FCE_AUC_RT_MIN', name, alternative = min(v))
+    setTextInput(session, 'FCE_AUC_RT_MAX', name, alternative = max(v))
+    setTextInput(session, 'FCE_AUC_RT_STEP', name, alternative = step)
     
-    updateTextInput(session, 'FCE_ECDF_RT1', value = q[1])
-    updateTextInput(session, 'FCE_ECDF_RT2', value = q[2])
-    updateTextInput(session, 'FCE_ECDF_RT3', value = q[3])
+    setTextInput(session, 'FCE_ECDF_RT1', name, alternative = q[1])
+    setTextInput(session, 'FCE_ECDF_RT2', name, alternative = q[2])
+    setTextInput(session, 'FCE_ECDF_RT3', name, alternative = q[3])
   })
   
   # Data summary for Fixed-Target Runtime (ERT)  --------------
@@ -460,8 +541,10 @@ shinyServer(function(input, output, session) {
     
     req(Fmin <= Fmax)
     
-    data <- DATA()
-    fall <- getFunvals(data)
+    isolate({
+      data <- DATA()
+      fall <- getFunvals(data)
+    })
     
     if (input$singleF)
       fstop <- fstart

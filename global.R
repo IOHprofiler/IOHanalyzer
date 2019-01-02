@@ -38,6 +38,8 @@ PARSample_csv_name <- parse(text = "paste0('PARSample-', paste(Sys.Date(), input
                                     paste0('F', input$FUNCID_INPUT), fstart, fstop, fstep, 
                                     sep = '-'), '.csv')")
 
+# TODO: Roxygen docs...
+# TODO: maybe merge 'seq_FV' and 'seq_RT'...
 # TODO: determine when the sequence should be generate in log-linear way
 seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL) {
   from <- max(from, min(FV))
@@ -93,6 +95,56 @@ seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
     unique %>%
     rev_trans
 }
+
+widget_id <- c('fstart',
+               'fstop',
+               'fstep',
+               'F_MIN_SAMPLE', 
+               'F_MAX_SAMPLE',
+               'F_STEP_SAMPLE', 
+               'RT_fstart',
+               'RT_fstop', 
+               'RT_fstep', 
+               'RT_fselect', 
+               'RT_PMF_FTARGET', 
+               'RT_PMF_HIST_FTARGET', 
+               'ERT_FSTART', 
+               'ERT_FSTOP', 
+               'RT_ECDF_FTARGET1', 
+               'RT_ECDF_FTARGET2', 
+               'RT_ECDF_FTARGET3', 
+               'RT_AUC_FSTART', 
+               'RT_AUC_FSTOP', 
+               'RT_AUC_FSTEP', 
+               'PAR_F_MIN', 
+               'PAR_F_MAX', 
+               'PAR_F_MIN_SUMMARY', 
+               'PAR_F_MAX_SUMMARY', 
+               'PAR_F_STEP_SUMMARY', 
+               'PAR_F_MIN_SAMPLE', 
+               'PAR_F_MAX_SAMPLE', 
+               'PAR_F_STEP_SAMPLE',
+               'RT_MIN',
+               'RT_MAX',
+               'RT_STEP',
+               'RT_MIN_SAMPLE',
+               'RT_MAX_SAMPLE',
+               'RT_STEP_SAMPLE',
+               'FCE_HIST_RUNTIME',
+               'FCE_PDF_RUNTIME',
+               'FCE_RT_MIN',
+               'FCE_RT_MAX',
+               'FCE_ECDF_RT_MIN',
+               'FCE_ECDF_RT_MAX',
+               'FCE_ECDF_RT_STEP',
+               'FCE_AUC_RT_MIN',
+               'FCE_AUC_RT_MAX',
+               'FCE_AUC_RT_STEP',
+               'FCE_ECDF_RT1',
+               'FCE_ECDF_RT2',
+               'FCE_ECDF_RT3')
+
+
 
 
 

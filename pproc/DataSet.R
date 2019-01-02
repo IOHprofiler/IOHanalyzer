@@ -92,6 +92,7 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     # TODO: remove this and incorporate the parameters aligned by runtimes
     FV[names(FV) != 'FV'] <- NULL
     
+    # TODO: add more data sanity checks
     maxRT <- sapply(cdat, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
     if (any(maxRT != info$maxRT))
       warning('Inconsitent maxRT in *.info file and *.cdat file')
@@ -219,7 +220,7 @@ plot_ERT <- function(ds, backend = 'ggplot2') {
   p
 }
 
-# TODO: implement the save option
+# TODO: implement the 'save' option
 plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
   dt <- data.table(ds$RT) 
   NC <- ncol(dt)
@@ -584,4 +585,71 @@ get_PAR_sample.DataSet <- function(ds, ftarget, parId = 'all', output = 'wide') 
         ][order(target, run)]
   }
   res
+}
+
+
+plot_RT <- function(ds, backend = 'ggplot') {
+  
+  if (backend == 'ggplot') {
+    
+  } else if (backend == 'plotly') {
+    fseq <- seq_FV(fall, Fmin, Fmax, length.out = 60)
+    req(fseq)
+    
+    n_algorithm <- length(data)
+    colors <- colorspace::rainbow_hcl(n_algorithm)
+    
+    dt <- get_RT_summary(data, fseq)
+    dt[, `:=`(upper = ERT + sd, lower = ERT - sd)]
+    
+    p <- plot_ly_default(x.title = "best-so-far f(x)-value", 
+                         y.title = "function evaluations")
+    
+    for (i in seq_along(data)) {
+      algId <- attr(data[[i]], 'algId')
+      ds_ERT <- dt[algId == attr(data[[i]], 'algId')]
+      
+      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
+      
+      p %<>% 
+        add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
+                  line = list(color = rgba_str, width = 0),  
+                  showlegend = F, name = 'mean +/- sd') %>% 
+        add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
+                  fill = 'tonexty',  line = list(color = 'transparent'),
+                  fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd')
+      
+      if (input$show.ERT)
+        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
+                         name = paste0(algId, '.ERT'), mode = 'lines+markers', 
+                         marker = list(color = rgb_str),  
+                         line = list(color = rgb_str))
+      
+      if (input$show.mean)
+        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~mean, type = 'scatter', 
+                         mode = 'lines+markers', name = paste0(algId, '.mean'), 
+                         marker = list(color = rgb_str), 
+                         line = list(color = rgb_str, dash = 'dash'))
+      
+      if (input$show.median)
+        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~median, type = 'scatter',
+                         name = paste0(algId, '.median'), mode = 'lines+markers', 
+                         marker = list(color = rgb_str),  
+                         line = list(color = rgb_str, dash = 'dot'))
+    }
+    p %<>%
+      layout(xaxis = list(type = switch(input$semilogx, T = 'log', F = 'linear')),
+             yaxis = list(type = switch(input$semilogy, T = 'log', F = 'linear')))
+    
+    # minimization for COCO
+    if (src_format == 'COCO')
+      p %<>% layout(xaxis = list(autorange = "reversed"))
+    p
+    
+  } else {
+    stop(paste('backend', backend, 'is not supported...'))
+  }
+  
+  p
 }

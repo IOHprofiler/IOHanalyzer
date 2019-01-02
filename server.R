@@ -245,6 +245,7 @@ shinyServer(function(input, output, session) {
     subset(DataList$data, DIM == dim, funcId == id)
   })
   
+  # register the TextInput and restore them when switching funcID and DIM
   observeEvent({
     input$fstart
     input$fstop
@@ -518,7 +519,6 @@ shinyServer(function(input, output, session) {
       fstop <- input$F_MAX_SAMPLE %>% format_FV
       fstep <- input$F_STEP_SAMPLE %>% format_FV
       eval(RTSample_csv_name)
-      # sprintf('runtime_(%s,%s,%s).csv', fstart, fstop, fstep)
     },
     content = function(file) {
       write.csv(get_RT(), file, row.names = F)

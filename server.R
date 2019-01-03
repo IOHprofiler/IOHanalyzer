@@ -8,7 +8,7 @@
 # TODO:
 #   * add 'shiny::req' to all the functions when the input might be insufficient
 #   * rename most of the control widgets in a uniform and understandable scheme
-
+options(warn=2)
 suppressMessages(library(shiny))
 suppressMessages(library(shinyjs))
 suppressMessages(library(reshape2))
@@ -34,15 +34,14 @@ src_format <- IOHprofiler # TODO: this shoule be taken from the data set
 sub_sampling <- TRUE
 
 # Inserts values from "from_data" to "to_data" that are better than were
-insert_best_parts <- function(from_data, to_data, best_is_min){
-  
-  if (is.na(from_data))
+insert_best_parts <- function(from_data, to_data, best_is_min) {
+  if (all(is.na(from_data)))
     to_data
   else
     if (best_is_min)
       pmin(from_data, to_data)
-    else
-      pmax(from_data, to_data)
+  else
+    pmax(from_data, to_data)
 }
 
 # Formatter for function values
@@ -257,6 +256,7 @@ shinyServer(function(input, output, session) {
     subset(DataList$data, DIM == dim, funcId == id)
   })
   
+  # TODO: make this urgely snippet look better...
   # register the TextInput and restore them when switching funcID and DIM
   observeEvent({
     input$fstart
@@ -435,13 +435,8 @@ shinyServer(function(input, output, session) {
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     
-    # NOTE: this expression should only depends on fstart, fstop and fstep to avoid 
-    # racing conditions
-    # TODD: maybe store 'fall' as a reactive variable
-    isolate({
-      data <- DATA()
-      fall <- getFunvals(data)
-    })
+    data <- DATA()
+    fall <- getFunvals(data)
     
     if (input$singleF)
       fstop <- fstart
@@ -490,6 +485,7 @@ shinyServer(function(input, output, session) {
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     
+    # we have to remove this part from the dependency of this reactive expression
     isolate({
       data <- DATA()
       fall <- getFunvals(data)
@@ -553,10 +549,8 @@ shinyServer(function(input, output, session) {
     
     req(Fmin <= Fmax)
     
-    isolate({
-      data <- DATA()
-      fall <- getFunvals(data)
-    })
+    data <- DATA()
+    fall <- getFunvals(data)
     
     if (input$singleF)
       fstop <- fstart
@@ -570,7 +564,7 @@ shinyServer(function(input, output, session) {
     dt <- get_RT_summary(data, fseq)
     dt[, `:=`(upper = ERT + sd, lower = ERT - sd)]
     
-    dr <- get_RT_runs(data, fseq)
+    dr <- get_RT_sample(data, fseq)
     
     p <- plot_ly_default(x.title = "best-so-far f(x)-value", 
                          y.title = "function evaluations")
@@ -609,7 +603,7 @@ shinyServer(function(input, output, session) {
                          line = list(color = rgb_str, dash = 'dot'))
       
       if (input$show_all) {
-        line_width = 0.5
+        line_width <- 0.5
         
         dr_ERT <- dr[algId == attr(data[[i]], 'algId')]
         names_to_show = sample(colnames(dr_ERT))
@@ -617,13 +611,10 @@ shinyServer(function(input, output, session) {
           names_to_show[!names_to_show %in% c('algId', 'target')]
         
         dens <- input$show.density
-        counter = as.integer(length(names_to_show) * dens / 100)
-        
+        counter <- as.integer(length(names_to_show) * dens / 100)
         names_to_show <- head(names_to_show, counter)
-        
-        best_parts = NA
-        
-        mentioned = FALSE
+        best_parts <- NA
+        mentioned <- FALSE
         
         for (run_v in names_to_show) {
           p %<>% add_trace(
@@ -636,19 +627,20 @@ shinyServer(function(input, output, session) {
             #legendgroup = paste("runs of ", algId),
             #legend = list(traceorder = "grouped"),
             text = paste(run_v),
-            hoverinfo = "x+y+text",
-            hoverlabel = list(font=list(size = 8)),
+            hoverinfo='none',
+            # hoverinfo = "x+y+text",
+            # hoverlabel = list(font=list(size = 8)),
             showlegend = !mentioned,
             name = paste("runs of ", algId)
           )
-          mentioned = TRUE
+          mentioned <- TRUE
           best_parts <-
             insert_best_parts(best_parts, dr_ERT[[run_v]], TRUE)
         }
         
         if (input$show.best_of_all) {
-          mentioned = FALSE
-          check_value = tail(best_parts, 1)
+          mentioned <- FALSE
+          check_value <- tail(best_parts, 1)
           for (run_v in names_to_show)
             if (check_value == tail(dr_ERT[[run_v]], 1)) {
               p %<>% add_trace(
@@ -662,7 +654,7 @@ shinyServer(function(input, output, session) {
                 showlegend = !mentioned,
                 name = paste("best.", algId)
               )
-              mentioned = TRUE
+              mentioned <- TRUE
             }
         }
         if (input$show.pareto_optima) {
@@ -1163,7 +1155,7 @@ shinyServer(function(input, output, session) {
     fce <- get_FV_summary(data, rt_seq)
     fce[, `:=`(upper = mean + sd, lower = mean - sd)]
     
-    fce_runs <- get_FV_runs(data, rt_seq)
+    fce_runs <- get_FV_sample(data, rt_seq)
     
     p <- plot_ly_default(y.title = "best-so-far f(x)-value", x.title = "runtime")
     
@@ -1198,22 +1190,20 @@ shinyServer(function(input, output, session) {
                          line = list(color = rgb_str, dash = 'dash'))
       
       if (input$FCE_show_all) {
-        min_is_best = FALSE
-        line_width = 0.5
+        min_is_best <- FALSE
+        line_width <- 0.5
         
         fce_runs_ERT <- fce_runs[algId == attr(data[[i]], 'algId')]
-        names_to_show = sample(colnames(fce_runs_ERT))
+        names_to_show <- sample(colnames(fce_runs_ERT))
         names_to_show <-
           names_to_show[!names_to_show %in% c('algId', 'runtime')]
         
         dens <- input$FCE_show.density
-        counter = as.integer(length(names_to_show) * dens / 100)
+        counter <- as.integer(length(names_to_show) * dens / 100)
         
         names_to_show <- head(names_to_show, counter)
-        
-        best_parts = NA
-        
-        mentioned = FALSE
+        best_parts <- NA
+        mentioned <- FALSE
         
         for (run_v in names_to_show) {
           p %<>% add_trace(
@@ -1226,19 +1216,20 @@ shinyServer(function(input, output, session) {
             #legendgroup = paste("runs of ", algId),
             #legend = list(traceorder = "grouped"),
             text = paste(run_v),
-            hoverinfo = "x+y+text",
-            hoverlabel = list(font=list(size = 8)),
+            hoverinfo = 'none',
+            # hoverinfo = "x+y+text",
+            # hoverlabel = list(font=list(size = 8)),
             showlegend = !mentioned,
             name = paste("runs of ", algId)
           )
-          mentioned = TRUE
+          mentioned <- TRUE
           best_parts <-
             insert_best_parts(best_parts, fce_runs_ERT[[run_v]], min_is_best)
         }
         
         if (input$FCE_show.best_of_all) {
-          mentioned = FALSE
-          check_value = tail(best_parts, 1)
+          mentioned <- FALSE
+          check_value <- tail(best_parts, 1)
           for (run_v in names_to_show)
             if (check_value == tail(fce_runs_ERT[[run_v]], 1)) {
               p %<>% add_trace(

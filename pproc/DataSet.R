@@ -297,42 +297,42 @@ get_FV_summary <- function(ds, ...) UseMethod("get_FV_summary", ds)
 get_PAR_sample <- function(ds, ...) UseMethod("get_PAR_sample", ds)
 get_PAR_summary <- function(ds, ...) UseMethod("get_PAR_summary", ds)
 get_PAR_name <- function(ds) UseMethod("get_PAR_name", ds)
-get_RT_runs <- function(ds, ...) UseMethod("get_RT_runs", ds)
-get_FV_runs <- function(ds, ...) UseMethod("get_FV_runs", ds)
+# get_RT_runs <- function(ds, ...) UseMethod("get_RT_runs", ds)
+# get_FV_runs <- function(ds, ...) UseMethod("get_FV_runs", ds)
 
 
-#' Get RunTime values
-#'
-#' @param ds 
-#' @param ftarget 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-get_RT_runs.DataSet <- function(ds, ftarget) {
+# #' Get RunTime values
+# #'
+# #' @param ds 
+# #' @param ftarget 
+# #'
+# #' @return
+# #' @export
+# #'
+# #' @examples
+# get_RT_runs.DataSet <- function(ds, ftarget) {
   
-  data <- ds$RT
-  maxRT <- attr(ds, 'maxRT')
-  algId <- attr(ds, 'algId')
-  maximization <- attr(ds, 'maximization')
+#   data <- ds$RT
+#   maxRT <- attr(ds, 'maxRT')
+#   algId <- attr(ds, 'algId')
+#   maximization <- attr(ds, 'maximization')
   
-  ftarget <- c(ftarget) %>% as.double %>% sort(decreasing = !maximization)
-  FValues <- rownames(data) %>% as.numeric
+#   ftarget <- c(ftarget) %>% as.double %>% sort(decreasing = !maximization)
+#   FValues <- rownames(data) %>% as.numeric
   
-  idx <- seq_along(FValues)
-  op <- ifelse(maximization, `>=`, `<=`)
+#   idx <- seq_along(FValues)
+#   op <- ifelse(maximization, `>=`, `<=`)
   
-  matched <- sapply(
-    ftarget,
-    function(f) {
-      idx[`op`(FValues, f)][1]
-    }
-  )
+#   matched <- sapply(
+#     ftarget,
+#     function(f) {
+#       idx[`op`(FValues, f)][1]
+#     }
+#   )
   
-  data <- data[matched, , drop = FALSE]
-  cbind(algId=algId,target=ftarget, as.data.table(data))
-}
+#   data <- data[matched, , drop = FALSE]
+#   cbind(algId=algId,target=ftarget, as.data.table(data))
+# }
 
 #' Get RunTime Summary
 #'
@@ -344,11 +344,6 @@ get_RT_runs.DataSet <- function(ds, ftarget) {
 #'
 #' @examples
 get_RT_summary.DataSet <- function(ds, ftarget) {
-  # if (length(ftarget) == 0) {
-  #   return(data.table())
-  # }
-  
-  # data <- ds$RT.summary
   data <- ds$RT
   maxRT <- attr(ds, 'maxRT')
   algId <- attr(ds, 'algId')
@@ -356,7 +351,6 @@ get_RT_summary.DataSet <- function(ds, ftarget) {
   
   ftarget <- c(ftarget) %>% as.double %>% sort(decreasing = !maximization)
   FValues <- rownames(data) %>% as.numeric
-  # FValues <- data[, target]
   idx <- seq_along(FValues)
   op <- ifelse(maximization, `>=`, `<=`)
   
@@ -368,7 +362,6 @@ get_RT_summary.DataSet <- function(ds, ftarget) {
   )
   
   if (is.list(matched)) {
-    browser()
     return(data.table())
   }
   
@@ -441,36 +434,36 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide') {
   res
 }
 
-#' Get Function Value Runs
-#'
-#' @param ds A DataSet object
-#' @param runtime A Numerical vector. Runtimes at which function values are reached
-#'
-#' @return
-#' @export
-#'
-#' @examples
-get_FV_runs.DataSet <- function(ds, runtime) {
-  data <- ds$FV
+# #' Get Function Value Runs
+# #'
+# #' @param ds A DataSet object
+# #' @param runtime A Numerical vector. Runtimes at which function values are reached
+# #'
+# #' @return
+# #' @export
+# #'
+# #' @examples
+# get_FV_runs.DataSet <- function(ds, runtime) {
+#   data <- ds$FV
   
-  NC <- ncol(data)
-  NR <- nrow(data)
-  algId <- attr(ds, 'algId')
-  maximization <- attr(ds, 'maximization')
+#   NC <- ncol(data)
+#   NR <- nrow(data)
+#   algId <- attr(ds, 'algId')
+#   maximization <- attr(ds, 'maximization')
   
-  runtime <- c(runtime) %>% unique %>% as.numeric %>% sort
-  RT <- rownames(data) %>% as.numeric
-  idx <- seq_along(RT)
+#   runtime <- c(runtime) %>% unique %>% as.numeric %>% sort
+#   RT <- rownames(data) %>% as.numeric
+#   idx <- seq_along(RT)
   
-  matched <- sapply(runtime, function(r) {
-    res <- idx[RT >= r][1]
-    ifelse(is.na(res), NR, res)
-  })
+#   matched <- sapply(runtime, function(r) {
+#     res <- idx[RT >= r][1]
+#     ifelse(is.na(res), NR, res)
+#   })
   
-  data <- data[matched, , drop = FALSE]
+#   data <- data[matched, , drop = FALSE]
   
-  cbind(algId=algId, runtime=runtime, as.data.table(data))
-}
+#   cbind(algId=algId, runtime=runtime, as.data.table(data))
+# }
 
 #' Get Function Value Summary
 #'

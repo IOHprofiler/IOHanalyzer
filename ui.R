@@ -289,7 +289,30 @@ body <- dashboardBody(
                              
                              checkboxInput('semilogy', 
                                            label = 'scale y axis log10',
-                                           value = T)
+                                           value = T),
+                             
+                             checkboxInput('show_all',
+                                           label = 'show/hide multiple runs',
+                                           value = F),
+                             conditionalPanel(condition = "input.show_all == true",
+                                              
+                                              fluidRow(column(
+                                                11,
+                                                offset = 1,
+                                                sliderInput('show.density',
+                                                            label = "Runs density(%)",
+                                                            min = 1, max = 100, value = 50, step = 1),
+                                                checkboxInput('show.best_of_all',
+                                                              label = 'show/hide best run',
+                                                              value = F),
+                                                checkboxInput('show.pareto_optima',
+                                                              label = 'show/hide pareto optimal front',
+                                                              value = F)
+                                              )))
+                             
+                             
+                                              
+                                              
                              
                              # checkboxInput('show.instance', 
                              #               label = 'show each independent run',
@@ -666,7 +689,26 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                                
                                checkboxInput('FCE_semilogy', 
                                              label = 'scale y axis log10',
-                                             value = T)
+                                             value = T),
+                               
+                               checkboxInput('FCE_show_all',
+                                             label = 'show/hide multiple runs',
+                                             value = F),
+                               conditionalPanel(condition = "input.FCE_show_all == true",
+                                                
+                                                fluidRow(column(
+                                                  11,
+                                                  offset = 1,
+                                                  sliderInput('FCE_show.density',
+                                                              label = "Runs density(%)",
+                                                              min = 1, max = 100, value = 50, step = 1),
+                                                  checkboxInput('FCE_show.best_of_all',
+                                                                label = 'show/hide best run',
+                                                                value = F),
+                                                  checkboxInput('FCE_show.pareto_optima',
+                                                                label = 'show/hide pareto optimal front',
+                                                                value = F)
+                                                )))
                              )
                          ),
                          

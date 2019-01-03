@@ -33,6 +33,18 @@ maximization <- TRUE
 src_format <- IOHprofiler # TODO: this shoule be taken from the data set
 sub_sampling <- TRUE
 
+# Inserts values from "from_data" to "to_data" that are better than were
+insert_best_parts <- function(from_data, to_data, best_is_min){
+  
+  if (is.na(from_data))
+    to_data
+  else
+    if (best_is_min)
+      pmin(from_data, to_data)
+    else
+      pmax(from_data, to_data)
+}
+
 # Formatter for function values
 format_FV <- function(v) format(v, digits = 2, nsmall = 2)
 format_RT <- function(v) as.integer(v)
@@ -558,6 +570,8 @@ shinyServer(function(input, output, session) {
     dt <- get_RT_summary(data, fseq)
     dt[, `:=`(upper = ERT + sd, lower = ERT - sd)]
     
+    dr <- get_RT_runs(data, fseq)
+    
     p <- plot_ly_default(x.title = "best-so-far f(x)-value", 
                          y.title = "function evaluations")
     
@@ -593,6 +607,78 @@ shinyServer(function(input, output, session) {
                          name = paste0(algId, '.median'), mode = 'lines+markers', 
                          marker = list(color = rgb_str),  
                          line = list(color = rgb_str, dash = 'dot'))
+      
+      if (input$show_all) {
+        line_width = 0.5
+        
+        dr_ERT <- dr[algId == attr(data[[i]], 'algId')]
+        names_to_show = sample(colnames(dr_ERT))
+        names_to_show <-
+          names_to_show[!names_to_show %in% c('algId', 'target')]
+        
+        dens <- input$show.density
+        counter = as.integer(length(names_to_show) * dens / 100)
+        
+        names_to_show <- head(names_to_show, counter)
+        
+        best_parts = NA
+        
+        mentioned = FALSE
+        
+        for (run_v in names_to_show) {
+          p %<>% add_trace(
+            data = dr_ERT,
+            x = ~ target,
+            y = dr_ERT[[run_v]],
+            type = 'scatter',
+            mode = 'lines',
+            line = list(color = rgb_str, width = line_width),
+            #legendgroup = paste("runs of ", algId),
+            #legend = list(traceorder = "grouped"),
+            text = paste(run_v),
+            hoverinfo = "x+y+text",
+            hoverlabel = list(font=list(size = 8)),
+            showlegend = !mentioned,
+            name = paste("runs of ", algId)
+          )
+          mentioned = TRUE
+          best_parts <-
+            insert_best_parts(best_parts, dr_ERT[[run_v]], TRUE)
+        }
+        
+        if (input$show.best_of_all) {
+          mentioned = FALSE
+          check_value = tail(best_parts, 1)
+          for (run_v in names_to_show)
+            if (check_value == tail(dr_ERT[[run_v]], 1)) {
+              p %<>% add_trace(
+                data = dr_ERT,
+                x = ~ target,
+                y = dr_ERT[[run_v]],
+                type = 'scatter',
+                mode = 'lines',
+                line = list(color = rgb_str, width = line_width *
+                              3),
+                showlegend = !mentioned,
+                name = paste("best.", algId)
+              )
+              mentioned = TRUE
+            }
+        }
+        if (input$show.pareto_optima) {
+          p %<>% add_trace(
+            x = dr_ERT[['target']],
+            y = best_parts,
+            type = 'scatter',
+            mode = 'lines',
+            line = list(color = rgb_str, width = line_width *
+                          5, dash = 'dot'),
+            showlegend = T,
+            name = paste("pareto_optima.", algId)
+          )
+        }
+        
+      }
     }
     p %<>%
       layout(xaxis = list(type = switch(input$semilogx, T = 'log', F = 'linear')),
@@ -1077,6 +1163,8 @@ shinyServer(function(input, output, session) {
     fce <- get_FV_summary(data, rt_seq)
     fce[, `:=`(upper = mean + sd, lower = mean - sd)]
     
+    fce_runs <- get_FV_runs(data, rt_seq)
+    
     p <- plot_ly_default(y.title = "best-so-far f(x)-value", x.title = "runtime")
     
     for (i in seq_along(data)) {
@@ -1108,6 +1196,79 @@ shinyServer(function(input, output, session) {
                          name = sprintf("%s.median", algId), mode = 'lines+markers', 
                          marker = list(color = rgb_str),
                          line = list(color = rgb_str, dash = 'dash'))
+      
+      if (input$FCE_show_all) {
+        min_is_best = FALSE
+        line_width = 0.5
+        
+        fce_runs_ERT <- fce_runs[algId == attr(data[[i]], 'algId')]
+        names_to_show = sample(colnames(fce_runs_ERT))
+        names_to_show <-
+          names_to_show[!names_to_show %in% c('algId', 'runtime')]
+        
+        dens <- input$FCE_show.density
+        counter = as.integer(length(names_to_show) * dens / 100)
+        
+        names_to_show <- head(names_to_show, counter)
+        
+        best_parts = NA
+        
+        mentioned = FALSE
+        
+        for (run_v in names_to_show) {
+          p %<>% add_trace(
+            data = fce_runs_ERT,
+            x = ~ runtime,
+            y = fce_runs_ERT[[run_v]],
+            type = 'scatter',
+            mode = 'lines',
+            line = list(color = rgb_str, width = line_width),
+            #legendgroup = paste("runs of ", algId),
+            #legend = list(traceorder = "grouped"),
+            text = paste(run_v),
+            hoverinfo = "x+y+text",
+            hoverlabel = list(font=list(size = 8)),
+            showlegend = !mentioned,
+            name = paste("runs of ", algId)
+          )
+          mentioned = TRUE
+          best_parts <-
+            insert_best_parts(best_parts, fce_runs_ERT[[run_v]], min_is_best)
+        }
+        
+        if (input$FCE_show.best_of_all) {
+          mentioned = FALSE
+          check_value = tail(best_parts, 1)
+          for (run_v in names_to_show)
+            if (check_value == tail(fce_runs_ERT[[run_v]], 1)) {
+              p %<>% add_trace(
+                data = fce_runs_ERT,
+                x = ~ runtime,
+                y = fce_runs_ERT[[run_v]],
+                type = 'scatter',
+                mode = 'lines',
+                line = list(color = rgb_str, width = line_width *
+                              3),
+                showlegend = !mentioned,
+                name = paste("best.", algId)
+              )
+              mentioned = TRUE
+            }
+        }
+        if (input$FCE_show.pareto_optima) {
+          p %<>% add_trace(
+            x = fce_runs_ERT[['runtime']],
+            y = best_parts,
+            type = 'scatter',
+            mode = 'lines',
+            line = list(color = rgb_str, width = line_width *
+                          5, dash = 'dot'),
+            showlegend = T,
+            name = paste("pareto_optima.", algId)
+          )
+        }
+        
+      }
     }
     p %<>%
       layout(xaxis = list(type = switch(input$FCE_semilogx, T = 'log', F = 'linear')),

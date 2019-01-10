@@ -8,7 +8,6 @@
 # TODO:
 #   * add 'shiny::req' to all the functions when the input might be insufficient
 #   * rename most of the control widgets in a uniform and understandable scheme
-options(warn=2)
 suppressMessages(library(shiny))
 suppressMessages(library(shinyjs))
 suppressMessages(library(reshape2))
@@ -258,57 +257,10 @@ shinyServer(function(input, output, session) {
   
   # TODO: make this urgely snippet look better...
   # register the TextInput and restore them when switching funcID and DIM
-  observeEvent({
-    input$fstart
-    input$fstop
-    input$fstep
-    input$F_MIN_SAMPLE
-    input$F_MAX_SAMPLE
-    input$F_STEP_SAMPLE 
-    input$RT_fstart
-    input$RT_fstop 
-    input$RT_fstep 
-    input$RT_fselect 
-    input$RT_PMF_FTARGET
-    input$RT_PMF_HIST_FTARGET
-    input$ERT_FSTART
-    input$ERT_FSTOP 
-    input$RT_ECDF_FTARGET1
-    input$RT_ECDF_FTARGET2 
-    input$RT_ECDF_FTARGET3 
-    input$RT_AUC_FSTART
-    input$RT_AUC_FSTOP 
-    input$RT_AUC_FSTEP 
-    input$PAR_F_MIN
-    input$PAR_F_MAX 
-    input$PAR_F_MIN_SUMMARY 
-    input$PAR_F_MAX_SUMMARY 
-    input$PAR_F_STEP_SUMMARY 
-    input$PAR_F_MIN_SAMPLE
-    input$PAR_F_MAX_SAMPLE 
-    input$PAR_F_STEP_SAMPLE
-    input$RT_MIN
-    input$RT_MAX
-    input$RT_STEP
-    input$RT_MIN_SAMPLE
-    input$RT_MAX_SAMPLE
-    input$RT_STEP_SAMPLE
-    input$FCE_HIST_RUNTIME
-    input$FCE_PDF_RUNTIME
-    input$FCE_RT_MIN
-    input$FCE_RT_MAX
-    input$FCE_ECDF_RT_MIN
-    input$FCE_ECDF_RT_MAX
-    input$FCE_ECDF_RT_STEP
-    input$FCE_AUC_RT_MIN
-    input$FCE_AUC_RT_MAX
-    input$FCE_AUC_RT_STEP
-    input$FCE_ECDF_RT1
-    input$FCE_ECDF_RT2
-    input$FCE_ECDF_RT3}, {
-      data <- DATA()
-      name <- get_data_id(data)
-    
+  observeEvent(eval(eventExpr), {
+    data <- DATA()
+    name <- get_data_id(data)
+      
     if (is.null(name))
       return()
     

@@ -38,7 +38,7 @@ PARSample_csv_name <- parse(text = "paste0('PARSample-', paste(Sys.Date(), input
                                     paste0('F', input$FUNCID_INPUT), fstart, fstop, fstep, 
                                     sep = '-'), '.csv')")
 
-# TODO: Roxygen docs...
+# TODO: add Roxygen docs...
 # TODO: maybe merge 'seq_FV' and 'seq_RT'...
 # TODO: determine when the sequence should be generate in log-linear way
 seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL) {
@@ -143,6 +143,8 @@ widget_id <- c('fstart',
                'FCE_ECDF_RT1',
                'FCE_ECDF_RT2',
                'FCE_ECDF_RT3')
+
+eventExpr <- parse(text = paste0('{', paste(paste0('input$', widget_id), collapse = "\n"), '}'))
 
 
 

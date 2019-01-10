@@ -95,13 +95,13 @@ shinyServer(function(input, output, session) {
   # update maximization indication, trans_funeval according to src_format 
   observe({
     src_format <<- input$DATA_SRC_FORMAT
-    if (input$DATA_SRC_FORMAT == IOHprofiler) {
+    if (input$DATA_SRC_FORMAT == IOHprofiler || input$DATA_SRC_FORMAT == TWO_COL) {
       maximization <<- TRUE
       trans_funeval <<- . %>% return
       reverse_trans_runtime <<- . %>% return
       format_FV <<- function(v) format(v, digits = 2, nsmall = 2)
       
-    } else if (input$DATA_SRC_FORMAT == 'COCO') {
+    } else if (input$DATA_SRC_FORMAT == COCO) {
       maximization <<- FALSE
       format_FV <<- function(v) format(v, format = "e", digits = 5, nsmall = 2)
       # TODO: determine if we need transformations on the function values
@@ -187,7 +187,7 @@ shinyServer(function(input, output, session) {
         
         # TODO: check if the newly loaded data contradicts the selected format
         found_format <- check_format(folder)
-        if (found_format != src_format){
+        if (found_format != src_format && (src_format != TWO_COL || found_format == COCO)){
           # src_format = found_format
           updateSelectInput(session,"DATA_SRC_FORMAT",selected = found_format)
           

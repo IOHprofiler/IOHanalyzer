@@ -9,6 +9,7 @@ options(width = 120)
 
 IOHprofiler <- 'IOHprofiler'
 COCO <- 'COCO'
+TWO_COL <- 'TWO_COL'
 probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
 
 .mean <- function(x) mean(x, na.rm = T)

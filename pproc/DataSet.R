@@ -66,7 +66,10 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     } else if (format == COCO) {
       datFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
       tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
+    } else if (format == TWO_COL){
+      datFile <-  file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
     }
+    
     
     # TODO: whether to keep the raw data set list?
     if (format == IOHprofiler) {
@@ -75,29 +78,49 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     } else if (format == COCO) {
       dat <- read_COCO_dat(datFile, subsampling)    # read the dat file
       cdat <- read_COCO_dat(tdatFile, subsampling)   # read the tdat file
+    } else if (format == TWO_COL){
+      dat <- read_dat(datFile, subsampling)
     }
     
     # check if the number of instances does not match
-    stopifnot(length(dat) == length(cdat))
+    if (format != TWO_COL)
+      stopifnot(length(dat) == length(cdat))
     
-    if (format == IOHprofiler)
+    if (format == IOHprofiler || format == TWO_COL)
       maximization <- TRUE
     else if (format == COCO)
       maximization <- FALSE
     
     # RT <- align_by_target(dat, maximization = maximization, format = format) # runtime
     RT <- align_runtime(dat, format = format)
-    FV <- align_function_value(cdat, format = format)  # function value
+    
+    #TODO: check if this works correctly without CDAT-file
+    if (format == TWO_COL)
+      FV <- align_function_value(dat, format = format)  # function value
+    else
+      FV <- align_function_value(cdat, format = format)  # function value
     
     # TODO: remove this and incorporate the parameters aligned by runtimes
     FV[names(FV) != 'FV'] <- NULL
     
     # TODO: add more data sanity checks
-    maxRT <- sapply(cdat, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
-    if (any(maxRT != info$maxRT))
-      warning('Inconsitent maxRT in *.info file and *.cdat file')
     
-    finalFV <- sapply(dat, function(d) d[nrow(d), idxTarget]) %>% set_names(NULL)
+    # TODO: add the same sanity checks for TWO_COL format
+    if (format != TWO_COL){
+      maxRT <- sapply(cdat, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
+      if (any(maxRT != info$maxRT))
+        warning('Inconsitent maxRT in *.info file and *.cdat file')
+    }
+    else{
+      maxRT <- info$maxRT 
+    }
+    
+    #TODO: Clean up these if-statements: Function to set idxTarget and n_data_column?
+    if (format == TWO_COL)
+      finalFV <- sapply(dat, function(d) d[nrow(d), idxTarget-1]) %>% set_names(NULL)
+    else
+      finalFV <- sapply(dat, function(d) d[nrow(d), idxTarget]) %>% set_names(NULL)
+    
     if (any(finalFV != info$finalFV))
       warning('Inconsitent finalFvalue in *.info file and *.dat file')
     

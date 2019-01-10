@@ -137,7 +137,7 @@ body <- dashboardBody(
                            width = 12,
                            
                            selectInput('DATA_SRC_FORMAT', label = HTML('<p align="left" style="font-size:120%;">Please choose the format of your data sets</p>'),
-                                       choices = c(IOHprofiler, 'COCO'), selected = IOHprofiler, width = '50%'),
+                                       choices = c(IOHprofiler, COCO, TWO_COL), selected = IOHprofiler, width = '50%'),
                            HTML('<p align="justify" style="font-size:120%;">When the data set is huge, the alignment
                                 can take a very long time. In this case, you could toggle the efficient mode to subsample 
                                 the data set. However, the precision of data will be compromised.</p>'),

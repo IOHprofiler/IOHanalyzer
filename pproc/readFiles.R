@@ -47,7 +47,8 @@ read_IndexFile <- function(fname) {
       break
     
     header <- strsplit(lines[1] , ',')[[1]] %>% trimws %>% 
-      strsplit(split = '=') %>% unlist %>% trimws %>% 
+      {regmatches(., regexpr("=", .), invert = T)} %>% 
+      unlist %>% trimws %>% 
       matrix(nrow = 2) %>% {
         ans <- as.list(.[2, ])
         names(ans) <- .[1, ]

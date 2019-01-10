@@ -186,6 +186,12 @@ shinyServer(function(input, output, session) {
         folderList$data <- c(folderList$data, folder)
         
         # TODO: check if the newly loaded data contradicts the selected format
+        found_format <- check_format(folder)
+        if (found_format != src_format){
+          # src_format = found_format
+          updateSelectInput(session,"DATA_SRC_FORMAT",selected = found_format)
+          
+        }
         print_fun <- function(s) shinyjs::html("process_data_promt", s, add = TRUE)
         DataList$data <- c(DataList$data, read_dir(folder, print_fun = print_fun,
                                                    maximization = maximization,

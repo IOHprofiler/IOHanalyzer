@@ -102,7 +102,7 @@ check_format <- function(path) {
     first_line <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
     if (startsWith(first_line, '%'))
       COCO
-    else if (startsWith(first_line, 'function'))
+    else if (startsWith(first_line, '\"function'))
       IOHprofiler
   }) %>% unlist 
   

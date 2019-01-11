@@ -46,7 +46,15 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL) {
   from <- max(from, min(FV))
   to <- min(to, max(FV))
   
-  if (is.null(by)) {
+  # TODO: better way to check if we need log-linear spacing?
+  if(trans_funeval(10) == 1){
+    from <- max(1e-12,from)
+    to <- max(1e-12,to)
+    from <- trans_funeval(from)
+    to <- trans_funeval(to)
+  }
+  
+  if (is.null(by) || by > to-from) {
     if (is.null(length.out)) {
       length.out <- 10
       args <- list(from = from, to = to, by = (to - from) / (length.out - 1))
@@ -58,7 +66,8 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL) {
   # tryCatch({
     do.call(seq, args) %>% 
       c(from, ., to) %>%    # always include the starting / ending value
-      unique 
+      unique %>%
+      reverse_trans_funeval
   # }, error = function(e) {
     # c()
   # })

@@ -105,8 +105,8 @@ shinyServer(function(input, output, session) {
       maximization <<- FALSE
       format_FV <<- function(v) format(v, format = "e", digits = 5, nsmall = 2)
       # TODO: determine if we need transformations on the function values
-      # trans_funeval <<- `log10`
-      # reverse_trans_funeval <<- function(x) 10 ^ x
+      trans_funeval <<- `log10`
+      reverse_trans_funeval <<- function(x) 10 ^ x
     } 
   })
   
@@ -185,12 +185,28 @@ shinyServer(function(input, output, session) {
       else {
         folderList$data <- c(folderList$data, folder)
         
-        # TODO: check if the newly loaded data contradicts the selected format
+        # check if the newly loaded data contradicts the selected format
         found_format <- check_format(folder)
+        
+        # TODO: this is duplicated from the observer on DATA_SRC_FORMAT because of non-sequential
+        #       execution. Maybe a better solution exists which makes sure this is run before reading
+        #       the datafiles
         if (found_format != src_format && (src_format != TWO_COL || found_format == COCO)){
-          # src_format = found_format
+          src_format <<- found_format
+          if (found_format == IOHprofiler || found_format == TWO_COL) {
+            maximization <<- TRUE
+            trans_funeval <<- . %>% return
+            reverse_trans_runtime <<- . %>% return
+            format_FV <<- function(v) format(v, digits = 2, nsmall = 2)
+            
+          } else if (found_format == COCO) {
+            maximization <<- FALSE
+            format_FV <<- function(v) format(v, format = "e", digits = 5, nsmall = 2)
+            trans_funeval <<- `log10`
+            reverse_trans_funeval <<- function(x) 10 ^ x
+          } 
+          # TODO: is this still needed?
           updateSelectInput(session,"DATA_SRC_FORMAT",selected = found_format)
-          
         }
         print_fun <- function(s) shinyjs::html("process_data_promt", s, add = TRUE)
         DataList$data <- c(DataList$data, read_dir(folder, print_fun = print_fun,
@@ -282,7 +298,7 @@ shinyServer(function(input, output, session) {
     req(v)
     
     # choose proper scaling for the function value
-    v <- trans_funeval(v)    
+    # v <- trans_funeval(v)    # Do the scaling in seq_FV instead
     q <- quantile(v, probs = c(.25, .5, .75), names = F)
     
     # TODO: we need to fix this for the general case!!!
@@ -290,7 +306,7 @@ shinyServer(function(input, output, session) {
     fseq <- seq_FV(v, length.out = length.out)
     start <- fseq[1]
     stop <- fseq[length.out]
-    step <- fseq[3] - fseq[2]
+    step <- trans_funeval(fseq[3]) - trans_funeval(fseq[2])
     
     name <- get_data_id(data)
     setTextInput(session, 'fstart', name, alternative = format_FV(start))

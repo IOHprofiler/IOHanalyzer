@@ -1121,7 +1121,7 @@ shinyServer(function(input, output, session) {
     data <- DATA()
     rt <- getRuntimes(data)
     rt_seq <- seq_RT(rt, rt_min, rt_max, length.out = 60, 
-                     scale = switch(input$FCE_semilogx, T = 'log', F = 'linear'))
+                     scale = ifelse(input$FCE_semilogx, 'log', 'linear'))
     req(rt_seq)
     
     n_algorithm <- length(data)

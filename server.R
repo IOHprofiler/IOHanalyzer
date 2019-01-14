@@ -50,12 +50,8 @@ format_RT <- function(v) as.integer(v)
 # transformations applied on the function value
 # trans_funeval <- `log10`
 # reverse_trans_funeval <- function(x) 10 ^ x
-trans_funeval <- . %>% return
-reverse_trans_funeval <- . %>% return
 
 # transformations applied on runtime values
-trans_runtime <- . %>% return
-reverse_trans_runtime <- . %>% return
 
 # directory where data are extracted from the zip file
 exdir <- file.path(Sys.getenv('HOME'), 'data')
@@ -66,6 +62,21 @@ setTextInput <- function(session, id, name, alternative) {
     updateTextInput(session, id, value = v[[name]])
   } else
     updateTextInput(session, id, value = alternative)
+}
+
+#TODO: this function could be made more clear
+set_format <- function(format,minmax){
+  maximization <<- minmax
+  src_format <<- format
+  if (format == IOHprofiler || format == TWO_COL) {
+    if(minmax == AUTOMATIC)
+      maximization <<- TRUE
+    format_FV <<- function(v) format(v, digits = 2, nsmall = 2)
+  } else if (format == COCO) {
+    if(minmax == AUTOMATIC)
+      maximization <<- FALSE
+    format_FV <<- function(v) format(v, format = "e", digits = 5, nsmall = 2)
+  } 
 }
 
 # register previous text inputs, which is used to restore those values
@@ -92,25 +103,6 @@ shinyServer(function(input, output, session) {
   folderList <- reactiveValues(data = list())
   DataList <- reactiveValues(data = DataSetList())
   
-  set_format <- function(format,minmax){
-    maximization <- minmax
-    src_format <<- format
-    if (format == IOHprofiler || format == TWO_COL) {
-      if(minmax == AUTOMATIC)
-        maximization <<- TRUE
-      trans_funeval <<- . %>% return
-      reverse_trans_runtime <<- . %>% return
-      format_FV <<- function(v) format(v, digits = 2, nsmall = 2)
-      
-    } else if (format == COCO) {
-      if(minmax == AUTOMATIC)
-        maximization <<- FALSE
-      format_FV <<- function(v) format(v, format = "e", digits = 5, nsmall = 2)
-      # TODO: determine if we need transformations on the function values
-      trans_funeval <<- `log10`
-      reverse_trans_funeval <<- function(x) 10 ^ x
-    } 
-  }
   
   # update maximization indication, trans_funeval according to src_format 
   observe({
@@ -197,9 +189,6 @@ shinyServer(function(input, output, session) {
         # check if the newly loaded data contradicts the selected format
         found_format <- check_format(folder)
         
-        # TODO: this is partially duplicated from set_format because of non-sequential
-        #       execution. Maybe a better solution exists which makes sure this is run before reading
-        #       the datafiles
         if(src_format == AUTOMATIC){
           set_format(found_format,src_minmax)
           format <- found_format
@@ -318,7 +307,12 @@ shinyServer(function(input, output, session) {
     fseq <- seq_FV(v, length.out = length.out)
     start <- fseq[1]
     stop <- fseq[length.out]
-    step <- trans_funeval(fseq[3]) - trans_funeval(fseq[2])
+
+    #TODO: Make more general
+    if(fseq[3]-fseq[2] == fseq[4]-fseq[3])
+        step <- fseq[3]-fseq[2]
+    else
+      step <- log10(fseq[3]) - log10(fseq[2])
     
     name <- get_data_id(data)
     setTextInput(session, 'fstart', name, alternative = format_FV(start))
@@ -530,8 +524,8 @@ shinyServer(function(input, output, session) {
   output$ERT_PER_FUN <- renderPlotly({
     req(input$ERT_FSTART, input$ERT_FSTOP)
     
-    Fmin <- format_FV(input$ERT_FSTART) %>% as.numeric %>% reverse_trans_funeval
-    Fmax <- format_FV(input$ERT_FSTOP) %>% as.numeric %>% reverse_trans_funeval
+    Fmin <- format_FV(input$ERT_FSTART) %>% as.numeric 
+    Fmax <- format_FV(input$ERT_FSTOP) %>% as.numeric 
     
     req(Fmin <= Fmax)
     
@@ -671,7 +665,7 @@ shinyServer(function(input, output, session) {
   # empirical p.m.f. of the runtime
   output$RT_PMF <- renderPlotly({
     req(input$RT_PMF_FTARGET) 
-    ftarget <- format_FV(input$RT_PMF_FTARGET) %>% as.numeric %>% reverse_trans_funeval
+    ftarget <- format_FV(input$RT_PMF_FTARGET) %>% as.numeric
     points <- ifelse(input$RT_SHOW_SAMPLE, 'all', FALSE)
     
     data <- DATA()
@@ -740,7 +734,7 @@ shinyServer(function(input, output, session) {
   # historgram of the running time
   output$RT_HIST <- renderPlotly({
     req(input$RT_PMF_HIST_FTARGET)
-    ftarget <- format_FV(input$RT_PMF_HIST_FTARGET) %>% as.numeric %>% reverse_trans_funeval
+    ftarget <- format_FV(input$RT_PMF_HIST_FTARGET) %>% as.numeric
     plot_mode <- input$ERT_illu_mode
     
     data <- DATA()
@@ -802,8 +796,8 @@ shinyServer(function(input, output, session) {
       format_FV(input$RT_ECDF_FTARGET1),
       format_FV(input$RT_ECDF_FTARGET2),
       format_FV(input$RT_ECDF_FTARGET3)) %>% 
-      as.numeric %>% 
-      reverse_trans_funeval
+      as.numeric 
+      
     
     ftargets <- ftargets[!is.na(ftargets)]
     req(length(ftargets) != 0)
@@ -1126,8 +1120,8 @@ shinyServer(function(input, output, session) {
   output$FCE_PER_FUN <- renderPlotly({
     req(input$FCE_RT_MIN, input$FCE_RT_MAX)
     
-    rt_min <- input$FCE_RT_MIN %>% as.integer %>% reverse_trans_runtime
-    rt_max <- input$FCE_RT_MAX %>% as.integer %>% reverse_trans_runtime
+    rt_min <- input$FCE_RT_MIN %>% as.integer
+    rt_max <- input$FCE_RT_MAX %>% as.integer
     req(rt_min <= rt_max)
     
     data <- DATA()
@@ -1255,7 +1249,7 @@ shinyServer(function(input, output, session) {
   # empirical p.d.f. of the target value
   output$FCE_PDF <- renderPlotly({
     req(input$FCE_PDF_RUNTIME)  
-    runtime <- input$FCE_PDF_RUNTIME %>% as.integer %>% reverse_trans_runtime
+    runtime <- input$FCE_PDF_RUNTIME %>% as.integer 
     points <- ifelse(input$FCE_SHOW_SAMPLE, 'all', FALSE)
     
     data <- DATA()
@@ -1291,7 +1285,7 @@ shinyServer(function(input, output, session) {
   # historgram of the target values -----------
   output$FCE_HIST <- renderPlotly({
     req(input$FCE_HIST_RUNTIME != "")   # require non-empty input
-    runtime <- input$FCE_HIST_RUNTIME %>% as.integer %>% reverse_trans_runtime
+    runtime <- input$FCE_HIST_RUNTIME %>% as.integer 
     plot_mode <- input$FCE_illu_mode
     
     data <- DATA()
@@ -1353,8 +1347,8 @@ shinyServer(function(input, output, session) {
     runtimes <- c(
       as.integer(input$FCE_ECDF_RT1),
       as.integer(input$FCE_ECDF_RT2),
-      as.integer(input$FCE_ECDF_RT3)) %>% 
-      reverse_trans_runtime
+      as.integer(input$FCE_ECDF_RT3))
+      
     
     runtimes <- runtimes[!is.na(runtimes)]
     req(length(runtimes) != 0)
@@ -1570,8 +1564,8 @@ shinyServer(function(input, output, session) {
   output$PAR_PER_FUN <- renderPlotly({
     req(input$PAR_F_MIN, input$PAR_F_MAX)
     
-    f_min <- format_FV(input$PAR_F_MIN) %>% as.numeric %>% reverse_trans_funeval
-    f_max <- format_FV(input$PAR_F_MAX) %>% as.numeric %>% reverse_trans_funeval
+    f_min <- format_FV(input$PAR_F_MIN) %>% as.numeric
+    f_max <- format_FV(input$PAR_F_MAX) %>% as.numeric  
     
     req(f_min <= f_max)
     

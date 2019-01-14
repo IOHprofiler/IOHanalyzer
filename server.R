@@ -92,22 +92,31 @@ shinyServer(function(input, output, session) {
   folderList <- reactiveValues(data = list())
   DataList <- reactiveValues(data = DataSetList())
   
-  # update maximization indication, trans_funeval according to src_format 
-  observe({
-    src_format <<- input$DATA_SRC_FORMAT
-    if (input$DATA_SRC_FORMAT == IOHprofiler || input$DATA_SRC_FORMAT == TWO_COL) {
-      maximization <<- TRUE
+  set_format <- function(format,minmax){
+    maximization <- minmax
+    src_format <<- format
+    if (format == IOHprofiler || format == TWO_COL) {
+      if(minmax == AUTOMATIC)
+        maximization <<- TRUE
       trans_funeval <<- . %>% return
       reverse_trans_runtime <<- . %>% return
       format_FV <<- function(v) format(v, digits = 2, nsmall = 2)
       
-    } else if (input$DATA_SRC_FORMAT == COCO) {
-      maximization <<- FALSE
+    } else if (format == COCO) {
+      if(minmax == AUTOMATIC)
+        maximization <<- FALSE
       format_FV <<- function(v) format(v, format = "e", digits = 5, nsmall = 2)
       # TODO: determine if we need transformations on the function values
       trans_funeval <<- `log10`
       reverse_trans_funeval <<- function(x) 10 ^ x
     } 
+  }
+  
+  # update maximization indication, trans_funeval according to src_format 
+  observe({
+    src_format <<- input$DATA_SRC_FORMAT
+    src_minmax <<- input$DATA_SRC_MINMAX
+    set_format(src_format,src_minmax)
   })
   
   # should subsamping be turned on?
@@ -188,30 +197,33 @@ shinyServer(function(input, output, session) {
         # check if the newly loaded data contradicts the selected format
         found_format <- check_format(folder)
         
-        # TODO: this is duplicated from the observer on DATA_SRC_FORMAT because of non-sequential
+        # TODO: this is partially duplicated from set_format because of non-sequential
         #       execution. Maybe a better solution exists which makes sure this is run before reading
         #       the datafiles
-        if (found_format != src_format && (src_format != TWO_COL || found_format == COCO)){
-          src_format <<- found_format
-          if (found_format == IOHprofiler || found_format == TWO_COL) {
-            maximization <<- TRUE
-            trans_funeval <<- . %>% return
-            reverse_trans_runtime <<- . %>% return
-            format_FV <<- function(v) format(v, digits = 2, nsmall = 2)
-            
-          } else if (found_format == COCO) {
-            maximization <<- FALSE
-            format_FV <<- function(v) format(v, format = "e", digits = 5, nsmall = 2)
-            trans_funeval <<- `log10`
-            reverse_trans_funeval <<- function(x) 10 ^ x
-          } 
-          # TODO: is this still needed?
-          updateSelectInput(session,"DATA_SRC_FORMAT",selected = found_format)
+        if(src_format == AUTOMATIC){
+          set_format(found_format,src_minmax)
+          format <- found_format
+        }
+        else if (found_format != src_format && (src_format != TWO_COL || found_format == COCO)){
+          shinyjs::html("process_data_promt", 
+                        paste0('<p style="color:red;">Format specified does not match format found (', 
+                                found_format, ')... skip</p>'), add = TRUE)
+          break
+        }
+        else{
+          format <- src_format
+        }
+        
+        if(src_minmax == AUTOMATIC){
+          minmax <- ifelse((found_format == COCO),FALSE,TRUE)
+        }
+        else{
+          minmax <- ifelse((maximization == "MAXIMIZE"),TRUE,FALSE)
         }
         print_fun <- function(s) shinyjs::html("process_data_promt", s, add = TRUE)
         DataList$data <- c(DataList$data, read_dir(folder, print_fun = print_fun,
-                                                   maximization = maximization,
-                                                   format = src_format,
+                                                   maximization = minmax,
+                                                   format = format,
                                                    subsampling = sub_sampling))
         
         shinyjs::html("upload_data_promt", 

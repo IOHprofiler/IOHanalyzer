@@ -29,7 +29,7 @@ symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
 
 # TODO: put it as an option such that the user can select
 maximization <- "MAXIMIZE"
-src_format <- IOHprofiler # TODO: this shoule be taken from the data set
+src_format <- AUTOMATIC # TODO: this shoule be taken from the data set
 sub_sampling <- TRUE
 
 # Inserts values from "from_data" to "to_data" that are better than were
@@ -98,7 +98,7 @@ shinyServer(function(input, output, session) {
   
   # update maximization indication, trans_funeval according to src_format 
   observe({
-    src_format <<- input$DATA_SRC_FORMAT
+    selected_format <<- input$DATA_SRC_FORMAT
     maximization <<- input$DATA_SRC_MINMAX
   })
   
@@ -180,18 +180,18 @@ shinyServer(function(input, output, session) {
         # check if the newly loaded data contradicts the selected format
         found_format <- check_format(folder)
         
-        if(src_format == AUTOMATIC){
+        if(selected_format == AUTOMATIC){
           set_format(found_format)
           format <- found_format
         }
-        else if (found_format != src_format && (src_format != TWO_COL || found_format == COCO)){
+        else if (found_format != selected_format && (selected_format != TWO_COL || found_format == COCO)){
           shinyjs::html("process_data_promt", 
                         paste0('<p style="color:red;">Format specified does not match format found (', 
                                 found_format, ')... skip</p>'), add = TRUE)
           break
         }
         else{
-          format <- src_format
+          format <- selected_format
         }
         
         if(maximization == AUTOMATIC){
@@ -205,7 +205,7 @@ shinyServer(function(input, output, session) {
                                                    maximization = minmax,
                                                    format = format,
                                                    subsampling = sub_sampling))
-        
+        src_format <<- format
         shinyjs::html("upload_data_promt", 
                       sprintf('%d: %s\n', length(folderList$data), folder), add = TRUE)
       }
@@ -300,7 +300,7 @@ shinyServer(function(input, output, session) {
     stop <- fseq[length.out]
 
     #TODO: Make more general
-    if(2*fseq[3]-fseq[2] - fseq[4] < 1e-12) #arbitrary precision
+    if(abs(2*fseq[3]-fseq[2] - fseq[4]) < 1e-12) #arbitrary precision
         step <- fseq[3]-fseq[2]
     else
       step <- log10(fseq[3]) - log10(fseq[2])
@@ -574,6 +574,7 @@ shinyServer(function(input, output, session) {
                          line = list(color = rgb_str, dash = 'dot'))
       
       if (input$show_all) {
+        #TODO: Fix this for the case where algorithms do not have the same number of runs
         line_width <- 0.5
         
         dr_ERT <- dr[algId == attr(data[[i]], 'algId')]
@@ -1161,6 +1162,7 @@ shinyServer(function(input, output, session) {
                          line = list(color = rgb_str, dash = 'dash'))
       
       if (input$FCE_show_all) {
+        #TODO: Fix this for the case were algorithms do not have the same number of runs
         min_is_best <- FALSE
         line_width <- 0.5
         

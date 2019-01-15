@@ -54,12 +54,10 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
   if(is.null(scale)){
     if(to < 0 || from <0)
       scale <- 'linear'
-    else if(to < 1 || from < 1)
+    else if(abs(log10(mean(FV)) - log10(median(FV))) > 1)
       scale <- 'log'
-    else if(log10(from)-log10(to) < 3)
-      scale <- 'linear'
     else
-      scale <- 'log'
+      scale <- 'linear'
   }
   
   if(scale == 'log'){

@@ -28,7 +28,7 @@ symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
              "triangle-up-open", "triangle-down-open")
 
 # TODO: put it as an option such that the user can select
-maximization <- TRUE
+maximization <- "MAXIMIZE"
 src_format <- IOHprofiler # TODO: this shoule be taken from the data set
 sub_sampling <- TRUE
 
@@ -65,18 +65,10 @@ setTextInput <- function(session, id, name, alternative) {
 }
 
 #TODO: this function could be made more clear
-set_format <- function(format,minmax){
-  maximization <<- minmax
-  src_format <<- format
-  if (format == IOHprofiler || format == TWO_COL) {
-    if(minmax == AUTOMATIC)
-      maximization <<- TRUE
-    format_FV <<- function(v) format(v, digits = 2, nsmall = 2)
-  } else if (format == COCO) {
-    if(minmax == AUTOMATIC)
-      maximization <<- FALSE
-    format_FV <<- function(v) format(v, format = "e", digits = 5, nsmall = 2)
-  } 
+set_format <- function(format){
+  format_FV <<- ifelse((format == COCO),
+                       function(v) format(v, format = "e", digits = 5, nsmall = 2),
+                       function(v) format(v, digits = 2, nsmall = 2))
 }
 
 # register previous text inputs, which is used to restore those values
@@ -107,8 +99,7 @@ shinyServer(function(input, output, session) {
   # update maximization indication, trans_funeval according to src_format 
   observe({
     src_format <<- input$DATA_SRC_FORMAT
-    src_minmax <<- input$DATA_SRC_MINMAX
-    set_format(src_format,src_minmax)
+    maximization <<- input$DATA_SRC_MINMAX
   })
   
   # should subsamping be turned on?
@@ -190,7 +181,7 @@ shinyServer(function(input, output, session) {
         found_format <- check_format(folder)
         
         if(src_format == AUTOMATIC){
-          set_format(found_format,src_minmax)
+          set_format(found_format)
           format <- found_format
         }
         else if (found_format != src_format && (src_format != TWO_COL || found_format == COCO)){
@@ -203,7 +194,7 @@ shinyServer(function(input, output, session) {
           format <- src_format
         }
         
-        if(src_minmax == AUTOMATIC){
+        if(maximization == AUTOMATIC){
           minmax <- ifelse((found_format == COCO),FALSE,TRUE)
         }
         else{
@@ -309,7 +300,7 @@ shinyServer(function(input, output, session) {
     stop <- fseq[length.out]
 
     #TODO: Make more general
-    if(fseq[3]-fseq[2] == fseq[4]-fseq[3])
+    if(2*fseq[3]-fseq[2] - fseq[4] < 1e-12) #arbitrary precision
         step <- fseq[3]-fseq[2]
     else
       step <- log10(fseq[3]) - log10(fseq[2])
@@ -366,7 +357,7 @@ shinyServer(function(input, output, session) {
       return()
     
     # TODO: this part should be made generic!!!
-    v <- trans_runtime(v)  %>% as.integer  
+    v <- v  %>% as.integer  
     q <- quantile(v, probs = c(.25, .5, .75), names = F, type = 3)
     
     grid <- seq(min(v), max(v), length.out = 10) %>% as.integer
@@ -653,8 +644,8 @@ shinyServer(function(input, output, session) {
       }
     }
     p %<>%
-      layout(xaxis = list(type = switch(input$semilogx, T = 'log', F = 'linear')),
-             yaxis = list(type = switch(input$semilogy, T = 'log', F = 'linear')))
+      layout(xaxis = list(type = ifelse(input$semilogx, 'log', 'linear')),
+             yaxis = list(type = ifelse(input$semilogy, 'log', 'linear')))
     
     # minimization for COCO
     if (src_format == 'COCO')
@@ -728,7 +719,7 @@ shinyServer(function(input, output, session) {
       # }
     }
     p %<>%
-      layout(yaxis = list(type = switch(input$RT_PMF_LOGY, T = 'log', F = 'linear')))
+      layout(yaxis = list(type = ifelse(input$RT_PMF_LOGY, 'log', 'linear')))
   })
   
   # historgram of the running time
@@ -842,8 +833,8 @@ shinyServer(function(input, output, session) {
     }
     
     p %<>%
-      layout(xaxis = list(type = switch(input$RT_ECDF_semilogx, 
-                                        T = 'log', F = 'linear')))
+      layout(xaxis = list(type = ifelse(input$RT_ECDF_semilogx, 
+                                        'log', 'linear')))
   })
   
   output$RT_GRID <- renderPrint({
@@ -938,8 +929,8 @@ shinyServer(function(input, output, session) {
     }
     
     p %<>%
-      layout(xaxis = list(type = switch(input$RT_ECDF_AGGR_semilogx, 
-                                        T = 'log', F = 'linear')))
+      layout(xaxis = list(type = ifelse(input$RT_ECDF_AGGR_semilogx, 
+                                        'log', 'linear')))
   })
   
   # evaluation rake of all courses 
@@ -1242,8 +1233,8 @@ shinyServer(function(input, output, session) {
       }
     }
     p %<>%
-      layout(xaxis = list(type = switch(input$FCE_semilogx, T = 'log', F = 'linear')),
-             yaxis = list(type = switch(input$FCE_semilogy, T = 'log', F = 'linear')))
+      layout(xaxis = list(type = ifelse(input$FCE_semilogx, 'log', 'linear')),
+             yaxis = list(type = ifelse(input$FCE_semilogy, 'log', 'linear')))
   })
   
   # empirical p.d.f. of the target value
@@ -1279,7 +1270,7 @@ shinyServer(function(input, output, session) {
                   marker = list(color = rgb_str))
     }
     p %<>%
-      layout(yaxis = list(type = switch(input$FCE_LOGY, T = 'log', F = 'linear')))
+      layout(yaxis = list(type = ifelse(input$FCE_LOGY, 'log', 'linear')))
   })
   
   # historgram of the target values -----------
@@ -1394,8 +1385,8 @@ shinyServer(function(input, output, session) {
     }
     
     p %<>%
-      layout(xaxis = list(type = switch(input$FCE_ECDF_semilogx, 
-                                        T = 'log', F = 'linear')))
+      layout(xaxis = list(type = ifelse(input$FCE_ECDF_semilogx, 
+                                        'log', 'linear')))
   })
   
   output$FCE_RT_GRID <- renderPrint({
@@ -1493,8 +1484,8 @@ shinyServer(function(input, output, session) {
     }
     
     p %<>%
-      layout(xaxis = list(type = switch(input$FCE_ECDF_AGGR_semilogx, 
-                                        T = 'log', F = 'linear')))
+      layout(xaxis = list(type = ifelse(input$FCE_ECDF_AGGR_semilogx, 
+                                        'log', 'linear')))
   })
   
   # evaluation rake of all courses 
@@ -1604,8 +1595,8 @@ shinyServer(function(input, output, session) {
     p <- lapply(seq(n_param), 
                   function(i) {
                     plot_ly_default(y.title = par_name[i]) %>% 
-                      layout(xaxis = list(type = switch(input$PAR_semilogx, T = 'log', F = 'linear')),
-                             yaxis = list(type = switch(input$PAR_semilogy, T = 'log', F = 'linear')))
+                      layout(xaxis = list(type = ifelse(input$PAR_semilogx, 'log', 'linear')),
+                             yaxis = list(type = ifelse(input$PAR_semilogy, 'log', 'linear')))
                   })
     
     for (i in seq(n_alg)) {

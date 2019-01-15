@@ -234,8 +234,8 @@ plot_ERT <- function(ds, backend = 'ggplot2') {
                        line = list(color = rgb_str, dash = 'dash'))
   }
   p %<>%
-    layout(xaxis = list(type = switch(input$semilogx, T = 'log', F = 'linear')),
-           yaxis = list(type = switch(input$semilogy, T = 'log', F = 'linear')))
+    layout(xaxis = list(type = ifelse(input$semilogx, 'log', 'linear')),
+           yaxis = list(type = ifelse(input$semilogy, 'log', 'linear')))
   
   # minimization for COCO
   if (src_format == 'COCO')
@@ -722,8 +722,8 @@ plot_RT <- function(ds, backend = 'ggplot') {
                          line = list(color = rgb_str, dash = 'dot'))
     }
     p %<>%
-      layout(xaxis = list(type = switch(input$semilogx, T = 'log', F = 'linear')),
-             yaxis = list(type = switch(input$semilogy, T = 'log', F = 'linear')))
+      layout(xaxis = list(type = ifelse(input$semilogx, 'log', 'linear')),
+             yaxis = list(type = ifelse(input$semilogy, 'log', 'linear')))
     
     # minimization for COCO
     if (src_format == 'COCO')

@@ -102,7 +102,7 @@ check_format <- function(path) {
     first_line <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
     if (startsWith(first_line, '%'))
       COCO
-    else if (startsWith(first_line, 'function'))
+    else if (startsWith(first_line, '\"function'))
       IOHprofiler
   }) %>% unlist 
   
@@ -197,6 +197,9 @@ align_runtime <- function(data, format = IOHprofiler) {
   } else if (format == COCO) {
     maximization <- FALSE
     idxTarget <- 3
+  } else if (format == TWO_COL){
+    maximization <- TRUE
+    idxTarget <- 2
   }
   
   FV <- lapply(data, function(x) x[, idxTarget]) %>%
@@ -209,7 +212,7 @@ align_runtime <- function(data, format = IOHprofiler) {
     n_param <- 0
     idxValue <- idxEvals
     param_names <- NULL
-  } else {
+  } else if (format == IOHprofiler){
     n_param <- n_column - n_data_column
     if (n_param > 0) {
       param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
@@ -218,9 +221,12 @@ align_runtime <- function(data, format = IOHprofiler) {
       param_names <- NULL
       idxValue <- idxEvals
     }
+  } else{
+    param_names <- NULL
+    idxValue <- idxEvals
   }
   
-  c_align_runtime(data, FV, idxValue - 1, maximization) %>% set_names(c('RT', param_names))
+  c_align_runtime(data, FV, idxValue - 1, maximization, idxTarget-1) %>% set_names(c('RT', param_names))
 }
 
 # TODO: deprecated! this function should be also removed...
@@ -482,6 +488,10 @@ align_function_value <- function(data, include_param = TRUE, format = IOHprofile
     maximization <- TRUE
     idxTarget <- 3
     n_param <- n_column - n_data_column
+  } else if (format == TWO_COL){
+    maximization <- TRUE
+    idxTarget <- 2
+    n_param <- 0
   }
   
   include_param <- include_param && (n_param > 0)

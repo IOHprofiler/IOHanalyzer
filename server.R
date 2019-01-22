@@ -28,8 +28,8 @@ symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
              "triangle-up-open", "triangle-down-open")
 
 # TODO: put it as an option such that the user can select
-maximization <- TRUE
-src_format <- IOHprofiler # TODO: this shoule be taken from the data set
+maximization <- "MAXIMIZE"
+src_format <- AUTOMATIC # TODO: this shoule be taken from the data set
 sub_sampling <- TRUE
 
 # Inserts values from "from_data" to "to_data" that are better than were
@@ -50,12 +50,8 @@ format_RT <- function(v) as.integer(v)
 # transformations applied on the function value
 # trans_funeval <- `log10`
 # reverse_trans_funeval <- function(x) 10 ^ x
-trans_funeval <- . %>% return
-reverse_trans_funeval <- . %>% return
 
 # transformations applied on runtime values
-trans_runtime <- . %>% return
-reverse_trans_runtime <- . %>% return
 
 # directory where data are extracted from the zip file
 exdir <- file.path(Sys.getenv('HOME'), 'data')
@@ -66,6 +62,13 @@ setTextInput <- function(session, id, name, alternative) {
     updateTextInput(session, id, value = v[[name]])
   } else
     updateTextInput(session, id, value = alternative)
+}
+
+#TODO: this function could be made more clear
+set_format <- function(format){
+  format_FV <<- ifelse((format == COCO),
+                       function(v) format(v, format = "e", digits = 5, nsmall = 2),
+                       function(v) format(v, digits = 2, nsmall = 2))
 }
 
 # register previous text inputs, which is used to restore those values
@@ -92,22 +95,11 @@ shinyServer(function(input, output, session) {
   folderList <- reactiveValues(data = list())
   DataList <- reactiveValues(data = DataSetList())
   
+  
   # update maximization indication, trans_funeval according to src_format 
   observe({
-    src_format <<- input$DATA_SRC_FORMAT
-    if (input$DATA_SRC_FORMAT == IOHprofiler) {
-      maximization <<- TRUE
-      trans_funeval <<- . %>% return
-      reverse_trans_runtime <<- . %>% return
-      format_FV <<- function(v) format(v, digits = 2, nsmall = 2)
-      
-    } else if (input$DATA_SRC_FORMAT == 'COCO') {
-      maximization <<- FALSE
-      format_FV <<- function(v) format(v, format = "e", digits = 5, nsmall = 2)
-      # TODO: determine if we need transformations on the function values
-      # trans_funeval <<- `log10`
-      # reverse_trans_funeval <<- function(x) 10 ^ x
-    } 
+    selected_format <<- input$DATA_SRC_FORMAT
+    maximization <<- input$DATA_SRC_MINMAX
   })
   
   # should subsamping be turned on?
@@ -185,13 +177,35 @@ shinyServer(function(input, output, session) {
       else {
         folderList$data <- c(folderList$data, folder)
         
-        # TODO: check if the newly loaded data contradicts the selected format
+        # check if the newly loaded data contradicts the selected format
+        found_format <- check_format(folder)
+        
+        if(selected_format == AUTOMATIC){
+          set_format(found_format)
+          format <- found_format
+        }
+        else if (found_format != selected_format && (selected_format != TWO_COL || found_format == COCO)){
+          shinyjs::html("process_data_promt", 
+                        paste0('<p style="color:red;">Format specified does not match format found (', 
+                                found_format, ')... skip</p>'), add = TRUE)
+          break
+        }
+        else{
+          format <- selected_format
+        }
+        
+        if(maximization == AUTOMATIC){
+          minmax <- ifelse((found_format == COCO),FALSE,TRUE)
+        }
+        else{
+          minmax <- ifelse((maximization == "MAXIMIZE"),TRUE,FALSE)
+        }
         print_fun <- function(s) shinyjs::html("process_data_promt", s, add = TRUE)
         DataList$data <- c(DataList$data, read_dir(folder, print_fun = print_fun,
-                                                   maximization = maximization,
-                                                   format = src_format,
+                                                   maximization = minmax,
+                                                   format = format,
                                                    subsampling = sub_sampling))
-        
+        src_format <<- format
         shinyjs::html("upload_data_promt", 
                       sprintf('%d: %s\n', length(folderList$data), folder), add = TRUE)
       }
@@ -276,7 +290,7 @@ shinyServer(function(input, output, session) {
     req(v)
     
     # choose proper scaling for the function value
-    v <- trans_funeval(v)    
+    # v <- trans_funeval(v)    # Do the scaling in seq_FV instead
     q <- quantile(v, probs = c(.25, .5, .75), names = F)
     
     # TODO: we need to fix this for the general case!!!
@@ -284,7 +298,12 @@ shinyServer(function(input, output, session) {
     fseq <- seq_FV(v, length.out = length.out)
     start <- fseq[1]
     stop <- fseq[length.out]
-    step <- fseq[3] - fseq[2]
+
+    #TODO: Make more general
+    if(abs(2*fseq[3]-fseq[2] - fseq[4]) < 1e-12) #arbitrary precision
+        step <- fseq[3]-fseq[2]
+    else
+      step <- log10(fseq[3]) - log10(fseq[2])
     
     name <- get_data_id(data)
     setTextInput(session, 'fstart', name, alternative = format_FV(start))
@@ -338,7 +357,7 @@ shinyServer(function(input, output, session) {
       return()
     
     # TODO: this part should be made generic!!!
-    v <- trans_runtime(v)  %>% as.integer  
+    v <- v  %>% as.integer  
     q <- quantile(v, probs = c(.25, .5, .75), names = F, type = 3)
     
     grid <- seq(min(v), max(v), length.out = 10) %>% as.integer
@@ -496,8 +515,8 @@ shinyServer(function(input, output, session) {
   output$ERT_PER_FUN <- renderPlotly({
     req(input$ERT_FSTART, input$ERT_FSTOP)
     
-    Fmin <- format_FV(input$ERT_FSTART) %>% as.numeric %>% reverse_trans_funeval
-    Fmax <- format_FV(input$ERT_FSTOP) %>% as.numeric %>% reverse_trans_funeval
+    Fmin <- format_FV(input$ERT_FSTART) %>% as.numeric 
+    Fmax <- format_FV(input$ERT_FSTOP) %>% as.numeric 
     
     req(Fmin <= Fmax)
     
@@ -555,6 +574,7 @@ shinyServer(function(input, output, session) {
                          line = list(color = rgb_str, dash = 'dot'))
       
       if (input$show_all) {
+        #TODO: Fix this for the case where algorithms do not have the same number of runs
         line_width <- 0.5
         
         dr_ERT <- dr[algId == attr(data[[i]], 'algId')]
@@ -625,8 +645,8 @@ shinyServer(function(input, output, session) {
       }
     }
     p %<>%
-      layout(xaxis = list(type = switch(input$semilogx, T = 'log', F = 'linear')),
-             yaxis = list(type = switch(input$semilogy, T = 'log', F = 'linear')))
+      layout(xaxis = list(type = ifelse(input$semilogx, 'log', 'linear')),
+             yaxis = list(type = ifelse(input$semilogy, 'log', 'linear')))
     
     # minimization for COCO
     if (src_format == 'COCO')
@@ -637,7 +657,7 @@ shinyServer(function(input, output, session) {
   # empirical p.m.f. of the runtime
   output$RT_PMF <- renderPlotly({
     req(input$RT_PMF_FTARGET) 
-    ftarget <- format_FV(input$RT_PMF_FTARGET) %>% as.numeric %>% reverse_trans_funeval
+    ftarget <- format_FV(input$RT_PMF_FTARGET) %>% as.numeric
     points <- ifelse(input$RT_SHOW_SAMPLE, 'all', FALSE)
     
     data <- DATA()
@@ -700,13 +720,13 @@ shinyServer(function(input, output, session) {
       # }
     }
     p %<>%
-      layout(yaxis = list(type = switch(input$RT_PMF_LOGY, T = 'log', F = 'linear')))
+      layout(yaxis = list(type = ifelse(input$RT_PMF_LOGY, 'log', 'linear')))
   })
   
   # historgram of the running time
   output$RT_HIST <- renderPlotly({
     req(input$RT_PMF_HIST_FTARGET)
-    ftarget <- format_FV(input$RT_PMF_HIST_FTARGET) %>% as.numeric %>% reverse_trans_funeval
+    ftarget <- format_FV(input$RT_PMF_HIST_FTARGET) %>% as.numeric
     plot_mode <- input$ERT_illu_mode
     
     data <- DATA()
@@ -768,8 +788,8 @@ shinyServer(function(input, output, session) {
       format_FV(input$RT_ECDF_FTARGET1),
       format_FV(input$RT_ECDF_FTARGET2),
       format_FV(input$RT_ECDF_FTARGET3)) %>% 
-      as.numeric %>% 
-      reverse_trans_funeval
+      as.numeric 
+      
     
     ftargets <- ftargets[!is.na(ftargets)]
     req(length(ftargets) != 0)
@@ -814,8 +834,8 @@ shinyServer(function(input, output, session) {
     }
     
     p %<>%
-      layout(xaxis = list(type = switch(input$RT_ECDF_semilogx, 
-                                        T = 'log', F = 'linear')))
+      layout(xaxis = list(type = ifelse(input$RT_ECDF_semilogx, 
+                                        'log', 'linear')))
   })
   
   output$RT_GRID <- renderPrint({
@@ -910,8 +930,8 @@ shinyServer(function(input, output, session) {
     }
     
     p %<>%
-      layout(xaxis = list(type = switch(input$RT_ECDF_AGGR_semilogx, 
-                                        T = 'log', F = 'linear')))
+      layout(xaxis = list(type = ifelse(input$RT_ECDF_AGGR_semilogx, 
+                                        'log', 'linear')))
   })
   
   # evaluation rake of all courses 
@@ -1092,14 +1112,14 @@ shinyServer(function(input, output, session) {
   output$FCE_PER_FUN <- renderPlotly({
     req(input$FCE_RT_MIN, input$FCE_RT_MAX)
     
-    rt_min <- input$FCE_RT_MIN %>% as.integer %>% reverse_trans_runtime
-    rt_max <- input$FCE_RT_MAX %>% as.integer %>% reverse_trans_runtime
+    rt_min <- input$FCE_RT_MIN %>% as.integer
+    rt_max <- input$FCE_RT_MAX %>% as.integer
     req(rt_min <= rt_max)
     
     data <- DATA()
     rt <- getRuntimes(data)
     rt_seq <- seq_RT(rt, rt_min, rt_max, length.out = 60, 
-                     scale = switch(input$FCE_semilogx, T = 'log', F = 'linear'))
+                     scale = ifelse(input$FCE_semilogx, 'log', 'linear'))
     req(rt_seq)
     
     n_algorithm <- length(data)
@@ -1142,6 +1162,7 @@ shinyServer(function(input, output, session) {
                          line = list(color = rgb_str, dash = 'dash'))
       
       if (input$FCE_show_all) {
+        #TODO: Fix this for the case were algorithms do not have the same number of runs
         min_is_best <- FALSE
         line_width <- 0.5
         
@@ -1214,14 +1235,14 @@ shinyServer(function(input, output, session) {
       }
     }
     p %<>%
-      layout(xaxis = list(type = switch(input$FCE_semilogx, T = 'log', F = 'linear')),
-             yaxis = list(type = switch(input$FCE_semilogy, T = 'log', F = 'linear')))
+      layout(xaxis = list(type = ifelse(input$FCE_semilogx, 'log', 'linear')),
+             yaxis = list(type = ifelse(input$FCE_semilogy, 'log', 'linear')))
   })
   
   # empirical p.d.f. of the target value
   output$FCE_PDF <- renderPlotly({
     req(input$FCE_PDF_RUNTIME)  
-    runtime <- input$FCE_PDF_RUNTIME %>% as.integer %>% reverse_trans_runtime
+    runtime <- input$FCE_PDF_RUNTIME %>% as.integer 
     points <- ifelse(input$FCE_SHOW_SAMPLE, 'all', FALSE)
     
     data <- DATA()
@@ -1251,13 +1272,13 @@ shinyServer(function(input, output, session) {
                   marker = list(color = rgb_str))
     }
     p %<>%
-      layout(yaxis = list(type = switch(input$FCE_LOGY, T = 'log', F = 'linear')))
+      layout(yaxis = list(type = ifelse(input$FCE_LOGY, 'log', 'linear')))
   })
   
   # historgram of the target values -----------
   output$FCE_HIST <- renderPlotly({
     req(input$FCE_HIST_RUNTIME != "")   # require non-empty input
-    runtime <- input$FCE_HIST_RUNTIME %>% as.integer %>% reverse_trans_runtime
+    runtime <- input$FCE_HIST_RUNTIME %>% as.integer 
     plot_mode <- input$FCE_illu_mode
     
     data <- DATA()
@@ -1319,8 +1340,8 @@ shinyServer(function(input, output, session) {
     runtimes <- c(
       as.integer(input$FCE_ECDF_RT1),
       as.integer(input$FCE_ECDF_RT2),
-      as.integer(input$FCE_ECDF_RT3)) %>% 
-      reverse_trans_runtime
+      as.integer(input$FCE_ECDF_RT3))
+      
     
     runtimes <- runtimes[!is.na(runtimes)]
     req(length(runtimes) != 0)
@@ -1366,8 +1387,8 @@ shinyServer(function(input, output, session) {
     }
     
     p %<>%
-      layout(xaxis = list(type = switch(input$FCE_ECDF_semilogx, 
-                                        T = 'log', F = 'linear')))
+      layout(xaxis = list(type = ifelse(input$FCE_ECDF_semilogx, 
+                                        'log', 'linear')))
   })
   
   output$FCE_RT_GRID <- renderPrint({
@@ -1465,8 +1486,8 @@ shinyServer(function(input, output, session) {
     }
     
     p %<>%
-      layout(xaxis = list(type = switch(input$FCE_ECDF_AGGR_semilogx, 
-                                        T = 'log', F = 'linear')))
+      layout(xaxis = list(type = ifelse(input$FCE_ECDF_AGGR_semilogx, 
+                                        'log', 'linear')))
   })
   
   # evaluation rake of all courses 
@@ -1536,8 +1557,8 @@ shinyServer(function(input, output, session) {
   output$PAR_PER_FUN <- renderPlotly({
     req(input$PAR_F_MIN, input$PAR_F_MAX)
     
-    f_min <- format_FV(input$PAR_F_MIN) %>% as.numeric %>% reverse_trans_funeval
-    f_max <- format_FV(input$PAR_F_MAX) %>% as.numeric %>% reverse_trans_funeval
+    f_min <- format_FV(input$PAR_F_MIN) %>% as.numeric
+    f_max <- format_FV(input$PAR_F_MAX) %>% as.numeric  
     
     req(f_min <= f_max)
     
@@ -1576,8 +1597,8 @@ shinyServer(function(input, output, session) {
     p <- lapply(seq(n_param), 
                   function(i) {
                     plot_ly_default(y.title = par_name[i]) %>% 
-                      layout(xaxis = list(type = switch(input$PAR_semilogx, T = 'log', F = 'linear')),
-                             yaxis = list(type = switch(input$PAR_semilogy, T = 'log', F = 'linear')))
+                      layout(xaxis = list(type = ifelse(input$PAR_semilogx, 'log', 'linear')),
+                             yaxis = list(type = ifelse(input$PAR_semilogy, 'log', 'linear')))
                   })
     
     for (i in seq(n_alg)) {

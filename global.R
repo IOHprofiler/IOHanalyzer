@@ -40,6 +40,12 @@ PARSample_csv_name <- parse(text = "paste0('PARSample-', paste(Sys.Date(), input
                                     paste0('F', input$FUNCID_INPUT), fstart, fstop, fstep, 
                                     sep = '-'), '.csv')")
 
+FIG_NAME_ERT_PER_FUN <- parse(text = "paste0('ERT-', Sys.Date(), '.', input$FIG_FORMAT_ERT_PER_FUN)")
+FIG_NAME_RT_PMF <- parse(text = "paste0('RT_PMF-', Sys.Date(), '.', input$FIG_FORMAT_RT_PMF)")
+FIG_NAME_RT_HIST <- parse(text = "paste0('RT_HIST-', Sys.Date(), '.', input$FIG_FORMAT_RT_HIST)")
+FIG_NAME_RT_ECDF_AGGR <- parse(text = "paste0('RT_ECDF_AGGR-', Sys.Date(), '.', input$FIG_FORMAT_RT_ECDF_AGGR)")
+FIG_NAME_RT_AUC <- parse(text = "paste0('RT_AUC-', Sys.Date(), '.', input$FIG_FORMAT_RT_AUC)")
+
 # TODO: add Roxygen docs...
 # TODO: maybe merge 'seq_FV' and 'seq_RT'...
 # TODO: determine when the sequence should be generate in log-linear way
@@ -51,27 +57,27 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
   
   # Auto detect scaling
   # TODO: Improve this detection (based on FV?). Currently very arbitrary
-  if(is.null(scale)){
-    if(to < 0 || from <0)
+  if (is.null(scale)) {
+    if (to < 0 || from < 0)
       scale <- 'linear'
-    else if(abs(log10(mean(FV)) - log10(median(FV))) > 1)
+    else if (abs(log10(mean(FV)) - log10(median(FV))) > 1)
       scale <- 'log'
     else
       scale <- 'linear'
   }
   
-  if(scale == 'log'){
+  if (scale == 'log') {
     trans <- log10
     rev_trans <- function(x) 10 ^ x
     # TODO: Better way to deal with negative values 
     #       set lowest possible target globally instead of arbitrary 1e-12
-    from <- max(1e-12,from)
-    to <- max(1e-12,to)
+    from <- max(1e-12, from)
+    to <- max(1e-12 ,to)
     from <- trans(from)
     to <- trans(to)
   }
   
-  if (is.null(by) || by > to-from) {
+  if (is.null(by) || by > to - from) {
     if (is.null(length.out)) {
       length.out <- 10
       args <- list(from = from, to = to, by = (to - from) / (length.out - 1))
@@ -111,7 +117,7 @@ seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
   }
 
   # Also reset by if it is too large
-  if (is.null(by) || by > to-from) {
+  if (is.null(by) || by > to - from) {
     if (is.null(length.out)) {
       length.out <- 10
       args <- list(from = from, to = to, by = (to - from) / (length.out - 1))
@@ -175,6 +181,10 @@ widget_id <- c('fstart',
                'FCE_ECDF_RT3')
 
 eventExpr <- parse(text = paste0('{', paste(paste0('input$', widget_id), collapse = "\n"), '}'))
+
+# token needed for mapbox, which is again needed for ocra...
+supported_fig_format <- c('png', 'eps', 'svg', 'pdf')
+Sys.setenv('MAPBOX_TOKEN' = 'pk.eyJ1Ijoid2FuZ3JvbmluIiwiYSI6ImNqcmIzemhvMDBudnYzeWxoejh5c2Y5cXkifQ.9XGMWTDOsgi3-b5qG594kQ')
 
 
 

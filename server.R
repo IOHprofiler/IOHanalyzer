@@ -510,9 +510,30 @@ shinyServer(function(input, output, session) {
     df[is.na(df)] <- 'NA'
     df}, options = list(pageLength = 20, scrollX = T))
   
+  
+  
   # The expected runtime plot ---------------------
   # TODO: wrapp this as a separate function for DataSet class
   output$ERT_PER_FUN <- renderPlotly({
+    render_ERT_PER_FUN()
+  })
+  
+  output$FIG_DOWNLOAD_ERT_PER_FUN <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_ERT_PER_FUN)
+    },
+    content = function(file) {
+      # TODO: we have to change the working directory back and force because 
+      # function 'orca' always generates figures in the current folder
+      old_wd <- getwd()
+      setwd(dirname(file))
+      orca(render_ERT_PER_FUN(), basename(file))
+      setwd(old_wd)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_ERT_PER_FUN)
+  )
+  
+  render_ERT_PER_FUN <- reactive({
     req(input$ERT_FSTART, input$ERT_FSTOP)
     
     Fmin <- format_FV(input$ERT_FSTART) %>% as.numeric 
@@ -574,7 +595,7 @@ shinyServer(function(input, output, session) {
                          line = list(color = rgb_str, dash = 'dot'))
       
       if (input$show_all) {
-        #TODO: Fix this for the case where algorithms do not have the same number of runs
+        # TODO: Fix this for the case where algorithms do not have the same number of runs
         line_width <- 0.5
         
         dr_ERT <- dr[algId == attr(data[[i]], 'algId')]
@@ -599,7 +620,7 @@ shinyServer(function(input, output, session) {
             #legendgroup = paste("runs of ", algId),
             #legend = list(traceorder = "grouped"),
             text = paste(run_v),
-            hoverinfo='none',
+            hoverinfo = 'none',
             # hoverinfo = "x+y+text",
             # hoverlabel = list(font=list(size = 8)),
             showlegend = !mentioned,
@@ -656,6 +677,25 @@ shinyServer(function(input, output, session) {
   
   # empirical p.m.f. of the runtime
   output$RT_PMF <- renderPlotly({
+    render_RT_PMF()
+  })
+  
+  output$FIG_DOWNLOAD_RT_PMF <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_RT_PMF)
+    },
+    content = function(file) {
+      # TODO: we have to change the working directory back and force because 
+      # function 'orca' always generates figures in the current folder
+      old_wd <- getwd()
+      setwd(dirname(file))
+      orca(render_RT_PMF(), basename(file))
+      setwd(old_wd)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_RT_PMF)
+  )
+  
+  render_RT_PMF <- reactive({
     req(input$RT_PMF_FTARGET) 
     ftarget <- format_FV(input$RT_PMF_FTARGET) %>% as.numeric
     points <- ifelse(input$RT_SHOW_SAMPLE, 'all', FALSE)
@@ -666,7 +706,7 @@ shinyServer(function(input, output, session) {
     
     p <- plot_ly_default(x.title = "algorithms",
                          y.title = "runtime / function evaluations")
-  
+    
     for (i in seq_along(data)) {
       ds <- data[[i]]
       
@@ -725,6 +765,25 @@ shinyServer(function(input, output, session) {
   
   # historgram of the running time
   output$RT_HIST <- renderPlotly({
+    render_RT_HIST()
+  })
+  
+  output$FIG_DOWNLOAD_RT_HIST <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_RT_HIST)
+    },
+    content = function(file) {
+      # TODO: we have to change the working directory back and force because 
+      # function 'orca' always generates figures in the current folder
+      old_wd <- getwd()
+      setwd(dirname(file))
+      orca(render_RT_HIST(), basename(file))
+      setwd(old_wd)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_RT_HIST)
+  )
+  
+  render_RT_HIST <- reactive({
     req(input$RT_PMF_HIST_FTARGET)
     ftarget <- format_FV(input$RT_PMF_HIST_FTARGET) %>% as.numeric
     plot_mode <- input$ERT_illu_mode
@@ -757,8 +816,8 @@ shinyServer(function(input, output, session) {
       res <- hist(rt$RT, breaks = nclass.FD, plot = F)
       breaks <- res$breaks
       plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
-                         text = paste0('<b>count</b>: ', res$counts, '<br><b>breaks</b>: [', 
-                                       breaks[-length(breaks)], ',', breaks[-1], ']')) 
+                              text = paste0('<b>count</b>: ', res$counts, '<br><b>breaks</b>: [', 
+                                            breaks[-length(breaks)], ',', breaks[-1], ']')) 
       
       if (plot_mode == 'overlay') {
         p %<>%
@@ -853,6 +912,25 @@ shinyServer(function(input, output, session) {
   })
   
   output$RT_ECDF_AGGR <- renderPlotly({
+    render_RT_ECDF_AGGR()
+  })
+  
+  output$FIG_DOWNLOAD_RT_ECDF_AGGR <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_RT_ECDF_AGGR)
+    },
+    content = function(file) {
+      # TODO: we have to change the working directory back and force because 
+      # function 'orca' always generates figures in the current folder
+      old_wd <- getwd()
+      setwd(dirname(file))
+      orca(render_RT_ECDF_AGGR(), basename(file))
+      setwd(old_wd)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_RT_ECDF_AGGR)
+  )
+  
+  render_RT_ECDF_AGGR <- reactive({
     req(input$RT_fstart, input$RT_fstop, input$RT_fstep)
     
     fstart <- format_FV(input$RT_fstart) %>% as.numeric
@@ -897,7 +975,7 @@ shinyServer(function(input, output, session) {
                             mean = apply(m, 2, . %>% mean(na.rm = T)),
                             sd = apply(m, 2, . %>% sd(na.rm = T))) %>% 
         mutate(upper = mean + sd, lower = mean - sd)
-                              
+      
       p %<>%
         # TODO: maybe not showing the std. shade at all!
         # add_trace(data = df_plot, x = ~x, y = ~upper, type = 'scatter', mode = 'lines',
@@ -936,6 +1014,25 @@ shinyServer(function(input, output, session) {
   
   # evaluation rake of all courses 
   output$RT_AUC <- renderPlotly({
+    render_RT_AUC()
+  })
+  
+  output$FIG_DOWNLOAD_RT_AUC <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_RT_AUC)
+    },
+    content = function(file) {
+      # TODO: we have to change the working directory back and force because 
+      # function 'orca' always generates figures in the current folder
+      old_wd <- getwd()
+      setwd(dirname(file))
+      orca(render_RT_AUC(), basename(file))
+      setwd(old_wd)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_RT_AUC)
+  )
+  
+  render_RT_AUC <- reactive({
     req(input$RT_AUC_FSTART, input$RT_AUC_FSTOP, input$RT_AUC_FSTEP)
     
     fstart <- format_FV(input$RT_AUC_FSTART) %>% as.numeric
@@ -948,7 +1045,7 @@ shinyServer(function(input, output, session) {
     
     fseq <- seq_FV(fall, fstart, fstop, fstep)
     req(fseq)
-
+    
     n_algorithm <- length(data)
     colors <- colorspace::rainbow_hcl(n_algorithm)
     

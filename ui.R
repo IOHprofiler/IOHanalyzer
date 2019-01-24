@@ -132,7 +132,7 @@ body <- dashboardBody(
             fluidRow(
               column(width = 6,
                      box(title = HTML('<p style="font-size:120%;">Upload Data</p>'), width = 12,
-                         solidHeader = T, status = "primary", collapsible = F, height = '520px',
+                         solidHeader = T, status = "primary", collapsible = F, height = '620px',
                          sidebarPanel(
                            width = 12,
                            
@@ -167,7 +167,7 @@ body <- dashboardBody(
               
               column(width = 6,
                      box(title = HTML('<p style="font-size:120%;">Data Processing Prompt</p>'), width = 12,
-                         solidHeader = T, status = "primary", collapsible = F, height = '520px',
+                         solidHeader = T, status = "primary", collapsible = F, height = '620px',
                          verbatimTextOutput('process_data_promt'),
                          tags$head(tags$style("#process_data_promt{color:black; font-size:12px; font-style:italic;
                                               overflow-y:visible; max-height: 425px; background: ghostwhite;}"))
@@ -311,11 +311,12 @@ body <- dashboardBody(
                                                 checkboxInput('show.pareto_optima',
                                                               label = 'show/hide pareto optimal front',
                                                               value = F)
-                                              )))
+                                              ))),
                              
+                             selectInput('FIG_FORMAT_ERT_PER_FUN', label = 'select the figure format',
+                                         choices = supported_fig_format, selected = 'pdf'),
                              
-                                              
-                                              
+                             downloadButton('FIG_DOWNLOAD_ERT_PER_FUN', label = 'download the figure')
                              
                              # checkboxInput('show.instance', 
                              #               label = 'show each independent run',
@@ -360,7 +361,12 @@ body <- dashboardBody(
                               or <b>separated</b> in several subplots:'),
                          selectInput('ERT_illu_mode', '', 
                                      choices = c("overlay", "subplot"), 
-                                     selected = 'subplot')
+                                     selected = 'subplot'),
+                         
+                         selectInput('FIG_FORMAT_RT_HIST', label = 'select the figure format',
+                                     choices = supported_fig_format, selected = 'pdf'),
+                         
+                         downloadButton('FIG_DOWNLOAD_RT_HIST', label = 'download the figure')
                          ),
                        
                        mainPanel(
@@ -390,7 +396,12 @@ body <- dashboardBody(
                       
                       textInput('RT_PMF_FTARGET', label = '', value = ''),
                       checkboxInput('RT_SHOW_SAMPLE', label = 'show runtime for each run', value = T),
-                      checkboxInput('RT_PMF_LOGY', label = 'scale y axis log10', value = F)
+                      checkboxInput('RT_PMF_LOGY', label = 'scale y axis log10', value = F),
+                      
+                      selectInput('FIG_FORMAT_RT_PMF', label = 'select the figure format',
+                                  choices = supported_fig_format, selected = 'pdf'),
+                      
+                      downloadButton('FIG_DOWNLOAD_RT_PMF', label = 'download the figure')
                       
                       # HTML('Kernel density estimation uses the following <b>kernel function</b>:'),
                       # selectInput('RT_PMF_KER', '',
@@ -445,7 +456,12 @@ body <- dashboardBody(
                                          value = F),
                            checkboxInput('RT_ECDF_AGGR_semilogx', 
                                          label = 'scale x axis log10',
-                                         value = F)
+                                         value = F),
+                           
+                           selectInput('FIG_FORMAT_RT_ECDF_AGGR', label = 'select the figure format',
+                                       choices = supported_fig_format, selected = 'pdf'),
+                           
+                           downloadButton('FIG_DOWNLOAD_RT_ECDF_AGGR', label = 'download the figure')
                          ),
                          
                          mainPanel(width = 9,
@@ -478,7 +494,11 @@ body <- dashboardBody(
                                 the evenly spaced quality targets taken into account in the plot.</p>'),
                            textInput('RT_AUC_FSTART', label = F_MIN_LABEL, value = ''),
                            textInput('RT_AUC_FSTOP', label = F_MAX_LABEL, value = ''),
-                           textInput('RT_AUC_FSTEP', label = F_STEP_LABEL, value = '')
+                           textInput('RT_AUC_FSTEP', label = F_STEP_LABEL, value = ''),
+                           
+                           selectInput('FIG_FORMAT_RT_AUC', label = 'select the figure format',
+                                       choices = supported_fig_format, selected = 'pdf'),
+                           downloadButton('FIG_DOWNLOAD_RT_AUC', label = 'download the figure')
                          ),
                          
                          mainPanel(width = 9,

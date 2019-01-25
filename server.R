@@ -30,6 +30,7 @@ symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
 # TODO: put it as an option such that the user can select
 maximization <- "MAXIMIZE"
 src_format <- AUTOMATIC # TODO: this shoule be taken from the data set
+selected_format <- AUTOMATIC
 sub_sampling <- TRUE
 
 # Inserts values from "from_data" to "to_data" that are better than were
@@ -94,7 +95,6 @@ shinyServer(function(input, output, session) {
   # shared reactive variables
   folderList <- reactiveValues(data = list())
   DataList <- reactiveValues(data = DataSetList())
-  
   
   # update maximization indication, trans_funeval according to src_format 
   observe({
@@ -180,25 +180,25 @@ shinyServer(function(input, output, session) {
         # check if the newly loaded data contradicts the selected format
         found_format <- check_format(folder)
         
-        if(selected_format == AUTOMATIC){
+        if (selected_format == AUTOMATIC) { 
           set_format(found_format)
           format <- found_format
         }
-        else if (found_format != selected_format && (selected_format != TWO_COL || found_format == COCO)){
+        else if (found_format != selected_format && (selected_format != TWO_COL || found_format == COCO)) {
           shinyjs::html("process_data_promt", 
                         paste0('<p style="color:red;">Format specified does not match format found (', 
-                                found_format, ')... skip</p>'), add = TRUE)
+                               found_format, ')... skip</p>'), add = TRUE)
           break
         }
         else{
           format <- selected_format
         }
         
-        if(maximization == AUTOMATIC){
-          minmax <- ifelse((found_format == COCO),FALSE,TRUE)
+        if (maximization == AUTOMATIC) {
+          minmax <- ifelse((found_format == COCO), FALSE, TRUE)
         }
         else{
-          minmax <- ifelse((maximization == "MAXIMIZE"),TRUE,FALSE)
+          minmax <- ifelse((maximization == "MAXIMIZE"), TRUE, FALSE)
         }
         print_fun <- function(s) shinyjs::html("process_data_promt", s, add = TRUE)
         DataList$data <- c(DataList$data, read_dir(folder, print_fun = print_fun,
@@ -231,7 +231,7 @@ shinyServer(function(input, output, session) {
       data.frame()
   }, options = list(pageLength = 10, scrollX = F, autoWidth = TRUE,
                     columnDefs = list(list(width = '20px', targets = c(0, 1)))))
-    
+  
   # update the list of dimensionality, funcId and algId and parameter list
   observe({
     data <- DataList$data
@@ -274,7 +274,7 @@ shinyServer(function(input, output, session) {
   observeEvent(eval(eventExpr), {
     data <- DATA()
     name <- get_data_id(data)
-      
+    
     if (is.null(name))
       return()
     
@@ -298,10 +298,10 @@ shinyServer(function(input, output, session) {
     fseq <- seq_FV(v, length.out = length.out)
     start <- fseq[1]
     stop <- fseq[length.out]
-
+    
     #TODO: Make more general
-    if(abs(2*fseq[3]-fseq[2] - fseq[4]) < 1e-12) #arbitrary precision
-        step <- fseq[3]-fseq[2]
+    if (abs(2 * fseq[3] - fseq[2] - fseq[4]) < 1e-12) #arbitrary precision
+      step <- fseq[3] - fseq[2]
     else
       step <- log10(fseq[3]) - log10(fseq[2])
     
@@ -510,8 +510,6 @@ shinyServer(function(input, output, session) {
     df[is.na(df)] <- 'NA'
     df}, options = list(pageLength = 20, scrollX = T))
   
-  
-  
   # The expected runtime plot ---------------------
   # TODO: wrapp this as a separate function for DataSet class
   output$ERT_PER_FUN <- renderPlotly({
@@ -527,7 +525,9 @@ shinyServer(function(input, output, session) {
       # function 'orca' always generates figures in the current folder
       old_wd <- getwd()
       setwd(dirname(file))
-      orca(render_ERT_PER_FUN(), basename(file))
+      orca(render_ERT_PER_FUN(), basename(file), 
+           format = input$FIG_FORMAT_ERT_PER_FUN, 
+           width = fig_width2, height = fig_height)
       setwd(old_wd)
     },
     contentType = paste0('image/', input$FIG_FORMAT_ERT_PER_FUN)
@@ -551,10 +551,10 @@ shinyServer(function(input, output, session) {
     req(fseq)
     
     n_algorithm <- length(data)
-    colors <- colorspace::rainbow_hcl(n_algorithm)
+    colors <- color_palettes(n_algorithm)
     
     dt <- get_RT_summary(data, fseq)
-    dt[, `:=`(upper = ERT + sd, lower = ERT - sd)]
+    dt[, `:=`(upper = mean + sd, lower = mean - sd)]
     
     dr <- get_RT_sample(data, fseq)
     
@@ -568,13 +568,14 @@ shinyServer(function(input, output, session) {
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
       
-      p %<>% 
-        add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-                  line = list(color = rgba_str, width = 0),  
-                  showlegend = F, name = 'mean +/- sd') %>% 
-        add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
-                  fill = 'tonexty',  line = list(color = 'transparent'),
-                  fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd')
+      if (input$show.CI)
+        p %<>% 
+          add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
+                    line = list(color = rgba_str, width = 0),  
+                    showlegend = F, name = 'mean +/- sd') %>% 
+          add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
+                    fill = 'tonexty',  line = list(color = 'transparent'),
+                    fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
       
       if (input$show.ERT)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
@@ -689,7 +690,9 @@ shinyServer(function(input, output, session) {
       # function 'orca' always generates figures in the current folder
       old_wd <- getwd()
       setwd(dirname(file))
-      orca(render_RT_PMF(), basename(file))
+      orca(render_RT_PMF(), basename(file), 
+           format = input$FIG_FORMAT_RT_PMF, 
+           width = fig_width2, height = fig_height)
       setwd(old_wd)
     },
     contentType = paste0('image/', input$FIG_FORMAT_RT_PMF)
@@ -702,7 +705,7 @@ shinyServer(function(input, output, session) {
     
     data <- DATA()
     n_algorithm <- length(data)
-    colors <- colorspace::rainbow_hcl(n_algorithm)
+    colors <- color_palettes(n_algorithm)
     
     p <- plot_ly_default(x.title = "algorithms",
                          y.title = "runtime / function evaluations")
@@ -777,7 +780,9 @@ shinyServer(function(input, output, session) {
       # function 'orca' always generates figures in the current folder
       old_wd <- getwd()
       setwd(dirname(file))
-      orca(render_RT_HIST(), basename(file))
+      orca(render_RT_HIST(), basename(file), 
+           format = input$FIG_FORMAT_RT_HIST, 
+           width = fig_width2, height = fig_height)
       setwd(old_wd)
     },
     contentType = paste0('image/', input$FIG_FORMAT_RT_HIST)
@@ -790,7 +795,7 @@ shinyServer(function(input, output, session) {
     
     data <- DATA()
     n_algorithm <- length(data)
-    colors <- colorspace::rainbow_hcl(n_algorithm)
+    colors <- color_palettes(n_algorithm)
     nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
     
     if (plot_mode == 'overlay') {
@@ -848,14 +853,14 @@ shinyServer(function(input, output, session) {
       format_FV(input$RT_ECDF_FTARGET2),
       format_FV(input$RT_ECDF_FTARGET3)) %>% 
       as.numeric 
-      
+    
     
     ftargets <- ftargets[!is.na(ftargets)]
     req(length(ftargets) != 0)
     
     data <- DATA()
     n_algorithm <- length(data)
-    colors <- colorspace::rainbow_hcl(n_algorithm)
+    colors <- color_palettes(n_algorithm)
     
     p <- plot_ly_default(title = NULL,
                          x.title = "function evaluations",
@@ -924,7 +929,9 @@ shinyServer(function(input, output, session) {
       # function 'orca' always generates figures in the current folder
       old_wd <- getwd()
       setwd(dirname(file))
-      orca(render_RT_ECDF_AGGR(), basename(file))
+      orca(render_RT_ECDF_AGGR(), basename(file), 
+           format = input$FIG_FORMAT_RT_ECDF_AGGR, 
+           width = fig_width2, height = fig_height)
       setwd(old_wd)
     },
     contentType = paste0('image/', input$FIG_FORMAT_RT_ECDF_AGGR)
@@ -946,7 +953,7 @@ shinyServer(function(input, output, session) {
     
     data <- DATA()
     n_algorithm <- length(data)
-    colors <- colorspace::rainbow_hcl(n_algorithm)
+    colors <- color_palettes(n_algorithm)
     
     RT.max <- sapply(data, function(ds) max(ds$RT, na.rm = T)) %>% max
     RT.min <- sapply(data, function(ds) min(ds$RT, na.rm = T)) %>% min
@@ -1026,7 +1033,9 @@ shinyServer(function(input, output, session) {
       # function 'orca' always generates figures in the current folder
       old_wd <- getwd()
       setwd(dirname(file))
-      orca(render_RT_AUC(), basename(file))
+      orca(render_RT_AUC(), basename(file), 
+           format = input$FIG_FORMAT_RT_AUC, 
+           width = fig_width2, height = fig_height)
       setwd(old_wd)
     },
     contentType = paste0('image/', input$FIG_FORMAT_RT_AUC)
@@ -1047,7 +1056,7 @@ shinyServer(function(input, output, session) {
     req(fseq)
     
     n_algorithm <- length(data)
-    colors <- colorspace::rainbow_hcl(n_algorithm)
+    colors <- color_palettes(n_algorithm)
     
     RT.max <- sapply(data, function(ds) max(attr(ds, 'maxRT'))) %>% max
     p <- plot_ly_default()
@@ -1220,7 +1229,7 @@ shinyServer(function(input, output, session) {
     req(rt_seq)
     
     n_algorithm <- length(data)
-    colors <- colorspace::rainbow_hcl(n_algorithm)
+    colors <- color_palettes(n_algorithm)
     fce <- get_FV_summary(data, rt_seq)
     fce[, `:=`(upper = mean + sd, lower = mean - sd)]
     
@@ -1344,7 +1353,7 @@ shinyServer(function(input, output, session) {
     
     data <- DATA()
     n_algorithm <- length(data)
-    colors <- colorspace::rainbow_hcl(n_algorithm)
+    colors <- color_palettes(n_algorithm)
     
     p <- plot_ly_default(x.title = "algorithms",
                          y.title = "Target value")
@@ -1380,7 +1389,7 @@ shinyServer(function(input, output, session) {
     
     data <- DATA()
     n_algorithm <- length(data)
-    colors <- colorspace::rainbow_hcl(n_algorithm)
+    colors <- color_palettes(n_algorithm)
     nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
     
     if (plot_mode == 'overlay') {
@@ -1438,14 +1447,14 @@ shinyServer(function(input, output, session) {
       as.integer(input$FCE_ECDF_RT1),
       as.integer(input$FCE_ECDF_RT2),
       as.integer(input$FCE_ECDF_RT3))
-      
+    
     
     runtimes <- runtimes[!is.na(runtimes)]
     req(length(runtimes) != 0)
     
     data <- DATA()
     n_algorithm <- length(data)
-    colors <- colorspace::rainbow_hcl(n_algorithm)
+    colors <- color_palettes(n_algorithm)
     
     p <- plot_ly_default(title = NULL,
                          x.title = "target value",
@@ -1517,7 +1526,7 @@ shinyServer(function(input, output, session) {
     req(rt_seq)
     
     n_algorithm <- length(data)
-    colors <- colorspace::rainbow_hcl(n_algorithm)
+    colors <- color_palettes(n_algorithm)
     
     funevals.max <- sapply(data, function(ds) max(ds$FV, na.rm = T)) %>% max
     funevals.min <- sapply(data, function(ds) min(ds$FV, na.rm = T)) %>% min
@@ -1543,7 +1552,7 @@ shinyServer(function(input, output, session) {
       #   fun <- ecdf(ce)
       #   fun(x)
       # }) %>% 
-        # do.call(rbind, .)
+      # do.call(rbind, .)
       
       df_plot <- data.frame(x = x, mean = m)
       # df_plot <- data.frame(x = x, 
@@ -1598,42 +1607,42 @@ shinyServer(function(input, output, session) {
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     data <- DATA()
     rt <- getRuntimes(data)
-
+    
     rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step)
     req(rt_seq)
-
+    
     n_algorithm <- length(data)
-    colors <- colorspace::rainbow_hcl(n_algorithm)
-
+    colors <- color_palettes(n_algorithm)
+    
     funevals.max <- sapply(data, function(ds) max(attr(ds, 'finalFV'))) %>% max
     p <- plot_ly_default()
-
+    
     for (k in seq_along(data)) {
       df <- data[[k]]
       algId <- attr(df, 'algId')
-
+      
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.2)')
-
+      
       # calculate ECDFs on user specified targets
       funs <- lapply(rt_seq, function(r) {
         get_FV_sample(df, r, output = 'long')$`f(x)` %>% {
-            if (all(is.na(.))) NULL
-            else  {
-              f <- ecdf(.)
-              attr(f, 'min') <- min(.)
-              f
-            }
+          if (all(is.na(.))) NULL
+          else  {
+            f <- ecdf(.)
+            attr(f, 'min') <- min(.)
+            f
           }
+        }
       })
-
+      
       auc <- sapply(funs,
                     function(fun) {
                       if (is.null(fun)) 0
                       else integrate(fun, lower = attr(fun, 'min') - 1, upper = funevals.max,
                                      subdivisions = 1e3) %>% {'$'(., 'value') / funevals.max}
                     })
-
+      
       p %<>%
         add_trace(type = 'scatterpolar', r = auc,
                   theta = paste0('B:', as.integer(rt_seq)),
@@ -1642,7 +1651,7 @@ shinyServer(function(input, output, session) {
                   text = paste0('area: ', format(auc, digits = 2, nsmall = 2)),
                   name = algId)
     }
-
+    
     p %<>%
       layout(polar = list(radialaxis = list(visible = T)),
              yaxis = list(type = 'log'),
@@ -1674,7 +1683,7 @@ shinyServer(function(input, output, session) {
     
     algorithms <- dt[, algId] %>% unique
     n_alg <- length(algorithms)
-    colors <- colorspace::rainbow_hcl(n_alg)
+    colors <- color_palettes(n_alg)
     
     nrows <- ceiling(n_param / 2) # two columns
     # styles <- lapply(seq(n_alg),
@@ -1692,14 +1701,14 @@ shinyServer(function(input, output, session) {
     
     # TODO: improve the efficiency of plotting here
     p <- lapply(seq(n_param), 
-                  function(i) {
-                    plot_ly_default(y.title = par_name[i]) %>% 
-                      layout(xaxis = list(type = ifelse(input$PAR_semilogx, 'log', 'linear')),
-                             yaxis = list(type = ifelse(input$PAR_semilogy, 'log', 'linear')))
-                  })
+                function(i) {
+                  plot_ly_default(y.title = par_name[i]) %>% 
+                    layout(xaxis = list(type = ifelse(input$PAR_semilogx, 'log', 'linear')),
+                           yaxis = list(type = ifelse(input$PAR_semilogy, 'log', 'linear')))
+                })
     
     for (i in seq(n_alg)) {
-    alg <- algorithms[i]
+      alg <- algorithms[i]
       
       for (j in seq(n_param)) {
         if (j == 1)
@@ -1730,14 +1739,14 @@ shinyServer(function(input, output, session) {
                                 name = alg,
                                 showlegend = showlegend,
                                 legendgroup = ~algId)
-                                # transforms = list(
-                                #   list(type = 'groupby',
-                                #        groups = ~algId,
-                                #        styles = styles)
-                                #   )
-                                # )
-                                # 
-                                
+        # transforms = list(
+        #   list(type = 'groupby',
+        #        groups = ~algId,
+        #        styles = styles)
+        #   )
+        # )
+        # 
+        
         else if (input$PAR_show.mean == 'median')
           p[[j]] %<>% add_trace(data = dt_plot, x = ~target, y = ~median,
                                 type = 'scatter',
@@ -1749,15 +1758,15 @@ shinyServer(function(input, output, session) {
                                 showlegend = showlegend)
       }
     }
-        # p %<>%
-        #   add_trace(data = dt_plot, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-        #             line = list(color = rgba_str, width = 0),
-        #             showlegend = F, name = paste0(name, '.mean +/- sd')) %>%
-        #   add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
-        #             fill = 'tonexty',  line = list(color = 'transparent'),
-        #             fillcolor = rgba_str, showlegend = T, paste0(name, '.mean +/- sd'))
-        
-      # rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
+    # p %<>%
+    #   add_trace(data = dt_plot, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
+    #             line = list(color = rgba_str, width = 0),
+    #             showlegend = F, name = paste0(name, '.mean +/- sd')) %>%
+    #   add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
+    #             fill = 'tonexty',  line = list(color = 'transparent'),
+    #             fillcolor = rgba_str, showlegend = T, paste0(name, '.mean +/- sd'))
+    
+    # rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
     subplot(p, nrows = nrows, titleX = F, titleY = T, margin = 0.05) %>% 
       add_annotations(x = 0.5 , y = -0.18, text = "best-so-far f(x)-value", 
                       showarrow = F, xref = 'paper', yref = 'paper',
@@ -1796,7 +1805,7 @@ shinyServer(function(input, output, session) {
     
     if (input$PAR_F_SINGLE)
       fstop <- fstart
-      
+    
     fseq <- seq_FV(fall, fstart, fstop, by = fstep)
     req(fseq)
     

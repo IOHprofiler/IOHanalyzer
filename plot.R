@@ -13,7 +13,7 @@ plot_ly_default <- function(title = NULL,
   plot_ly() %>% 
     layout(title = title,
            autosize = T, hovermode = 'compare',
-           legend = list(x = 0, y = -0.2, orientation = 'h'),
+           legend = list(x = 100, y = 0.8, orientation = 'v'),
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
            font = list(size = 18, family = 'sans-serif'),
            titlefont = list(size = 16, family = 'sans-serif'),
@@ -80,4 +80,19 @@ gg_beanplot <- function(mapping, data, p = NULL, width = 3, fill = 'grey',
   # geom_segment(aes(x = x - width / 2.2, xend = x + width / 2.2, y = y, yend = y),
   #              df, col = 'black', size = 0.2, alpha = 0.3, linetype = linetype)
   p
+}
+
+color_palettes <- function(ncolor) {
+  require(colorspace)
+  color_fcts <- c(terrain_hcl, diverge_hcl, rainbow_hcl)
+  colors <- c()
+  
+  i <- 1
+  while (ncolor > 0) {
+    n <- min(8, ncolor)
+    colors <- c(colors, color_fcts[[i]](n))
+    ncolor <- ncolor - n
+    i <- i + 1
+  }
+  colors
 }

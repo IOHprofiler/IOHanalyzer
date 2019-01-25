@@ -27,14 +27,6 @@ header <- dashboardHeader(title = HTML(paste0('<h4><div align="center"><b>', IOH
 
 HTML_P <- function(s) HTML(paste0('<p align="left" style="font-size:120%;">', s, '</p>'))
 
-aspect_ratio <-  4 / 3
-fig_height <- 700
-fig_width <- fig_height * aspect_ratio
-fig_width2 <- fig_height * (16 / 10)
-
-plotly_height <- paste0(fig_height, "px")
-plotly_width <- paste0(fig_width, "px")
-plotly_width2 <- paste0(fig_width2, "px")
 
 # The side bar layout ---------------------------------------------
 sidebar <- dashboardSidebar(
@@ -282,6 +274,10 @@ body <- dashboardBody(
                                            label = 'show/hide mean',
                                            value = F),
                              
+                             checkboxInput('show.CI', 
+                                           label = 'show/hide mean +/- sd',
+                                           value = T),
+                             
                              checkboxInput('show.median', 
                                            label = 'show/hide median',
                                            value = F),
@@ -332,7 +328,7 @@ body <- dashboardBody(
                                                   The displayed elements (mean, median, standard deviations) 
                                                   can be switched on and off by clicking on the legend on the right. 
                                                   A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-                                          plotlyOutput('ERT_PER_FUN', height = plotly_height, width = plotly_width)
+                                          plotlyOutput('ERT_PER_FUN', height = plotly_height, width = plotly_width2)
                                           )
                                    )
                      )
@@ -380,7 +376,7 @@ body <- dashboardBody(
                                     and \\(75\\%\\) percentile of the runtime and \\(n\\) is the sample size.
                                     The displayed algorithms can be selected by clicking on the legend on the right. 
                                     A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-                                plotlyOutput('RT_HIST', height = plotly_height, width = plotly_width)
+                                plotlyOutput('RT_HIST', height = plotly_height, width = plotly_width2)
                                 )
                        )
                        )
@@ -427,7 +423,7 @@ body <- dashboardBody(
                                   option to download the plot as png file. A csv file with the runtime 
                                   data can be downlowaded from the  
                                   <a href="#shiny-tab-ERT_data", data-toggle="tab"> Data Summary tab</a>.'),
-                             plotlyOutput('RT_PMF', height = plotly_height, width = plotly_width)
+                             plotlyOutput('RT_PMF', height = plotly_height, width = plotly_width2)
                       )
                     )
                   )
@@ -474,7 +470,7 @@ body <- dashboardBody(
                                                  \\(v\\) is plotted against the available budget \\(t\\). The displayed elements can be switched 
                                                  on and off by clicking on the legend on the right. A <b>tooltip</b> 
                                                  and <b>toolbar</b> appears when hovering over the figure.'),
-                                          plotlyOutput('RT_ECDF_AGGR', height = plotly_height, width = plotly_width),
+                                          plotlyOutput('RT_ECDF_AGGR', height = plotly_height, width = plotly_width2),
                                           hr()
                                           )
                                    )
@@ -510,7 +506,7 @@ body <- dashboardBody(
                                                   The displayed algorithms can be selected by clicking on the legend on the right. 
                                                   A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.
                                                   This also includes the option to download the plot as png file.'),
-                                          plotlyOutput("RT_AUC", height = plotly_height, width = plotly_width)
+                                          plotlyOutput("RT_AUC", height = plotly_height, width = plotly_width2)
                                          )
                                    )
                      )
@@ -542,7 +538,7 @@ body <- dashboardBody(
                                                     The displayed curves can be selected by clicking on the legend on the right. A <b>tooltip</b> 
                                                     and <b>toolbar</b> appears when hovering over the figure. 
                                                     This also includes the option to download the plot as png file.'),
-                                                    plotlyOutput("RT_ECDF", height = plotly_height, width = plotly_width)
+                                                    plotlyOutput("RT_ECDF", height = plotly_height, width = plotly_width2)
                                             )
                                     )
                          )
@@ -645,7 +641,7 @@ according to the so-called <b>Freedman–Diaconis rule</b>: \\(\\text{Bin size}=
 where \\(Q_1, Q_3\\) are the \\(25\\%\\) and \\(75\\%\\) percentile of the runtime and \\(n\\) is the sample size.
                                        The displayed algorithms can be selected by clicking on the legend on the right. 
                                        A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                                  plotlyOutput('FCE_HIST', height = plotly_height, width = plotly_width)
+                                  plotlyOutput('FCE_HIST', height = plotly_height, width = plotly_width2)
                            )
                          )
                      )
@@ -673,7 +669,7 @@ of the best-so-far function values of the individual runs (dots), and an estimat
 The displayed algorithms can be selected by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> 
 appear when hovering over the figure. A csv file with the runtime data can be downlowaded from the 
                                          <a href="#shiny-tab-FCE_DATA", data-toggle="tab"> Data Summary tab</a>.'),
-                                    plotlyOutput('FCE_PDF', height = plotly_height, width = plotly_width)
+                                    plotlyOutput('FCE_PDF', height = plotly_height, width = plotly_width2)
                              )
                           )
                        )
@@ -743,7 +739,7 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                                                   found with a fixed-budget of evaluations are depicted against the budget. 
                                                   The displayed elements can be switched on and off by clicking on the legend on the right. 
                                                   A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-                                          plotlyOutput('FCE_PER_FUN', height = plotly_height, width = plotly_width)
+                                          plotlyOutput('FCE_PER_FUN', height = plotly_height, width = plotly_width2)
                                           )
                                   )
                      )
@@ -785,7 +781,7 @@ appear when hovering over the figure. A csv file with the runtime data can be do
 that the best solution that the algorithm has found in the \\(i\\)-th run within the first \\(B\\) evaluations has quality at 
 <b>most</b> \\(v\\) is plotted against the target value \\(v\\). The displayed elements can be switched on and off by clicking on the 
 legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-                                          plotlyOutput('FCE_ECDF_AGGR', height = plotly_height, width = plotly_width),
+                                          plotlyOutput('FCE_ECDF_AGGR', height = plotly_height, width = plotly_width2),
                                           hr()
                                          )
                                    )
@@ -811,7 +807,7 @@ legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering o
                                                   each algorithm. Intuitively, the <b>smaller</b> the area, the <b>better</b> the algorithm. 
                                                   The displayed algorithms can be selected by clicking on the legend on the right. 
                                                   A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-                                          plotlyOutput("FCE_AUC", height = plotly_height, width = plotly_width)
+                                          plotlyOutput("FCE_AUC", height = plotly_height, width = plotly_width2)
                                          )
                                    )
                          )
@@ -838,7 +834,7 @@ legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering o
                                             HTML_P('Each EDCF curve shows the proportion of the runs that have found within the 
 given budget B a solution of at least the required target value given by the x-axis. The displayed curves can be selected
 by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                                            plotlyOutput("FCE_ECDF_PER_TARGET", height = plotly_height, width = plotly_width)
+                                            plotlyOutput("FCE_ECDF_PER_TARGET", height = plotly_height, width = plotly_width2)
                                             )
                                      )
                            )

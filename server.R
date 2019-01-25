@@ -566,28 +566,28 @@ shinyServer(function(input, output, session) {
       if (input$show.CI)
         p %<>% 
           add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-                    line = list(color = rgba_str, width = 0),  
+                    line = list(color = rgba_str, width = 0), legendgroup = algId,
                     showlegend = F, name = 'mean +/- sd') %>% 
           add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
-                    fill = 'tonexty',  line = list(color = 'transparent'),
+                    fill = 'tonexty',  line = list(color = 'transparent'), legendgroup = algId,
                     fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
       
       if (input$show.ERT)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
-                         name = paste0(algId, '.ERT'), mode = 'lines+markers', 
-                         marker = list(color = rgb_str),  
+                         name = paste0(algId, '.ERT'), mode = 'lines+markers',
+                         marker = list(color = rgb_str), legendgroup = algId,
                          line = list(color = rgb_str))
       
       if (input$show.mean)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~mean, type = 'scatter', 
                          mode = 'lines+markers', name = paste0(algId, '.mean'), 
-                         marker = list(color = rgb_str), 
+                         marker = list(color = rgb_str), legendgroup = algId,
                          line = list(color = rgb_str, dash = 'dash'))
       
       if (input$show.median)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~median, type = 'scatter',
                          name = paste0(algId, '.median'), mode = 'lines+markers', 
-                         marker = list(color = rgb_str),  
+                         marker = list(color = rgb_str), legendgroup = algId,
                          line = list(color = rgb_str, dash = 'dot'))
       
       if (input$show_all) {

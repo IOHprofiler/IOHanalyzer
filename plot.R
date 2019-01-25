@@ -82,9 +82,17 @@ gg_beanplot <- function(mapping, data, p = NULL, width = 3, fill = 'grey',
   p
 }
 
+Set1 <- function(n) sequential_hcl(n, h = c(300, 75), c = c(40, NA, 95), l = c(15, 90), 
+                                   power = c(1, 1.1), gamma = NULL, fixup = TRUE, alpha = 1, 
+                                   palette = NULL, rev = FALSE)
+
+Set2 <- function(n) sequential_hcl(n, c(10, 120), c = c(141, 55, 0), l = c(95, 1), 
+                                   power = c(1.7, 0.8), gamma = NULL, 
+                                   fixup = TRUE, alpha = 1, palette = NULL, rev = FALSE)
+
 color_palettes <- function(ncolor) {
   require(colorspace)
-  color_fcts <- c(terrain_hcl, diverge_hcl, rainbow_hcl)
+  color_fcts <- c(Set1, Set2)
   colors <- c()
   
   i <- 1
@@ -96,6 +104,7 @@ color_palettes <- function(ncolor) {
   }
   colors
 }
+
 
 
 # TODO: we have to change the working directory back and force because 

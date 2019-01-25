@@ -46,8 +46,11 @@ read_IndexFile <- function(fname) {
     if (length(lines) == 0) 
       break
     
-    header <- strsplit(lines[1] , ',')[[1]] %>% trimws %>% 
-      {regmatches(., regexpr("=", .), invert = T)} %>% 
+    # TODO: make this quote symbol as the configurable parameter
+    name_value <- read.csv(text = lines[1], head = F, quote = "'") %>% 
+      as.list %>% unlist %>% as.vector
+    header <- name_value %>% trimws %>% 
+    {regmatches(., regexpr("=", .), invert = T)} %>% 
       unlist %>% trimws %>% 
       matrix(nrow = 2) %>% {
         ans <- as.list(.[2, ])

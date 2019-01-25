@@ -27,14 +27,6 @@ header <- dashboardHeader(title = HTML(paste0('<h4><div align="center"><b>', IOH
 
 HTML_P <- function(s) HTML(paste0('<p align="left" style="font-size:120%;">', s, '</p>'))
 
-aspect_ratio <-  4 / 3
-fig_height <- 700
-fig_width <- fig_height * aspect_ratio
-fig_width2 <- fig_height * (16 / 10)
-
-plotly_height <- paste0(fig_height, "px")
-plotly_width <- paste0(fig_width, "px")
-plotly_width2 <- paste0(fig_width2, "px")
 
 # The side bar layout ---------------------------------------------
 sidebar <- dashboardSidebar(
@@ -132,7 +124,7 @@ body <- dashboardBody(
             fluidRow(
               column(width = 6,
                      box(title = HTML('<p style="font-size:120%;">Upload Data</p>'), width = 12,
-                         solidHeader = T, status = "primary", collapsible = F, height = '520px',
+                         solidHeader = T, status = "primary", collapsible = F, height = '620px',
                          sidebarPanel(
                            width = 12,
                            
@@ -167,7 +159,7 @@ body <- dashboardBody(
               
               column(width = 6,
                      box(title = HTML('<p style="font-size:120%;">Data Processing Prompt</p>'), width = 12,
-                         solidHeader = T, status = "primary", collapsible = F, height = '520px',
+                         solidHeader = T, status = "primary", collapsible = F, height = '620px',
                          verbatimTextOutput('process_data_promt'),
                          tags$head(tags$style("#process_data_promt{color:black; font-size:12px; font-style:italic;
                                               overflow-y:visible; max-height: 425px; background: ghostwhite;}"))
@@ -282,6 +274,10 @@ body <- dashboardBody(
                                            label = 'show/hide mean',
                                            value = F),
                              
+                             checkboxInput('show.CI', 
+                                           label = 'show/hide mean +/- sd',
+                                           value = T),
+                             
                              checkboxInput('show.median', 
                                            label = 'show/hide median',
                                            value = F),
@@ -311,11 +307,12 @@ body <- dashboardBody(
                                                 checkboxInput('show.pareto_optima',
                                                               label = 'show/hide pareto optimal front',
                                                               value = F)
-                                              )))
+                                              ))),
                              
+                             selectInput('FIG_FORMAT_ERT_PER_FUN', label = 'select the figure format',
+                                         choices = supported_fig_format, selected = 'pdf'),
                              
-                                              
-                                              
+                             downloadButton('FIG_DOWNLOAD_ERT_PER_FUN', label = 'download the figure')
                              
                              # checkboxInput('show.instance', 
                              #               label = 'show each independent run',
@@ -331,7 +328,7 @@ body <- dashboardBody(
                                                   The displayed elements (mean, median, standard deviations) 
                                                   can be switched on and off by clicking on the legend on the right. 
                                                   A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-                                          plotlyOutput('ERT_PER_FUN', height = plotly_height, width = plotly_width)
+                                          plotlyOutput('ERT_PER_FUN', height = plotly_height, width = plotly_width2)
                                           )
                                    )
                      )
@@ -360,7 +357,12 @@ body <- dashboardBody(
                               or <b>separated</b> in several subplots:'),
                          selectInput('ERT_illu_mode', '', 
                                      choices = c("overlay", "subplot"), 
-                                     selected = 'subplot')
+                                     selected = 'subplot'),
+                         
+                         selectInput('FIG_FORMAT_RT_HIST', label = 'select the figure format',
+                                     choices = supported_fig_format, selected = 'pdf'),
+                         
+                         downloadButton('FIG_DOWNLOAD_RT_HIST', label = 'download the figure')
                          ),
                        
                        mainPanel(
@@ -374,7 +376,7 @@ body <- dashboardBody(
                                     and \\(75\\%\\) percentile of the runtime and \\(n\\) is the sample size.
                                     The displayed algorithms can be selected by clicking on the legend on the right. 
                                     A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-                                plotlyOutput('RT_HIST', height = plotly_height, width = plotly_width)
+                                plotlyOutput('RT_HIST', height = plotly_height, width = plotly_width2)
                                 )
                        )
                        )
@@ -390,7 +392,12 @@ body <- dashboardBody(
                       
                       textInput('RT_PMF_FTARGET', label = '', value = ''),
                       checkboxInput('RT_SHOW_SAMPLE', label = 'show runtime for each run', value = T),
-                      checkboxInput('RT_PMF_LOGY', label = 'scale y axis log10', value = F)
+                      checkboxInput('RT_PMF_LOGY', label = 'scale y axis log10', value = F),
+                      
+                      selectInput('FIG_FORMAT_RT_PMF', label = 'select the figure format',
+                                  choices = supported_fig_format, selected = 'pdf'),
+                      
+                      downloadButton('FIG_DOWNLOAD_RT_PMF', label = 'download the figure')
                       
                       # HTML('Kernel density estimation uses the following <b>kernel function</b>:'),
                       # selectInput('RT_PMF_KER', '',
@@ -416,7 +423,7 @@ body <- dashboardBody(
                                   option to download the plot as png file. A csv file with the runtime 
                                   data can be downlowaded from the  
                                   <a href="#shiny-tab-ERT_data", data-toggle="tab"> Data Summary tab</a>.'),
-                             plotlyOutput('RT_PMF', height = plotly_height, width = plotly_width)
+                             plotlyOutput('RT_PMF', height = plotly_height, width = plotly_width2)
                       )
                     )
                   )
@@ -445,7 +452,12 @@ body <- dashboardBody(
                                          value = F),
                            checkboxInput('RT_ECDF_AGGR_semilogx', 
                                          label = 'scale x axis log10',
-                                         value = F)
+                                         value = F),
+                           
+                           selectInput('FIG_FORMAT_RT_ECDF_AGGR', label = 'select the figure format',
+                                       choices = supported_fig_format, selected = 'pdf'),
+                           
+                           downloadButton('FIG_DOWNLOAD_RT_ECDF_AGGR', label = 'download the figure')
                          ),
                          
                          mainPanel(width = 9,
@@ -458,7 +470,7 @@ body <- dashboardBody(
                                                  \\(v\\) is plotted against the available budget \\(t\\). The displayed elements can be switched 
                                                  on and off by clicking on the legend on the right. A <b>tooltip</b> 
                                                  and <b>toolbar</b> appears when hovering over the figure.'),
-                                          plotlyOutput('RT_ECDF_AGGR', height = plotly_height, width = plotly_width),
+                                          plotlyOutput('RT_ECDF_AGGR', height = plotly_height, width = plotly_width2),
                                           hr()
                                           )
                                    )
@@ -478,7 +490,11 @@ body <- dashboardBody(
                                 the evenly spaced quality targets taken into account in the plot.</p>'),
                            textInput('RT_AUC_FSTART', label = F_MIN_LABEL, value = ''),
                            textInput('RT_AUC_FSTOP', label = F_MAX_LABEL, value = ''),
-                           textInput('RT_AUC_FSTEP', label = F_STEP_LABEL, value = '')
+                           textInput('RT_AUC_FSTEP', label = F_STEP_LABEL, value = ''),
+                           
+                           selectInput('FIG_FORMAT_RT_AUC', label = 'select the figure format',
+                                       choices = supported_fig_format, selected = 'pdf'),
+                           downloadButton('FIG_DOWNLOAD_RT_AUC', label = 'download the figure')
                          ),
                          
                          mainPanel(width = 9,
@@ -490,7 +506,7 @@ body <- dashboardBody(
                                                   The displayed algorithms can be selected by clicking on the legend on the right. 
                                                   A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.
                                                   This also includes the option to download the plot as png file.'),
-                                          plotlyOutput("RT_AUC", height = plotly_height, width = plotly_width)
+                                          plotlyOutput("RT_AUC", height = plotly_height, width = plotly_width2)
                                          )
                                    )
                      )
@@ -522,7 +538,7 @@ body <- dashboardBody(
                                                     The displayed curves can be selected by clicking on the legend on the right. A <b>tooltip</b> 
                                                     and <b>toolbar</b> appears when hovering over the figure. 
                                                     This also includes the option to download the plot as png file.'),
-                                                    plotlyOutput("RT_ECDF", height = plotly_height, width = plotly_width)
+                                                    plotlyOutput("RT_ECDF", height = plotly_height, width = plotly_width2)
                                             )
                                     )
                          )
@@ -625,7 +641,7 @@ according to the so-called <b>Freedman–Diaconis rule</b>: \\(\\text{Bin size}=
 where \\(Q_1, Q_3\\) are the \\(25\\%\\) and \\(75\\%\\) percentile of the runtime and \\(n\\) is the sample size.
                                        The displayed algorithms can be selected by clicking on the legend on the right. 
                                        A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                                  plotlyOutput('FCE_HIST', height = plotly_height, width = plotly_width)
+                                  plotlyOutput('FCE_HIST', height = plotly_height, width = plotly_width2)
                            )
                          )
                      )
@@ -653,7 +669,7 @@ of the best-so-far function values of the individual runs (dots), and an estimat
 The displayed algorithms can be selected by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> 
 appear when hovering over the figure. A csv file with the runtime data can be downlowaded from the 
                                          <a href="#shiny-tab-FCE_DATA", data-toggle="tab"> Data Summary tab</a>.'),
-                                    plotlyOutput('FCE_PDF', height = plotly_height, width = plotly_width)
+                                    plotlyOutput('FCE_PDF', height = plotly_height, width = plotly_width2)
                              )
                           )
                        )
@@ -723,7 +739,7 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                                                   found with a fixed-budget of evaluations are depicted against the budget. 
                                                   The displayed elements can be switched on and off by clicking on the legend on the right. 
                                                   A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-                                          plotlyOutput('FCE_PER_FUN', height = plotly_height, width = plotly_width)
+                                          plotlyOutput('FCE_PER_FUN', height = plotly_height, width = plotly_width2)
                                           )
                                   )
                      )
@@ -765,7 +781,7 @@ appear when hovering over the figure. A csv file with the runtime data can be do
 that the best solution that the algorithm has found in the \\(i\\)-th run within the first \\(B\\) evaluations has quality at 
 <b>most</b> \\(v\\) is plotted against the target value \\(v\\). The displayed elements can be switched on and off by clicking on the 
 legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-                                          plotlyOutput('FCE_ECDF_AGGR', height = plotly_height, width = plotly_width),
+                                          plotlyOutput('FCE_ECDF_AGGR', height = plotly_height, width = plotly_width2),
                                           hr()
                                          )
                                    )
@@ -791,7 +807,7 @@ legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering o
                                                   each algorithm. Intuitively, the <b>smaller</b> the area, the <b>better</b> the algorithm. 
                                                   The displayed algorithms can be selected by clicking on the legend on the right. 
                                                   A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-                                          plotlyOutput("FCE_AUC", height = plotly_height, width = plotly_width)
+                                          plotlyOutput("FCE_AUC", height = plotly_height, width = plotly_width2)
                                          )
                                    )
                          )
@@ -818,7 +834,7 @@ legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering o
                                             HTML_P('Each EDCF curve shows the proportion of the runs that have found within the 
 given budget B a solution of at least the required target value given by the x-axis. The displayed curves can be selected
 by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                                            plotlyOutput("FCE_ECDF_PER_TARGET", height = plotly_height, width = plotly_width)
+                                            plotlyOutput("FCE_ECDF_PER_TARGET", height = plotly_height, width = plotly_width2)
                                             )
                                      )
                            )

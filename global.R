@@ -7,6 +7,16 @@ library(magrittr)
 options(datatable.print.nrows = 20)
 options(width = 120)
 
+# ploting settings for UI ---------------------
+aspect_ratio <-  4 / 3
+fig_height <- 1000
+fig_width <- fig_height * aspect_ratio
+fig_width2 <- fig_height * (16 / 10)
+
+plotly_height <- paste0(fig_height, "px")
+plotly_width <- paste0(fig_width, "px")
+plotly_width2 <- paste0(fig_width2, "px")
+
 IOHprofiler <- 'IOHprofiler'
 COCO <- 'COCO'
 TWO_COL <- 'TWO_COL'
@@ -21,6 +31,8 @@ probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
 D_quantile <- function(x, pct = probs) quantile(x, pct, names = F, type = 3, na.rm = T)
 C_quantile <- function(x, pct = probs) quantile(x, pct, names = F, na.rm = T)
 
+
+# download file names: csv, image ---------------------
 RT_csv_name <- parse(text = "paste0('RT-', paste(Sys.Date(), input$DIM_INPUT, 
                              paste0('F', input$FUNCID_INPUT), fstart, fstop, fstep, 
                              sep = '-'), '.csv')")
@@ -40,8 +52,19 @@ PARSample_csv_name <- parse(text = "paste0('PARSample-', paste(Sys.Date(), input
                                     paste0('F', input$FUNCID_INPUT), fstart, fstop, fstep, 
                                     sep = '-'), '.csv')")
 
+<<<<<<< HEAD
 max_samples <- 100
 
+=======
+FIG_NAME_ERT_PER_FUN <- parse(text = "paste0('ERT-', Sys.Date(), '.', input$FIG_FORMAT_ERT_PER_FUN)")
+FIG_NAME_RT_PMF <- parse(text = "paste0('RT_PMF-', Sys.Date(), '.', input$FIG_FORMAT_RT_PMF)")
+FIG_NAME_RT_HIST <- parse(text = "paste0('RT_HIST-', Sys.Date(), '.', input$FIG_FORMAT_RT_HIST)")
+FIG_NAME_RT_ECDF_AGGR <- parse(text = "paste0('RT_ECDF_AGGR-', Sys.Date(), '.', input$FIG_FORMAT_RT_ECDF_AGGR)")
+FIG_NAME_RT_AUC <- parse(text = "paste0('RT_AUC-', Sys.Date(), '.', input$FIG_FORMAT_RT_AUC)")
+
+
+# function for generating sequences for RT and FV ---------------------
+>>>>>>> 3395979ac31158cefe5780984ae9ba0bdc25e116
 # TODO: add Roxygen docs...
 # TODO: maybe merge 'seq_FV' and 'seq_RT'...
 # TODO: determine when the sequence should be generate in log-linear way
@@ -53,26 +76,27 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
   
   # Auto detect scaling
   # TODO: Improve this detection (based on FV?). Currently very arbitrary
-  if(is.null(scale)){
-    if(to < 0 || from <0)
+  if (is.null(scale)) {
+    if (to < 0 || from < 0)
       scale <- 'linear'
-    else if(abs(log10(mean(FV)) - log10(median(FV))) > 1)
+    else if (abs(log10(mean(FV)) - log10(median(FV))) > 1)
       scale <- 'log'
     else
       scale <- 'linear'
   }
   
-  if(scale == 'log'){
+  if (scale == 'log') {
     trans <- log10
     rev_trans <- function(x) 10 ^ x
     # TODO: Better way to deal with negative values 
     #       set lowest possible target globally instead of arbitrary 1e-12
-    from <- max(1e-12,from)
-    to <- max(1e-12,to)
+    from <- max(1e-12, from)
+    to <- max(1e-12 ,to)
     from <- trans(from)
     to <- trans(to)
   }
   
+<<<<<<< HEAD
   #Avoid generating too many samples
   if(!is.null(by)){
     nr_samples_generated <- to-from/by
@@ -84,6 +108,9 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
   }
   
   if (is.null(by) || by > to-from) {
+=======
+  if (is.null(by) || by > to - from) {
+>>>>>>> 3395979ac31158cefe5780984ae9ba0bdc25e116
     if (is.null(length.out)) {
       length.out <- 10
       args <- list(from = from, to = to, by = (to - from) / (length.out - 1))
@@ -133,7 +160,7 @@ seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
   }
   
   # Also reset by if it is too large
-  if (is.null(by) || by > to-from) {
+  if (is.null(by) || by > to - from) {
     if (is.null(length.out)) {
       length.out <- 10
       args <- list(from = from, to = to, by = (to - from) / (length.out - 1))
@@ -148,6 +175,9 @@ seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
     rev_trans
 }
 
+
+# ID of the control widget, whose current value should de always recorded and restored ----
+# those control widget are switched on and off
 widget_id <- c('fstart',
                'fstop',
                'fstep',
@@ -197,6 +227,10 @@ widget_id <- c('fstart',
                'FCE_ECDF_RT3')
 
 eventExpr <- parse(text = paste0('{', paste(paste0('input$', widget_id), collapse = "\n"), '}'))
+
+# token needed for mapbox, which is again needed for ocra... ------
+supported_fig_format <- c('png', 'eps', 'svg', 'pdf')
+Sys.setenv('MAPBOX_TOKEN' = 'pk.eyJ1Ijoid2FuZ3JvbmluIiwiYSI6ImNqcmIzemhvMDBudnYzeWxoejh5c2Y5cXkifQ.9XGMWTDOsgi3-b5qG594kQ')
 
 
 

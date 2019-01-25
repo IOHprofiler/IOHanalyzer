@@ -521,14 +521,9 @@ shinyServer(function(input, output, session) {
       eval(FIG_NAME_ERT_PER_FUN)
     },
     content = function(file) {
-      # TODO: we have to change the working directory back and force because 
-      # function 'orca' always generates figures in the current folder
-      old_wd <- getwd()
-      setwd(dirname(file))
-      orca(render_ERT_PER_FUN(), basename(file), 
-           format = input$FIG_FORMAT_ERT_PER_FUN, 
-           width = fig_width2, height = fig_height)
-      setwd(old_wd)
+      save_plotly(render_ERT_PER_FUN(), file, 
+                  format = input$FIG_FORMAT_ERT_PER_FUN, 
+                  width = fig_width2, height = fig_height)
     },
     contentType = paste0('image/', input$FIG_FORMAT_ERT_PER_FUN)
   )
@@ -686,14 +681,9 @@ shinyServer(function(input, output, session) {
       eval(FIG_NAME_RT_PMF)
     },
     content = function(file) {
-      # TODO: we have to change the working directory back and force because 
-      # function 'orca' always generates figures in the current folder
-      old_wd <- getwd()
-      setwd(dirname(file))
-      orca(render_RT_PMF(), basename(file), 
+      save_plotly(render_RT_PMF(), file,
            format = input$FIG_FORMAT_RT_PMF, 
            width = fig_width2, height = fig_height)
-      setwd(old_wd)
     },
     contentType = paste0('image/', input$FIG_FORMAT_RT_PMF)
   )
@@ -776,14 +766,9 @@ shinyServer(function(input, output, session) {
       eval(FIG_NAME_RT_HIST)
     },
     content = function(file) {
-      # TODO: we have to change the working directory back and force because 
-      # function 'orca' always generates figures in the current folder
-      old_wd <- getwd()
-      setwd(dirname(file))
-      orca(render_RT_HIST(), basename(file), 
+      save_plotly(render_RT_HIST(), file,
            format = input$FIG_FORMAT_RT_HIST, 
            width = fig_width2, height = fig_height)
-      setwd(old_wd)
     },
     contentType = paste0('image/', input$FIG_FORMAT_RT_HIST)
   )
@@ -925,14 +910,9 @@ shinyServer(function(input, output, session) {
       eval(FIG_NAME_RT_ECDF_AGGR)
     },
     content = function(file) {
-      # TODO: we have to change the working directory back and force because 
-      # function 'orca' always generates figures in the current folder
-      old_wd <- getwd()
-      setwd(dirname(file))
-      orca(render_RT_ECDF_AGGR(), basename(file), 
+      save_plotly(render_RT_ECDF_AGGR(), file,
            format = input$FIG_FORMAT_RT_ECDF_AGGR, 
            width = fig_width2, height = fig_height)
-      setwd(old_wd)
     },
     contentType = paste0('image/', input$FIG_FORMAT_RT_ECDF_AGGR)
   )
@@ -1029,14 +1009,9 @@ shinyServer(function(input, output, session) {
       eval(FIG_NAME_RT_AUC)
     },
     content = function(file) {
-      # TODO: we have to change the working directory back and force because 
-      # function 'orca' always generates figures in the current folder
-      old_wd <- getwd()
-      setwd(dirname(file))
-      orca(render_RT_AUC(), basename(file), 
+      save_plotly(render_RT_AUC(), file,
            format = input$FIG_FORMAT_RT_AUC, 
            width = fig_width2, height = fig_height)
-      setwd(old_wd)
     },
     contentType = paste0('image/', input$FIG_FORMAT_RT_AUC)
   )

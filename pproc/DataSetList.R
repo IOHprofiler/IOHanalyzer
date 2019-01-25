@@ -198,6 +198,13 @@ get_FV_summary.DataSetList <- function(dsList, runtime, algorithm = 'all') {
   lapply(dsList, function(ds) get_FV_summary(ds, runtime)) %>% rbindlist
 }
 
+get_FV_overview.DataSetList <- function(dsList, algorithm = 'all') {
+  if (algorithm != 'all')
+    dsList <- subset(dsList, algId == algorithm)
+  
+  lapply(dsList, function(ds) get_FV_overview(ds)) %>% rbindlist
+}
+
 # get_FV_runs.DataSetList <- function(dsList, runtime, algorithm = 'all') {
 #   if (algorithm != 'all')
 #     dsList <- subset(dsList, algId == algorithm)

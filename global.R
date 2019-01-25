@@ -52,10 +52,8 @@ PARSample_csv_name <- parse(text = "paste0('PARSample-', paste(Sys.Date(), input
                                     paste0('F', input$FUNCID_INPUT), fstart, fstop, fstep, 
                                     sep = '-'), '.csv')")
 
-<<<<<<< HEAD
 max_samples <- 100
 
-=======
 FIG_NAME_ERT_PER_FUN <- parse(text = "paste0('ERT-', Sys.Date(), '.', input$FIG_FORMAT_ERT_PER_FUN)")
 FIG_NAME_RT_PMF <- parse(text = "paste0('RT_PMF-', Sys.Date(), '.', input$FIG_FORMAT_RT_PMF)")
 FIG_NAME_RT_HIST <- parse(text = "paste0('RT_HIST-', Sys.Date(), '.', input$FIG_FORMAT_RT_HIST)")
@@ -64,7 +62,6 @@ FIG_NAME_RT_AUC <- parse(text = "paste0('RT_AUC-', Sys.Date(), '.', input$FIG_FO
 
 
 # function for generating sequences for RT and FV ---------------------
->>>>>>> 3395979ac31158cefe5780984ae9ba0bdc25e116
 # TODO: add Roxygen docs...
 # TODO: maybe merge 'seq_FV' and 'seq_RT'...
 # TODO: determine when the sequence should be generate in log-linear way
@@ -96,7 +93,6 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
     to <- trans(to)
   }
   
-<<<<<<< HEAD
   #Avoid generating too many samples
   if(!is.null(by)){
     nr_samples_generated <- to-from/by
@@ -106,11 +102,8 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
         length.out <- max_samples
     }
   }
-  
-  if (is.null(by) || by > to-from) {
-=======
+
   if (is.null(by) || by > to - from) {
->>>>>>> 3395979ac31158cefe5780984ae9ba0bdc25e116
     if (is.null(length.out)) {
       length.out <- 10
       args <- list(from = from, to = to, by = (to - from) / (length.out - 1))

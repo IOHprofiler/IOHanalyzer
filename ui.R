@@ -181,6 +181,25 @@ body <- dashboardBody(
     tabItem(tabName = 'ERT_data', 
       fluidRow(
         column(width = 12,
+               #TODO: better naming scheme
+               box(title = HTML('<p style="font-size:120%;">Overview of runtime values</p>'), width = 12,
+                   solidHeader = T, status = "primary", collapsible = T,
+                   sidebarPanel(
+                     width = 3,
+                     HTML('<p align="justify">Select which algorithms to show.</p>'),
+                     
+                     # TODO: find better naming scheme for 'fstart, fstop, singleF'
+                     selectInput('ALGID_INPUT_SUMMARY', 'Algorithms', choices = NULL, selected = NULL),
+                     downloadButton("downloadData_summary", "Save this table as csv")
+                     ),
+                   
+                   mainPanel(
+                     width = 9,
+                     # HTML(paste0('<div style="font-size:120%;">', includeMarkdown('RMD/RT_SUMMARY_TABLE.Rmd'),'</div>')),
+                     tableOutput('table_RT_summary_condensed')
+                   )
+                 ),
+               
                box(title = HTML('<p style="font-size:120%;">Runtime Statistics at Chosen Target Values</p>'), width = 12,
                    solidHeader = T, status = "primary", collapsible = T,
                    sidebarPanel(

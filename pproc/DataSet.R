@@ -320,6 +320,7 @@ get_FV_summary <- function(ds, ...) UseMethod("get_FV_summary", ds)
 get_PAR_sample <- function(ds, ...) UseMethod("get_PAR_sample", ds)
 get_PAR_summary <- function(ds, ...) UseMethod("get_PAR_summary", ds)
 get_PAR_name <- function(ds) UseMethod("get_PAR_name", ds)
+get_FV_overview <- function(ds,...) UseMethod("get_FV_overview", ds)
 # get_RT_runs <- function(ds, ...) UseMethod("get_RT_runs", ds)
 # get_FV_runs <- function(ds, ...) UseMethod("get_FV_runs", ds)
 
@@ -413,6 +414,26 @@ get_RT_summary.DataSet <- function(ds, ftarget) {
       data[matched, -c('target')] %>% cbind(algId, ftarget, .)
     }
   }
+}
+
+get_FV_overview.DataSet <- function(ds){
+  data <- ds$FV
+  algId <- attr(ds, 'algId')
+  maximization <- attr(ds, 'maximization')
+  max_val = max(data)
+  min_val = min(data)
+  if (maximization){
+    mean_max <- mean(apply(data,1,max))
+  }
+  else
+    mean_max <- mean(apply(data,1,min))
+  c(max_val,min_val,mean_max) %>%
+    t %>%
+    as.data.table %>% 
+    cbind(algId,.) %>% 
+    set_colnames(c("AlgID","Maximum reached value","Minimum reached value","Mean reached value"))
+  
+  
 }
 
 #' Get RunTime Sample

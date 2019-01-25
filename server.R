@@ -246,6 +246,7 @@ shinyServer(function(input, output, session) {
     
     algId <- c(getAlgId(data), 'all')
     updateSelectInput(session, 'ALGID_INPUT', choices = algId, selected = 'all')
+    updateSelectInput(session, 'ALGID_INPUT_SUMMARY', choices = algId, selected = 'all')
     updateSelectInput(session, 'ALGID_RAW_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'PAR_ALGID_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'FCE_ALGID_INPUT', choices = algId, selected = 'all')
@@ -429,6 +430,46 @@ shinyServer(function(input, output, session) {
       df[[p]] %<>% as.integer
     }
     df
+  })
+  
+  # Data summary for Fixed-Target Runtime (ERT)  --------------
+  runtime_summary_condensed <- reactive({
+    data <- DATA()
+    fall <- getFunvals(data)
+    get_FV_overview(data, algorithm = input$ALGID_INPUT_SUMMARY)
+    # if(input$ALGID_INPUT_SUMMARY != 'all'){
+    #   idx <- match(input$ALGID_INPUT_SUMMARY,attr(data,"algId"))
+    #   if(is.na(idx))
+    #     return
+    #   data_alg <- data[[idx]]
+    #   max_val = max(data_alg$FV)
+    #   min_val = min(data_alg$FV)
+    #   if (attr(data_alg,"maximization")){
+    #     mean_max <- mean(apply(data_alg$FV,1,max))
+    #   }
+    #   else
+    #     mean_max <- mean(apply(data_alg$FV,1,min))
+    # }
+    # c(max_val,min_val,mean_max) %>%
+    #   t %>%
+    #   as.data.table %>% 
+    #   cbind(input$ALGID_INPUT_SUMMARY,.) %>% 
+    #   set_colnames(c("AlgID","maximum reached value","min reached value","mean reached value"))
+    # get_RT_summary(data, fseq, algorithm = input$ALGID_INPUT)
+  })
+  
+  output$table_RT_summary_condensed <- renderTable({
+    df <- runtime_summary_condensed()
+    # df$runs %<>% as.integer
+    # df$median %<>% as.integer
+    # df$target <- format_FV(df$target)
+    # 
+    # # format the integers
+    # for (p in paste0(probs * 100, '%')) {
+    #   df[[p]] %<>% as.integer
+    # }
+    df
+    
   })
   
   output$downloadData <- downloadHandler(

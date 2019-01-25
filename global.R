@@ -40,6 +40,8 @@ PARSample_csv_name <- parse(text = "paste0('PARSample-', paste(Sys.Date(), input
                                     paste0('F', input$FUNCID_INPUT), fstart, fstop, fstep, 
                                     sep = '-'), '.csv')")
 
+max_samples <- 100
+
 # TODO: add Roxygen docs...
 # TODO: maybe merge 'seq_FV' and 'seq_RT'...
 # TODO: determine when the sequence should be generate in log-linear way
@@ -69,6 +71,16 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
     to <- max(1e-12,to)
     from <- trans(from)
     to <- trans(to)
+  }
+  
+  #Avoid generating too many samples
+  if(!is.null(by)){
+    nr_samples_generated <- to-from/by
+    if (nr_samples_generated > max_samples){
+      by <- NULL
+      if(is.null(length.out))
+        length.out <- max_samples
+    }
   }
   
   if (is.null(by) || by > to-from) {
@@ -109,7 +121,17 @@ seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
     if (!is.null(by))
       by <- log10(by)
   }
-
+  
+  #Avoid generating too many samples
+  if(!is.null(by)){
+    nr_samples_generated <- to-from/by
+    if (nr_samples_generated > max_samples){
+      by <- NULL
+      if(is.null(length.out))
+        length.out <- max_samples
+    }
+  }
+  
   # Also reset by if it is too large
   if (is.null(by) || by > to-from) {
     if (is.null(length.out)) {

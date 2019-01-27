@@ -81,7 +81,7 @@ get_data_id <- function(dsList) {
   if (is.null(dsList) | length(dsList) == 0)
     return(NULL)
   
-  paste(getfuncId(dsList), getDIM(dsList), sep = '-')
+  paste(get_funcId(dsList), get_DIM(dsList), sep = '-')
 }
 
 # Define server logic required to draw a histogram
@@ -238,13 +238,13 @@ shinyServer(function(input, output, session) {
     if (length(data) == 0)
       return()
     
-    dim <- getDIM(data)
+    dim <- get_DIM(data)
     updateSelectInput(session, 'DIM_INPUT', choices = dim, selected = dim[1])
     
-    funcID <- getfuncId(data)
+    funcID <- get_funcId(data)
     updateSelectInput(session, 'FUNCID_INPUT', choices = funcID, selected = funcID[1])
     
-    algId <- c(getAlgId(data), 'all')
+    algId <- c(get_AlgId(data), 'all')
     updateSelectInput(session, 'ALGID_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'ALGID_RAW_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'PAR_ALGID_INPUT', choices = algId, selected = 'all')
@@ -253,7 +253,7 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, 'PAR_ALGID_INPUT_SUMMARY', choices = algId, selected = 'all')
     updateSelectInput(session, 'PAR_ALGID_INPUT_SAMPLE', choices = algId, selected = 'all')
     
-    parId <- c(getParId(data), 'all')
+    parId <- c(get_ParId(data), 'all')
     updateSelectInput(session, 'PAR_INPUT', choices = parId, selected = 'all')
     updateSelectInput(session, 'PAR_INPUT_SAMPLE', choices = parId, selected = 'all')
   })
@@ -286,7 +286,7 @@ shinyServer(function(input, output, session) {
   # update the values for the grid of target values
   observe({
     data <- DATA()
-    v <- getFunvals(data)
+    v <- get_Funvals(data)
     req(v)
     
     # choose proper scaling for the function value
@@ -351,7 +351,7 @@ shinyServer(function(input, output, session) {
   # update the values for the grid of running times
   observe({
     data <- DATA()
-    v <- getRuntimes(data)
+    v <- get_Runtimes(data)
     
     if (length(v) == 0)
       return()
@@ -407,7 +407,7 @@ shinyServer(function(input, output, session) {
     req(fstart <= fstop, fstep <= fstop - fstart)
     
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     if (input$singleF)
       fstop <- fstart
@@ -415,7 +415,9 @@ shinyServer(function(input, output, session) {
     fseq <- seq_FV(fall, fstart, fstop, fstep)
     req(fseq)
     
-    get_RT_summary(data, fseq, algorithm = input$ALGID_INPUT)
+    get_RT_summary(data, fseq, algorithm = input$ALGID_INPUT)[
+      , c('DIM', 'funcId') := NULL
+    ]
   })
   
   output$table_RT_summary <- renderTable({
@@ -459,7 +461,7 @@ shinyServer(function(input, output, session) {
     # we have to remove this part from the dependency of this reactive expression
     isolate({
       data <- DATA()
-      fall <- getFunvals(data)
+      fall <- get_Funvals(data)
     })
     
     if (input$F_SAMPLE_SINGLE)
@@ -493,7 +495,7 @@ shinyServer(function(input, output, session) {
   output$download_runtime <- downloadHandler(
     filename = {
       data <- DATA()
-      algId <- paste0(getAlgId(data), collapse = ';')
+      algId <- paste0(get_AlgId(data), collapse = ';')
       fstart <- input$F_MIN_SAMPLE %>% format_FV
       fstop <- input$F_MAX_SAMPLE %>% format_FV
       fstep <- input$F_STEP_SAMPLE %>% format_FV
@@ -537,7 +539,7 @@ shinyServer(function(input, output, session) {
     req(Fmin <= Fmax)
     
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     if (input$singleF)
       fstop <- fstart
@@ -549,7 +551,9 @@ shinyServer(function(input, output, session) {
     colors <- color_palettes(n_algorithm)
     
     dt <- get_RT_summary(data, fseq)
-    dt[, `:=`(upper = mean + sd, lower = mean - sd)]
+    dt[, `:=`(upper = mean + sd, lower = mean - sd)][
+      , c('DIM', 'funcId') := NULL
+    ]
     
     dr <- get_RT_sample(data, fseq)
     
@@ -896,7 +900,7 @@ shinyServer(function(input, output, session) {
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     seq_FV(fall, fstart, fstop, by = fstep) %>% cat
   })
@@ -926,7 +930,7 @@ shinyServer(function(input, output, session) {
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     fseq <- seq_FV(fall, fstart, fstop, fstep)
     req(fseq)
@@ -1025,7 +1029,7 @@ shinyServer(function(input, output, session) {
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     fseq <- seq_FV(fall, fstart, fstop, fstep)
     req(fseq)
@@ -1085,7 +1089,7 @@ shinyServer(function(input, output, session) {
     
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     data <- DATA()
-    rt <- getRuntimes(data)
+    rt <- get_Runtimes(data)
     
     if (input$RT_SINGLE)
       rt_max <- rt_min
@@ -1117,7 +1121,7 @@ shinyServer(function(input, output, session) {
   output$FCE_SUMMARY_download <- downloadHandler(
     filename = {
       data <- DATA()
-      algId <- paste0(getAlgId(data), collapse = ';')
+      algId <- paste0(get_AlgId(data), collapse = ';')
       rt_min <- input$RT_MIN %>% as.integer %>% as.character
       rt_max <- input$RT_MAX %>% as.integer %>% as.character
       rt_step <- input$RT_STEP %>% as.integer %>% as.character
@@ -1137,7 +1141,7 @@ shinyServer(function(input, output, session) {
     
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     data <- DATA()
-    rt <- getRuntimes(data)
+    rt <- get_Runtimes(data)
     
     if (input$RT_SINGLE_SAMPLE)
       rt_max <- rt_min
@@ -1172,7 +1176,7 @@ shinyServer(function(input, output, session) {
   output$FCE_SAMPLE_download <- downloadHandler(
     filename = {
       data <- DATA()
-      algId <- paste0(getAlgId(data), collapse = ';')
+      algId <- paste0(get_AlgId(data), collapse = ';')
       rt_min <- input$RT_MIN %>% as.integer %>% as.character
       rt_max <- input$RT_MAX %>% as.integer %>% as.character
       rt_step <- input$RT_STEP %>% as.integer %>% as.character
@@ -1198,7 +1202,7 @@ shinyServer(function(input, output, session) {
     req(rt_min <= rt_max)
     
     data <- DATA()
-    rt <- getRuntimes(data)
+    rt <- get_Runtimes(data)
     rt_seq <- seq_RT(rt, rt_min, rt_max, length.out = 60, 
                      scale = ifelse(input$FCE_semilogx, 'log', 'linear'))
     req(rt_seq)
@@ -1481,7 +1485,7 @@ shinyServer(function(input, output, session) {
     
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     data <- DATA()
-    rt <- getRuntimes(data)
+    rt <- get_Runtimes(data)
     
     seq_RT(rt, from = rt_min, to = rt_max, by = rt_step) %>% cat
   })
@@ -1496,7 +1500,7 @@ shinyServer(function(input, output, session) {
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     
     data <- DATA()
-    rt <- getRuntimes(data)
+    rt <- get_Runtimes(data)
     rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step)
     req(rt_seq)
     
@@ -1581,7 +1585,7 @@ shinyServer(function(input, output, session) {
     
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     data <- DATA()
-    rt <- getRuntimes(data)
+    rt <- get_Runtimes(data)
     
     rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step)
     req(rt_seq)
@@ -1644,7 +1648,7 @@ shinyServer(function(input, output, session) {
     req(f_min <= f_max)
     
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     fseq <- seq_FV(fall, f_min, f_max, length.out = 50)
     req(fseq)
@@ -1776,7 +1780,7 @@ shinyServer(function(input, output, session) {
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     if (input$PAR_F_SINGLE)
       fstop <- fstart
@@ -1798,7 +1802,7 @@ shinyServer(function(input, output, session) {
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     if (input$PAR_SAMPLE_F_SINGLE)
       fstop <- fstart

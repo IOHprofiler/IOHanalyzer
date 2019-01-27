@@ -90,22 +90,26 @@ Set2 <- function(n) sequential_hcl(n, c(10, 120), c = c(141, 55, 0), l = c(95, 1
                                    power = c(1.7, 0.8), gamma = NULL, 
                                    fixup = TRUE, alpha = 1, palette = NULL, rev = FALSE)
 
+# TODO: incoporate more colors
 color_palettes <- function(ncolor) {
   require(colorspace)
-  color_fcts <- c(Set1, Set2)
+  color_fcts <- c(Set1, Set2, rainbow_hcl, heat_hcl)
   colors <- c()
   
   i <- 1
   while (ncolor > 0) {
     n <- min(8, ncolor)
-    colors <- c(colors, color_fcts[[i]](n))
-    ncolor <- ncolor - n
+    if (i > length(color_fcts)) {
+      colors <- c(colors, diverge_hcl(ncolor))
+      break
+    } else {
+      colors <- c(colors, color_fcts[[i]](n))
+      ncolor <- ncolor - n
+    }
     i <- i + 1
   }
   colors
 }
-
-
 
 # TODO: we have to change the working directory back and force because 
 # function 'orca' always generates figures in the current folder

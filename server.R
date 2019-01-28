@@ -247,6 +247,7 @@ shinyServer(function(input, output, session) {
     algId <- c(getAlgId(data), 'all')
     updateSelectInput(session, 'ALGID_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'ALGID_INPUT_SUMMARY', choices = algId, selected = 'all')
+    updateSelectInput(session, 'FCE_ALGID_INPUT_SUMMARY', choices = algId, selected = 'all')
     updateSelectInput(session, 'ALGID_RAW_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'PAR_ALGID_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'FCE_ALGID_INPUT', choices = algId, selected = 'all')
@@ -437,40 +438,19 @@ shinyServer(function(input, output, session) {
     data <- DATA()
     fall <- getFunvals(data)
     get_FV_overview(data, algorithm = input$ALGID_INPUT_SUMMARY)
-    # if(input$ALGID_INPUT_SUMMARY != 'all'){
-    #   idx <- match(input$ALGID_INPUT_SUMMARY,attr(data,"algId"))
-    #   if(is.na(idx))
-    #     return
-    #   data_alg <- data[[idx]]
-    #   max_val = max(data_alg$FV)
-    #   min_val = min(data_alg$FV)
-    #   if (attr(data_alg,"maximization")){
-    #     mean_max <- mean(apply(data_alg$FV,1,max))
-    #   }
-    #   else
-    #     mean_max <- mean(apply(data_alg$FV,1,min))
-    # }
-    # c(max_val,min_val,mean_max) %>%
-    #   t %>%
-    #   as.data.table %>% 
-    #   cbind(input$ALGID_INPUT_SUMMARY,.) %>% 
-    #   set_colnames(c("AlgID","maximum reached value","min reached value","mean reached value"))
-    # get_RT_summary(data, fseq, algorithm = input$ALGID_INPUT)
   })
   
-  output$table_RT_summary_condensed <- renderTable({
+  output$table_FV_summary_condensed <- renderTable({
+    req(input$ALGID_INPUT_SUMMARY)
     df <- runtime_summary_condensed()
-    df$"Number of runs" %<>% as.integer
-    df$"Maximum reached value" <- format_FV(df$"Maximum reached value")
-    df$"Minimum reached value" <- format_FV(df$"Minimum reached value")
-    df$"Mean reached value" <- format_FV(df$"Mean reached value")
-    # 
-    # # format the integers
-    # for (p in paste0(probs * 100, '%')) {
-    #   df[[p]] %<>% as.integer
-    # }
-    df
     
+    df$"Budget" %<>% as.integer
+    df$"Number of runs" %<>% as.integer
+    df$"Best reached value" <- format_FV(df$"Best reached value")
+    df$"Worst reached value" <- format_FV(df$"Worst reached value")
+    df$"Mean reached value" <- format_FV(df$"Mean reached value")
+    
+    df
   })
   
   output$downloadData <- downloadHandler(
@@ -1143,6 +1123,25 @@ shinyServer(function(input, output, session) {
   
   # TODO: rename 'FCE'...
   # Data summary for Fixed-Budget target (FCE)  --------------
+  FCE_runtime_summary_condensed <- reactive({
+    data <- DATA()
+    fall <- getFunvals(data)
+    get_RT_overview(data, algorithm = input$FCE_ALGID_INPUT_SUMMARY)
+  })
+  
+  output$table_RT_summary_condensed <- renderTable({
+    req(input$FCE_ALGID_INPUT_SUMMARY)
+    df <- FCE_runtime_summary_condensed()
+    
+    df$"Number of runs" %<>% as.integer
+    df$"Budget" %<>% as.integer
+    df$"Maximum needed evalutations" %<>% as.integer
+    df$"Minimum needed evalutations" %<>% as.integer
+    df$"Mean needed evalutations" %<>% as.integer
+    
+    df
+  })
+  
   get_FCE_summary <- reactive({
     req(input$RT_MIN, input$RT_MAX, input$RT_STEP)
     

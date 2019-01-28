@@ -321,6 +321,7 @@ get_PAR_sample <- function(ds, ...) UseMethod("get_PAR_sample", ds)
 get_PAR_summary <- function(ds, ...) UseMethod("get_PAR_summary", ds)
 get_PAR_name <- function(ds) UseMethod("get_PAR_name", ds)
 get_FV_overview <- function(ds,...) UseMethod("get_FV_overview", ds)
+get_RT_overview <- function(ds,...) UseMethod("get_RT_overview", ds)
 # get_RT_runs <- function(ds, ...) UseMethod("get_RT_runs", ds)
 # get_FV_runs <- function(ds, ...) UseMethod("get_FV_runs", ds)
 
@@ -416,26 +417,64 @@ get_RT_summary.DataSet <- function(ds, ftarget) {
   }
 }
 
+#' Get Function Value condensed overview
+#'
+#' @param ds 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 get_FV_overview.DataSet <- function(ds){
   data <- ds$FV
   algId <- attr(ds, 'algId')
   maximization <- attr(ds, 'maximization')
-  max_val <- max(data)
-  min_val <- min(data)
+  op_inv <- ifelse(maximization,min,max)
+  op <- ifelse(maximization,max,min)
+  
+  maxs <- apply(data,2,op)
+  
+  max_val <- op(maxs)
+  min_val <- op_inv(maxs)
+  mean_max <- mean(maxs)
+  
   runs <- ncol(data)
-  if (maximization){
-    mean_max <- mean(apply(data,2,max))
-  }
-  else
-    mean_max <- mean(apply(data,2,min))
-  c(max_val,min_val,mean_max,runs) %>%
+  budget <- max(attr(ds,'maxRT'))
+  
+  c(max_val,min_val,mean_max,runs,budget) %>%
     t %>%
     as.data.table %>% 
     cbind(algId,.) %>% 
-    set_colnames(c("Algorithm ID","Maximum reached value","Minimum reached value","Mean reached value","Number of runs"))
-  
-  
+    set_colnames(c("Algorithm ID","Best reached value","Worst reached value","Mean reached value","Number of runs","Budget"))
 }
+
+#' Get Runtime Value condensed overview
+#'
+#' @param ds 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_RT_overview.DataSet <- function(ds){
+  data <- ds$RT
+  algId <- attr(ds, 'algId')
+  maxs <- apply(data,2,max,na.rm = F)
+
+  max_val <- max(maxs,na.rm = F)
+  min_val <- min(maxs,na.rm = T)
+  mean_max <- mean(maxs,na.rm = F)
+  
+  runs <- ncol(data)
+  budget <- max(attr(ds,'maxRT'))
+  
+  c(max_val,min_val,mean_max,runs,budget) %>%
+    t %>%
+    as.data.table %>% 
+    cbind(algId,.) %>% 
+    set_colnames(c("Algorithm ID","Maximum needed evalutations","Minimum needed evaluations","Mean needed evaluations", "Number of runs","Budget"))
+}
+
 
 #' Get RunTime Sample
 #'

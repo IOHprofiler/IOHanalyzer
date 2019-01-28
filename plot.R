@@ -7,9 +7,7 @@
 suppressMessages(library(plotly))
 suppressMessages(library(ggplot2))
 
-plot_ly_default <- function(title = NULL,
-                            x.title = NULL,
-                            y.title = NULL) {
+plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
   plot_ly() %>% 
     layout(title = title,
            autosize = T, hovermode = 'compare',
@@ -49,7 +47,6 @@ t <- theme_grey() +
         #                                  linetype = "solid")
   )
 theme_set(t)
-
 
 gg_beanplot <- function(mapping, data, p = NULL, width = 3, fill = 'grey', 
                         colour = 'grey', alpha = 1, kernel = 'gaussian', bw = 'SJ', 

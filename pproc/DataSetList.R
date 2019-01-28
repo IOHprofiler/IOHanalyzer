@@ -210,7 +210,7 @@ get_PAR_summary.DataSetList <- function(dsList, ftarget, algorithm = 'all', ...)
   lapply(dsList, function(ds) get_PAR_summary(ds, ftarget, ...)) %>% rbindlist
 }
 
-get_PAR_sample.DataSetList <- function(dsList, ftarget, algorithm = 'all') {
+get_PAR_sample.DataSetList <- function(dsList, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   

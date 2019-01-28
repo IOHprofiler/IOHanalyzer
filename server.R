@@ -1195,6 +1195,22 @@ shinyServer(function(input, output, session) {
   
   # Expected Target Value Convergence 
   output$FCE_PER_FUN <- renderPlotly({
+    render_FV_PER_FUN()
+  })
+  
+  output$FIG_DOWNLOAD_FV_PER_FUN <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_FV_PER_FUN)
+    },
+    content = function(file) {
+      save_plotly(render_FV_PER_FUN(), file, 
+                  format = input$FIG_FORMAT_FV_PER_FUN, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_FV_PER_FUN)
+  )
+  
+  render_FV_PER_FUN <- reactive({
     req(input$FCE_RT_MIN, input$FCE_RT_MAX)
     
     rt_min <- input$FCE_RT_MIN %>% as.integer
@@ -1322,10 +1338,11 @@ shinyServer(function(input, output, session) {
     p %<>%
       layout(xaxis = list(type = ifelse(input$FCE_semilogx, 'log', 'linear')),
              yaxis = list(type = ifelse(input$FCE_semilogy, 'log', 'linear')))
+    p
   })
   
   # empirical p.d.f. of the target value
-  output$FCE_PDF <- renderPlotly({
+  render_FV_PDF <- reactive({
     req(input$FCE_PDF_RUNTIME)  
     runtime <- input$FCE_PDF_RUNTIME %>% as.integer 
     points <- ifelse(input$FCE_SHOW_SAMPLE, 'all', FALSE)
@@ -1360,8 +1377,24 @@ shinyServer(function(input, output, session) {
       layout(yaxis = list(type = ifelse(input$FCE_LOGY, 'log', 'linear')))
   })
   
+  output$FIG_DOWNLOAD_FV_PDF <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_FV_PDF)
+    },
+    content = function(file) {
+      save_plotly(render_FV_PDF(), file, 
+                  format = input$FIG_FORMAT_FV_PDF, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_FV_PDF)
+  )
+  
+  output$FCE_PDF <- renderPlotly({
+    render_FV_PDF()
+  })
+  
   # historgram of the target values -----------
-  output$FCE_HIST <- renderPlotly({
+  render_FV_HIST <- reactive({
     req(input$FCE_HIST_RUNTIME != "")   # require non-empty input
     runtime <- input$FCE_HIST_RUNTIME %>% as.integer 
     plot_mode <- input$FCE_illu_mode
@@ -1419,6 +1452,22 @@ shinyServer(function(input, output, session) {
     p
   })
   
+  output$FIG_DOWNLOAD_FV_HIST <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_FV_HIST)
+    },
+    content = function(file) {
+      save_plotly(render_FV_HIST(), file, 
+                  format = input$FIG_FORMAT_FV_HIST, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_FV_HIST)
+  )
+  
+  output$FCE_HIST <- renderPlotly({
+    render_FV_HIST()
+  })
+  
   # The ECDF plots for the target value ----------------
   output$FCE_ECDF_PER_TARGET <- renderPlotly({
     req(input$FCE_ECDF_RT1, input$FCE_ECDF_RT2, input$FCE_ECDF_RT3)
@@ -1426,7 +1475,6 @@ shinyServer(function(input, output, session) {
       as.integer(input$FCE_ECDF_RT1),
       as.integer(input$FCE_ECDF_RT2),
       as.integer(input$FCE_ECDF_RT3))
-    
     
     runtimes <- runtimes[!is.na(runtimes)]
     req(length(runtimes) != 0)
@@ -1490,7 +1538,7 @@ shinyServer(function(input, output, session) {
     seq_RT(rt, from = rt_min, to = rt_max, by = rt_step) %>% cat
   })
   
-  output$FCE_ECDF_AGGR <- renderPlotly({
+  render_FV_ECDF_AGGR <- reactive({
     req(input$FCE_ECDF_RT_MIN, input$FCE_ECDF_RT_MAX, input$FCE_ECDF_RT_STEP)
     
     rt_min <- input$FCE_ECDF_RT_MIN %>% as.integer
@@ -1575,8 +1623,24 @@ shinyServer(function(input, output, session) {
                                         'log', 'linear')))
   })
   
+  output$FIG_DOWNLOAD_FV_ECDF_AGGR <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_FV_ECDF_AGGR)
+    },
+    content = function(file) {
+      save_plotly(render_FV_ECDF_AGGR(), file, 
+                  format = input$FIG_FORMAT_FV_ECDF_AGGR, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_FV_ECDF_AGGR)
+  )
+  
+  output$FCE_ECDF_AGGR <- renderPlotly({
+    render_FV_ECDF_AGGR()
+  })
+  
   # evaluation rake of all courses 
-  output$FCE_AUC <- renderPlotly({
+  render_FV_AUC <- reactive({
     req(input$FCE_AUC_RT_MIN, input$FCE_AUC_RT_MAX, input$FCE_AUC_RT_STEP)
     
     rt_min <- input$FCE_AUC_RT_MIN %>% as.integer
@@ -1638,8 +1702,24 @@ shinyServer(function(input, output, session) {
              paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)')
   })
   
+  output$FIG_DOWNLOAD_FV_AUC <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_FV_AUC)
+    },
+    content = function(file) {
+      save_plotly(render_FV_AUC(), file, 
+                  format = input$FIG_FORMAT_FV_AUC, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_FV_AUC)
+  )
+  
+  output$FCE_AUC <- renderPlotly({
+    render_FV_AUC()
+  })
+  
   # Expected Evolution of parameters in the algorithm
-  output$PAR_PER_FUN <- renderPlotly({
+  render_PAR_PER_FUN <- reactive({
     req(input$PAR_F_MIN, input$PAR_F_MAX)
     
     f_min <- format_FV(input$PAR_F_MIN) %>% as.numeric
@@ -1750,6 +1830,22 @@ shinyServer(function(input, output, session) {
       add_annotations(x = 0.5 , y = -0.18, text = "best-so-far f(x)-value", 
                       showarrow = F, xref = 'paper', yref = 'paper',
                       font = list(size = 22, family = 'sans-serif'))
+  })
+  
+  output$FIG_DOWNLOAD_PAR_PER_FUN <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_PAR_PER_FUN)
+    },
+    content = function(file) {
+      save_plotly(render_PAR_PER_FUN(), file, 
+                  format = input$FIG_FORMAT_PAR_PER_FUN, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_PAR_PER_FUN)
+  )
+  
+  output$PAR_PER_FUN <- renderPlotly({
+    render_PAR_PER_FUN()
   })
   
   # TODO: add ks test for ECDF later

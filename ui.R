@@ -432,7 +432,7 @@ body <- dashboardBody(
           )
     ),
     
-    # RT empirical c.d.f. ------------------------------------------
+    # RT ECDF ------------------------------------------
     tabItem(tabName = 'RT_ECDF', 
             fluidRow(
               column(width = 12,
@@ -628,7 +628,13 @@ body <- dashboardBody(
                                 or <b>separated</b> in several subplots:'),
                            selectInput('FCE_illu_mode', '', 
                                        choices = c("overlay", "subplot"), 
-                                       selected = 'subplot')
+                                       selected = 'subplot'),
+                           
+                           selectInput('FIG_FORMAT_FV_HIST', label = 'select the figure format',
+                                       choices = supported_fig_format, selected = 'pdf'),
+                           
+                           downloadButton('FIG_DOWNLOAD_FV_HIST', label = 'download the figure')
+                           
                            ),
                          
                          mainPanel(
@@ -657,7 +663,12 @@ where \\(Q_1, Q_3\\) are the \\(25\\%\\) and \\(75\\%\\) percentile of the runti
                              
                              textInput('FCE_PDF_RUNTIME', label = '', value = ''),
                              checkboxInput('FCE_SHOW_SAMPLE', label = 'show runtime samples', value = T),
-                             checkboxInput('FCE_LOGY', label = 'scale y axis log10', value = T)
+                             checkboxInput('FCE_LOGY', label = 'scale y axis log10', value = T),
+                             
+                             selectInput('FIG_FORMAT_FV_PDF', label = 'select the figure format',
+                                         choices = supported_fig_format, selected = 'pdf'),
+                             
+                             downloadButton('FIG_DOWNLOAD_FV_PDF', label = 'download the figure')
                            ),
                            
                            mainPanel(
@@ -727,7 +738,12 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                                                   checkboxInput('FCE_show.pareto_optima',
                                                                 label = 'show/hide pareto optimal front',
                                                                 value = F)
-                                                )))
+                                                ))),
+                               
+                               selectInput('FIG_FORMAT_FV_PER_FUN', label = 'select the figure format',
+                                           choices = supported_fig_format, selected = 'pdf'),
+                               
+                               downloadButton('FIG_DOWNLOAD_FV_PER_FUN', label = 'download the figure')
                              )
                          ),
                          
@@ -770,7 +786,11 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                            
                            checkboxInput('FCE_ECDF_AGGR_semilogx', 
                                          label = 'scale x axis log10',
-                                         value = F)
+                                         value = F),
+                           selectInput('FIG_FORMAT_FV_ECDF_AGGR', label = 'select the figure format',
+                                       choices = supported_fig_format, selected = 'pdf'),
+                           
+                           downloadButton('FIG_DOWNLOAD_FV_ECDF_AGGR', label = 'download the figure')
                            ),
                          
                          mainPanel(width = 9,
@@ -778,9 +798,12 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                                           HTML_P('The evenly spaced budget values are:'),
                                           verbatimTextOutput('FCE_RT_GRID'),
                                           HTML_P('The fraction of (run,budget) pairs \\((i,B)\\) satisfying 
-that the best solution that the algorithm has found in the \\(i\\)-th run within the first \\(B\\) evaluations has quality at 
-<b>most</b> \\(v\\) is plotted against the target value \\(v\\). The displayed elements can be switched on and off by clicking on the 
-legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
+                                                  that the best solution that the algorithm has found in the 
+                                                  \\(i\\)-th run within the first \\(B\\) evaluations has quality at 
+                                                  <b>most</b> \\(v\\) is plotted against the target value \\(v\\). The
+                                                  displayed elements can be switched on and off by clicking on the 
+                                                  legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when 
+                                                  hovering over the figure.'),
                                           plotlyOutput('FCE_ECDF_AGGR', height = plotly_height, width = plotly_width2),
                                           hr()
                                          )
@@ -796,7 +819,12 @@ legend on the right. A <b>tooltip</b> and <b>toolbar</b> appears when hovering o
                            HTML('<p align="justify">Set the range and the granularity of the evenly spaced budgets.</p>'),
                            textInput('FCE_AUC_RT_MIN', label = RT_MIN_LABEL, value = ''),
                            textInput('FCE_AUC_RT_MAX', label = RT_MAX_LABEL, value = ''),
-                           textInput('FCE_AUC_RT_STEP', label = RT_STEP_LABEL, value = '')
+                           textInput('FCE_AUC_RT_STEP', label = RT_STEP_LABEL, value = ''),
+                           
+                           selectInput('FIG_FORMAT_FV_AUC', label = 'select the figure format',
+                                       choices = supported_fig_format, selected = 'pdf'),
+                           
+                           downloadButton('FIG_DOWNLOAD_FV_AUC', label = 'download the figure')
                            ),
                          
                          mainPanel(width = 9,
@@ -870,7 +898,11 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                             
                             checkboxInput('PAR_semilogy', 
                                           label = 'scale y axis log10',
-                                          value = T)
+                                          value = T),
+                            
+                            selectInput('FIG_FORMAT_PAR_PER_FUN', label = 'select the figure format',
+                                        choices = supported_fig_format, selected = 'pdf'),
+                            downloadButton('FIG_DOWNLOAD_PAR_PER_FUN', label = 'download the figure')
                           )
                       ),
                       

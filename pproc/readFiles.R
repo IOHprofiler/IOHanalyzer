@@ -46,11 +46,12 @@ read_IndexFile <- function(fname) {
     if (length(lines) == 0) 
       break
     
-    # TODO: make this quote symbol as the configurable parameter
+    # TODO: make this quote symbol ' or " as the configurable parameter
+    # or simply fix it 
     name_value <- read.csv(text = lines[1], head = F, quote = "'") %>% 
       as.list %>% unlist %>% as.vector
     header <- name_value %>% trimws %>% 
-    {regmatches(., regexpr("=", .), invert = T)} %>% 
+    {regmatches(., regexpr("=", .), invert = T)} %>%  # match the first appearance of '='
       unlist %>% trimws %>% 
       matrix(nrow = 2) %>% {
         ans <- as.list(.[2, ])

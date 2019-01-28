@@ -785,7 +785,11 @@ shinyServer(function(input, output, session) {
     data <- DATA()
     n_algorithm <- length(data)
     colors <- color_palettes(n_algorithm)
-    nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
+
+    if (n_algorithm <= 10)
+      nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
+    else 
+      nrows <- ceiling(n_algorithm / 3.) # keep to columns for the histograms
     
     if (plot_mode == 'overlay') {
       p <- plot_ly_default(x.title = "function evaluations", y.title = "runs")
@@ -1244,21 +1248,24 @@ shinyServer(function(input, output, session) {
       
       p %<>% 
         add_trace(data = dt_plot, x = ~runtime, y = ~upper, type = 'scatter', mode = 'lines',
-                  line = list(color = rgba_str, width = 0), 
+                  line = list(color = rgba_str, width = 0), legendgroup = algId,
                   showlegend = F, name = 'mean +/- sd') %>% 
         add_trace(x = ~runtime, y = ~lower, type = 'scatter', mode = 'lines',
                   fill = 'tonexty',  line = list(color = 'transparent'),
-                  fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd')
+                  legendgroup = algId,
+                  fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
       
       if (input$FCE_show.mean)
         p %<>% add_trace(data = dt_plot, x = ~runtime, y = ~mean, type = 'scatter', 
                          mode = 'lines+markers', name = sprintf("%s.mean", algId), 
+                         legendgroup = algId,
                          marker = list(color = rgb_str), 
                          line = list(color = rgb_str))
       
       if (input$FCE_show.median)
         p %<>% add_trace(data = dt_plot, x = ~runtime, y = ~median, type = 'scatter',
                          name = sprintf("%s.median", algId), mode = 'lines+markers', 
+                         legendgroup = algId,
                          marker = list(color = rgb_str),
                          line = list(color = rgb_str, dash = 'dash'))
       

@@ -90,7 +90,7 @@ Set2 <- function(n) sequential_hcl(n, c(10, 120), c = c(141, 55, 0), l = c(95, 1
 # TODO: incoporate more colors
 color_palettes <- function(ncolor) {
   require(colorspace)
-  color_fcts <- c(Set1, Set2, rainbow_hcl, heat_hcl)
+  color_fcts <- c(rainbow_hcl, Set2, Set1, heat_hcl)
   colors <- c()
   
   i <- 1

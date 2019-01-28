@@ -460,9 +460,10 @@ shinyServer(function(input, output, session) {
   
   output$table_RT_summary_condensed <- renderTable({
     df <- runtime_summary_condensed()
-    # df$runs %<>% as.integer
-    # df$median %<>% as.integer
-    # df$target <- format_FV(df$target)
+    df$"Number of runs" %<>% as.integer
+    df$"Maximum reached value" <- format_FV(df$"Maximum reached value")
+    df$"Minimum reached value" <- format_FV(df$"Minimum reached value")
+    df$"Mean reached value" <- format_FV(df$"Mean reached value")
     # 
     # # format the integers
     # for (p in paste0(probs * 100, '%')) {

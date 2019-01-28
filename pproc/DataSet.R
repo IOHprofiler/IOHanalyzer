@@ -420,18 +420,19 @@ get_FV_overview.DataSet <- function(ds){
   data <- ds$FV
   algId <- attr(ds, 'algId')
   maximization <- attr(ds, 'maximization')
-  max_val = max(data)
-  min_val = min(data)
+  max_val <- max(data)
+  min_val <- min(data)
+  runs <- ncol(data)
   if (maximization){
-    mean_max <- mean(apply(data,1,max))
+    mean_max <- mean(apply(data,2,max))
   }
   else
-    mean_max <- mean(apply(data,1,min))
-  c(max_val,min_val,mean_max) %>%
+    mean_max <- mean(apply(data,2,min))
+  c(max_val,min_val,mean_max,runs) %>%
     t %>%
     as.data.table %>% 
     cbind(algId,.) %>% 
-    set_colnames(c("AlgID","Maximum reached value","Minimum reached value","Mean reached value"))
+    set_colnames(c("Algorithm ID","Maximum reached value","Minimum reached value","Mean reached value","Number of runs"))
   
   
 }

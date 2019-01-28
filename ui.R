@@ -376,7 +376,7 @@ body <- dashboardBody(
                                     and \\(75\\%\\) percentile of the runtime and \\(n\\) is the sample size.
                                     The displayed algorithms can be selected by clicking on the legend on the right. 
                                     A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-                                plotlyOutput('RT_HIST', height = plotly_height, width = plotly_width2)
+                                plotlyOutput('RT_HIST', height = plotly_height2, width = plotly_width2)
                                 )
                        )
                        )
@@ -647,7 +647,7 @@ according to the so-called <b>Freedman–Diaconis rule</b>: \\(\\text{Bin size}=
 where \\(Q_1, Q_3\\) are the \\(25\\%\\) and \\(75\\%\\) percentile of the runtime and \\(n\\) is the sample size.
                                        The displayed algorithms can be selected by clicking on the legend on the right. 
                                        A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                                  plotlyOutput('FCE_HIST', height = plotly_height, width = plotly_width2)
+                                  plotlyOutput('FCE_HIST', height = plotly_height2, width = plotly_width2)
                            )
                          )
                      )

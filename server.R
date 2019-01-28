@@ -772,7 +772,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       save_plotly(render_RT_HIST(), file,
            format = input$FIG_FORMAT_RT_HIST, 
-           width = fig_width2, height = fig_height)
+           width = fig_width2, height = fig_height2)
     },
     contentType = paste0('image/', input$FIG_FORMAT_RT_HIST)
   )
@@ -785,7 +785,6 @@ shinyServer(function(input, output, session) {
     data <- DATA()
     n_algorithm <- length(data)
     colors <- color_palettes(n_algorithm)
-
     if (n_algorithm <= 10)
       nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
     else 
@@ -833,7 +832,7 @@ shinyServer(function(input, output, session) {
     }
     
     if (plot_mode == 'subplot') {
-      p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.05)
+      p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.02)
     }
     p
   })
@@ -1409,7 +1408,10 @@ shinyServer(function(input, output, session) {
     data <- DATA()
     n_algorithm <- length(data)
     colors <- color_palettes(n_algorithm)
-    nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
+    if (n_algorithm <= 10)
+      nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
+    else 
+      nrows <- ceiling(n_algorithm / 3.) # keep to columns for the histograms
     
     if (plot_mode == 'overlay') {
       p <- plot_ly_default(x.title = "target values", y.title = "runs")
@@ -1454,7 +1456,7 @@ shinyServer(function(input, output, session) {
     }
     
     if (plot_mode == 'subplot') 
-      p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.03)
+      p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.02)
     
     p
   })
@@ -1466,7 +1468,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       save_plotly(render_FV_HIST(), file, 
                   format = input$FIG_FORMAT_FV_HIST, 
-                  width = fig_width2, height = fig_height)
+                  width = fig_width2, height = fig_height2)
     },
     contentType = paste0('image/', input$FIG_FORMAT_FV_HIST)
   )

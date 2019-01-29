@@ -31,12 +31,14 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                      show.ERT = T, show.CI = T, show.mean = F,
                                      show.runs = F, show.density = 50,
                                      show.pareto = F, show.optimal = F,
-                                     show.median = F, backend = 'plotly') {
+                                     show.median = F, backend = 'plotly',
+                                     scale.xlog = F, scale.ylog = F,
+                                     scale.reverse = F) {
   Fall <- get_Funvals(dsList)
   if (is.null(Fstart)) Fstart <- min(Fall)
   if (is.null(Fstop)) Fstop <- max(Fall)
   
-  Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 60)
+  Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
   if (length(Fseq) == 0) return(NULL)
   
   N <- length(dsList)
@@ -157,8 +159,14 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
         
       }
     }
+    p %<>%
+      layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
+             yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
     
-  } else if (backend == 'ggplot2') {
+    if (scale.reverse)
+      p %<>% layout(xaxis = list(autorange = "reversed"))
+  } 
+  else if (backend == 'ggplot2') {
     dt[, group := paste(algId, funcId, DIM, sep = '-')]
     p <- ggplot(data = dt, aes(group = group, colour = group))
     
@@ -179,14 +187,16 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
                                      show.mean = T, show.median = F,
                                      show.runs = F, show.density = 50,
                                      show.pareto = F, show.optimal = F,
-                                     backend = 'plotly') {
+                                     backend = 'plotly',
+                                     scale.xlog = F, scale.ylog = F,
+                                     scale.reverse = F) {
   
   RTall <- get_Runtimes(dsList)
   if (is.null(RTstart)) Fstart <- min(RTall)
   if (is.null(RTstop)) Fstop <- max(RTall)
   
   
-  RTseq <- seq_RT(RTall, RTstart, RTstop, length.out = 60)
+  RTseq <- seq_RT(RTall, RTstart, RTstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
   if (length(RTseq) == 0) return(NULL)
   
   
@@ -298,6 +308,12 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
         }
       }
     }
+    p %<>%
+      layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
+             yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
+    
+    if (scale.reverse)
+      p %<>% layout(xaxis = list(autorange = "reversed"))
   }
   else if (backend == 'ggplot2'){
     fce[, group := paste(algId, funcId, DIM, sep = '-')]

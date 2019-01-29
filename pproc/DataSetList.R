@@ -186,7 +186,12 @@ get_RT_sample.DataSetList <- function(dsList, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_RT_sample(ds, ftarget, ...)) %>% rbindlist(fill = T)
+  lapply(dsList, function(ds){
+    res <- cbind(attr(ds, 'DIM'), attr(ds, 'funcId'), get_RT_sample(ds, ftarget, ...))
+    colnames(res)[1] <- 'DIM'
+    colnames(res)[2] <- 'funcId'
+    res
+  }) %>% rbindlist(fill = T)
 }
 
 get_FV_summary.DataSetList <- function(dsList, runtime, algorithm = 'all') {
@@ -227,7 +232,12 @@ get_FV_sample.DataSetList <- function(dsList, runtime, algorithm = 'all', ...) {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_FV_sample(ds, runtime, ...)) %>% rbindlist(fill = T)
+  lapply(dsList, function(ds){
+    res <- cbind(attr(ds, 'DIM'), attr(ds, 'funcId'), get_FV_sample(ds, runtime, ...))
+    colnames(res)[1] <- 'DIM'
+    colnames(res)[2] <- 'funcId'
+    res
+  }) %>% rbindlist(fill = T)
 }
 
 get_PAR_summary.DataSetList <- function(dsList, ftarget, algorithm = 'all', ...) {

@@ -10,11 +10,13 @@ options(width = 120)
 # ploting settings for UI ---------------------
 aspect_ratio <-  4 / 3
 fig_height <- 1000
+fig_height2 <- 1000
 fig_width <- fig_height * aspect_ratio
 fig_width2 <- fig_height * (16 / 10)
 
 plotly_height <- paste0(fig_height, "px")
 plotly_width <- paste0(fig_width, "px")
+plotly_height2 <- paste0(fig_height2, "px")
 plotly_width2 <- paste0(fig_width2, "px")
 
 IOHprofiler <- 'IOHprofiler'
@@ -60,6 +62,13 @@ FIG_NAME_RT_HIST <- parse(text = "paste0('RT_HIST-', Sys.Date(), '.', input$FIG_
 FIG_NAME_RT_ECDF_AGGR <- parse(text = "paste0('RT_ECDF_AGGR-', Sys.Date(), '.', input$FIG_FORMAT_RT_ECDF_AGGR)")
 FIG_NAME_RT_AUC <- parse(text = "paste0('RT_AUC-', Sys.Date(), '.', input$FIG_FORMAT_RT_AUC)")
 
+FIG_NAME_FV_PER_FUN <- parse(text = "paste0('FV-', Sys.Date(), '.', input$FIG_FORMAT_FV_PER_FUN)")
+FIG_NAME_FV_PDF <- parse(text = "paste0('FV_PMF-', Sys.Date(), '.', input$FIG_FORMAT_FV_PDF)")
+FIG_NAME_FV_HIST <- parse(text = "paste0('FV_HIST-', Sys.Date(), '.', input$FIG_FORMAT_FV_HIST)")
+FIG_NAME_FV_ECDF_AGGR <- parse(text = "paste0('FV_ECDF_AGGR-', Sys.Date(), '.', input$FIG_FORMAT_FV_ECDF_AGGR)")
+FIG_NAME_FV_AUC <- parse(text = "paste0('FV_AUC-', Sys.Date(), '.', input$FIG_FORMAT_FV_AUC)")
+
+FIG_NAME_PAR_PER_FUN <- parse(text = "paste0('PAR-', Sys.Date(), '.', input$FIG_FORMAT_PAR_PER_FUN)")
 
 # function for generating sequences for RT and FV ---------------------
 # TODO: add Roxygen docs...

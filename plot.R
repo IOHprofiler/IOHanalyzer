@@ -7,13 +7,11 @@
 suppressMessages(library(plotly))
 suppressMessages(library(ggplot2))
 
-plot_ly_default <- function(title = NULL,
-                            x.title = NULL,
-                            y.title = NULL) {
+plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
   plot_ly() %>% 
     layout(title = title,
            autosize = T, hovermode = 'compare',
-           legend = list(x = 100, y = 0.8, orientation = 'v'),
+           legend = list(x = 1.02, y = 0.8, orientation = 'v'),
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
            font = list(size = 18, family = 'sans-serif'),
            titlefont = list(size = 16, family = 'sans-serif'),
@@ -50,7 +48,6 @@ t <- theme_grey() +
   )
 theme_set(t)
 
-
 gg_beanplot <- function(mapping, data, p = NULL, width = 3, fill = 'grey', 
                         colour = 'grey', alpha = 1, kernel = 'gaussian', bw = 'SJ', 
                         draw_quantiles = NULL, trim = TRUE, na.rm = FALSE, 
@@ -82,17 +79,56 @@ gg_beanplot <- function(mapping, data, p = NULL, width = 3, fill = 'grey',
   p
 }
 
+Set1 <- function(n) sequential_hcl(n, h = c(300, 75), c = c(40, NA, 95), l = c(15, 90), 
+                                   power = c(1, 1.1), gamma = NULL, fixup = TRUE, alpha = 1, 
+                                   palette = NULL, rev = FALSE)
+
+Set2 <- function(n) sequential_hcl(n, c(10, 120), c = c(141, 55, 0), l = c(95, 1), 
+                                   power = c(1.7, 0.8), gamma = NULL, 
+                                   fixup = TRUE, alpha = 1, palette = NULL, rev = FALSE)
+
+# TODO: incoporate more colors
 color_palettes <- function(ncolor) {
   require(colorspace)
-  color_fcts <- c(terrain_hcl, diverge_hcl, rainbow_hcl)
+  color_fcts <- c(rainbow_hcl, Set2, Set1, heat_hcl)
   colors <- c()
   
   i <- 1
   while (ncolor > 0) {
     n <- min(8, ncolor)
-    colors <- c(colors, color_fcts[[i]](n))
-    ncolor <- ncolor - n
+    if (i > length(color_fcts)) {
+      colors <- c(colors, diverge_hcl(ncolor))
+      break
+    } else {
+      colors <- c(colors, color_fcts[[i]](n))
+      ncolor <- ncolor - n
+    }
     i <- i + 1
   }
   colors
+}
+
+# TODO: we have to change the working directory back and force because 
+# function 'orca' always generates figures in the current folder
+save_plotly <- function(p, file, format = 'svg', ...) {
+  pwd.calling <- getwd()
+  des <- dirname(file)
+  file <- basename(file)
+  
+  pwd <- file.path(Sys.getenv('HOME'))
+  dir.create(pwd, showWarnings = FALSE)
+  setwd(pwd)
+  
+  if (format %in% c('svg', 'png'))
+    orca(p, file, format = format, ...)
+  else {
+    file_svg <- paste0(file, '.svg')
+    orca(p, file_svg, format = 'svg', ...)
+    invisible(system(paste('inkscape', file_svg, paste0('--export-', format, '=', file)), 
+                     intern = T))
+    file.remove(file_svg)
+  }
+  
+  file.rename(file, file.path(des, file))
+  setwd(pwd.calling)
 }

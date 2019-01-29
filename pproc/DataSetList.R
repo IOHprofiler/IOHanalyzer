@@ -170,25 +170,23 @@ summary.DataSetList <- function(data) {
     as.data.frame
 }
 
-# get_RT_runs.DataSetList <- function(dsList, ftarget, algorithm = 'all') {
-#   if (algorithm != 'all')
-#     dsList <- subset(dsList, algId == algorithm)
-  
-#   lapply(dsList, function(ds) get_RT_runs(ds, ftarget)) %>% rbindlist
-# }
-
 get_RT_summary.DataSetList <- function(dsList, ftarget, algorithm = 'all') {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_RT_summary(ds, ftarget)) %>% rbindlist
+  lapply(dsList, function(ds) {
+    res <- cbind(attr(ds, 'DIM'), attr(ds, 'funcId'), get_RT_summary(ds, ftarget))
+    colnames(res)[1] <- 'DIM'
+    colnames(res)[2] <- 'funcId'
+    res
+  }) %>% rbindlist
 }
 
 get_RT_sample.DataSetList <- function(dsList, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_RT_sample(ds, ftarget, ...)) %>% rbindlist(.,fill=TRUE)
+  lapply(dsList, function(ds) get_RT_sample(ds, ftarget, ...)) %>% rbindlist(fill = T)
 }
 
 get_FV_summary.DataSetList <- function(dsList, runtime, algorithm = 'all') {
@@ -219,11 +217,12 @@ get_RT_overview.DataSetList <- function(dsList, algorithm = 'all') {
 #   lapply(dsList, function(ds) get_FV_runs(ds, runtime)) %>% rbindlist
 # }
 
+
 get_FV_sample.DataSetList <- function(dsList, runtime, algorithm = 'all', ...) {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_FV_sample(ds, runtime, ...)) %>% rbindlist(.,fill=TRUE)
+  lapply(dsList, function(ds) get_FV_sample(ds, runtime, ...)) %>% rbindlist(fill = T)
 }
 
 get_PAR_summary.DataSetList <- function(dsList, ftarget, algorithm = 'all', ...) {
@@ -237,37 +236,38 @@ get_PAR_sample.DataSetList <- function(dsList, ftarget, algorithm = 'all', ...) 
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_PAR_sample(ds, ftarget, ...)) %>% rbindlist
+  lapply(dsList, function(ds) get_PAR_sample(ds, ftarget, ...)) %>% rbindlist(fill = T)
 }
 
-getDIM <- function(data) {
+get_DIM <- function(data) {
   sapply(data, function(d) attr(d, 'DIM')) %>% unique %>% sort
 }
 
-getfuncId <- function(data) {
+get_funcId <- function(data) {
   sapply(data, function(d) attr(d, 'funcId')) %>% unique %>% sort
 }
 
-getAlgId <- function(data) {
+get_AlgId <- function(data) {
   sapply(data, function(d) attr(d, 'algId')) %>% unique %>% sort
 }
 
-getParId <- function(data) {
+get_ParId <- function(data) {
   lapply(data, function(d) setdiff(names(d), c('RT', 'FV', 'RT.summary'))) %>% unlist %>% unique
 }
 
 # TODO: let the user choose/detect whether the problem is subject to maximization
 # and determine whether to sort the function values in ascending/desceding order
-getFunvals <- function(data) {
+get_Funvals <- function(data) {
   lapply(data, function(x) rownames(x$RT)) %>% unlist %>%
     as.numeric %>% unique %>% sort %>% rev
 }
 
-getRuntimes <- function(data) {
+get_Runtimes <- function(data) {
   lapply(data, function(x) rownames(x$FV)) %>% unlist %>%
     as.numeric %>% unique %>% sort
 }
 
+# TODO: this is deprecated! remove it
 filter.DataSetList <- function(data, by) {
   on <- names(by)
   idx <- rep(TRUE, length(data))

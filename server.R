@@ -81,7 +81,7 @@ get_data_id <- function(dsList) {
   if (is.null(dsList) | length(dsList) == 0)
     return(NULL)
   
-  paste(getfuncId(dsList), getDIM(dsList), sep = '-')
+  paste(get_funcId(dsList), get_DIM(dsList), sep = '-')
 }
 
 # Define server logic required to draw a histogram
@@ -238,13 +238,13 @@ shinyServer(function(input, output, session) {
     if (length(data) == 0)
       return()
     
-    dim <- getDIM(data)
+    dim <- get_DIM(data)
     updateSelectInput(session, 'DIM_INPUT', choices = dim, selected = dim[1])
     
-    funcID <- getfuncId(data)
+    funcID <- get_funcId(data)
     updateSelectInput(session, 'FUNCID_INPUT', choices = funcID, selected = funcID[1])
     
-    algId <- c(getAlgId(data), 'all')
+    algId <- c(get_AlgId(data), 'all')
     updateSelectInput(session, 'ALGID_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'ALGID_INPUT_SUMMARY', choices = algId, selected = 'all')
     updateSelectInput(session, 'FCE_ALGID_INPUT_SUMMARY', choices = algId, selected = 'all')
@@ -255,7 +255,7 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, 'PAR_ALGID_INPUT_SUMMARY', choices = algId, selected = 'all')
     updateSelectInput(session, 'PAR_ALGID_INPUT_SAMPLE', choices = algId, selected = 'all')
     
-    parId <- c(getParId(data), 'all')
+    parId <- c(get_ParId(data), 'all')
     updateSelectInput(session, 'PAR_INPUT', choices = parId, selected = 'all')
     updateSelectInput(session, 'PAR_INPUT_SAMPLE', choices = parId, selected = 'all')
   })
@@ -288,7 +288,7 @@ shinyServer(function(input, output, session) {
   # update the values for the grid of target values
   observe({
     data <- DATA()
-    v <- getFunvals(data)
+    v <- get_Funvals(data)
     req(v)
     
     # choose proper scaling for the function value
@@ -353,7 +353,7 @@ shinyServer(function(input, output, session) {
   # update the values for the grid of running times
   observe({
     data <- DATA()
-    v <- getRuntimes(data)
+    v <- get_Runtimes(data)
     
     if (length(v) == 0)
       return()
@@ -409,7 +409,7 @@ shinyServer(function(input, output, session) {
     req(fstart <= fstop, fstep <= fstop - fstart)
     
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     if (input$singleF)
       fstop <- fstart
@@ -417,7 +417,9 @@ shinyServer(function(input, output, session) {
     fseq <- seq_FV(fall, fstart, fstop, fstep)
     req(fseq)
     
-    get_RT_summary(data, fseq, algorithm = input$ALGID_INPUT)
+    get_RT_summary(data, fseq, algorithm = input$ALGID_INPUT)[
+      , c('DIM', 'funcId') := NULL
+    ]
   })
   
   output$table_RT_summary <- renderTable({
@@ -481,7 +483,7 @@ shinyServer(function(input, output, session) {
     # we have to remove this part from the dependency of this reactive expression
     isolate({
       data <- DATA()
-      fall <- getFunvals(data)
+      fall <- get_Funvals(data)
     })
     
     if (input$F_SAMPLE_SINGLE)
@@ -515,7 +517,7 @@ shinyServer(function(input, output, session) {
   output$download_runtime <- downloadHandler(
     filename = {
       data <- DATA()
-      algId <- paste0(getAlgId(data), collapse = ';')
+      algId <- paste0(get_AlgId(data), collapse = ';')
       fstart <- input$F_MIN_SAMPLE %>% format_FV
       fstop <- input$F_MAX_SAMPLE %>% format_FV
       fstep <- input$F_STEP_SAMPLE %>% format_FV
@@ -543,14 +545,9 @@ shinyServer(function(input, output, session) {
       eval(FIG_NAME_ERT_PER_FUN)
     },
     content = function(file) {
-      # TODO: we have to change the working directory back and force because 
-      # function 'orca' always generates figures in the current folder
-      old_wd <- getwd()
-      setwd(dirname(file))
-      orca(render_ERT_PER_FUN(), basename(file), 
-           format = input$FIG_FORMAT_ERT_PER_FUN, 
-           width = fig_width2, height = fig_height)
-      setwd(old_wd)
+      save_plotly(render_ERT_PER_FUN(), file, 
+                  format = input$FIG_FORMAT_ERT_PER_FUN, 
+                  width = fig_width2, height = fig_height)
     },
     contentType = paste0('image/', input$FIG_FORMAT_ERT_PER_FUN)
   )
@@ -564,7 +561,7 @@ shinyServer(function(input, output, session) {
     req(Fmin <= Fmax)
     
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     if (input$singleF)
       fstop <- fstart
@@ -576,7 +573,9 @@ shinyServer(function(input, output, session) {
     colors <- color_palettes(n_algorithm)
     
     dt <- get_RT_summary(data, fseq)
-    dt[, `:=`(upper = mean + sd, lower = mean - sd)]
+    dt[, `:=`(upper = mean + sd, lower = mean - sd)][
+      , c('DIM', 'funcId') := NULL
+    ]
     
     dr <- get_RT_sample(data, fseq)
     
@@ -593,28 +592,28 @@ shinyServer(function(input, output, session) {
       if (input$show.CI)
         p %<>% 
           add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-                    line = list(color = rgba_str, width = 0),  
+                    line = list(color = rgba_str, width = 0), legendgroup = algId,
                     showlegend = F, name = 'mean +/- sd') %>% 
           add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
-                    fill = 'tonexty',  line = list(color = 'transparent'),
+                    fill = 'tonexty',  line = list(color = 'transparent'), legendgroup = algId,
                     fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
       
       if (input$show.ERT)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
-                         name = paste0(algId, '.ERT'), mode = 'lines+markers', 
-                         marker = list(color = rgb_str),  
+                         name = paste0(algId, '.ERT'), mode = 'lines+markers',
+                         marker = list(color = rgb_str), legendgroup = algId,
                          line = list(color = rgb_str))
       
       if (input$show.mean)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~mean, type = 'scatter', 
                          mode = 'lines+markers', name = paste0(algId, '.mean'), 
-                         marker = list(color = rgb_str), 
+                         marker = list(color = rgb_str), legendgroup = algId,
                          line = list(color = rgb_str, dash = 'dash'))
       
       if (input$show.median)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~median, type = 'scatter',
                          name = paste0(algId, '.median'), mode = 'lines+markers', 
-                         marker = list(color = rgb_str),  
+                         marker = list(color = rgb_str), legendgroup = algId,
                          line = list(color = rgb_str, dash = 'dot'))
       
       if (input$show_all) {
@@ -708,14 +707,9 @@ shinyServer(function(input, output, session) {
       eval(FIG_NAME_RT_PMF)
     },
     content = function(file) {
-      # TODO: we have to change the working directory back and force because 
-      # function 'orca' always generates figures in the current folder
-      old_wd <- getwd()
-      setwd(dirname(file))
-      orca(render_RT_PMF(), basename(file), 
+      save_plotly(render_RT_PMF(), file,
            format = input$FIG_FORMAT_RT_PMF, 
            width = fig_width2, height = fig_height)
-      setwd(old_wd)
     },
     contentType = paste0('image/', input$FIG_FORMAT_RT_PMF)
   )
@@ -798,14 +792,9 @@ shinyServer(function(input, output, session) {
       eval(FIG_NAME_RT_HIST)
     },
     content = function(file) {
-      # TODO: we have to change the working directory back and force because 
-      # function 'orca' always generates figures in the current folder
-      old_wd <- getwd()
-      setwd(dirname(file))
-      orca(render_RT_HIST(), basename(file), 
+      save_plotly(render_RT_HIST(), file,
            format = input$FIG_FORMAT_RT_HIST, 
-           width = fig_width2, height = fig_height)
-      setwd(old_wd)
+           width = fig_width2, height = fig_height2)
     },
     contentType = paste0('image/', input$FIG_FORMAT_RT_HIST)
   )
@@ -818,7 +807,10 @@ shinyServer(function(input, output, session) {
     data <- DATA()
     n_algorithm <- length(data)
     colors <- color_palettes(n_algorithm)
-    nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
+    if (n_algorithm <= 10)
+      nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
+    else 
+      nrows <- ceiling(n_algorithm / 3.) # keep to columns for the histograms
     
     if (plot_mode == 'overlay') {
       p <- plot_ly_default(x.title = "function evaluations", y.title = "runs")
@@ -862,7 +854,7 @@ shinyServer(function(input, output, session) {
     }
     
     if (plot_mode == 'subplot') {
-      p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.05)
+      p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.02)
     }
     p
   })
@@ -933,7 +925,7 @@ shinyServer(function(input, output, session) {
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     seq_FV(fall, fstart, fstop, by = fstep) %>% cat
   })
@@ -947,14 +939,9 @@ shinyServer(function(input, output, session) {
       eval(FIG_NAME_RT_ECDF_AGGR)
     },
     content = function(file) {
-      # TODO: we have to change the working directory back and force because 
-      # function 'orca' always generates figures in the current folder
-      old_wd <- getwd()
-      setwd(dirname(file))
-      orca(render_RT_ECDF_AGGR(), basename(file), 
+      save_plotly(render_RT_ECDF_AGGR(), file,
            format = input$FIG_FORMAT_RT_ECDF_AGGR, 
            width = fig_width2, height = fig_height)
-      setwd(old_wd)
     },
     contentType = paste0('image/', input$FIG_FORMAT_RT_ECDF_AGGR)
   )
@@ -968,7 +955,7 @@ shinyServer(function(input, output, session) {
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     fseq <- seq_FV(fall, fstart, fstop, fstep)
     req(fseq)
@@ -1051,14 +1038,9 @@ shinyServer(function(input, output, session) {
       eval(FIG_NAME_RT_AUC)
     },
     content = function(file) {
-      # TODO: we have to change the working directory back and force because 
-      # function 'orca' always generates figures in the current folder
-      old_wd <- getwd()
-      setwd(dirname(file))
-      orca(render_RT_AUC(), basename(file), 
+      save_plotly(render_RT_AUC(), file,
            format = input$FIG_FORMAT_RT_AUC, 
            width = fig_width2, height = fig_height)
-      setwd(old_wd)
     },
     contentType = paste0('image/', input$FIG_FORMAT_RT_AUC)
   )
@@ -1072,7 +1054,7 @@ shinyServer(function(input, output, session) {
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     fseq <- seq_FV(fall, fstart, fstop, fstep)
     req(fseq)
@@ -1151,7 +1133,7 @@ shinyServer(function(input, output, session) {
     
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     data <- DATA()
-    rt <- getRuntimes(data)
+    rt <- get_Runtimes(data)
     
     if (input$RT_SINGLE)
       rt_max <- rt_min
@@ -1183,7 +1165,7 @@ shinyServer(function(input, output, session) {
   output$FCE_SUMMARY_download <- downloadHandler(
     filename = {
       data <- DATA()
-      algId <- paste0(getAlgId(data), collapse = ';')
+      algId <- paste0(get_AlgId(data), collapse = ';')
       rt_min <- input$RT_MIN %>% as.integer %>% as.character
       rt_max <- input$RT_MAX %>% as.integer %>% as.character
       rt_step <- input$RT_STEP %>% as.integer %>% as.character
@@ -1203,7 +1185,7 @@ shinyServer(function(input, output, session) {
     
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     data <- DATA()
-    rt <- getRuntimes(data)
+    rt <- get_Runtimes(data)
     
     if (input$RT_SINGLE_SAMPLE)
       rt_max <- rt_min
@@ -1238,7 +1220,7 @@ shinyServer(function(input, output, session) {
   output$FCE_SAMPLE_download <- downloadHandler(
     filename = {
       data <- DATA()
-      algId <- paste0(getAlgId(data), collapse = ';')
+      algId <- paste0(get_AlgId(data), collapse = ';')
       rt_min <- input$RT_MIN %>% as.integer %>% as.character
       rt_max <- input$RT_MAX %>% as.integer %>% as.character
       rt_step <- input$RT_STEP %>% as.integer %>% as.character
@@ -1257,6 +1239,22 @@ shinyServer(function(input, output, session) {
   
   # Expected Target Value Convergence 
   output$FCE_PER_FUN <- renderPlotly({
+    render_FV_PER_FUN()
+  })
+  
+  output$FIG_DOWNLOAD_FV_PER_FUN <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_FV_PER_FUN)
+    },
+    content = function(file) {
+      save_plotly(render_FV_PER_FUN(), file, 
+                  format = input$FIG_FORMAT_FV_PER_FUN, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_FV_PER_FUN)
+  )
+  
+  render_FV_PER_FUN <- reactive({
     req(input$FCE_RT_MIN, input$FCE_RT_MAX)
     
     rt_min <- input$FCE_RT_MIN %>% as.integer
@@ -1264,7 +1262,7 @@ shinyServer(function(input, output, session) {
     req(rt_min <= rt_max)
     
     data <- DATA()
-    rt <- getRuntimes(data)
+    rt <- get_Runtimes(data)
     rt_seq <- seq_RT(rt, rt_min, rt_max, length.out = 60, 
                      scale = ifelse(input$FCE_semilogx, 'log', 'linear'))
     req(rt_seq)
@@ -1290,21 +1288,24 @@ shinyServer(function(input, output, session) {
       
       p %<>% 
         add_trace(data = dt_plot, x = ~runtime, y = ~upper, type = 'scatter', mode = 'lines',
-                  line = list(color = rgba_str, width = 0), 
+                  line = list(color = rgba_str, width = 0), legendgroup = algId,
                   showlegend = F, name = 'mean +/- sd') %>% 
         add_trace(x = ~runtime, y = ~lower, type = 'scatter', mode = 'lines',
                   fill = 'tonexty',  line = list(color = 'transparent'),
-                  fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd')
+                  legendgroup = algId,
+                  fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
       
       if (input$FCE_show.mean)
         p %<>% add_trace(data = dt_plot, x = ~runtime, y = ~mean, type = 'scatter', 
                          mode = 'lines+markers', name = sprintf("%s.mean", algId), 
+                         legendgroup = algId,
                          marker = list(color = rgb_str), 
                          line = list(color = rgb_str))
       
       if (input$FCE_show.median)
         p %<>% add_trace(data = dt_plot, x = ~runtime, y = ~median, type = 'scatter',
                          name = sprintf("%s.median", algId), mode = 'lines+markers', 
+                         legendgroup = algId,
                          marker = list(color = rgb_str),
                          line = list(color = rgb_str, dash = 'dash'))
       
@@ -1384,10 +1385,11 @@ shinyServer(function(input, output, session) {
     p %<>%
       layout(xaxis = list(type = ifelse(input$FCE_semilogx, 'log', 'linear')),
              yaxis = list(type = ifelse(input$FCE_semilogy, 'log', 'linear')))
+    p
   })
   
   # empirical p.d.f. of the target value
-  output$FCE_PDF <- renderPlotly({
+  render_FV_PDF <- reactive({
     req(input$FCE_PDF_RUNTIME)  
     runtime <- input$FCE_PDF_RUNTIME %>% as.integer 
     points <- ifelse(input$FCE_SHOW_SAMPLE, 'all', FALSE)
@@ -1422,8 +1424,24 @@ shinyServer(function(input, output, session) {
       layout(yaxis = list(type = ifelse(input$FCE_LOGY, 'log', 'linear')))
   })
   
+  output$FIG_DOWNLOAD_FV_PDF <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_FV_PDF)
+    },
+    content = function(file) {
+      save_plotly(render_FV_PDF(), file, 
+                  format = input$FIG_FORMAT_FV_PDF, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_FV_PDF)
+  )
+  
+  output$FCE_PDF <- renderPlotly({
+    render_FV_PDF()
+  })
+  
   # historgram of the target values -----------
-  output$FCE_HIST <- renderPlotly({
+  render_FV_HIST <- reactive({
     req(input$FCE_HIST_RUNTIME != "")   # require non-empty input
     runtime <- input$FCE_HIST_RUNTIME %>% as.integer 
     plot_mode <- input$FCE_illu_mode
@@ -1431,7 +1449,10 @@ shinyServer(function(input, output, session) {
     data <- DATA()
     n_algorithm <- length(data)
     colors <- color_palettes(n_algorithm)
-    nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
+    if (n_algorithm <= 10)
+      nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
+    else 
+      nrows <- ceiling(n_algorithm / 3.) # keep to columns for the histograms
     
     if (plot_mode == 'overlay') {
       p <- plot_ly_default(x.title = "target values", y.title = "runs")
@@ -1476,9 +1497,25 @@ shinyServer(function(input, output, session) {
     }
     
     if (plot_mode == 'subplot') 
-      p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.03)
+      p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.02)
     
     p
+  })
+  
+  output$FIG_DOWNLOAD_FV_HIST <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_FV_HIST)
+    },
+    content = function(file) {
+      save_plotly(render_FV_HIST(), file, 
+                  format = input$FIG_FORMAT_FV_HIST, 
+                  width = fig_width2, height = fig_height2)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_FV_HIST)
+  )
+  
+  output$FCE_HIST <- renderPlotly({
+    render_FV_HIST()
   })
   
   # The ECDF plots for the target value ----------------
@@ -1488,7 +1525,6 @@ shinyServer(function(input, output, session) {
       as.integer(input$FCE_ECDF_RT1),
       as.integer(input$FCE_ECDF_RT2),
       as.integer(input$FCE_ECDF_RT3))
-    
     
     runtimes <- runtimes[!is.na(runtimes)]
     req(length(runtimes) != 0)
@@ -1547,12 +1583,12 @@ shinyServer(function(input, output, session) {
     
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     data <- DATA()
-    rt <- getRuntimes(data)
+    rt <- get_Runtimes(data)
     
     seq_RT(rt, from = rt_min, to = rt_max, by = rt_step) %>% cat
   })
   
-  output$FCE_ECDF_AGGR <- renderPlotly({
+  render_FV_ECDF_AGGR <- reactive({
     req(input$FCE_ECDF_RT_MIN, input$FCE_ECDF_RT_MAX, input$FCE_ECDF_RT_STEP)
     
     rt_min <- input$FCE_ECDF_RT_MIN %>% as.integer
@@ -1562,7 +1598,7 @@ shinyServer(function(input, output, session) {
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     
     data <- DATA()
-    rt <- getRuntimes(data)
+    rt <- get_Runtimes(data)
     rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step)
     req(rt_seq)
     
@@ -1637,8 +1673,24 @@ shinyServer(function(input, output, session) {
                                         'log', 'linear')))
   })
   
+  output$FIG_DOWNLOAD_FV_ECDF_AGGR <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_FV_ECDF_AGGR)
+    },
+    content = function(file) {
+      save_plotly(render_FV_ECDF_AGGR(), file, 
+                  format = input$FIG_FORMAT_FV_ECDF_AGGR, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_FV_ECDF_AGGR)
+  )
+  
+  output$FCE_ECDF_AGGR <- renderPlotly({
+    render_FV_ECDF_AGGR()
+  })
+  
   # evaluation rake of all courses 
-  output$FCE_AUC <- renderPlotly({
+  render_FV_AUC <- reactive({
     req(input$FCE_AUC_RT_MIN, input$FCE_AUC_RT_MAX, input$FCE_AUC_RT_STEP)
     
     rt_min <- input$FCE_AUC_RT_MIN %>% as.integer
@@ -1647,7 +1699,7 @@ shinyServer(function(input, output, session) {
     
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     data <- DATA()
-    rt <- getRuntimes(data)
+    rt <- get_Runtimes(data)
     
     rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step)
     req(rt_seq)
@@ -1700,8 +1752,24 @@ shinyServer(function(input, output, session) {
              paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)')
   })
   
+  output$FIG_DOWNLOAD_FV_AUC <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_FV_AUC)
+    },
+    content = function(file) {
+      save_plotly(render_FV_AUC(), file, 
+                  format = input$FIG_FORMAT_FV_AUC, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_FV_AUC)
+  )
+  
+  output$FCE_AUC <- renderPlotly({
+    render_FV_AUC()
+  })
+  
   # Expected Evolution of parameters in the algorithm
-  output$PAR_PER_FUN <- renderPlotly({
+  render_PAR_PER_FUN <- reactive({
     req(input$PAR_F_MIN, input$PAR_F_MAX)
     
     f_min <- format_FV(input$PAR_F_MIN) %>% as.numeric
@@ -1710,7 +1778,7 @@ shinyServer(function(input, output, session) {
     req(f_min <= f_max)
     
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     fseq <- seq_FV(fall, f_min, f_max, length.out = 50)
     req(fseq)
@@ -1814,6 +1882,22 @@ shinyServer(function(input, output, session) {
                       font = list(size = 22, family = 'sans-serif'))
   })
   
+  output$FIG_DOWNLOAD_PAR_PER_FUN <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_PAR_PER_FUN)
+    },
+    content = function(file) {
+      save_plotly(render_PAR_PER_FUN(), file, 
+                  format = input$FIG_FORMAT_PAR_PER_FUN, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_PAR_PER_FUN)
+  )
+  
+  output$PAR_PER_FUN <- renderPlotly({
+    render_PAR_PER_FUN()
+  })
+  
   # TODO: add ks test for ECDF later
   # output$ks <- renderPrint({
   #   target <- input$target %>% as.numeric
@@ -1842,7 +1926,7 @@ shinyServer(function(input, output, session) {
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     if (input$PAR_F_SINGLE)
       fstop <- fstart
@@ -1864,7 +1948,7 @@ shinyServer(function(input, output, session) {
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     
     if (input$PAR_SAMPLE_F_SINGLE)
       fstop <- fstart

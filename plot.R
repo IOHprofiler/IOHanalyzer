@@ -11,7 +11,7 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
   plot_ly() %>% 
     layout(title = title,
            autosize = T, hovermode = 'compare',
-           legend = list(x = 1.02, y = 0.8, orientation = 'v'),
+           legend = list(x = 1.02, y = 1, orientation = 'v'),
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
            font = list(size = 18, family = 'sans-serif'),
            titlefont = list(size = 16, family = 'sans-serif'),
@@ -79,25 +79,36 @@ gg_beanplot <- function(mapping, data, p = NULL, width = 3, fill = 'grey',
   p
 }
 
-Set1 <- function(n) sequential_hcl(n, h = c(300, 75), c = c(40, NA, 95), l = c(15, 90), 
+Set1 <- function(n) sequential_hcl(n, h = c(360, 40), c = c(100, NA, 90), l = c(28, 90), 
                                    power = c(1, 1.1), gamma = NULL, fixup = TRUE, alpha = 1, 
                                    palette = NULL, rev = FALSE)
 
-Set2 <- function(n) sequential_hcl(n, c(10, 120), c = c(141, 55, 0), l = c(95, 1), 
-                                   power = c(1.7, 0.8), gamma = NULL, 
+Set2 <- function(n) sequential_hcl(n, c(261, 26), c = c(50, NA, 70), l = c(54, 77), 
+                                   power = c(0.5, NA), gamma = NULL, 
+                                   fixup = TRUE, alpha = 1, palette = NULL, rev = FALSE)
+
+Set3 <- function(n) sequential_hcl(n, c(-88, 59), c = c(60, 75, 55), l = c(40, 90), 
+                                   power = c(0.1, 1.2), gamma = NULL, 
                                    fixup = TRUE, alpha = 1, palette = NULL, rev = FALSE)
 
 # TODO: incoporate more colors
 color_palettes <- function(ncolor) {
   require(colorspace)
-  color_fcts <- c(rainbow_hcl, Set2, Set1, heat_hcl)
-  colors <- c()
+  require(colorRamps)
+  require(RColorBrewer)
+  
+  brewer <- function(n) brewer.pal(n, 'Spectral')
+  color_fcts <- c(Set1, Set2)
+  
+  n <- min(11, ncolor)
+  colors <- brewer(n)
+  ncolor <- ncolor - n
   
   i <- 1
   while (ncolor > 0) {
     n <- min(8, ncolor)
     if (i > length(color_fcts)) {
-      colors <- c(colors, diverge_hcl(ncolor))
+      colors <- c(colors, primary.colors(ncolor))
       break
     } else {
       colors <- c(colors, color_fcts[[i]](n))

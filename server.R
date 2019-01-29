@@ -565,7 +565,7 @@ shinyServer(function(input, output, session) {
       ds_ERT <- dt[algId == attr(data[[i]], 'algId')]
       
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.18)')
       
       if (input$show.CI)
         p %<>% 
@@ -708,7 +708,7 @@ shinyServer(function(input, output, session) {
       ds <- data[[i]]
       
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.5)')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.4)')
       
       p %<>%
         add_trace(data = get_RT_sample(ds, ftarget, output = 'long'),
@@ -718,8 +718,10 @@ shinyServer(function(input, output, session) {
                   points = points,
                   pointpos = 1,
                   jitter = 0.1,
+                  name = attr(ds, 'algId'),
                   scalemode = 'count',
-                  meanline = list(visible = T),
+                  meanline = list(visible = F),
+                  fillcolor = rgba_str,
                   line = list(color = rgb_str, width = 1),
                   marker = list(color = rgb_str))
       
@@ -1243,7 +1245,7 @@ shinyServer(function(input, output, session) {
         next
       
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.18)')
       
       p %<>% 
         add_trace(data = dt_plot, x = ~runtime, y = ~upper, type = 'scatter', mode = 'lines',

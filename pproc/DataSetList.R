@@ -193,7 +193,12 @@ get_FV_summary.DataSetList <- function(dsList, runtime, algorithm = 'all') {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_FV_summary(ds, runtime)) %>% rbindlist
+  lapply(dsList, function(ds){
+    res <- cbind(attr(ds, 'DIM'), attr(ds, 'funcId'), get_FV_summary(ds, runtime))
+    colnames(res)[1] <- 'DIM'
+    colnames(res)[2] <- 'funcId'
+    res
+  }) %>% rbindlist
 }
 
 get_FV_overview.DataSetList <- function(dsList, algorithm = 'all') {

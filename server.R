@@ -438,7 +438,7 @@ shinyServer(function(input, output, session) {
   # Data summary for Fixed-Target Runtime (ERT)  --------------
   runtime_summary_condensed <- reactive({
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     get_FV_overview(data, algorithm = input$ALGID_INPUT_SUMMARY)
   })
   
@@ -1107,7 +1107,7 @@ shinyServer(function(input, output, session) {
   # Data summary for Fixed-Budget target (FCE)  --------------
   FCE_runtime_summary_condensed <- reactive({
     data <- DATA()
-    fall <- getFunvals(data)
+    fall <- get_Funvals(data)
     get_RT_overview(data, algorithm = input$FCE_ALGID_INPUT_SUMMARY)
   })
   

@@ -92,6 +92,69 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
   return(p)
 }
 
-plot_FV_line.DataSetList <- function() {
+plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
+                                     show.mean = T, show.median = F,
+                                     backend = 'plotly') {
   
+  RTall <- get_Runtimes(dsList)
+  if (is.null(RTstart)) Fstart <- min(RTall)
+  if (is.null(RTstop)) Fstop <- max(RTall)
+  
+  
+  RTseq <- seq_RT(RTall, RTstart, RTstop, length.out = 60)
+  if (length(RTseq) == 0) return(NULL)
+  
+  
+  N <- length(dsList)
+  colors <- color_palettes(N)
+  legends <- get_legends(dsList)
+  
+  fce <- get_FV_summary(dsList, RTseq)
+  fce[, `:=`(upper = mean + sd, lower = mean - sd)]
+  
+  if(backend == 'plotly'){
+    p <- plot_ly_default(y.title = "best-so-far f(x)-value", x.title = "runtime")
+    
+    for (i in seq_along(data)) {
+      legend <- legends[i]
+      algId <- attr(data[[i]], 'algId')
+      # dt_plot <- fce[algId == attr(data[[i]], 'algId')]
+      ds_FCE <- fce[algId == attr(dsList[[i]], 'algId') &
+                     funcId == attr(dsList[[i]], 'funcId') &
+                     DIM == attr(dsList[[i]], 'DIM')]
+      
+      if (nrow(ds_FCE) == 0)
+        next
+      
+      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
+      
+      p %<>% 
+        add_trace(data = ds_FCE, x = ~runtime, y = ~upper, type = 'scatter', mode = 'lines',
+                  line = list(color = rgba_str, width = 0), legendgroup = legend,
+                  showlegend = F, name = 'mean +/- sd') %>% 
+        add_trace(x = ~runtime, y = ~lower, type = 'scatter', mode = 'lines',
+                  fill = 'tonexty',  line = list(color = 'transparent'),
+                  legendgroup = legend,
+                  fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
+      
+      if (show.mean)
+        p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~mean, type = 'scatter', 
+                         mode = 'lines+markers', name = paste0(algId, '.mean'), 
+                         marker = list(color = rgb_str), legendgroup = legend,
+                         line = list(color = rgb_str, dash = 'dash'))
+      
+      if (show.median)
+        p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~median, type = 'scatter',
+                         name = paste0(legend, '.median'), mode = 'lines+markers', 
+                         marker = list(color = rgb_str), legendgroup = legend,
+                         line = list(color = rgb_str, dash = 'dot'))
+    }
+  }
+  else if (backend == 'ggplot2'){
+    #TODO: add ggplot2-plotting
+    p <- NULL
+  }
+  return(p)
 }
+     

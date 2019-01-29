@@ -33,16 +33,6 @@ src_format <- AUTOMATIC # TODO: this shoule be taken from the data set
 selected_format <- AUTOMATIC
 sub_sampling <- TRUE
 
-# Inserts values from "from_data" to "to_data" that are better than were
-insert_best_parts <- function(from_data, to_data, best_is_min) {
-  if (all(is.na(from_data)))
-    to_data
-  else
-    if (best_is_min)
-      pmin(from_data, to_data)
-  else
-    pmax(from_data, to_data)
-}
 
 # Formatter for function values
 format_FV <- function(v) format(v, digits = 2, nsmall = 2)
@@ -553,7 +543,10 @@ shinyServer(function(input, output, session) {
   )
   
   render_ERT_PER_FUN <- reactive({
-    plot_RT_line.DataSetList(DATA(),Fstart = input$ERT_FSTART,Fstop = input$ERT_FSTOP,
+    fstart <- input$ERT_FSTART %>% as.numeric
+    fstop <- input$ERT_FSTOP %>% as.numeric
+    
+    plot_RT_line.DataSetList(DATA(),Fstart = fstart ,Fstop = fstop,
                               show.CI = input$show.CI, show.density = input$show.density,
                               show.runs = input$show_all, show.optimal = input$show.best_of_all,
                               show.pareto = input$show.pareto_optima, show.ERT = input$show.ERT,
@@ -984,8 +977,8 @@ shinyServer(function(input, output, session) {
     df$"Number of runs" %<>% as.integer
     df$"Budget" %<>% as.integer
     df$"Maximum needed evalutations" %<>% as.integer
-    df$"Minimum needed evalutations" %<>% as.integer
-    df$"Mean needed evalutations" %<>% as.integer
+    df$"Minimum needed evaluations" %<>% as.integer
+    df$"Mean needed evaluations" %<>% as.integer
     
     df
   })
@@ -1007,7 +1000,9 @@ shinyServer(function(input, output, session) {
     rt_seq <- seq_RT(rt, rt_min, rt_max, by = rt_step)
     req(rt_seq)
     
-    get_FV_summary(data, rt_seq, algorithm = input$FCE_ALGID_INPUT)
+    get_FV_summary(data, rt_seq, algorithm = input$FCE_ALGID_INPUT)[
+      , c('DIM', 'funcId') := NULL
+      ]
   })
   
   output$FCE_SUMMARY <- renderTable({

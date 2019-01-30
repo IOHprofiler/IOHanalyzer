@@ -9,8 +9,8 @@ options(width = 120)
 
 # ploting settings for UI ---------------------
 aspect_ratio <-  4 / 3
-fig_height <- 1000
-fig_height2 <- 1000
+fig_height <- 500
+fig_height2 <- 500
 fig_width <- fig_height * aspect_ratio
 fig_width2 <- fig_height * (16 / 10)
 

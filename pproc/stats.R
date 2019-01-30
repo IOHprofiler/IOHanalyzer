@@ -46,22 +46,19 @@ generate_ECDF_targets <- function(data, format_func = as.integer){
   targets
 }
 
-calc_ECDF_MULTI <- function(data){
+calc_ECDF_MULTI <- function(data, algID){
 
   funcs <- unique(attr(data,'funcId'))
   algs <- unique(attr(data,'algId'))
   dims <- unique(attr(data,'DIM'))
   
   targets <- generate_ECDF_targets(data, function(x) x)
+  data <- subset(data, algId == algID)
+  
   nr_targets = length(targets)
   cdfs_list <- list()
-  
-  if(length(algs) != 1)
-    return(NULL)
-  
-  
-  algID <- algs[[1]]
 
+  
   cdfs <- list()
   for( j in seq_along(funcs)){
     fid <- funcs[[j]]

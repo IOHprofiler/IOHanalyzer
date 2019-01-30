@@ -610,16 +610,22 @@ shinyServer(function(input, output, session) {
   
 
   output$RT_ECDF_AGGR_MULT <- renderPlotly({
-    data <- subset(DATA_UNFILTERED(),DIM == input$DIM_INPUT)
-    df_plot <- calc_ECDF_MULTI(data)
+    algs <- unique(attr(DATA_UNFILTERED(),"algId"))
     p <- plot_ly_default(x.title = "function evaluations",
                          y.title = "Proportion of (run, target) pairs")
     
-    p %<>% add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
-                mode = 'lines+markers',# name = sprintf('%s', algId), 
-                showlegend = T, name = "test", #, legendgroup = paste0(k),
-                line = list( width = 4.5),
-                marker = list(size = 11))
+    for(i in seq_along(algs)){
+      data <- subset(DATA_UNFILTERED(),DIM == input$DIM_INPUT)
+      algId <- algs[[i]]
+      df_plot <- calc_ECDF_MULTI(data, algId )
+   
+      p %<>% add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
+                  mode = 'lines+markers',name = sprintf('%s', algId), 
+                  showlegend = T, #, legendgroup = paste0(k),
+                  line = list( width = 4.5),
+                  marker = list(size = 11))
+    }
+    p
   })
   
   output$RT_GRID_GENERATED <- renderPrint({

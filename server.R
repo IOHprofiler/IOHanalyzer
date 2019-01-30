@@ -631,10 +631,33 @@ shinyServer(function(input, output, session) {
   output$RT_GRID_GENERATED <- renderPrint({
     data <- subset(DATA_UNFILTERED(),DIM == input$DIM_INPUT)
     
-    funcs <- unique(attr(data,'funcId'))
-    generate_ECDF_targets(data) %>% as.data.frame(nrows = length(funcs)) %>% set_colnames(funcs) 
+    funcs <- paste("F", unique(attr(data,'funcId')), sep="")
+    dims <- paste(", D", unique(attr(data,'DIM')),sep="")
+    
+    labels_name <- c(outer(funcs,dims,FUN=paste0))
+    generate_ECDF_targets(data) %>% as.data.frame(nrows = length(funcs)) %>% set_colnames(labels_name) 
     
   })
+  
+  output$TARGET_TABLE_EXAMPLE_DOWNLOAD <- downloadHandler(
+    filename = {
+      "Example_ECDF_TARGETS.csv"
+    },
+    content = function(file) {
+      data <- subset(DATA_UNFILTERED(),DIM == input$DIM_INPUT)
+
+      funcs <- paste("F", unique(attr(data,'funcId')), sep="")
+      dims <- paste(", D", unique(attr(data,'DIM')),sep="")
+
+      labels_name <- c(outer(funcs,dims,FUN=paste0))
+      tab <- generate_ECDF_targets(data) %>% as.data.frame(nrows = length(funcs)) %>% set_colnames(labels_name)
+
+      write.csv(tab, file, row.names = F)
+    },
+    contentType = "text/csv"
+    
+    
+  )
   
   # The ECDF plots for the runtime ----------------
   output$RT_ECDF <- renderPlotly({

@@ -261,6 +261,10 @@ shinyServer(function(input, output, session) {
     subset(DataList$data, DIM == dim, funcId == id)
   })
   
+  DATA_UNFILTERED <- reactive({
+    DataList$data
+  })
+  
   # TODO: make this urgely snippet look better...
   # register the TextInput and restore them when switching funcID and DIM
   observeEvent(eval(eventExpr), {
@@ -604,6 +608,28 @@ shinyServer(function(input, output, session) {
     plot_RT_Hist.DataSetList(DATA(), ftarget, plot_mode = plot_mode)
   })
   
+
+  output$RT_ECDF_AGGR_MULT <- renderPlotly({
+    data <- subset(DATA_UNFILTERED(),DIM == input$DIM_INPUT)
+    df_plot <- calc_ECDF_MULTI(data)
+    p <- plot_ly_default(x.title = "function evaluations",
+                         y.title = "Proportion of (run, target) pairs")
+    
+    p %<>% add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
+                mode = 'lines+markers',# name = sprintf('%s', algId), 
+                showlegend = T, name = "test", #, legendgroup = paste0(k),
+                line = list( width = 4.5),
+                marker = list(size = 11))
+  })
+  
+  output$RT_GRID_GENERATED <- renderPrint({
+    data <- subset(DATA_UNFILTERED(),DIM == input$DIM_INPUT)
+    
+    funcs <- unique(attr(data,'funcId'))
+    generate_ECDF_targets(data) %>% as.data.frame(nrows = length(funcs)) %>% set_colnames(funcs) 
+    
+  })
+  
   # The ECDF plots for the runtime ----------------
   output$RT_ECDF <- renderPlotly({
     req(input$RT_ECDF_FTARGET1, input$RT_ECDF_FTARGET2, input$RT_ECDF_FTARGET3)
@@ -700,10 +726,9 @@ shinyServer(function(input, output, session) {
     
     df$"Number of runs" %<>% as.integer
     df$"Budget" %<>% as.integer
-    df$"Maximum needed evalutations" %<>% as.integer
-    df$"Minimum needed evaluations" %<>% as.integer
-    df$"Mean needed evaluations" %<>% as.integer
-    
+    df$"Minimum used evaluations" %<>% as.integer
+    df$"Maximum used evaluations" %<>% as.integer
+
     df
   })
   

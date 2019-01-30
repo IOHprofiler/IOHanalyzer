@@ -457,7 +457,7 @@ body <- dashboardBody(
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
                                       Distribution of the runtime: Aggregation</p>'), 
-                         width = 12, solidHeader = T, status = "primary", collapsible = T,
+                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = T,
                          sidebarPanel(
                            width = 3,
                            HTML('<p align="justify">Set the range and the granularity 
@@ -499,10 +499,39 @@ body <- dashboardBody(
                            # column(10, align = "center", verbatimTextOutput('ks'))
                          )
               ),
+              column(width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
+                                      Distribution of the runtime: Aggregation over (Function,algorithm)-pairs</p>'), 
+                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = F,
+                         sidebarPanel(
+                           width = 3,
+                           HTML('<p align="justify">Choose whether to upload a file containing the target-values for each function,
+                                or use the automatically generated targets. For uploading, please use the struture as in this example csv-file:</p>'),
+                           
+                           downloadButton('TARGET_TABLE_EXAMPLE_DOWNLOAD', label = 'download the example')
+                           ),
+                         
+                         mainPanel(width = 9,
+                                   column(width = 12, align = "center",
+                                          HTML_P('The automatically generated target values are:'),
+                                          verbatimTextOutput('RT_GRID_GENERATED'),
+                                          HTML_P('The fraction of (run,target value,function)
+                                                 pairs \\((i,v,f)\\) satisfying that the best solution that the algorithm has 
+                                                 found in the \\(i\\)-th run of function \\(f\\) within the given time budget \\(t\\) has quality at least
+                                                 \\(v\\) is plotted against the available budget \\(t\\). The displayed elements can be switched 
+                                                 on and off by clicking on the legend on the right. A <b>tooltip</b> 
+                                                 and <b>toolbar</b> appears when hovering over the figure.'),
+                                          plotlyOutput('RT_ECDF_AGGR_MULT', height = plotly_height, width = plotly_width2),
+                                          hr()
+                                          )
+                                   )
+                         
+                        )
+                      ),
               
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Area Under the ECDF</p>'),  
-                         width = 12, solidHeader = T, status = "primary", collapsible = T,
+                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = T,
                          sidebarPanel(
                            width = 3,
                            HTML('<p align="justify">Set the range and the granularity of
@@ -534,7 +563,7 @@ body <- dashboardBody(
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
                                       Distribution of the Runtime: Single Target</p>'), 
-                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary",
+                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
                          sidebarLayout(
                            sidebarPanel(
                              width = 3,

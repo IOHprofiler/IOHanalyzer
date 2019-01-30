@@ -13,7 +13,7 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
            autosize = T, hovermode = 'compare',
            legend = list(x = 1.02, y = 1, orientation = 'v'),
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
-           font = list(size = 18, family = 'sans-serif'),
+           font = list(size = 27, family = 'sans-serif'),
            titlefont = list(size = 16, family = 'sans-serif'),
            xaxis = list(title = x.title,
                         gridcolor = 'rgb(255,255,255)',

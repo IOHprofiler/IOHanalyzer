@@ -320,42 +320,6 @@ get_FV_summary <- function(ds, ...) UseMethod("get_FV_summary", ds)
 get_PAR_sample <- function(ds, ...) UseMethod("get_PAR_sample", ds)
 get_PAR_summary <- function(ds, ...) UseMethod("get_PAR_summary", ds)
 get_PAR_name <- function(ds) UseMethod("get_PAR_name", ds)
-# get_RT_runs <- function(ds, ...) UseMethod("get_RT_runs", ds)
-# get_FV_runs <- function(ds, ...) UseMethod("get_FV_runs", ds)
-
-
-# #' Get RunTime values
-# #'
-# #' @param ds 
-# #' @param ftarget 
-# #'
-# #' @return
-# #' @export
-# #'
-# #' @examples
-# get_RT_runs.DataSet <- function(ds, ftarget) {
-  
-#   data <- ds$RT
-#   maxRT <- attr(ds, 'maxRT')
-#   algId <- attr(ds, 'algId')
-#   maximization <- attr(ds, 'maximization')
-  
-#   ftarget <- c(ftarget) %>% as.double %>% sort(decreasing = !maximization)
-#   FValues <- rownames(data) %>% as.numeric
-  
-#   idx <- seq_along(FValues)
-#   op <- ifelse(maximization, `>=`, `<=`)
-  
-#   matched <- sapply(
-#     ftarget,
-#     function(f) {
-#       idx[`op`(FValues, f)][1]
-#     }
-#   )
-  
-#   data <- data[matched, , drop = FALSE]
-#   cbind(algId=algId,target=ftarget, as.data.table(data))
-# }
 
 #' Get RunTime Summary
 #'

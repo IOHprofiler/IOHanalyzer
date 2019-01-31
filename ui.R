@@ -508,13 +508,14 @@ body <- dashboardBody(
                            HTML('<p align="justify">Choose whether to upload a file containing the target-values for each function,
                                 or use the automatically generated targets. For uploading, please use the struture as in this example csv-file:</p>'),
                            
-                           downloadButton('TARGET_TABLE_EXAMPLE_DOWNLOAD', label = 'download the example')
+                           downloadButton('TARGET_TABLE_EXAMPLE_DOWNLOAD', label = 'download the example'),
+                           fileInput("CSV_Targets_upload", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>csv file</i> containing the targets</p>'),
+                                     multiple = FALSE, accept = c(
+                                       "text/csv",
+                                       "text/comma-separated-values,text/plain",
+                                       ".csv"))
                            ),
-                         fileInput("CSV_Targets_upload", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>csv file</i> containing the targets</p>'),
-                                   multiple = FALSE, accept = c(
-                                     "text/csv",
-                                     "text/comma-separated-values,text/plain",
-                                     ".csv")),
+                        
                          
                          
                          mainPanel(width = 9,

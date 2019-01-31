@@ -617,8 +617,10 @@ shinyServer(function(input, output, session) {
     targets <- uploaded_csv_targets()
     for(i in seq_along(algs)){
       data <- subset(DATA_UNFILTERED(),DIM == input$DIM_INPUT)
+      rts = get_Runtimes(data)
+      
       algId <- algs[[i]]
-      df_plot <- calc_ECDF_MULTI(data, algId, targets )
+      df_plot <- calc_ECDF_MULTI(data, algId, targets, rts )
    
       p %<>% add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
                   mode = 'lines+markers',name = sprintf('%s', algId), 
@@ -650,7 +652,7 @@ shinyServer(function(input, output, session) {
     },
     content = function(file) {
       data <- subset(DATA_UNFILTERED(),DIM == input$DIM_INPUT)
-
+      
       funcs <- paste("F", unique(attr(data,'funcId')), sep="")
       dims <- paste(", D", unique(attr(data,'DIM')),sep="")
 

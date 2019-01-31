@@ -48,7 +48,7 @@ generate_ECDF_targets <- function(data, format_func = as.integer){
   targets
 }
 
-calc_ECDF_MULTI <- function(data, algID, targets = NULL){
+calc_ECDF_MULTI <- function(data, algID, targets = NULL, rts = NULL){
 
   funcs <- unique(attr(data,'funcId'))
   algs <- unique(attr(data,'algId'))
@@ -61,7 +61,8 @@ calc_ECDF_MULTI <- function(data, algID, targets = NULL){
   nr_targets = length(targets)
   cdfs_list <- list()
   
-  rts <- get_Runtimes(data)
+  if(is.null(rts))
+    rts <- get_Runtimes(data)
   # TODO: think of a better way to determine the datapoints
   x <- seq(min(rts),max(rts),length.out = 50)
   

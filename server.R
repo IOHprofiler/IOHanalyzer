@@ -958,15 +958,6 @@ shinyServer(function(input, output, session) {
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.15)')
       rgba_str2 <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.8)')
       
-      # m <- lapply(fseq, function(f) {
-      #   rt <- get_RT_sample(df, f, output = 'long')$RT
-      #   if (all(is.na(rt)))
-      #     return(rep(0, length(x)))
-      #   fun <- ecdf(rt)
-      #   fun(x)
-      # }) %>% 
-      #   do.call(rbind, .)
-      
       m <- lapply(fseq, function(fv) {
         fun <- ECDF(df, fv)
         fun(x)
@@ -1057,7 +1048,6 @@ shinyServer(function(input, output, session) {
       
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.2)')
-      
       
       auc <- sapply(fseq, function(fv) {
         ECDF(df, fv) %>% AUC(from = 1, to = RT.max)

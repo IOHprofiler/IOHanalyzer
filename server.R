@@ -614,10 +614,11 @@ shinyServer(function(input, output, session) {
     p <- plot_ly_default(x.title = "function evaluations",
                          y.title = "Proportion of (run, target) pairs")
     
+    targets <- uploaded_csv_targets()
     for(i in seq_along(algs)){
       data <- subset(DATA_UNFILTERED(),DIM == input$DIM_INPUT)
       algId <- algs[[i]]
-      df_plot <- calc_ECDF_MULTI(data, algId )
+      df_plot <- calc_ECDF_MULTI(data, algId, targets )
    
       p %<>% add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
                   mode = 'lines+markers',name = sprintf('%s', algId), 
@@ -635,8 +636,12 @@ shinyServer(function(input, output, session) {
     dims <- paste(", D", unique(attr(data,'DIM')),sep="")
     
     labels_name <- c(outer(funcs,dims,FUN=paste0))
-    generate_ECDF_targets(data) %>% as.data.frame(nrows = length(funcs)) %>% set_colnames(labels_name) 
-    
+    tab <- uploaded_csv_targets()
+    if(is.null(tab))
+      tab <- generate_ECDF_targets(data) 
+    tab %>%  do.call("cbind",.) %>% t %>% 
+      as.data.frame %>% set_rownames(labels_name) %>%
+      set_colnames(NULL)
   })
   
   output$TARGET_TABLE_EXAMPLE_DOWNLOAD <- downloadHandler(
@@ -650,14 +655,29 @@ shinyServer(function(input, output, session) {
       dims <- paste(", D", unique(attr(data,'DIM')),sep="")
 
       labels_name <- c(outer(funcs,dims,FUN=paste0))
-      tab <- generate_ECDF_targets(data) %>% as.data.frame(nrows = length(funcs)) %>% set_colnames(labels_name)
+      tab <- generate_ECDF_targets(data) %>%  do.call("cbind",.) %>% t %>% 
+        as.data.frame %>% set_rownames(labels_name) %>%
+        set_colnames(NULL)
 
-      write.csv(tab, file, row.names = F)
+      write.csv(tab, file, row.names = T, col.names = F)
     },
     contentType = "text/csv"
     
     
   )
+  
+  uploaded_csv_targets <- reactive({
+    if (!is.null(input$CSV_Targets_upload)) {
+      datapath <- input$CSV_Targets_upload$datapath
+      tab <- read.csv((datapath), header = F)[-1] %>%
+              set_colnames(NULL) %>% apply(.,1,as.list)
+      return(tab)
+    } else
+      return(NULL)
+  })
+  
+  
+  
   
   # The ECDF plots for the runtime ----------------
   output$RT_ECDF <- renderPlotly({

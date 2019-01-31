@@ -20,6 +20,8 @@ SP <- function(data, max_runtime) {
   list(ERT = rowSums(data) / succ, runs = succ, succ_rate = succ_rate)
 }
 
+#TODO: inconsistent use of format_func gives slightly different results between
+#generated and uploaded targets
 generate_ECDF_targets <- function(data, format_func = as.integer){
 
   funcs <- unique(attr(data,'funcId'))
@@ -46,18 +48,22 @@ generate_ECDF_targets <- function(data, format_func = as.integer){
   targets
 }
 
-calc_ECDF_MULTI <- function(data, algID){
+calc_ECDF_MULTI <- function(data, algID, targets = NULL){
 
   funcs <- unique(attr(data,'funcId'))
   algs <- unique(attr(data,'algId'))
   dims <- unique(attr(data,'DIM'))
   
-  targets <- generate_ECDF_targets(data, function(x) x)
+  if(is.null(targets))
+    targets <- generate_ECDF_targets(data, function(x) x)
   data <- subset(data, algId == algID)
   
   nr_targets = length(targets)
   cdfs_list <- list()
-
+  
+  rts <- get_Runtimes(data)
+  # TODO: think of a better way to determine the datapoints
+  x <- seq(min(rts),max(rts),length.out = 50)
   
   cdfs <- list()
   for( j in seq_along(funcs)){
@@ -65,10 +71,8 @@ calc_ECDF_MULTI <- function(data, algID){
     for( k in seq_along(dims)){
       dim <- dims[[k]]
       target_idx = (length(dims) * j-1) + k
-      fseq <- targets[[target_idx]]
-      
-      # TODO: think of a better way to determine the datapoints
-      x <- seq(min(fseq),max(fseq),length.out = 50)
+      fseq <- targets[[target_idx]] %>% unlist
+
       
       data_subset <- subset(data, funcId == fid, DIM = dim)
       if(length(data_subset) != 1)
@@ -92,7 +96,7 @@ calc_ECDF_MULTI <- function(data, algID){
   m <- cdfs_list %>% simplify2array %>%
     apply(.,c(1,2),mean)
   
-  df_plot <- data.frame(x = seq(50), 
+  df_plot <- data.frame(x = x, 
                         mean = apply(m, 2, . %>% mean(na.rm = T)),
                         sd = apply(m, 2, . %>% sd(na.rm = T))) %>% 
     mutate(upper = mean + sd, lower = mean - sd)

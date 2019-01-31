@@ -958,13 +958,19 @@ shinyServer(function(input, output, session) {
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.15)')
       rgba_str2 <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.8)')
       
-      m <- lapply(fseq, function(f) {
-        rt <- get_RT_sample(df, f, output = 'long')$RT
-        if (all(is.na(rt)))
-          return(rep(0, length(x)))
-        fun <- ecdf(rt)
+      # m <- lapply(fseq, function(f) {
+      #   rt <- get_RT_sample(df, f, output = 'long')$RT
+      #   if (all(is.na(rt)))
+      #     return(rep(0, length(x)))
+      #   fun <- ecdf(rt)
+      #   fun(x)
+      # }) %>% 
+      #   do.call(rbind, .)
+      
+      m <- lapply(fseq, function(fv) {
+        fun <- ECDF(df, fv)
         fun(x)
-      }) %>% 
+      }) %>%
         do.call(rbind, .)
       
       df_plot <- data.frame(x = x, 
@@ -1052,20 +1058,10 @@ shinyServer(function(input, output, session) {
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.2)')
       
-      # calculate ECDFs on user specified targets
-      funs <- lapply(fseq, function(f) {
-        get_RT_sample(df, f, output = 'long')$RT %>% {
-          if (all(is.na(.))) NULL
-          else  RT.ECDF(.)
-        }
-      })
       
-      auc <- sapply(funs,
-                    function(fun) {
-                      if (is.null(fun)) 0
-                      else integrate(fun, lower = attr(fun, 'min') - 1, upper = RT.max, 
-                                     subdivisions = 5e3) %>% {'$'(., 'value') / RT.max}
-                    })
+      auc <- sapply(fseq, function(fv) {
+        ECDF(df, fv) %>% AUC(from = 1, to = RT.max)
+      })
       
       p %<>% 
         add_trace(type = 'scatterpolar', r = auc, 

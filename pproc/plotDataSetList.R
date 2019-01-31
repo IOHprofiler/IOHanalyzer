@@ -952,3 +952,30 @@ plot_PAR_Line.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
                     showarrow = F, xref = 'paper', yref = 'paper',
                     font = list(size = 22, family = 'sans-serif'))
 }
+
+plot_RT_ECDF_MULTI.DataSetList <- function(dsList, targets = NULL, dim = NULL,
+                                           funcid = NULL){
+  algs <- unique(attr(dsList,"algId"))
+  p <- plot_ly_default(x.title = "function evaluations",
+                       y.title = "Proportion of (run, target, function) pairs")
+  
+  for(i in seq_along(algs)){
+    data <- dsList
+    if(!is.null(dim))
+      data <- subset(data,DIM == dim)
+    if(!is.null(funcid))
+      data <- subset(data,funcId == funcid)
+    
+    rts = get_Runtimes(data)
+    
+    algId <- algs[[i]]
+    df_plot <- calc_ECDF_MULTI(data, algId, targets, rts )
+    
+    p %<>% add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
+                     mode = 'lines+markers',name = sprintf('%s', algId), 
+                     showlegend = T, #, legendgroup = paste0(k),
+                     line = list( width = 4.5),
+                     marker = list(size = 11))
+  }
+  p
+}

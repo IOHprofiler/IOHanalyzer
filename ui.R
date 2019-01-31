@@ -513,7 +513,12 @@ body <- dashboardBody(
                                      multiple = FALSE, accept = c(
                                        "text/csv",
                                        "text/comma-separated-values,text/plain",
-                                       ".csv"))
+                                       ".csv")),
+                           selectInput('FIG_FORMAT_RT_ECDF_MULT', label = 'select the figure format',
+                                       choices = supported_fig_format, selected = 'pdf'),
+                           
+                           downloadButton('FIG_DOWNLOAD_RT_ECDF_MULT', label = 'download the figure')
+                           
                            ),
                         
                          
@@ -528,7 +533,7 @@ body <- dashboardBody(
                                                  \\(v\\) is plotted against the available budget \\(t\\). The displayed elements can be switched 
                                                  on and off by clicking on the legend on the right. A <b>tooltip</b> 
                                                  and <b>toolbar</b> appears when hovering over the figure.'),
-                                          plotlyOutput('RT_ECDF_AGGR_MULT', height = plotly_height, width = plotly_width2),
+                                          plotlyOutput('RT_ECDF_MULT', height = plotly_height, width = plotly_width2),
                                           hr()
                                           )
                                    )

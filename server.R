@@ -608,28 +608,27 @@ shinyServer(function(input, output, session) {
     plot_RT_Hist.DataSetList(DATA(), ftarget, plot_mode = plot_mode)
   })
   
-
-  output$RT_ECDF_AGGR_MULT <- renderPlotly({
-    algs <- unique(attr(DATA_UNFILTERED(),"algId"))
-    p <- plot_ly_default(x.title = "function evaluations",
-                         y.title = "Proportion of (run, target) pairs")
-    
-    targets <- uploaded_csv_targets()
-    for(i in seq_along(algs)){
-      data <- subset(DATA_UNFILTERED(),DIM == input$DIM_INPUT)
-      rts = get_Runtimes(data)
-      
-      algId <- algs[[i]]
-      df_plot <- calc_ECDF_MULTI(data, algId, targets, rts )
-   
-      p %<>% add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
-                  mode = 'lines+markers',name = sprintf('%s', algId), 
-                  showlegend = T, #, legendgroup = paste0(k),
-                  line = list( width = 4.5),
-                  marker = list(size = 11))
-    }
-    p
+  output$RT_ECDF_MULT <- renderPlotly({
+    render_RT_ECDF_MULT()
   })
+
+  render_RT_ECDF_MULT <- reactive({
+    targets <- uploaded_csv_targets()
+    plot_RT_ECDF_MULTI.DataSetList(DATA_UNFILTERED(),targets, dim=input$DIM_INPUT)
+  })
+  
+  output$FIG_DOWNLOAD_RT_ECDF_MULT <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_RT_ECDF_MULT)
+    },
+    content = function(file) {
+      save_plotly(render_RT_ECDF_MULT(), file,
+                  format = input$FIG_FORMAT_RT_ECDF_MULT, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_RT_ECDF_MULT)
+  )
+  
   
   output$RT_GRID_GENERATED <- renderPrint({
     data <- subset(DATA_UNFILTERED(),DIM == input$DIM_INPUT)

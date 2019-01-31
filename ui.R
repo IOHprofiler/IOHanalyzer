@@ -457,7 +457,7 @@ body <- dashboardBody(
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
                                       Distribution of the runtime: Aggregation</p>'), 
-                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = T,
+                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = F,
                          sidebarPanel(
                            width = 3,
                            HTML('<p align="justify">Set the range and the granularity 
@@ -501,11 +501,14 @@ body <- dashboardBody(
               ),
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
-                                      Distribution of the runtime: Aggregation over (Function,algorithm)-pairs</p>'), 
+                                      Distribution of the runtime: With added aggregation</p>'), 
                          width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = F,
                          sidebarPanel(
                            width = 3,
-                           HTML('<p align="justify">Choose whether to upload a file containing the target-values for each function,
+                           checkboxInput("Aggregate_dim","Aggregate dimensions", value = F),
+                           checkboxInput("Aggregate_fun","Aggregate functions", value = T),
+                           
+                           HTML('<p align="justify">Choose whether to upload a file containing the target-values for each (function, dimension)-pair
                                 or use the automatically generated targets. For uploading, please use the struture as in this example csv-file:</p>'),
                            
                            downloadButton('TARGET_TABLE_EXAMPLE_DOWNLOAD', label = 'download the example'),
@@ -527,12 +530,14 @@ body <- dashboardBody(
                                    column(width = 12, align = "center",
                                           HTML_P('The automatically generated target values are:'),
                                           verbatimTextOutput('RT_GRID_GENERATED'),
-                                          HTML_P('The fraction of (run,target value,function)
-                                                 pairs \\((i,v,f)\\) satisfying that the best solution that the algorithm has 
-                                                 found in the \\(i\\)-th run of function \\(f\\) within the given time budget \\(t\\) has quality at least
+                                          HTML_P('The fraction of (run,target value, ...)
+                                                 pairs \\((i,v, ...)\\) satisfying that the best solution that the algorithm has 
+                                                 found in the \\(i\\)-th (run of function \\(f\\) in dimension \\(d\\)) within the given time budget \\(t\\) has quality at least
                                                  \\(v\\) is plotted against the available budget \\(t\\). The displayed elements can be switched 
                                                  on and off by clicking on the legend on the right. A <b>tooltip</b> 
-                                                 and <b>toolbar</b> appears when hovering over the figure.'),
+                                                 and <b>toolbar</b> appears when hovering over the figure. Aggregation over functions and dimension can 
+                                                 be switched on or off using the checkboxes on the left; when aggregation is off the selected function / dimension
+                                                 is chosen according the the value in the bottom-left selection-box.'),
                                           plotlyOutput('RT_ECDF_MULT', height = plotly_height, width = plotly_width2),
                                           hr()
                                           )
@@ -543,7 +548,7 @@ body <- dashboardBody(
               
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Area Under the ECDF</p>'),  
-                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = T,
+                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = F,
                          sidebarPanel(
                            width = 3,
                            HTML('<p align="justify">Set the range and the granularity of
@@ -575,7 +580,7 @@ body <- dashboardBody(
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
                                       Distribution of the Runtime: Single Target</p>'), 
-                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
+                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = F,
                          sidebarLayout(
                            sidebarPanel(
                              width = 3,

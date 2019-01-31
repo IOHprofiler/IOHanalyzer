@@ -614,7 +614,16 @@ shinyServer(function(input, output, session) {
 
   render_RT_ECDF_MULT <- reactive({
     targets <- uploaded_csv_targets()
-    plot_RT_ECDF_MULTI.DataSetList(DATA_UNFILTERED(),targets, dim=input$DIM_INPUT)
+    if(input$Aggregate_dim)
+      dim <- NULL
+    else
+      dim <- input$DIM_INPUT
+    if(input$Aggregate_fun)
+      func <- NULL
+    else
+      func <- input$FUNCID_INPUT
+    
+    plot_RT_ECDF_MULTI.DataSetList(DATA_UNFILTERED(),targets, dim=dim, funcid = func)
   })
   
   output$FIG_DOWNLOAD_RT_ECDF_MULT <- downloadHandler(

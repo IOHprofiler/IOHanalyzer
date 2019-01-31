@@ -957,7 +957,7 @@ plot_RT_ECDF_MULTI.DataSetList <- function(dsList, targets = NULL, dim = NULL,
                                            funcid = NULL){
   algs <- unique(attr(dsList,"algId"))
   p <- plot_ly_default(x.title = "function evaluations",
-                       y.title = "Proportion of (run, target, function) pairs")
+                       y.title = "Proportion of (run, target, ...) pairs")
   
   for(i in seq_along(algs)){
     data <- dsList

@@ -20,6 +20,11 @@ SP <- function(data, max_runtime) {
   list(ERT = rowSums(data) / succ, runs = succ, succ_rate = succ_rate)
 }
 
+# TODO: implement the empirical p.m.f. for runtime 
+EPMF <- function() {
+
+}
+
 ECDF <- function(ds, ...) UseMethod("ECDF", ds)
 # TODO: also implement the ecdf functions for function values and parameters
 #' Empirical Cumulative Dsitribution Function of Runtime of a single data set

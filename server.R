@@ -33,16 +33,6 @@ src_format <- AUTOMATIC # TODO: this shoule be taken from the data set
 selected_format <- AUTOMATIC
 sub_sampling <- TRUE
 
-# Inserts values from "from_data" to "to_data" that are better than were
-insert_best_parts <- function(from_data, to_data, best_is_min) {
-  if (all(is.na(from_data)))
-    to_data
-  else
-    if (best_is_min)
-      pmin(from_data, to_data)
-  else
-    pmax(from_data, to_data)
-}
 
 # Formatter for function values
 format_FV <- function(v) format(v, digits = 2, nsmall = 2)
@@ -246,6 +236,8 @@ shinyServer(function(input, output, session) {
     
     algId <- c(get_AlgId(data), 'all')
     updateSelectInput(session, 'ALGID_INPUT', choices = algId, selected = 'all')
+    updateSelectInput(session, 'ALGID_INPUT_SUMMARY', choices = algId, selected = 'all')
+    updateSelectInput(session, 'FCE_ALGID_INPUT_SUMMARY', choices = algId, selected = 'all')
     updateSelectInput(session, 'ALGID_RAW_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'PAR_ALGID_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'FCE_ALGID_INPUT', choices = algId, selected = 'all')
@@ -267,6 +259,11 @@ shinyServer(function(input, output, session) {
       return(NULL)
     
     subset(DataList$data, DIM == dim, funcId == id)
+  })
+  
+  # TODO: give a different name for DATA and DATA_UNFILTERED
+  DATA_UNFILTERED <- reactive({
+    DataList$data
   })
   
   # TODO: make this urgely snippet look better...
@@ -415,9 +412,8 @@ shinyServer(function(input, output, session) {
     fseq <- seq_FV(fall, fstart, fstop, fstep)
     req(fseq)
     
-    get_RT_summary(data, fseq, algorithm = input$ALGID_INPUT)[
-      , c('DIM', 'funcId') := NULL
-    ]
+    df <- get_RT_summary(data, fseq, algorithm = input$ALGID_INPUT)
+    df[, c('DIM', 'funcId') := NULL]
   })
   
   output$table_RT_summary <- renderTable({
@@ -433,6 +429,26 @@ shinyServer(function(input, output, session) {
     df
   })
   
+  # Data summary for Fixed-Target Runtime (ERT)  --------------
+  runtime_summary_condensed <- reactive({
+    data <- DATA()
+    fall <- get_Funvals(data)
+    get_FV_overview(data, algorithm = input$ALGID_INPUT_SUMMARY)
+  })
+  
+  output$table_FV_summary_condensed <- renderTable({
+    req(input$ALGID_INPUT_SUMMARY)
+    df <- runtime_summary_condensed()
+    
+    df$"Budget" %<>% as.integer
+    df$"Number of runs" %<>% as.integer
+    df$"Best reached value" <- format_FV(df$"Best reached value")
+    df$"Worst reached value" <- format_FV(df$"Worst reached value")
+    df$"Mean reached value" <- format_FV(df$"Mean reached value")
+    
+    df
+  })
+  
   output$downloadData <- downloadHandler(
     filename = {
       data <- DATA()
@@ -440,8 +456,6 @@ shinyServer(function(input, output, session) {
       fstop <- format_FV(input$fstop)
       fstep <- format_FV(input$fstep) 
       eval(RT_csv_name)
-      # sprintf('runtime_summary_(%s,%s,%s).csv',
-      #         fstart, fstop, fstep)
     }, 
     content = function(file) {
       write.csv(runtime_summary(), file, row.names = F)
@@ -458,6 +472,7 @@ shinyServer(function(input, output, session) {
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     
+    # TODO: verify this
     # we have to remove this part from the dependency of this reactive expression
     isolate({
       data <- DATA()
@@ -531,148 +546,17 @@ shinyServer(function(input, output, session) {
   )
   
   render_ERT_PER_FUN <- reactive({
-    req(input$ERT_FSTART, input$ERT_FSTOP)
+    fstart <- input$ERT_FSTART %>% as.numeric
+    fstop <- input$ERT_FSTOP %>% as.numeric
     
-    Fmin <- format_FV(input$ERT_FSTART) %>% as.numeric 
-    Fmax <- format_FV(input$ERT_FSTOP) %>% as.numeric 
-    
-    req(Fmin <= Fmax)
-    
-    data <- DATA()
-    fall <- get_Funvals(data)
-    
-    if (input$singleF)
-      fstop <- fstart
-    
-    fseq <- seq_FV(fall, Fmin, Fmax, length.out = 60)
-    req(fseq)
-    
-    n_algorithm <- length(data)
-    colors <- color_palettes(n_algorithm)
-    
-    dt <- get_RT_summary(data, fseq)
-    dt[, `:=`(upper = mean + sd, lower = mean - sd)][
-      , c('DIM', 'funcId') := NULL
-    ]
-    
-    dr <- get_RT_sample(data, fseq)
-    
-    p <- plot_ly_default(x.title = "best-so-far f(x)-value", 
-                         y.title = "function evaluations")
-    
-    for (i in seq_along(data)) {
-      algId <- attr(data[[i]], 'algId')
-      ds_ERT <- dt[algId == attr(data[[i]], 'algId')]
-      
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.18)')
-      
-      if (input$show.CI)
-        p %<>% 
-          add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-                    line = list(color = rgba_str, width = 0), legendgroup = algId,
-                    showlegend = F, name = 'mean +/- sd') %>% 
-          add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
-                    fill = 'tonexty',  line = list(color = 'transparent'), legendgroup = algId,
-                    fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
-      
-      if (input$show.ERT)
-        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
-                         name = paste0(algId, '.ERT'), mode = 'lines+markers',
-                         marker = list(color = rgb_str), legendgroup = algId,
-                         line = list(color = rgb_str))
-      
-      if (input$show.mean)
-        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~mean, type = 'scatter', 
-                         mode = 'lines+markers', name = paste0(algId, '.mean'), 
-                         marker = list(color = rgb_str), legendgroup = algId,
-                         line = list(color = rgb_str, dash = 'dash'))
-      
-      if (input$show.median)
-        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~median, type = 'scatter',
-                         name = paste0(algId, '.median'), mode = 'lines+markers', 
-                         marker = list(color = rgb_str), legendgroup = algId,
-                         line = list(color = rgb_str, dash = 'dot'))
-      
-      if (input$show_all) {
-        # TODO: Fix this for the case where algorithms do not have the same number of runs
-        line_width <- 0.5
-        
-        dr_ERT <- dr[algId == attr(data[[i]], 'algId')]
-        names_to_show = sample(colnames(dr_ERT))
-        names_to_show <-
-          names_to_show[!names_to_show %in% c('algId', 'target')]
-        
-        dens <- input$show.density
-        counter <- as.integer(length(names_to_show) * dens / 100)
-        names_to_show <- head(names_to_show, counter)
-        best_parts <- NA
-        mentioned <- FALSE
-        
-        for (run_v in names_to_show) {
-          p %<>% add_trace(
-            data = dr_ERT,
-            x = ~ target,
-            y = dr_ERT[[run_v]],
-            type = 'scatter',
-            mode = 'lines',
-            line = list(color = rgb_str, width = line_width),
-            #legendgroup = paste("runs of ", algId),
-            #legend = list(traceorder = "grouped"),
-            text = paste(run_v),
-            hoverinfo = 'none',
-            # hoverinfo = "x+y+text",
-            # hoverlabel = list(font=list(size = 8)),
-            showlegend = !mentioned,
-            name = paste("runs of ", algId)
-          )
-          mentioned <- TRUE
-          best_parts <-
-            insert_best_parts(best_parts, dr_ERT[[run_v]], TRUE)
-        }
-        
-        if (input$show.best_of_all) {
-          mentioned <- FALSE
-          check_value <- tail(best_parts, 1)
-          for (run_v in names_to_show)
-            if (check_value == tail(dr_ERT[[run_v]], 1)) {
-              p %<>% add_trace(
-                data = dr_ERT,
-                x = ~ target,
-                y = dr_ERT[[run_v]],
-                type = 'scatter',
-                mode = 'lines',
-                line = list(color = rgb_str, width = line_width *
-                              3),
-                showlegend = !mentioned,
-                name = paste("best.", algId)
-              )
-              mentioned <- TRUE
-            }
-        }
-        if (input$show.pareto_optima) {
-          p %<>% add_trace(
-            x = dr_ERT[['target']],
-            y = best_parts,
-            type = 'scatter',
-            mode = 'lines',
-            line = list(color = rgb_str, width = line_width *
-                          5, dash = 'dot'),
-            showlegend = T,
-            name = paste("pareto_optima.", algId)
-          )
-        }
-        
-      }
-    }
-    p %<>%
-      layout(xaxis = list(type = ifelse(input$semilogx, 'log', 'linear')),
-             yaxis = list(type = ifelse(input$semilogy, 'log', 'linear')))
-    
-    # minimization for COCO
-    if (src_format == 'COCO')
-      p %<>% layout(xaxis = list(autorange = "reversed"))
-    p
+    plot_RT_line.DataSetList(DATA(),Fstart = fstart ,Fstop = fstop,
+                              show.CI = input$show.CI, show.density = input$show.density,
+                              show.runs = input$show_all, show.optimal = input$show.best_of_all,
+                              show.pareto = input$show.pareto_optima, show.ERT = input$show.ERT,
+                              show.mean = input$show.mean, show.median = input$show.median,
+                              scale.xlog = input$semilogx, scale.ylog = input$semilogy,
+                              scale.reverse = (src_format == COCO))
+
   })
   
   # empirical p.m.f. of the runtime
@@ -693,73 +577,9 @@ shinyServer(function(input, output, session) {
   )
   
   render_RT_PMF <- reactive({
-    req(input$RT_PMF_FTARGET) 
-    ftarget <- format_FV(input$RT_PMF_FTARGET) %>% as.numeric
-    points <- ifelse(input$RT_SHOW_SAMPLE, 'all', FALSE)
-    
-    data <- DATA()
-    n_algorithm <- length(data)
-    colors <- color_palettes(n_algorithm)
-    
-    p <- plot_ly_default(x.title = "algorithms",
-                         y.title = "runtime / function evaluations")
-    
-    for (i in seq_along(data)) {
-      ds <- data[[i]]
-      
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.4)')
-      
-      p %<>%
-        add_trace(data = get_RT_sample(ds, ftarget, output = 'long'),
-                  x = ~algId, y = ~RT, split = ~algId, type = 'violin',
-                  hoveron = "points+kde",
-                  box = list(visible = T),
-                  points = points,
-                  pointpos = 1,
-                  jitter = 0.1,
-                  name = attr(ds, 'algId'),
-                  scalemode = 'count',
-                  meanline = list(visible = F),
-                  fillcolor = rgba_str,
-                  line = list(color = rgb_str, width = 1),
-                  marker = list(color = rgb_str))
-      
-      # rt <- RT(ds, ftarget, format = 'long') %>% 
-      #   mutate(label = i)
-      
-      # kernel estimation of p.m.f.
-      # res <- kernel_PMF(as.numeric(rt$RT))
-      # 
-      # x <- res$x
-      # y <- res$y
-      # 
-      # x <- x[y != 0]
-      # y <- y[y != 0] 
-      # idx <- seq(1, length(x), length.out = 50)
-      # x <- x[idx]
-      # y <- y[idx]
-      # y <- y / max(y) * 0.8
-      
-      # p %<>% 
-      #   add_trace(x = x, y = y + i, type = 'scatter',
-      #             hoveron = "points", showlegend = F,
-      #             mode = 'markers', legendgroup = paste0(i),
-      #             marker = list(color = 'rgba(9,56,125,0.45)'), 
-      #             line = list(color = 'rgb(9,56,125)', width = 0)) %>%
-      #   add_trace(data = rt, x = ~RT, y = ~as.character(label), type = 'box',
-      #             line = list(color = rgb_str, width = 0.8), legendgroup = paste0(i),
-      #             marker = list(color = rgb_str), fillcolor = rgba_str, name = attr(df, 'algorithm'))
-      # 
-      # for (k in seq_along(x)) {
-      #   p %<>% 
-      #     add_segments(x = x[k], xend = x[k], y = i, yend = y[k] + i, 
-      #                  line = list(color = 'rgba(9,56,125,0.4)'),
-      #                  showlegend = F)
-      # }
-    }
-    p %<>%
-      layout(yaxis = list(type = ifelse(input$RT_PMF_LOGY, 'log', 'linear')))
+    ftarget <- input$RT_PMF_FTARGET %>% as.numeric
+    plot_RT_PMF.DatasetList(DATA(), ftarget, show.sample = input$RT_SHOW_SAMPLE, 
+                            scale.ylog = input$RT_PMF_LOGY)
   })
   
   # historgram of the running time
@@ -784,60 +604,105 @@ shinyServer(function(input, output, session) {
     ftarget <- format_FV(input$RT_PMF_HIST_FTARGET) %>% as.numeric
     plot_mode <- input$ERT_illu_mode
     
-    data <- DATA()
-    n_algorithm <- length(data)
-    colors <- color_palettes(n_algorithm)
-    if (n_algorithm <= 10)
-      nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
-    else 
-      nrows <- ceiling(n_algorithm / 3.) # keep to columns for the histograms
+    # TODO: remove 'DataSetList' in the future
+    plot_RT_HIST.DataSetList(DATA(), ftarget, plot_mode = plot_mode)
+  })
+  
+  output$RT_ECDF_MULT <- renderPlotly({
+    render_RT_ECDF_MULT()
+  })
+
+  render_RT_ECDF_MULT <- reactive({
+    dsList <- subset(DATA_UNFILTERED(), DIM == input$DIM_INPUT)
+    targets <- uploaded_RT_ECDF_targets()
     
-    if (plot_mode == 'overlay') {
-      p <- plot_ly_default(x.title = "function evaluations", y.title = "runs")
-    } else if (plot_mode == 'subplot') {
-      p <- lapply(seq(n_algorithm), function(x) {
-        plot_ly_default(x.title = "function evaluations", y.title = "runs")
-      })
-    }
+    if (is.null(targets)) 
+      targets <- get_default_ECDF_targets(dsList)
     
-    for (i in seq_along(data)) {
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.35)')
-      
-      df <- data[[i]]
-      algId <- attr(df, 'algId')
-      rt <- get_RT_sample(df, ftarget, output = 'long')
-      
-      # skip if all runtime samples are NA
-      if (sum(!is.na(rt$RT)) < 2)
-        next
-      
-      res <- hist(rt$RT, breaks = nclass.FD, plot = F)
-      breaks <- res$breaks
-      plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
-                              text = paste0('<b>count</b>: ', res$counts, '<br><b>breaks</b>: [', 
-                                            breaks[-length(breaks)], ',', breaks[-1], ']')) 
-      
-      if (plot_mode == 'overlay') {
-        p %<>%
-          add_trace(data = plot_data, x = ~x, y = ~y, width = ~width, type = 'bar',
-                    name = algId, text = ~text, hoverinfo = 'text',
-                    marker = list(color = rgba_str,
-                                  line = list(color = 'rgb(8,48,107)', width = 1.5)))
-      } else if (plot_mode == 'subplot') {
-        p[[i]] %<>% 
-          add_trace(data = plot_data, x = ~x, y = ~y, width = ~width, type = 'bar',
-                    name = algId, text = ~text, hoverinfo = 'text',
-                    marker = list(color = rgba_str,
-                                  line = list(color = 'rgb(8,48,107)', width = 1.5)))
-      }
-    }
+    algId <- unique(attr(dsList, 'algId'))
     
-    if (plot_mode == 'subplot') {
-      p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.02)
+    p <- plot_ly_default(x.title = "function evaluations",
+                         y.title = "Proportion of (run, target, ...) pairs")
+    
+    rts <- get_Runtimes(dsList)
+    x <- seq(min(rts), max(rts), length.out = 50)
+    
+    for (i in seq_along(algId)) {
+      Id <- algId[i]
+      data <- subset(dsList, algId == Id)
+      fun <- ECDF(data, ftarget = targets, funcId = as.integer(names(targets)))
+      
+      df_plot <- data.frame(x = x,
+                            ecdf = fun(x)
+                            )
+      
+      p %<>% add_trace(data = df_plot, x = ~x, y = ~ecdf, type = 'scatter',
+                       mode = 'lines+markers', name = sprintf('%s', Id), 
+                       showlegend = T, 
+                       line = list( width = 3),
+                       marker = list(size = 11))
     }
     p
   })
+  
+  output$FIG_DOWNLOAD_RT_ECDF_MULT <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_RT_ECDF_MULT)
+    },
+    content = function(file) {
+      save_plotly(render_RT_ECDF_MULT(), file,
+                  format = input$FIG_FORMAT_RT_ECDF_MULT, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$FIG_FORMAT_RT_ECDF_MULT)
+  )
+  
+  RT_ECDF_MULTI_TABLE <- reactive({
+    targets <- uploaded_RT_ECDF_targets()
+    funcId <- names(targets)
+    
+    if (is.null(targets)) {
+      data <- subset(DATA_UNFILTERED(), DIM == input$DIM_INPUT)
+      targets <- get_default_ECDF_targets(data) 
+      funcId <- unique(attr(data, 'funcId')) %>% sort
+    }
+    
+    targets <- lapply(targets, function(t) {
+        paste0(as.character(t), collapse = ',')
+    })
+    
+    data.frame(funcId = funcId, target = unlist(targets))
+  })
+  
+  output$RT_GRID_GENERATED <- renderTable({
+    df <- RT_ECDF_MULTI_TABLE()
+    df$funcId <- as.integer(df$funcId)
+    df
+  })
+  
+  uploaded_RT_ECDF_targets <- reactive({
+    if (!is.null(input$CSV_Targets_upload)) {
+      df <- read.csv(input$CSV_Targets_upload$datapath, header = T, sep = ';')
+      value <- as.character(df$target)
+      
+      lapply(value, 
+             function(v) {
+               unlist(strsplit(v, '[,]')) %>% 
+                 as.numeric
+             }) %>% 
+        set_names(df$funcId)
+    } else
+      NULL
+  })
+  
+  output$TARGET_TABLE_EXAMPLE_DOWNLOAD <- downloadHandler(
+    filename = 'Example_ECDF_TARGETS.csv',
+    content = function(file) {
+      write.table(RT_ECDF_MULTI_TABLE(), file, row.names = F, 
+                  col.names = T, sep = ';')
+    },
+    contentType = "text/csv"
+  )
   
   # The ECDF plots for the runtime ----------------
   output$RT_ECDF <- renderPlotly({
@@ -848,52 +713,8 @@ shinyServer(function(input, output, session) {
       format_FV(input$RT_ECDF_FTARGET3)) %>% 
       as.numeric 
     
+    plot_RT_ECDF.DataSetList(DATA(), ftargets, scale.xlog = input$RT_ECDF_semilogx)
     
-    ftargets <- ftargets[!is.na(ftargets)]
-    req(length(ftargets) != 0)
-    
-    data <- DATA()
-    n_algorithm <- length(data)
-    colors <- color_palettes(n_algorithm)
-    
-    p <- plot_ly_default(title = NULL,
-                         x.title = "function evaluations",
-                         y.title = "Proportion of runs")
-    
-    for (k in seq_along(data)) {
-      df <- data[[k]]
-      algId <- attr(df, 'algId')
-      
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.35)')
-      
-      for (i in seq_along(ftargets)) {
-        rt <- get_RT_sample(df, ftargets[i], output = 'long')$RT %>% sort
-        if (all(is.na(rt)))
-          next
-        
-        # TODO: ECDF computation should be put in pproc/stats.R
-        ecdf <- CDF_discrete(rt)
-        
-        # position of the markers
-        x <- quantile(rt, probs = c(0.25, 0.5, 0.75), names = F, type = 3)
-        y <- sapply(x, function(x) ecdf[rt == x][1])
-        
-        p %<>%
-          add_trace(data = NULL, x = rt, y = ecdf, type = 'scatter',
-                    mode = 'lines', name = algId, showlegend = F,
-                    legendgroup = paste0(k),
-                    line = list(color = rgb_str, width = 3)) %>% 
-          add_trace(data = NULL, x = x, y = y, type = 'scatter',
-                    mode = 'markers',  legendgroup = paste0(k),
-                    name = sprintf('(%s, %.2e)', algId, ftargets[i]),
-                    marker = list(color = rgb_str, symbol = symbols[i], size = 13))
-      }
-    }
-    
-    p %<>%
-      layout(xaxis = list(type = ifelse(input$RT_ECDF_semilogx, 
-                                        'log', 'linear')))
   })
   
   output$RT_GRID <- renderPrint({
@@ -933,76 +754,11 @@ shinyServer(function(input, output, session) {
     fstop <- format_FV(input$RT_fstop) %>% as.numeric 
     fstep <- format_FV(input$RT_fstep) %>% as.numeric
     
-    req(fstart <= fstop, fstep <= fstop - fstart)
-    data <- DATA()
-    fall <- get_Funvals(data)
-    
-    fseq <- seq_FV(fall, fstart, fstop, fstep)
-    req(fseq)
-    
-    data <- DATA()
-    n_algorithm <- length(data)
-    colors <- color_palettes(n_algorithm)
-    
-    RT.max <- sapply(data, function(ds) max(ds$RT, na.rm = T)) %>% max
-    RT.min <- sapply(data, function(ds) min(ds$RT, na.rm = T)) %>% min
-    x <- seq(RT.min, RT.max, length.out = 50)
-    p <- plot_ly_default(x.title = "function evaluations",
-                         y.title = "Proportion of (run, target) pairs")
-    
-    for (k in seq_along(data)) {
-      df <- data[[k]]
-      algId <- attr(df, 'algId')
-      
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.15)')
-      rgba_str2 <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.8)')
-      
-      m <- lapply(fseq, function(fv) {
-        fun <- ECDF(df, fv)
-        fun(x)
-      }) %>%
-        do.call(rbind, .)
-      
-      df_plot <- data.frame(x = x, 
-                            mean = apply(m, 2, . %>% mean(na.rm = T)),
-                            sd = apply(m, 2, . %>% sd(na.rm = T))) %>% 
-        mutate(upper = mean + sd, lower = mean - sd)
-      
-      p %<>%
-        # TODO: maybe not showing the std. shade at all!
-        # add_trace(data = df_plot, x = ~x, y = ~upper, type = 'scatter', mode = 'lines',
-        #           line = list(color = rgba_str, width = 0),
-        #           showlegend = F, name = 'mean +/- sd') %>%
-        # add_trace(x = ~x, y = ~lower, type = 'scatter', mode = 'lines',
-        #           fill = 'tonexty',  line = list(color = 'transparent'),
-        #           fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd') %>%
-        add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
-                  mode = 'lines+markers', name = sprintf('%s', algId), 
-                  showlegend = T, legendgroup = paste0(k),
-                  line = list(color = rgb_str, width = 4.5),
-                  marker = list(color = rgb_str, size = 11))
-      
-      if (input$RT_ECDF_per_target) {
-        for (f in fseq) {
-          rt <- get_RT_sample(df, f, output = 'long') %>% '$'('RT') %>% sort
-          # TODO: plot the unsuccessful ECDF
-          if (all(is.na(rt)))
-            next
-          else 
-            v <- CDF_discrete(rt)
-          
-          p %<>%
-            add_trace(x = rt, y = v, type = 'scatter',
-                      mode = 'lines', name = algId, showlegend = F,
-                      line = list(color = rgba_str2, width = 1, dash = 'dot'))
-        }
-      }
-    }
-    
-    p %<>%
-      layout(xaxis = list(type = ifelse(input$RT_ECDF_AGGR_semilogx, 
-                                        'log', 'linear')))
+    plot_RT_ECDF_AGGR.DataSetList(
+      DATA(), fstart, fstop, fstep, 
+      show.per_target = input$RT_ECDF_per_target,
+      scale.xlog = input$RT_ECDF_AGGR_semilogx
+    )
   })
   
   # evaluation rake of all courses 
@@ -1029,48 +785,31 @@ shinyServer(function(input, output, session) {
     fstop <- format_FV(input$RT_AUC_FSTOP) %>% as.numeric 
     fstep <- format_FV(input$RT_AUC_FSTEP) %>% as.numeric
     
-    req(fstart <= fstop, fstep <= fstop - fstart)
-    data <- DATA()
-    fall <- get_Funvals(data)
-    
-    fseq <- seq_FV(fall, fstart, fstop, fstep)
-    req(fseq)
-    
-    n_algorithm <- length(data)
-    colors <- color_palettes(n_algorithm)
-    
-    RT.max <- sapply(data, function(ds) max(attr(ds, 'maxRT'))) %>% max
-    p <- plot_ly_default()
-    
-    for (k in seq_along(data)) {
-      df <- data[[k]]
-      algId <- attr(df, 'algId')
-      
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.2)')
-      
-      auc <- sapply(fseq, function(fv) {
-        ECDF(df, fv) %>% AUC(from = 1, to = RT.max)
-      })
-      
-      p %<>% 
-        add_trace(type = 'scatterpolar', r = auc, 
-                  theta = paste0('f:', format_FV(fseq)), 
-                  fill = 'toself', fillcolor = rgba_str,
-                  marker = list(color = rgb_str), hoverinfo = 'text',
-                  text = paste0('area: ', format(auc, digits = 2, nsmall = 2)),
-                  name = algId) 
-    }
-    
-    p %<>%
-      layout(polar = list(radialaxis = list(visible = T)),
-             yaxis = list(type = 'log'),
-             autosize = T, hovermode = 'compare',
-             paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)')
+    plot_RT_AUC.DataSetList(
+      DATA(), fstart, fstop, fstep, fval_formatter = format_FV
+    )
   })
   
   # TODO: rename 'FCE'...
   # Data summary for Fixed-Budget target (FCE)  --------------
+  FCE_runtime_summary_condensed <- reactive({
+    data <- DATA()
+    fall <- get_Funvals(data)
+    get_RT_overview(data, algorithm = input$FCE_ALGID_INPUT_SUMMARY)
+  })
+  
+  output$table_RT_summary_condensed <- renderTable({
+    req(input$FCE_ALGID_INPUT_SUMMARY)
+    df <- FCE_runtime_summary_condensed()
+    
+    df$"Number of runs" %<>% as.integer
+    df$"Budget" %<>% as.integer
+    df$"Minimum used evaluations" %<>% as.integer
+    df$"Maximum used evaluations" %<>% as.integer
+
+    df
+  })
+  
   get_FCE_summary <- reactive({
     req(input$RT_MIN, input$RT_MAX, input$RT_STEP)
     
@@ -1088,7 +827,9 @@ shinyServer(function(input, output, session) {
     rt_seq <- seq_RT(rt, rt_min, rt_max, by = rt_step)
     req(rt_seq)
     
-    get_FV_summary(data, rt_seq, algorithm = input$FCE_ALGID_INPUT)
+    get_FV_summary(data, rt_seq, algorithm = input$FCE_ALGID_INPUT)[
+      , c('DIM', 'funcId') := NULL
+      ]
   })
   
   output$FCE_SUMMARY <- renderTable({
@@ -1202,173 +943,21 @@ shinyServer(function(input, output, session) {
   )
   
   render_FV_PER_FUN <- reactive({
-    req(input$FCE_RT_MIN, input$FCE_RT_MAX)
-    
     rt_min <- input$FCE_RT_MIN %>% as.integer
     rt_max <- input$FCE_RT_MAX %>% as.integer
-    req(rt_min <= rt_max)
-    
-    data <- DATA()
-    rt <- get_Runtimes(data)
-    rt_seq <- seq_RT(rt, rt_min, rt_max, length.out = 60, 
-                     scale = ifelse(input$FCE_semilogx, 'log', 'linear'))
-    req(rt_seq)
-    
-    n_algorithm <- length(data)
-    colors <- color_palettes(n_algorithm)
-    fce <- get_FV_summary(data, rt_seq)
-    fce[, `:=`(upper = mean + sd, lower = mean - sd)]
-    
-    fce_runs <- get_FV_sample(data, rt_seq)
-    
-    p <- plot_ly_default(y.title = "best-so-far f(x)-value", x.title = "runtime")
-    
-    for (i in seq_along(data)) {
-      algId <- attr(data[[i]], 'algId')
-      dt_plot <- fce[algId == attr(data[[i]], 'algId')]
-      
-      if (nrow(dt_plot) == 0)
-        next
-      
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.18)')
-      
-      p %<>% 
-        add_trace(data = dt_plot, x = ~runtime, y = ~upper, type = 'scatter', mode = 'lines',
-                  line = list(color = rgba_str, width = 0), legendgroup = algId,
-                  showlegend = F, name = 'mean +/- sd') %>% 
-        add_trace(x = ~runtime, y = ~lower, type = 'scatter', mode = 'lines',
-                  fill = 'tonexty',  line = list(color = 'transparent'),
-                  legendgroup = algId,
-                  fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
-      
-      if (input$FCE_show.mean)
-        p %<>% add_trace(data = dt_plot, x = ~runtime, y = ~mean, type = 'scatter', 
-                         mode = 'lines+markers', name = sprintf("%s.mean", algId), 
-                         legendgroup = algId,
-                         marker = list(color = rgb_str), 
-                         line = list(color = rgb_str))
-      
-      if (input$FCE_show.median)
-        p %<>% add_trace(data = dt_plot, x = ~runtime, y = ~median, type = 'scatter',
-                         name = sprintf("%s.median", algId), mode = 'lines+markers', 
-                         legendgroup = algId,
-                         marker = list(color = rgb_str),
-                         line = list(color = rgb_str, dash = 'dash'))
-      
-      if (input$FCE_show_all) {
-        #TODO: Fix this for the case were algorithms do not have the same number of runs
-        min_is_best <- FALSE
-        line_width <- 0.5
-        
-        fce_runs_ERT <- fce_runs[algId == attr(data[[i]], 'algId')]
-        names_to_show <- sample(colnames(fce_runs_ERT))
-        names_to_show <-
-          names_to_show[!names_to_show %in% c('algId', 'runtime')]
-        
-        dens <- input$FCE_show.density
-        counter <- as.integer(length(names_to_show) * dens / 100)
-        
-        names_to_show <- head(names_to_show, counter)
-        best_parts <- NA
-        mentioned <- FALSE
-        
-        for (run_v in names_to_show) {
-          p %<>% add_trace(
-            data = fce_runs_ERT,
-            x = ~ runtime,
-            y = fce_runs_ERT[[run_v]],
-            type = 'scatter',
-            mode = 'lines',
-            line = list(color = rgb_str, width = line_width),
-            #legendgroup = paste("runs of ", algId),
-            #legend = list(traceorder = "grouped"),
-            text = paste(run_v),
-            hoverinfo = 'none',
-            # hoverinfo = "x+y+text",
-            # hoverlabel = list(font=list(size = 8)),
-            showlegend = !mentioned,
-            name = paste("runs of ", algId)
-          )
-          mentioned <- TRUE
-          best_parts <-
-            insert_best_parts(best_parts, fce_runs_ERT[[run_v]], min_is_best)
-        }
-        
-        if (input$FCE_show.best_of_all) {
-          mentioned <- FALSE
-          check_value <- tail(best_parts, 1)
-          for (run_v in names_to_show)
-            if (check_value == tail(fce_runs_ERT[[run_v]], 1)) {
-              p %<>% add_trace(
-                data = fce_runs_ERT,
-                x = ~ runtime,
-                y = fce_runs_ERT[[run_v]],
-                type = 'scatter',
-                mode = 'lines',
-                line = list(color = rgb_str, width = line_width *
-                              3),
-                showlegend = !mentioned,
-                name = paste("best.", algId)
-              )
-              mentioned = TRUE
-            }
-        }
-        if (input$FCE_show.pareto_optima) {
-          p %<>% add_trace(
-            x = fce_runs_ERT[['runtime']],
-            y = best_parts,
-            type = 'scatter',
-            mode = 'lines',
-            line = list(color = rgb_str, width = line_width *
-                          5, dash = 'dot'),
-            showlegend = T,
-            name = paste("pareto_optima.", algId)
-          )
-        }
-        
-      }
-    }
-    p %<>%
-      layout(xaxis = list(type = ifelse(input$FCE_semilogx, 'log', 'linear')),
-             yaxis = list(type = ifelse(input$FCE_semilogy, 'log', 'linear')))
-    p
+    plot_FV_line.DataSetList(DATA(), RTstart = rt_min, RTstop = rt_max,
+                             show.density = input$FCE_show.density, show.pareto = input$FCE_show.pareto_optima,
+                             show.runs = input$FCE_show_all, show.optimal = input$FCE_show.best_of_all,
+                             show.mean = input$FCE_show.mean, show.median = input$FCE_show.median,
+                             scale.xlog = input$FCE_semilogx, scale.ylog = input$FCE_semilogy)
   })
   
   # empirical p.d.f. of the target value
   render_FV_PDF <- reactive({
     req(input$FCE_PDF_RUNTIME)  
     runtime <- input$FCE_PDF_RUNTIME %>% as.integer 
-    points <- ifelse(input$FCE_SHOW_SAMPLE, 'all', FALSE)
-    
-    data <- DATA()
-    n_algorithm <- length(data)
-    colors <- color_palettes(n_algorithm)
-    
-    p <- plot_ly_default(x.title = "algorithms",
-                         y.title = "Target value")
-    
-    for (i in seq_along(data)) {
-      ds <- data[[i]]
-      
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.5)')
-      
-      p %<>%
-        add_trace(data = get_FV_sample(ds, runtime, output = 'long'),
-                  x = ~algId, y = ~`f(x)`, split = ~algId, type = 'violin',
-                  hoveron = "points+kde",
-                  box = list(visible = T),
-                  points = points,
-                  pointpos = 1,
-                  jitter = 0.1,
-                  scalemode = 'count',
-                  meanline = list(visible = T),
-                  line = list(color = rgb_str, width = 1),
-                  marker = list(color = rgb_str))
-    }
-    p %<>%
-      layout(yaxis = list(type = ifelse(input$FCE_LOGY, 'log', 'linear')))
+    plot_FV_PDF.DataSetList(DATA(), runtime, show.sample = input$FCE_SHOW_SAMPLE,
+                            scale.ylog = input$FCE_LOGY )
   })
   
   output$FIG_DOWNLOAD_FV_PDF <- downloadHandler(
@@ -1391,62 +980,7 @@ shinyServer(function(input, output, session) {
   render_FV_HIST <- reactive({
     req(input$FCE_HIST_RUNTIME != "")   # require non-empty input
     runtime <- input$FCE_HIST_RUNTIME %>% as.integer 
-    plot_mode <- input$FCE_illu_mode
-    
-    data <- DATA()
-    n_algorithm <- length(data)
-    colors <- color_palettes(n_algorithm)
-    if (n_algorithm <= 10)
-      nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
-    else 
-      nrows <- ceiling(n_algorithm / 3.) # keep to columns for the histograms
-    
-    if (plot_mode == 'overlay') {
-      p <- plot_ly_default(x.title = "target values", y.title = "runs")
-      
-    } else if (plot_mode == 'subplot') {
-      p <- lapply(seq(n_algorithm), function(x) {
-        plot_ly_default(x.title = "target values", y.title = "runs")
-      })
-    }
-    
-    for (i in seq_along(data)) {
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.35)')
-      
-      ds <- data[[i]]
-      algId <- attr(ds, 'algId')
-      fce <- get_FV_sample(ds, runtime, output = 'long')
-      # skip if all target samples are NA
-      if (sum(!is.na(fce$`f(x)`)) < 2)
-        next
-      
-      res <- hist(fce$`f(x)`, breaks = nclass.FD, plot = F)
-      breaks <- res$breaks
-      plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
-                              text = paste0('<b>count</b>: ', res$counts, 
-                                            '<br><b>breaks</b>: [', 
-                                            breaks[-length(breaks)], ',', breaks[-1], ']')) 
-      
-      if (plot_mode == 'overlay') {
-        p %<>%
-          add_trace(data = plot_data, x = ~x, y = ~y, width = ~width, type = 'bar',
-                    name = algId, text = ~text, hoverinfo = 'text',
-                    marker = list(color = rgba_str,
-                                  line = list(color = 'rgb(8,48,107)', width = 1.5)))
-      } else if (plot_mode == 'subplot') {
-        p[[i]] %<>% 
-          add_trace(data = plot_data, x = ~x, y = ~y, width = ~width, type = 'bar',
-                    name = algId, text = ~text, hoverinfo = 'text',
-                    marker = list(color = rgba_str,
-                                  line = list(color = 'rgb(8,48,107)', width = 1.5)))
-      }
-    }
-    
-    if (plot_mode == 'subplot') 
-      p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.02)
-    
-    p
+    plot_FV_HIST.DataSetList(DATA(),runtime, plot_mode = input$FCE_illu_mode)
   })
   
   output$FIG_DOWNLOAD_FV_HIST <- downloadHandler(
@@ -1473,52 +1007,7 @@ shinyServer(function(input, output, session) {
       as.integer(input$FCE_ECDF_RT2),
       as.integer(input$FCE_ECDF_RT3))
     
-    runtimes <- runtimes[!is.na(runtimes)]
-    req(length(runtimes) != 0)
-    
-    data <- DATA()
-    n_algorithm <- length(data)
-    colors <- color_palettes(n_algorithm)
-    
-    p <- plot_ly_default(title = NULL,
-                         x.title = "target value",
-                         y.title = "Proportion of runs")
-    
-    for (k in seq_along(data)) {
-      ds <- data[[k]]
-      algId <- attr(ds, 'algId')
-      
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.35)')
-      
-      for (i in seq_along(runtimes)) {
-        funvals <- get_FV_sample(ds, runtimes[i], output = 'long')$`f(x)` %>% sort
-        
-        if (all(is.na(funvals)))
-          next
-        
-        tmp <- ecdf(funvals) 
-        density <- tmp(funvals)
-        
-        # position of the markers
-        x <- quantile(funvals, probs = c(0.25, 0.5, 0.75), names = F, type = 3)
-        y <- sapply(x, function(xx) density[funvals == xx])
-        
-        p %<>%
-          add_trace(data = NULL, x = funvals, y = density, type = 'scatter',
-                    mode = 'lines', name = algId, showlegend = F,
-                    legendgroup = paste0(k),
-                    line = list(color = rgb_str, width = 3)) %>% 
-          add_trace(data = NULL, x = x, y = y, type = 'scatter',
-                    mode = 'markers',  legendgroup = paste0(k),
-                    name = sprintf('%s, %.2e', algId, runtimes[i]),
-                    marker = list(color = rgb_str, symbol = symbols[i], size = 13))
-      }
-    }
-    
-    p %<>%
-      layout(xaxis = list(type = ifelse(input$FCE_ECDF_semilogx, 
-                                        'log', 'linear')))
+    plot_FCE_ECDF_PER_TARGET.DataSetList(DATA(),runtimes, scale.xlog = input$FCE_ECDF_semilogx)
   })
   
   output$FCE_RT_GRID <- renderPrint({
@@ -1542,82 +1031,10 @@ shinyServer(function(input, output, session) {
     rt_max <- input$FCE_ECDF_RT_MAX %>% as.integer
     rt_step <- input$FCE_ECDF_RT_STEP %>% as.integer
     
-    req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
-    
-    data <- DATA()
-    rt <- get_Runtimes(data)
-    rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step)
-    req(rt_seq)
-    
-    n_algorithm <- length(data)
-    colors <- color_palettes(n_algorithm)
-    
-    funevals.max <- sapply(data, function(ds) max(ds$FV, na.rm = T)) %>% max
-    funevals.min <- sapply(data, function(ds) min(ds$FV, na.rm = T)) %>% min
-    
-    x <- seq(funevals.min, funevals.max, length.out = 40)
-    p <- plot_ly_default(x.title = "target value",
-                         y.title = "Proportion of (run, budget) pairs")
-    
-    for (k in seq_along(data)) {
-      ds <- data[[k]]
-      algId <- attr(ds, 'algId')
-      
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.15)')
-      rgba_str2 <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.8)')
-      
-      fun <- get_FV_sample(ds, rt_seq, output = 'long')$`f(x)` %>% ecdf
-      m <- fun(x)
-      # m <- lapply(rt_seq, function(r) {
-      #   ce <- get_FV_sample(df, r, format = 'long',  maximization = maximization) %>% '$'(`f(x)`)
-      #   if (all(is.na(ce)))
-      #     return(rep(0, length(x)))
-      #   fun <- ecdf(ce)
-      #   fun(x)
-      # }) %>% 
-      # do.call(rbind, .)
-      
-      df_plot <- data.frame(x = x, mean = m)
-      # df_plot <- data.frame(x = x, 
-      #                       mean = apply(m, 2, . %>% mean(na.rm = T)),
-      #                       sd = apply(m, 2, . %>% sd(na.rm = T))) %>% 
-      #   mutate(upper = mean + sd, lower = mean - sd)
-      
-      p %<>%
-        # add_trace(data = df_plot, x = ~x, y = ~upper, type = 'scatter', mode = 'lines',
-        #           line = list(color = rgba_str, width = 0), 
-        #           showlegend = F, name = 'mean +/- sd') %>% 
-        # add_trace(x = ~x, y = ~lower, type = 'scatter', mode = 'lines',
-        #           fill = 'tonexty',  line = list(color = 'transparent'),
-        #           fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd') %>% 
-        add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
-                  mode = 'lines+markers', name = sprintf('%s', algId), 
-                  showlegend = T, legendgroup = paste0(k),
-                  line = list(color = rgb_str, width = 4.5),
-                  marker = list(color = rgb_str, size = 11))
-      
-      if (input$FCE_ECDF_per_target) {
-        for (r in rt_seq) {
-          ce <- get_FV_sample(ds, r, output = 'long') %>% '$'(`f(x)`) %>% sort
-          if (all(is.na(ce)))
-            next
-          else {
-            fun <- ecdf(ce)
-            v <- fun(ce)
-          }
-          
-          p %<>%
-            add_trace(x = ce, y = v, type = 'scatter',
-                      mode = 'lines', name = algId, showlegend = F,
-                      line = list(color = rgba_str2, width = 1))
-        }
-      }
-    }
-    
-    p %<>%
-      layout(xaxis = list(type = ifelse(input$FCE_ECDF_AGGR_semilogx, 
-                                        'log', 'linear')))
+    plot_FV_ECDF_AGGR.DataSetList(DATA(),rt_min = rt_min, 
+                                  rt_max = rt_max, rt_step = rt_step, 
+                                  scale.xlog = input$FCE_ECDF_AGGR_semilogx,
+                                  show.per_target = input$FCE_ECDF_per_target)
   })
   
   output$FIG_DOWNLOAD_FV_ECDF_AGGR <- downloadHandler(
@@ -1643,60 +1060,9 @@ shinyServer(function(input, output, session) {
     rt_min <- input$FCE_AUC_RT_MIN %>% as.integer
     rt_max <- input$FCE_AUC_RT_MAX %>% as.integer
     rt_step <- input$FCE_AUC_RT_STEP %>% as.integer
+    plot_FV_AUC.DataSetList(DATA(), rt_min = rt_min, 
+                            rt_max = rt_max, rt_step = rt_step)
     
-    req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
-    data <- DATA()
-    rt <- get_Runtimes(data)
-    
-    rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step)
-    req(rt_seq)
-    
-    n_algorithm <- length(data)
-    colors <- color_palettes(n_algorithm)
-    
-    funevals.max <- sapply(data, function(ds) max(attr(ds, 'finalFV'))) %>% max
-    p <- plot_ly_default()
-    
-    for (k in seq_along(data)) {
-      df <- data[[k]]
-      algId <- attr(df, 'algId')
-      
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.2)')
-      
-      # calculate ECDFs on user specified targets
-      funs <- lapply(rt_seq, function(r) {
-        get_FV_sample(df, r, output = 'long')$`f(x)` %>% {
-          if (all(is.na(.))) NULL
-          else  {
-            f <- ecdf(.)
-            attr(f, 'min') <- min(.)
-            f
-          }
-        }
-      })
-      
-      auc <- sapply(funs,
-                    function(fun) {
-                      if (is.null(fun)) 0
-                      else integrate(fun, lower = attr(fun, 'min') - 1, upper = funevals.max,
-                                     subdivisions = 1e3) %>% {'$'(., 'value') / funevals.max}
-                    })
-      
-      p %<>%
-        add_trace(type = 'scatterpolar', r = auc,
-                  theta = paste0('B:', as.integer(rt_seq)),
-                  fill = 'toself', fillcolor = rgba_str,
-                  marker = list(color = rgb_str), hoverinfo = 'text',
-                  text = paste0('area: ', format(auc, digits = 2, nsmall = 2)),
-                  name = algId)
-    }
-    
-    p %<>%
-      layout(polar = list(radialaxis = list(visible = T)),
-             yaxis = list(type = 'log'),
-             autosize = T, hovermode = 'compare',
-             paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)')
   })
   
   output$FIG_DOWNLOAD_FV_AUC <- downloadHandler(
@@ -1722,111 +1088,11 @@ shinyServer(function(input, output, session) {
     f_min <- format_FV(input$PAR_F_MIN) %>% as.numeric
     f_max <- format_FV(input$PAR_F_MAX) %>% as.numeric  
     
-    req(f_min <= f_max)
-    
-    data <- DATA()
-    fall <- get_Funvals(data)
-    
-    fseq <- seq_FV(fall, f_min, f_max, length.out = 50)
-    req(fseq)
-    
-    dt <- get_PAR_summary(data, fseq, input$PAR_ALGID_INPUT)
-    req(length(dt) != 0)
-    dt[, `:=`(upper = mean + sd, lower = mean - sd)]
-    
-    par_name <- dt[, parId] %>% unique
-    n_param <- length(par_name)
-    
-    algorithms <- dt[, algId] %>% unique
-    n_alg <- length(algorithms)
-    colors <- color_palettes(n_alg)
-    
-    nrows <- ceiling(n_param / 2) # two columns
-    # styles <- lapply(seq(n_alg),
-    #                  function(i) {
-    #                    list(target = algorithms[i],
-    #                         value = list(name = algorithms[i],
-    #                                      marker = list(color = paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')),
-    #                                      line = list(color = paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')),
-    #                                      showlegend = function(i){if (i == 1)
-    #                                        T
-    #                                      else 
-    #                                        F
-    #                                      }))
-    #                  })
-    
-    # TODO: improve the efficiency of plotting here
-    p <- lapply(seq(n_param), 
-                function(i) {
-                  plot_ly_default(y.title = par_name[i]) %>% 
-                    layout(xaxis = list(type = ifelse(input$PAR_semilogx, 'log', 'linear')),
-                           yaxis = list(type = ifelse(input$PAR_semilogy, 'log', 'linear')))
-                })
-    
-    for (i in seq(n_alg)) {
-      alg <- algorithms[i]
-      
-      for (j in seq(n_param)) {
-        if (j == 1)
-          showlegend <- T
-        else 
-          showlegend <- F
-        
-        name <- par_name[j]
-        dt_plot <- dt[parId == name & algId == alg]
-        rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-        rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
-        
-        p[[j]] %<>% 
-          add_trace(data = dt_plot, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-                    line = list(color = rgba_str, width = 0),  
-                    showlegend = F, legendgroup = ~algId, name = 'mean +/- sd') %>% 
-          add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
-                    fill = 'tonexty',  line = list(color = 'transparent'),
-                    fillcolor = rgba_str, showlegend = F, legendgroup = ~algId, 
-                    name = 'mean +/- sd')
-        
-        if (input$PAR_show.mean == 'mean')
-          p[[j]] %<>% add_trace(data = dt_plot, x = ~target, y = ~mean, 
-                                type = 'scatter', 
-                                mode = 'lines+markers', 
-                                marker = list(color = rgb_str),
-                                line = list(color = rgb_str),
-                                name = alg,
-                                showlegend = showlegend,
-                                legendgroup = ~algId)
-        # transforms = list(
-        #   list(type = 'groupby',
-        #        groups = ~algId,
-        #        styles = styles)
-        #   )
-        # )
-        # 
-        
-        else if (input$PAR_show.mean == 'median')
-          p[[j]] %<>% add_trace(data = dt_plot, x = ~target, y = ~median,
-                                type = 'scatter',
-                                mode = 'lines+markers',
-                                marker = list(color = rgb_str),
-                                line = list(color = rgb_str, dash = 'dash'),
-                                name = alg,
-                                legendgroup = ~algId,
-                                showlegend = showlegend)
-      }
-    }
-    # p %<>%
-    #   add_trace(data = dt_plot, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-    #             line = list(color = rgba_str, width = 0),
-    #             showlegend = F, name = paste0(name, '.mean +/- sd')) %>%
-    #   add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
-    #             fill = 'tonexty',  line = list(color = 'transparent'),
-    #             fillcolor = rgba_str, showlegend = T, paste0(name, '.mean +/- sd'))
-    
-    # rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
-    subplot(p, nrows = nrows, titleX = F, titleY = T, margin = 0.05) %>% 
-      add_annotations(x = 0.5 , y = -0.18, text = "best-so-far f(x)-value", 
-                      showarrow = F, xref = 'paper', yref = 'paper',
-                      font = list(size = 22, family = 'sans-serif'))
+    plot_PAR_Line.DataSetList(DATA(),f_min,f_max,algids = input$PAR_ALGID_INPUT,
+                              show.mean = (input$PAR_show.mean == 'mean'),
+                              show.median = (input$PAR_show.mean == 'median'),
+                              scale.xlog = input$PAR_semilogx,
+                              scale.ylog = input$PAR_semilogy)
   })
   
   output$FIG_DOWNLOAD_PAR_PER_FUN <- downloadHandler(

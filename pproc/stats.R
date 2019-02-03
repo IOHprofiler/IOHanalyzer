@@ -38,6 +38,8 @@ ECDF <- function(ds, ...) UseMethod("ECDF", ds)
 #' @examples
 ECDF.DataSet <- function(ds, ftarget) {
   runtime <- get_RT_sample(ds, ftarget, output = 'long')$RT
+  runtime <- runtime[!is.na(runtime)]
+  
   fun <- ecdf(runtime)
   class(fun)[1] <- 'ECDF'
   attr(fun, 'min') <- min(runtime)
@@ -56,13 +58,21 @@ ECDF.DataSet <- function(ds, ftarget) {
 #' @export
 #'
 #' @examples
-ECDF.DataSetList <- function(dsList, ftarget) {
+ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
   if (is.list(ftarget)) {
-    stopifnot(length(dsList) == length(ftarget))
-    runtime <- sapply(ftarget, function(v) get_RT_sample(dsList, v, output = 'long')$RT)
+    runtime <- sapply(seq_along(ftarget), function(i) {
+      Id <- funcId[i]
+      data <- subset(dsList, funcId == Id) 
+      if (length(data) == 0) NA
+      res <- get_RT_sample(data, ftarget[[i]], output = 'long') %>% 
+        '$'('RT')
+      res[!is.na(res)]
+    }) %>% 
+      unlist
   } else {
     runtime <- get_RT_sample(dsList, ftarget, output = 'long')$RT
   }
+  runtime <- runtime[!is.na(runtime)]
   
   fun <- ecdf(runtime)
   class(fun)[1] <- 'ECDF'
@@ -105,4 +115,30 @@ CDF_discrete <- function(x) {
     res[x == v] <- max(res[x == v])
   }
   res
+}
+
+#TODO: inconsistent use of format_func gives slightly different results between
+#generated and uploaded targets
+get_default_ECDF_targets <- function(data, format_func = as.integer){
+  funcIds <- unique(attr(data, 'funcId'))
+  dims <- unique(attr(data, 'DIM'))
+  
+  targets <- list()
+  for (i in seq_along(funcIds)) {
+    Id <- funcIds[[i]]
+    data_sub <- subset(data, funcId == Id)
+    for (j in seq_along(dims)) {
+      dim <- dims
+      data_subsub <- subset(data_sub, DIM == dim)
+      fall <- get_Funvals(data_subsub)
+      
+      #TODO: Account for minimization / maximization
+      fmin <- min(fall)
+      fmax <- max(fall)
+      
+      fseq <- seq_FV(fall, fmin, fmax, length.out = 10) %>% format_func
+      targets <- append(targets, list(fseq))
+    }
+  }
+  targets %>% set_names(funcIds)
 }

@@ -97,6 +97,8 @@ color_palettes <- function(ncolor) {
   require(colorRamps)
   require(RColorBrewer)
   
+  if (ncolor < 5) return(Set2(ncolor))
+  
   brewer <- function(n) brewer.pal(n, 'Spectral')
   color_fcts <- c(Set1, Set2)
   

@@ -162,7 +162,7 @@ body <- dashboardBody(
                          solidHeader = T, status = "primary", collapsible = F, height = '620px',
                          verbatimTextOutput('process_data_promt'),
                          tags$head(tags$style("#process_data_promt{color:black; font-size:12px; font-style:italic;
-                                              overflow-y:visible; max-height: 425px; background: ghostwhite;}"))
+                                              overflow-y:visible; max-height: 500px; background: ghostwhite;}"))
                      )
               )
             ),
@@ -181,6 +181,24 @@ body <- dashboardBody(
     tabItem(tabName = 'ERT_data', 
       fluidRow(
         column(width = 12,
+               #TODO: better naming scheme
+               box(title = HTML('<p style="font-size:120%;">Overview of runtime values</p>'), width = 12,
+                   solidHeader = T, status = "primary", collapsible = T,
+                   sidebarPanel(
+                     width = 3,
+                     HTML('<p align="justify">Select which algorithms to show.</p>'),
+                     
+                     # TODO: find better naming scheme for 'fstart, fstop, singleF'
+                     selectInput('ALGID_INPUT_SUMMARY', 'Algorithms', choices = NULL, selected = NULL),
+                     downloadButton("downloadData_summary", "Save this table as csv")
+                     ),
+                   
+                   mainPanel(
+                     width = 9,
+                     tableOutput('table_FV_summary_condensed')
+                   )
+                 ),
+               
                box(title = HTML('<p style="font-size:120%;">Runtime Statistics at Chosen Target Values</p>'), width = 12,
                    solidHeader = T, status = "primary", collapsible = T,
                    sidebarPanel(
@@ -438,7 +456,7 @@ body <- dashboardBody(
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
                                       Distribution of the runtime: Aggregation</p>'), 
-                         width = 12, solidHeader = T, status = "primary", collapsible = T,
+                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = F,
                          sidebarPanel(
                            width = 3,
                            HTML('<p align="justify">Set the range and the granularity 
@@ -480,10 +498,57 @@ body <- dashboardBody(
                            # column(10, align = "center", verbatimTextOutput('ks'))
                          )
               ),
+              column(width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
+                                      Distribution of the runtime: With added aggregation</p>'), 
+                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = F,
+                         sidebarPanel(
+                           width = 3,
+                           # checkboxInput("Aggregate_dim","Aggregate dimensions", value = F),
+                           # checkboxInput("Aggregate_fun","Aggregate functions", value = T),
+                           
+                           HTML_P('Choose whether to upload a file containing the target-values for each (function, dimension)-pair
+                                  or use the automatically generated targets (see below). Please consider keeping the file format when
+                                  modifying the csv given below.'),
+                           tableOutput('RT_GRID_GENERATED'),
+                           downloadButton('TARGET_TABLE_EXAMPLE_DOWNLOAD', label = 'download this example'),
+                           
+                           hr(),
+                           br(),
+                           fileInput("CSV_Targets_upload", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>csv file</i> containing the targets</p>'),
+                                     multiple = FALSE, accept = c(
+                                       "text/csv",
+                                       "text/comma-separated-values,text/plain",
+                                       ".csv")),
+                           selectInput('FIG_FORMAT_RT_ECDF_MULT', label = 'select the figure format',
+                                       choices = supported_fig_format, selected = 'pdf'),
+                           
+                           downloadButton('FIG_DOWNLOAD_RT_ECDF_MULT', label = 'download the figure')
+                           
+                         ),
+                         
+                         mainPanel(width = 9,
+                                   column(width = 12, align = "center",
+                                          hr(),
+                                          HTML_P('The fraction of (run,target value, ...)
+                                                 pairs \\((i,v, ...)\\) satisfying that the best solution that the algorithm has 
+                                                 found in the \\(i\\)-th (run of function \\(f\\) in dimension \\(d\\)) within the given time budget \\(t\\) has quality at least
+                                                 \\(v\\) is plotted against the available budget \\(t\\). The displayed elements can be switched 
+                                                 on and off by clicking on the legend on the right. A <b>tooltip</b> 
+                                                 and <b>toolbar</b> appears when hovering over the figure. Aggregation over functions and dimension can 
+                                                 be switched on or off using the checkboxes on the left; when aggregation is off the selected function / dimension
+                                                 is chosen according the the value in the bottom-left selection-box.'),
+                                          plotlyOutput('RT_ECDF_MULT', height = plotly_height, width = plotly_width2),
+                                          hr()
+                                          )
+                                   )
+                         
+                         )
+                      ),
               
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Area Under the ECDF</p>'),  
-                         width = 12, solidHeader = T, status = "primary", collapsible = T,
+                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = F,
                          sidebarPanel(
                            width = 3,
                            HTML('<p align="justify">Set the range and the granularity of
@@ -515,7 +580,7 @@ body <- dashboardBody(
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
                                       Distribution of the Runtime: Single Target</p>'), 
-                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary",
+                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = F,
                          sidebarLayout(
                            sidebarPanel(
                              width = 3,
@@ -551,6 +616,23 @@ body <- dashboardBody(
     tabItem(tabName = 'FCE_DATA', 
             fluidRow(
               column(width = 12,
+                     #TODO: better naming scheme
+                     box(title = HTML('<p style="font-size:120%;">Overview of runtime values</p>'), width = 12,
+                         solidHeader = T, status = "primary", collapsible = T,
+                         sidebarPanel(
+                           width = 3,
+                           HTML('<p align="justify">Select which algorithms to show.</p>'),
+                           
+                           # TODO: find better naming scheme for 'fstart, fstop, singleF'
+                           selectInput('FCE_ALGID_INPUT_SUMMARY', 'Algorithms', choices = NULL, selected = NULL),
+                           downloadButton("FCE_downloadData_summary", "Save this table as csv")
+                         ),
+                         
+                         mainPanel(
+                           width = 9,
+                           tableOutput('table_RT_summary_condensed')
+                         )
+                     ),
                      box(title = HTML('<p style="font-size:120%;">Target Statistics at Chosen Budget Values</p>'), width = 12,
                          solidHeader = T, status = "primary", collapsible = T,
                          sidebarPanel(

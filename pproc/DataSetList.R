@@ -170,6 +170,20 @@ summary.DataSetList <- function(data) {
     as.data.frame
 }
 
+get_FV_overview.DataSetList <- function(dsList, algorithm = 'all') {
+  if (algorithm != 'all')
+    dsList <- subset(dsList, algId == algorithm)
+  
+  lapply(dsList, function(ds) get_FV_overview(ds)) %>% rbindlist
+}
+
+get_RT_overview.DataSetList <- function(dsList, algorithm = 'all') {
+  if (algorithm != 'all')
+    dsList <- subset(dsList, algId == algorithm)
+  
+  lapply(dsList, function(ds) get_RT_overview(ds)) %>% rbindlist
+}
+
 get_RT_summary.DataSetList <- function(dsList, ftarget, algorithm = 'all') {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)

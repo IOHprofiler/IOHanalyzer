@@ -630,6 +630,8 @@ shinyServer(function(input, output, session) {
     for (i in seq_along(algId)) {
       Id <- algId[i]
       data <- subset(dsList, algId == Id)
+      
+      if (length(data) == 0) next
       fun <- ECDF(data, ftarget = targets, funcId = as.integer(names(targets)))
       
       df_plot <- data.frame(x = x,

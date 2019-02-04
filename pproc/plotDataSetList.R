@@ -59,6 +59,7 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
       ds_ERT <- dt[algId == attr(dsList[[i]], 'algId') &
                    funcId == attr(dsList[[i]], 'funcId') &
                    DIM == attr(dsList[[i]], 'DIM')]
+      
       algId <- attr(dsList[[i]], 'algId')
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.2)')
@@ -197,10 +198,8 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
   if (is.null(RTstart)) Fstart <- min(RTall)
   if (is.null(RTstop)) Fstop <- max(RTall)
   
-  
   RTseq <- seq_RT(RTall, RTstart, RTstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
   if (length(RTseq) == 0) return(NULL)
-  
   
   N <- length(dsList)
   colors <- color_palettes(N)
@@ -215,6 +214,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
     for (i in seq_along(dsList)) {
       legend <- legends[i]
       algId <- attr(dsList[[i]], 'algId')
+      
       ds_FCE <- fce[algId == attr(dsList[[i]], 'algId') &
                      funcId == attr(dsList[[i]], 'funcId') &
                      DIM == attr(dsList[[i]], 'DIM')]
@@ -238,13 +238,13 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
         p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~mean, type = 'scatter', 
                          mode = 'lines+markers', name = paste0(algId, '.mean'), 
                          marker = list(color = rgb_str), legendgroup = legend,
-                         line = list(color = rgb_str, dash = 'dash'))
+                         line = list(color = rgb_str))
       
       if (show.median)
         p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~median, type = 'scatter',
                          name = paste0(legend, '.median'), mode = 'lines+markers', 
                          marker = list(color = rgb_str), legendgroup = legend,
-                         line = list(color = rgb_str, dash = 'dot'))
+                         line = list(color = rgb_str, dash = 'dash'))
       
       if (show.runs) {
         fce_runs <- get_FV_sample(dsList, RTseq)
@@ -348,7 +348,7 @@ plot_RT_PMF.DatasetList <- function(dsList, ftarget, show.sample = F,
     ds <- dsList[[i]]
     
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.5)')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.4)')
     
     p %<>%
       add_trace(data = get_RT_sample(ds, ftarget, output = 'long'),
@@ -367,7 +367,8 @@ plot_RT_PMF.DatasetList <- function(dsList, ftarget, show.sample = F,
     
   }
   p %<>%
-    layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
+    layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
+           xaxis = list(tickangle = 45))
 }
 
 plot_RT_HIST.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'){
@@ -421,7 +422,7 @@ plot_RT_HIST.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'){
   }
   
   if (plot_mode == 'subplot') {
-    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.02)
+    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.025)
   }
   p
 }
@@ -480,7 +481,8 @@ plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
   if (is.null(fstop)) fstop <- max(fall)
 
   
-  fseq <- seq_FV(fall, fstart, fstop, fstep, scale = ifelse(scale.xlog,'log','linear'))
+  fseq <- seq_FV(fall, fstart, fstop, fstep, 
+                 scale = ifelse(scale.xlog, 'log', 'linear'))
   req(fseq)
   
   N <- length(dsList)

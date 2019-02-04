@@ -365,7 +365,6 @@ get_FV_overview.DataSet <- function(ds) {
 get_RT_overview.DataSet <- function(ds) {
   data <- ds$RT
   algId <- attr(ds, 'algId')
-  # maxs <- apply(data,2,max,na.rm = F)
   
   max_val <- max(data,na.rm = T)
   min_val <- min(data,na.rm = T)
@@ -373,11 +372,12 @@ get_RT_overview.DataSet <- function(ds) {
   runs <- ncol(data)
   budget <- max(attr(ds,'maxRT'))
   
-  c(min_val,max_val,runs,budget) %>%
+  c(min_val, max_val, runs, budget) %>%
     t %>%
     as.data.table %>% 
     cbind(algId,.) %>% 
-    set_colnames(c("Algorithm ID","Minimum used evaluations","Maximum used evaluations", "Number of runs","Budget"))
+    set_colnames(c('Algorithm ID', 'Minimum used evaluations',
+                   'Maximum used evaluations', 'Number of runs', 'Budget'))
 }
 
 #' Get RunTime Summary

@@ -26,6 +26,7 @@ EPMF <- function() {
 }
 
 ECDF <- function(ds, ...) UseMethod("ECDF", ds)
+
 # TODO: also implement the ecdf functions for function values and parameters
 #' Empirical Cumulative Dsitribution Function of Runtime of a single data set
 #'
@@ -39,8 +40,8 @@ ECDF <- function(ds, ...) UseMethod("ECDF", ds)
 ECDF.DataSet <- function(ds, ftarget) {
   runtime <- get_RT_sample(ds, ftarget, output = 'long')$RT
   runtime <- runtime[!is.na(runtime)]
-  
   fun <- ecdf(runtime)
+  
   class(fun)[1] <- 'ECDF'
   attr(fun, 'min') <- min(runtime)
   attr(fun, 'max') <- max(runtime)  # the sample can be retrieved by knots(fun)
@@ -59,20 +60,24 @@ ECDF.DataSet <- function(ds, ftarget) {
 #'
 #' @examples
 ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
+  if (length(dsList) == 0) return(NULL)
+  
   if (is.list(ftarget)) {
     runtime <- sapply(seq_along(ftarget), function(i) {
       Id <- funcId[i]
-      data <- subset(dsList, funcId == Id) 
-      if (length(data) == 0) NA
-      res <- get_RT_sample(data, ftarget[[i]], output = 'long') %>% 
-        '$'('RT')
+      data <- subset(dsList, funcId == Id)
+      if (length(data) == 0) return(NA)
+      res <- get_RT_sample(data, ftarget[[i]], output = 'long')$RT
       res[!is.na(res)]
-    }) %>% 
+    }) %>%
       unlist
   } else {
     runtime <- get_RT_sample(dsList, ftarget, output = 'long')$RT
   }
+
   runtime <- runtime[!is.na(runtime)]
+  
+  if (length(runtime) == 0) return(NULL)
   
   fun <- ecdf(runtime)
   class(fun)[1] <- 'ECDF'

@@ -348,7 +348,7 @@ plot_RT_PMF.DatasetList <- function(dsList, ftarget, show.sample = F,
     ds <- dsList[[i]]
     
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.4)')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.55)')
     
     p %<>%
       add_trace(data = get_RT_sample(ds, ftarget, output = 'long'),
@@ -356,14 +356,14 @@ plot_RT_PMF.DatasetList <- function(dsList, ftarget, show.sample = F,
                 hoveron = "points+kde",
                 box = list(visible = T),
                 points = points,
-                pointpos = 1,
-                jitter = 0.1,
+                pointpos = 1.5,
+                jitter = 0,
                 name = attr(ds, 'algId'),
                 scalemode = 'count',
                 meanline = list(visible = F),
                 fillcolor = rgba_str,
-                line = list(color = rgb_str, width = 1),
-                marker = list(color = rgb_str))
+                line = list(color = 'black', width = 2),
+                marker = list(color = rgb_str, size = 8))
     
   }
   p %<>%
@@ -624,7 +624,7 @@ plot_FV_PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
     ds <- dsList[[i]]
     
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.5)')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.55)')
     
     p %<>%
       add_trace(data = get_FV_sample(ds, runtime, output = 'long'),
@@ -632,12 +632,14 @@ plot_FV_PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
                 hoveron = "points+kde",
                 box = list(visible = T),
                 points = points,
-                pointpos = 1,
-                jitter = 0.1,
+                pointpos = 1.5,
+                jitter = 0,
                 scalemode = 'count',
+                name = attr(ds, 'algId'),
                 meanline = list(visible = T),
-                line = list(color = rgb_str, width = 1),
-                marker = list(color = rgb_str))
+                fillcolor = rgba_str,
+                line = list(color = 'black', width = 2),
+                marker = list(color = rgb_str, size = 8))
   }
   p %<>%
     layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))

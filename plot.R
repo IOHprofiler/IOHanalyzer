@@ -111,7 +111,12 @@ color_palettes <- function(ncolor) {
   
   if (ncolor < 5) return(Set2(ncolor))
   
-  brewer <- function(n) brewer.pal(n, 'Spectral')
+  brewer <- function(n) {
+    colors <- brewer.pal(n, 'Spectral')
+    colors[colors == "#FFFFBF"] <- "#B2B285"
+    colors
+  } 
+  
   color_fcts <- c(Set1, Set2)
   
   n <- min(11, ncolor)

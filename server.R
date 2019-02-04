@@ -84,7 +84,7 @@ shinyServer(function(input, output, session) {
   
   # shared reactive variables
   folderList <- reactiveValues(data = list())
-  DataList <- reactiveValues(data = DataSeteList())
+  DataList <- reactiveValues(data = DataSetList())
   
   # update maximization indication, trans_funeval according to src_format 
   observe({

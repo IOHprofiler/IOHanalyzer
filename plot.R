@@ -117,7 +117,7 @@ color_palettes <- function(ncolor) {
     colors
   } 
   
-  color_fcts <- c(Set1, Set2)
+  color_fcts <- c(primary.colors, Set3)
   
   n <- min(11, ncolor)
   colors <- brewer(n)

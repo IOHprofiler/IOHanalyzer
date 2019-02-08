@@ -66,16 +66,16 @@ ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
     runtime <- sapply(seq_along(ftarget), function(i) {
       Id <- funcId[i]
       data <- subset(dsList, funcId == Id)
-      if (length(data) == 0) return(NA)
+      if (length(data) == 0) return(NULL)
       res <- get_RT_sample(data, ftarget[[i]], output = 'long')$RT
-      res[!is.na(res)]
+      res[is.na(res)] <- Inf # very important!!!
+      res
     }) %>%
       unlist
   } else {
     runtime <- get_RT_sample(dsList, ftarget, output = 'long')$RT
+    runtime[is.na(runtime)] <- Inf
   }
-
-  runtime <- runtime[!is.na(runtime)]
   
   if (length(runtime) == 0) return(NULL)
   
@@ -85,6 +85,7 @@ ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
   attr(fun, 'max') <- max(runtime)  # the sample can be retrieved by knots(fun)
   fun
 }
+
 
 # calculate the area under ECDFs on user specified targets
 AUC <- function(fun, ...) UseMethod('AUC', fun)

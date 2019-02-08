@@ -12,7 +12,7 @@ aspect_ratio <-  4 / 3
 fig_height <- 1100
 fig_height2 <- 1100
 fig_width <- fig_height * aspect_ratio
-fig_width2 <- fig_height * (16 / 10)
+fig_width2 <- fig_height * (13 / 10)
 
 plotly_height <- paste0(fig_height, "px")
 plotly_width <- paste0(fig_width, "px")

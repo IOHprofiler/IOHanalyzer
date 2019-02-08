@@ -15,6 +15,7 @@ for (file in list.files('~/Dropbox/data/2019gecco/ins1-11runs/',
   
   tmp[[i]] <- read_dir(file.path(exdir, path), verbose = F)
   i <- i + 1
+  unlink(file.path(exdir, path), recursive = T)
 }
 
 res1 <- do.call(c.DataSetList, tmp)
@@ -32,13 +33,17 @@ unlink(file.path(exdir, '*'), recursive = T)
 
 for (file in list.files('~/Dropbox/data/2019gecco/ins11-1run/', 
                         pattern = '.zip', recursive = T, full.names = T)) {
+  
   print(file)
   
   unzip(file, list = FALSE, exdir = exdir)
   path <- str_match(basename(file), "(.*)\\.zip")[2]
   
+  
   tmp[[i]] <- read_dir(file.path(exdir, path), verbose = F)
   i <- i + 1
+  
+  unlink(file.path(exdir, path), recursive = T)
 }
 
 res2 <- do.call(c.DataSetList, tmp)

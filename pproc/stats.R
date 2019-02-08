@@ -20,86 +20,131 @@ SP <- function(data, max_runtime) {
   list(ERT = rowSums(data) / succ, runs = succ, succ_rate = succ_rate)
 }
 
+
+# TODO: implement the empirical p.m.f. for runtime 
+EPMF <- function() {
+
+}
+
+ECDF <- function(ds, ...) UseMethod("ECDF", ds)
+
+# TODO: also implement the ecdf functions for function values and parameters
+#' Empirical Cumulative Dsitribution Function of Runtime of a single data set
+#'
+#' @param ds A DataSet object.
+#' @param ftarget A Numerical vector. Function values at which runtime values are consumed
+#'
+#' @return a object of type 'ECDF'
+#' @export
+#'
+#' @examples
+ECDF.DataSet <- function(ds, ftarget) {
+  runtime <- get_RT_sample(ds, ftarget, output = 'long')$RT
+  runtime <- runtime[!is.na(runtime)]
+  fun <- ecdf(runtime)
+  
+  class(fun)[1] <- 'ECDF'
+  attr(fun, 'min') <- min(runtime)
+  attr(fun, 'max') <- max(runtime)  # the sample can be retrieved by knots(fun)
+  fun
+}
+
+#' Empirical Cumulative Dsitribution Function of Runtime of a list of data sets
+#'
+#' @param dsList A DataSetList object
+#' @param ftarget A Numerical vector or a list of numerical vector. 
+#'                Function values at which runtime values are consumed. When it is a list,
+#'                it should have the same length as dsList
+#'
+#' @return a object of type 'ECDF'
+#' @export
+#'
+#' @examples
+ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
+  if (length(dsList) == 0) return(NULL)
+  
+  if (is.list(ftarget)) {
+    runtime <- sapply(seq_along(ftarget), function(i) {
+      Id <- funcId[i]
+      data <- subset(dsList, funcId == Id)
+      if (length(data) == 0) return(NA)
+      res <- get_RT_sample(data, ftarget[[i]], output = 'long')$RT
+      res[!is.na(res)]
+    }) %>%
+      unlist
+  } else {
+    runtime <- get_RT_sample(dsList, ftarget, output = 'long')$RT
+  }
+
+  runtime <- runtime[!is.na(runtime)]
+  
+  if (length(runtime) == 0) return(NULL)
+  
+  fun <- ecdf(runtime)
+  class(fun)[1] <- 'ECDF'
+  attr(fun, 'min') <- min(runtime)
+  attr(fun, 'max') <- max(runtime)  # the sample can be retrieved by knots(fun)
+  fun
+}
+
+# calculate the area under ECDFs on user specified targets
+AUC <- function(fun, ...) UseMethod('AUC', fun)
+
+#' Area Under Curve (Empirical Cumulative Dsitribution Function)
+#'
+#' @param fun A ECDF object.
+#' @param from double Starting point of the area on x-axis
+#' @param to   double. Ending point of the area on x-axis
+#'
+#' @return a object of type 'ECDF'
+#' @export
+#'
+#' @examples
+AUC.ECDF <- function(fun, from = NULL, to = NULL) {
+  if (is.null(from)) 
+    from <- attr(fun, 'min')
+  if (is.null(to))
+    to <- attr(fun, 'max')
+  
+  if (is.null(fun)) 
+    0
+  else 
+    integrate(fun, lower = from, upper = to, subdivisions = 1e3L)$value / (to - from) 
+}
+
+# TODO: remove the function, deprecated!
+CDF_discrete <- function(x) {
+  x <- sort(x)
+  x.unique <- unique(x)
+  res <- seq_along(x) / length(x)
+  for (v in x.unique) {
+    res[x == v] <- max(res[x == v])
+  }
+  res
+}
+
 #TODO: inconsistent use of format_func gives slightly different results between
 #generated and uploaded targets
-generate_ECDF_targets <- function(data, format_func = as.integer){
-
-  funcs <- unique(attr(data,'funcId'))
-  dims <- unique(attr(data,'DIM'))
+get_default_ECDF_targets <- function(data, format_func = as.integer){
+  funcIds <- unique(attr(data, 'funcId'))
+  dims <- unique(attr(data, 'DIM'))
   
   targets <- list()
-  for(i in seq_along(funcs)){
-    func <- funcs[[i]]
-    data_sub <- subset(data,funcId == func)
-    for(j in seq_along(dims)){
+  for (i in seq_along(funcIds)) {
+    Id <- funcIds[[i]]
+    data_sub <- subset(data, funcId == Id)
+    for (j in seq_along(dims)) {
       dim <- dims
-      data_subsub <- subset(data_sub,DIM == dim)
-      
+      data_subsub <- subset(data_sub, DIM == dim)
       fall <- get_Funvals(data_subsub)
       #TODO: Account for minimization / maximization
       fmin <- min(fall)
       fmax <- max(fall)
       
       fseq <- seq_FV(fall, fmin, fmax, length.out = 10) %>% format_func
-      targets <- append(targets,list(fseq))
+
+      targets <- append(targets, list(fseq))
     }
   }
-  
-  targets
-}
-
-calc_ECDF_MULTI <- function(data, algID, targets = NULL, rts = NULL){
-
-  funcs <- unique(attr(data,'funcId'))
-  algs <- unique(attr(data,'algId'))
-  dims <- unique(attr(data,'DIM'))
-  
-  if(is.null(targets))
-    targets <- generate_ECDF_targets(data, function(x) x)
-  data <- subset(data, algId == algID)
-  
-  nr_targets = length(targets)
-  cdfs_list <- list()
-  
-  if(is.null(rts))
-    rts <- get_Runtimes(data)
-  # TODO: think of a better way to determine the datapoints
-  x <- seq(min(rts),max(rts),length.out = 50)
-  
-  cdfs <- list()
-  for( j in seq_along(funcs)){
-    fid <- funcs[[j]]
-    for( k in seq_along(dims)){
-      dim <- dims[[k]]
-      target_idx = (length(dims) * j-1) + k
-      fseq <- targets[[target_idx]] %>% unlist
-
-      
-      data_subset <- subset(data, funcId == fid, DIM = dim)
-      if(length(data_subset) != 1)
-        next
-      ds <- data_subset[[1]]
-      
-      cdf <- lapply(fseq, function(f) {
-        rt <- get_RT_sample(ds, f, output = 'long')$RT
-        if (all(is.na(rt)))
-          return(rep(0, length(x)))
-        fun <- ecdf(rt)
-        fun(x)
-      }) %>% 
-        do.call(rbind, .)
-      cdfs <- append(cdfs,list(cdf))
-    }
-  
-  cdfs_list <- append(cdfs_list, cdfs)
-  }
-  
-  m <- cdfs_list %>% simplify2array %>%
-    apply(.,c(1,2),mean)
-  
-  df_plot <- data.frame(x = x, 
-                        mean = apply(m, 2, . %>% mean(na.rm = T)),
-                        sd = apply(m, 2, . %>% sd(na.rm = T))) %>% 
-    mutate(upper = mean + sd, lower = mean - sd)
-  df_plot
+  targets %>% set_names(funcIds)
 }

@@ -162,7 +162,7 @@ body <- dashboardBody(
                          solidHeader = T, status = "primary", collapsible = F, height = '620px',
                          verbatimTextOutput('process_data_promt'),
                          tags$head(tags$style("#process_data_promt{color:black; font-size:12px; font-style:italic;
-                                              overflow-y:visible; max-height: 425px; background: ghostwhite;}"))
+                                              overflow-y:visible; max-height: 500px; background: ghostwhite;}"))
                      )
               )
             ),
@@ -195,7 +195,6 @@ body <- dashboardBody(
                    
                    mainPanel(
                      width = 9,
-                     # HTML(paste0('<div style="font-size:120%;">', includeMarkdown('RMD/RT_SUMMARY_TABLE.Rmd'),'</div>')),
                      tableOutput('table_FV_summary_condensed')
                    )
                  ),
@@ -505,13 +504,18 @@ body <- dashboardBody(
                          width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = F,
                          sidebarPanel(
                            width = 3,
-                           checkboxInput("Aggregate_dim","Aggregate dimensions", value = F),
-                           checkboxInput("Aggregate_fun","Aggregate functions", value = T),
+
+                           # checkboxInput("Aggregate_dim","Aggregate dimensions", value = F),
+                           # checkboxInput("Aggregate_fun","Aggregate functions", value = T),
                            
-                           HTML('<p align="justify">Choose whether to upload a file containing the target-values for each (function, dimension)-pair
-                                or use the automatically generated targets. For uploading, please use the struture as in this example csv-file:</p>'),
+                           HTML_P('Choose whether to upload a file containing the target-values for each (function, dimension)-pair
+                                  or use the automatically generated targets (see below). Please consider keeping the file format when
+                                  modifying the csv given below.'),
+                           tableOutput('RT_GRID_GENERATED'),
+                           downloadButton('TARGET_TABLE_EXAMPLE_DOWNLOAD', label = 'download this example'),
                            
-                           downloadButton('TARGET_TABLE_EXAMPLE_DOWNLOAD', label = 'download the example'),
+                           hr(),
+                           br(),
                            fileInput("CSV_Targets_upload", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>csv file</i> containing the targets</p>'),
                                      multiple = FALSE, accept = c(
                                        "text/csv",
@@ -522,14 +526,11 @@ body <- dashboardBody(
                            
                            downloadButton('FIG_DOWNLOAD_RT_ECDF_MULT', label = 'download the figure')
                            
-                           ),
-                        
-                         
+                         ),
                          
                          mainPanel(width = 9,
                                    column(width = 12, align = "center",
-                                          HTML_P('The automatically generated target values are:'),
-                                          verbatimTextOutput('RT_GRID_GENERATED'),
+                                          hr(),
                                           HTML_P('The fraction of (run,target value, ...)
                                                  pairs \\((i,v, ...)\\) satisfying that the best solution that the algorithm has 
                                                  found in the \\(i\\)-th (run of function \\(f\\) in dimension \\(d\\)) within the given time budget \\(t\\) has quality at least
@@ -543,7 +544,8 @@ body <- dashboardBody(
                                           )
                                    )
                          
-                        )
+
+                         )
                       ),
               
               column(width = 12,
@@ -630,7 +632,6 @@ body <- dashboardBody(
                          
                          mainPanel(
                            width = 9,
-                           # HTML(paste0('<div style="font-size:120%;">', includeMarkdown('RMD/RT_SUMMARY_TABLE.Rmd'),'</div>')),
                            tableOutput('table_RT_summary_condensed')
                          )
                      ),

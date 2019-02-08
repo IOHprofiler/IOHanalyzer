@@ -170,6 +170,20 @@ summary.DataSetList <- function(data) {
     as.data.frame
 }
 
+get_FV_overview.DataSetList <- function(dsList, algorithm = 'all') {
+  if (algorithm != 'all')
+    dsList <- subset(dsList, algId == algorithm)
+  
+  lapply(dsList, function(ds) get_FV_overview(ds)) %>% rbindlist
+}
+
+get_RT_overview.DataSetList <- function(dsList, algorithm = 'all') {
+  if (algorithm != 'all')
+    dsList <- subset(dsList, algId == algorithm)
+  
+  lapply(dsList, function(ds) get_RT_overview(ds)) %>% rbindlist
+}
+
 get_RT_summary.DataSetList <- function(dsList, ftarget, algorithm = 'all') {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
@@ -198,7 +212,8 @@ get_FV_summary.DataSetList <- function(dsList, runtime, algorithm = 'all') {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds){
+
+  lapply(dsList, function(ds) {
     res <- cbind(attr(ds, 'DIM'), attr(ds, 'funcId'), get_FV_summary(ds, runtime))
     colnames(res)[1] <- 'DIM'
     colnames(res)[2] <- 'funcId'
@@ -211,6 +226,7 @@ get_FV_overview.DataSetList <- function(dsList, algorithm = 'all') {
     dsList <- subset(dsList, algId == algorithm)
   
   lapply(dsList, function(ds) get_FV_overview(ds)) %>% rbindlist
+
 }
 
 get_RT_overview.DataSetList <- function(dsList, algorithm = 'all') {
@@ -304,49 +320,4 @@ subset.DataSetList <- function(dsList, ...) {
                   all
   )
   dsList[idx]
-}
-
-# functions to compute statistics from the data set
-RT.ECDF <- function(x) {
-  x <- sort(x)
-  x.unique <- unique(x)
-  p <- seq_along(x) / length(x)
-  for (v in x.unique) {
-    p[x == v] <- max(p[x == v])
-  }
-  
-  f <- ecdf(x)
-  attr(f, 'x') <- x.unique
-  attr(f, 'p') <- p
-  attr(f, 'min') <- min(x)
-  attr(f, 'max') <- max(x)
-  f
-}
-
-# calculate the area under ECDFs on user specified targets
-ECDF_AUC <- function(df, ftargets) {
-  funs <- lapply(ftargets, function(f) {
-    RT(df, f, format = 'long') %>% 
-      '$'('RT') %>% {
-        if (all(is.na(.))) NULL
-        else  RT.ECDF(.)
-      }
-  })
-  
-  auc <- sapply(funs,
-                function(fun) {
-                  if (is.null(fun)) 0
-                  else integrate(fun, lower = attr(fun, 'min') - 1, upper = RT.max, 
-                                 subdivisions = 5e3) %>% {'$'(., 'value') / RT.max}
-                })
-}
-
-CDF_discrete <- function(x) {
-  x <- sort(x)
-  x.unique <- unique(x)
-  res <- seq_along(x) / length(x)
-  for (v in x.unique) {
-    res[x == v] <- max(res[x == v])
-  }
-  res
 }

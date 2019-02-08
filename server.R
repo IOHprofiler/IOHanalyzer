@@ -261,6 +261,8 @@ shinyServer(function(input, output, session) {
     subset(DataList$data, DIM == dim, funcId == id)
   })
   
+
+  # TODO: give a different name for DATA and DATA_UNFILTERED
   DATA_UNFILTERED <- reactive({
     DataList$data
   })
@@ -411,9 +413,8 @@ shinyServer(function(input, output, session) {
     fseq <- seq_FV(fall, fstart, fstop, fstep)
     req(fseq)
     
-    get_RT_summary(data, fseq, algorithm = input$ALGID_INPUT)[
-      , c('DIM', 'funcId') := NULL
-    ]
+    df <- get_RT_summary(data, fseq, algorithm = input$ALGID_INPUT)
+    df[, c('DIM', 'funcId') := NULL]
   })
   
   output$table_RT_summary <- renderTable({
@@ -456,8 +457,6 @@ shinyServer(function(input, output, session) {
       fstop <- format_FV(input$fstop)
       fstep <- format_FV(input$fstep) 
       eval(RT_csv_name)
-      # sprintf('runtime_summary_(%s,%s,%s).csv',
-      #         fstart, fstop, fstep)
     }, 
     content = function(file) {
       write.csv(runtime_summary(), file, row.names = F)
@@ -474,6 +473,7 @@ shinyServer(function(input, output, session) {
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     
+    # TODO: verify this
     # we have to remove this part from the dependency of this reactive expression
     isolate({
       data <- DATA()
@@ -605,7 +605,9 @@ shinyServer(function(input, output, session) {
     ftarget <- format_FV(input$RT_PMF_HIST_FTARGET) %>% as.numeric
     plot_mode <- input$ERT_illu_mode
     
-    plot_RT_Hist.DataSetList(DATA(), ftarget, plot_mode = plot_mode)
+
+    # TODO: remove 'DataSetList' in the future
+    plot_RT_HIST.DataSetList(DATA(), ftarget, plot_mode = plot_mode)
   })
   
   output$RT_ECDF_MULT <- renderPlotly({
@@ -613,17 +615,37 @@ shinyServer(function(input, output, session) {
   })
 
   render_RT_ECDF_MULT <- reactive({
-    targets <- uploaded_csv_targets()
-    if(input$Aggregate_dim)
-      dim <- NULL
-    else
-      dim <- input$DIM_INPUT
-    if(input$Aggregate_fun)
-      func <- NULL
-    else
-      func <- input$FUNCID_INPUT
+
+    dsList <- subset(DATA_UNFILTERED(), DIM == input$DIM_INPUT)
+    targets <- uploaded_RT_ECDF_targets()
     
-    plot_RT_ECDF_MULTI.DataSetList(DATA_UNFILTERED(),targets, dim=dim, funcid = func)
+    if (is.null(targets)) 
+      targets <- get_default_ECDF_targets(dsList)
+    
+    algId <- unique(attr(dsList, 'algId'))
+    p <- plot_ly_default(x.title = "function evaluations",
+                         y.title = "Proportion of (run, target, ...) pairs")
+    
+    rts <- get_Runtimes(dsList)
+    x <- seq(min(rts), max(rts), length.out = 50)
+    colors <- color_palettes(length(algId))
+    
+    for (i in seq_along(algId)) {
+      Id <- algId[i]
+      data <- subset(dsList, algId == Id)
+      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
+      
+      fun <- ECDF(data, ftarget = targets, funcId = as.integer(names(targets)))
+      if (is.null(fun)) next
+      
+      df_plot <- data.frame(x = x, ecdf = fun(x))
+      p %<>% add_trace(data = df_plot, x = ~x, y = ~ecdf, type = 'scatter',
+                       mode = 'lines+markers', name = sprintf('%s', Id), 
+                       showlegend = T, 
+                       line = list(color = rgb_str, width = 3),
+                       marker = list(color = rgb_str, size = 10))
+    }
+    p
   })
   
   output$FIG_DOWNLOAD_RT_ECDF_MULT <- downloadHandler(
@@ -638,57 +660,54 @@ shinyServer(function(input, output, session) {
     contentType = paste0('image/', input$FIG_FORMAT_RT_ECDF_MULT)
   )
   
+
+  RT_ECDF_MULTI_TABLE <- reactive({
+    targets <- uploaded_RT_ECDF_targets()
+    funcId <- names(targets)
+    
+    if (is.null(targets)) {
+      data <- subset(DATA_UNFILTERED(), DIM == input$DIM_INPUT)
+      targets <- get_default_ECDF_targets(data) 
+      funcId <- unique(attr(data, 'funcId')) %>% sort
+    }
+    
+    targets <- lapply(targets, function(t) {
+        paste0(as.character(t), collapse = ',')
+    })
+    
+    data.frame(funcId = funcId, target = unlist(targets))
+  })
   
-  output$RT_GRID_GENERATED <- renderPrint({
-    data <- subset(DATA_UNFILTERED(),DIM == input$DIM_INPUT)
-    
-    funcs <- paste("F", unique(attr(data,'funcId')), sep="")
-    dims <- paste(", D", unique(attr(data,'DIM')),sep="")
-    
-    labels_name <- c(outer(funcs,dims,FUN=paste0))
-    tab <- uploaded_csv_targets()
-    if(is.null(tab))
-      tab <- generate_ECDF_targets(data) 
-    tab %>%  do.call("cbind",.) %>% t %>% 
-      as.data.frame %>% set_rownames(labels_name) %>%
-      set_colnames(NULL)
+  output$RT_GRID_GENERATED <- renderTable({
+    df <- RT_ECDF_MULTI_TABLE()
+    df$funcId <- as.integer(df$funcId)
+    df
+  })
+  
+  uploaded_RT_ECDF_targets <- reactive({
+    if (!is.null(input$CSV_Targets_upload)) {
+      df <- read.csv(input$CSV_Targets_upload$datapath, header = T, sep = ';')
+      value <- as.character(df$target)
+      
+      lapply(value, 
+             function(v) {
+               unlist(strsplit(v, '[,]')) %>% 
+                 as.numeric
+             }) %>% 
+        set_names(df$funcId)
+    } else
+      NULL
   })
   
   output$TARGET_TABLE_EXAMPLE_DOWNLOAD <- downloadHandler(
-    filename = {
-      "Example_ECDF_TARGETS.csv"
-    },
+    filename = 'Example_ECDF_TARGETS.csv',
     content = function(file) {
-      data <- subset(DATA_UNFILTERED(),DIM == input$DIM_INPUT)
-      
-      funcs <- paste("F", unique(attr(data,'funcId')), sep="")
-      dims <- paste(", D", unique(attr(data,'DIM')),sep="")
-
-      labels_name <- c(outer(funcs,dims,FUN=paste0))
-      tab <- generate_ECDF_targets(data) %>%  do.call("cbind",.) %>% t %>% 
-        as.data.frame %>% set_rownames(labels_name) %>%
-        set_colnames(NULL)
-
-      write.csv(tab, file, row.names = T, col.names = F)
+      write.table(RT_ECDF_MULTI_TABLE(), file, row.names = F, 
+                  col.names = T, sep = ';')
     },
     contentType = "text/csv"
-    
-    
   )
-  
-  uploaded_csv_targets <- reactive({
-    if (!is.null(input$CSV_Targets_upload)) {
-      datapath <- input$CSV_Targets_upload$datapath
-      tab <- read.csv((datapath), header = F)[-1] %>%
-              set_colnames(NULL) %>% apply(.,1,as.list)
-      return(tab)
-    } else
-      return(NULL)
-  })
-  
-  
-  
-  
+
   # The ECDF plots for the runtime ----------------
   output$RT_ECDF <- renderPlotly({
     req(input$RT_ECDF_FTARGET1, input$RT_ECDF_FTARGET2, input$RT_ECDF_FTARGET3)
@@ -739,8 +758,12 @@ shinyServer(function(input, output, session) {
     fstop <- format_FV(input$RT_fstop) %>% as.numeric 
     fstep <- format_FV(input$RT_fstep) %>% as.numeric
     
-    plot_RT_ECDF_AGGR.DataSetList(DATA(),fstart,fstop,fstep,show.per_target = input$RT_ECDF_per_target,
-                      scale.xlog = input$RT_ECDF_AGGR_semilogx)
+
+    plot_RT_ECDF_AGGR.DataSetList(
+      DATA(), fstart, fstop, fstep, 
+      show.per_target = input$RT_ECDF_per_target,
+      scale.xlog = input$RT_ECDF_AGGR_semilogx
+    )
   })
   
   # evaluation rake of all courses 
@@ -767,10 +790,11 @@ shinyServer(function(input, output, session) {
     fstop <- format_FV(input$RT_AUC_FSTOP) %>% as.numeric 
     fstep <- format_FV(input$RT_AUC_FSTEP) %>% as.numeric
     
-    plot_RT_AUC.DataSetList(DATA(),fstart,fstop,fstep,fval_formatter = format_FV)
-  }
-)
-  
+    plot_RT_AUC.DataSetList(
+      DATA(), fstart, fstop, fstep, fval_formatter = format_FV
+    )
+  })
+
   # TODO: rename 'FCE'...
   # Data summary for Fixed-Budget target (FCE)  --------------
   FCE_runtime_summary_condensed <- reactive({
@@ -961,7 +985,7 @@ shinyServer(function(input, output, session) {
   render_FV_HIST <- reactive({
     req(input$FCE_HIST_RUNTIME != "")   # require non-empty input
     runtime <- input$FCE_HIST_RUNTIME %>% as.integer 
-    plot_FV_Hist.DataSetList(DATA(),runtime, plot_mode = input$FCE_illu_mode)
+    plot_FV_HIST.DataSetList(DATA(), runtime, plot_mode = input$FCE_illu_mode)
   })
   
   output$FIG_DOWNLOAD_FV_HIST <- downloadHandler(

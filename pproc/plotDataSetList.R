@@ -59,6 +59,7 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
       ds_ERT <- dt[algId == attr(dsList[[i]], 'algId') &
                    funcId == attr(dsList[[i]], 'funcId') &
                    DIM == attr(dsList[[i]], 'DIM')]
+
       algId <- attr(dsList[[i]], 'algId')
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.2)')
@@ -197,10 +198,9 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
   if (is.null(RTstart)) Fstart <- min(RTall)
   if (is.null(RTstop)) Fstop <- max(RTall)
   
-  
+
   RTseq <- seq_RT(RTall, RTstart, RTstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
   if (length(RTseq) == 0) return(NULL)
-  
   
   N <- length(dsList)
   colors <- color_palettes(N)
@@ -215,6 +215,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
     for (i in seq_along(dsList)) {
       legend <- legends[i]
       algId <- attr(dsList[[i]], 'algId')
+
       ds_FCE <- fce[algId == attr(dsList[[i]], 'algId') &
                      funcId == attr(dsList[[i]], 'funcId') &
                      DIM == attr(dsList[[i]], 'DIM')]
@@ -238,14 +239,14 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
         p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~mean, type = 'scatter', 
                          mode = 'lines+markers', name = paste0(algId, '.mean'), 
                          marker = list(color = rgb_str), legendgroup = legend,
-                         line = list(color = rgb_str, dash = 'dash'))
-      
+                         line = list(color = rgb_str))
+
       if (show.median)
         p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~median, type = 'scatter',
                          name = paste0(legend, '.median'), mode = 'lines+markers', 
                          marker = list(color = rgb_str), legendgroup = legend,
-                         line = list(color = rgb_str, dash = 'dot'))
-      
+                         line = list(color = rgb_str, dash = 'dash'))
+
       if (show.runs) {
         fce_runs <- get_FV_sample(dsList, RTseq)
         
@@ -348,27 +349,30 @@ plot_RT_PMF.DatasetList <- function(dsList, ftarget, show.sample = F,
     ds <- dsList[[i]]
     
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.5)')
-    
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.55)')
+
     p %<>%
       add_trace(data = get_RT_sample(ds, ftarget, output = 'long'),
                 x = ~algId, y = ~RT, split = ~algId, type = 'violin',
                 hoveron = "points+kde",
                 box = list(visible = T),
                 points = points,
-                pointpos = 1,
-                jitter = 0.1,
+                pointpos = 1.5,
+                jitter = 0,
+                name = attr(ds, 'algId'),
                 scalemode = 'count',
-                meanline = list(visible = T),
-                line = list(color = rgb_str, width = 1),
-                marker = list(color = rgb_str))
+                meanline = list(visible = F),
+                fillcolor = rgba_str,
+                line = list(color = 'black', width = 2),
+                marker = list(color = rgb_str, size = 8))
+    
   }
   p %<>%
-    layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
-  p
+    layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
+           xaxis = list(tickangle = 45))
 }
 
-plot_RT_Hist.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'){
+plot_RT_HIST.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'){
 
   N <- length(dsList)
   colors <- color_palettes(N)
@@ -419,7 +423,7 @@ plot_RT_Hist.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'){
   }
   
   if (plot_mode == 'subplot') {
-    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.02)
+    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.025)
   }
   p
 }
@@ -477,8 +481,8 @@ plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
   if (is.null(fstart)) fstart <- min(fall)
   if (is.null(fstop)) fstop <- max(fall)
 
-  
-  fseq <- seq_FV(fall, fstart, fstop, fstep, scale = ifelse(scale.xlog,'log','linear'))
+  fseq <- seq_FV(fall, fstart, fstop, fstep, 
+                 scale = ifelse(scale.xlog, 'log', 'linear'))
   req(fseq)
   
   N <- length(dsList)
@@ -571,20 +575,25 @@ plot_RT_AUC.DataSetList <- function(dsList, fstart = NULL,
     rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.2)')
     
     # calculate ECDFs on user specified targets
-    funs <- lapply(fseq, function(f) {
-      get_RT_sample(df, f, output = 'long')$RT %>% {
-        if (all(is.na(.))) NULL
-        else  RT.ECDF(.)
-      }
-    })
+
+    # funs <- lapply(fseq, function(f) {
+    #   get_RT_sample(df, f, output = 'long')$RT %>% {
+    #     if (all(is.na(.))) NULL
+    #     else  RT.ECDF(.)
+    #   }
+    # })
+
+    auc <- sapply(fseq, function(fv) {
+        ECDF(df, fv) %>% AUC(from = 1, to = RT.max)
+      })
     
-    auc <- sapply(funs,
-                  function(fun) {
-                    if (is.null(fun)) 0
-                    else integrate(fun, lower = attr(fun, 'min') - 1, upper = RT.max, 
-                                   subdivisions = 5e3) %>% {'$'(., 'value') / RT.max}
-                  })
-    
+    # auc <- sapply(funs,
+    #               function(fun) {
+    #                 if (is.null(fun)) 0
+    #                 else integrate(fun, lower = attr(fun, 'min') - 1, upper = RT.max, 
+    #                                subdivisions = 5e3) %>% {'$'(., 'value') / RT.max}
+    #               })
+
     p %<>% 
       add_trace(type = 'scatterpolar', r = auc, 
                 theta = paste0('f:', fval_formatter(fseq)), 
@@ -616,27 +625,30 @@ plot_FV_PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
     ds <- dsList[[i]]
     
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.5)')
-    
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.55)')
+
     p %<>%
       add_trace(data = get_FV_sample(ds, runtime, output = 'long'),
                 x = ~algId, y = ~`f(x)`, split = ~algId, type = 'violin',
                 hoveron = "points+kde",
                 box = list(visible = T),
                 points = points,
-                pointpos = 1,
-                jitter = 0.1,
+                pointpos = 1.5,
+                jitter = 0,
                 scalemode = 'count',
+                name = attr(ds, 'algId'),
                 meanline = list(visible = T),
-                line = list(color = rgb_str, width = 1),
-                marker = list(color = rgb_str))
+                fillcolor = rgba_str,
+                line = list(color = 'black', width = 2),
+                marker = list(color = rgb_str, size = 8))
   }
   p %<>%
     layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
   p
 }
 
-plot_FV_Hist.DataSetList <- function(dsList, runtime, plot_mode='overlay'){
+
+plot_FV_HIST.DataSetList <- function(dsList, runtime, plot_mode='overlay'){
   n_algorithm <- length(dsList)
   colors <- color_palettes(n_algorithm)
   if (n_algorithm <= 10)
@@ -758,7 +770,7 @@ plot_FV_ECDF_AGGR.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
   
   funevals.max <- sapply(dsList, function(ds) max(ds$FV, na.rm = T)) %>% max
   funevals.min <- sapply(dsList, function(ds) min(ds$FV, na.rm = T)) %>% min
-  
+
   x <- seq(funevals.min, funevals.max, length.out = 40)
   p <- plot_ly_default(x.title = "target value",
                        y.title = "Proportion of (run, budget) pairs")
@@ -955,11 +967,12 @@ plot_PAR_Line.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
 
 plot_RT_ECDF_MULTI.DataSetList <- function(dsList, targets = NULL, dim = NULL,
                                            funcid = NULL){
-  algs <- unique(attr(dsList,"algId"))
+  
+  algId <- unique(attr(dsList,"algId"))
   p <- plot_ly_default(x.title = "function evaluations",
                        y.title = "Proportion of (run, target, ...) pairs")
   
-  for(i in seq_along(algs)){
+  for (i in seq_along(algId)) {
     data <- dsList
     if(!is.null(dim))
       data <- subset(data,DIM == dim)
@@ -968,7 +981,7 @@ plot_RT_ECDF_MULTI.DataSetList <- function(dsList, targets = NULL, dim = NULL,
     
     rts = get_Runtimes(data)
     
-    algId <- algs[[i]]
+    algId <- algId[[i]]
     df_plot <- calc_ECDF_MULTI(data, algId, targets, rts )
     
     p %<>% add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
@@ -978,4 +991,5 @@ plot_RT_ECDF_MULTI.DataSetList <- function(dsList, targets = NULL, dim = NULL,
                      marker = list(size = 11))
   }
   p
+
 }

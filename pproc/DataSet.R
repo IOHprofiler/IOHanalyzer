@@ -66,7 +66,7 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     } else if (format == COCO) {
       datFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
       tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
-    } else if (format == TWO_COL){
+    } else if (format == TWO_COL) {
       datFile <-  file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
     }
     
@@ -78,7 +78,7 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     } else if (format == COCO) {
       dat <- read_COCO_dat(datFile, subsampling)    # read the dat file
       cdat <- read_COCO_dat(tdatFile, subsampling)   # read the tdat file
-    } else if (format == TWO_COL){
+    } else if (format == TWO_COL) {
       dat <- read_dat(datFile, subsampling)
     }
     
@@ -322,42 +322,64 @@ get_PAR_summary <- function(ds, ...) UseMethod("get_PAR_summary", ds)
 get_PAR_name <- function(ds) UseMethod("get_PAR_name", ds)
 get_FV_overview <- function(ds,...) UseMethod("get_FV_overview", ds)
 get_RT_overview <- function(ds,...) UseMethod("get_RT_overview", ds)
-# get_RT_runs <- function(ds, ...) UseMethod("get_RT_runs", ds)
-# get_FV_runs <- function(ds, ...) UseMethod("get_FV_runs", ds)
 
 
-# #' Get RunTime values
-# #'
-# #' @param ds 
-# #' @param ftarget 
-# #'
-# #' @return
-# #' @export
-# #'
-# #' @examples
-# get_RT_runs.DataSet <- function(ds, ftarget) {
+#' Get Function Value condensed overview
+#'
+#' @param ds 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_FV_overview.DataSet <- function(ds) {
+  data <- ds$FV
+  algId <- attr(ds, 'algId')
+  maximization <- attr(ds, 'maximization')
+  op_inv <- ifelse(maximization,min,max)
+  op <- ifelse(maximization,max,min)
   
-#   data <- ds$RT
-#   maxRT <- attr(ds, 'maxRT')
-#   algId <- attr(ds, 'algId')
-#   maximization <- attr(ds, 'maximization')
+  maxs <- apply(data,2,op)
   
-#   ftarget <- c(ftarget) %>% as.double %>% sort(decreasing = !maximization)
-#   FValues <- rownames(data) %>% as.numeric
+  max_val <- op(maxs)
+  min_val <- op_inv(maxs)
+  mean_max <- mean(maxs)
   
-#   idx <- seq_along(FValues)
-#   op <- ifelse(maximization, `>=`, `<=`)
+  runs <- ncol(data)
+  budget <- max(attr(ds,'maxRT'))
   
-#   matched <- sapply(
-#     ftarget,
-#     function(f) {
-#       idx[`op`(FValues, f)][1]
-#     }
-#   )
+  c(max_val,min_val,mean_max,runs,budget) %>%
+    t %>%
+    as.data.table %>% 
+    cbind(algId,.) %>% 
+    set_colnames(c("Algorithm ID","Best reached value","Worst reached value","Mean reached value","Number of runs","Budget"))
+}
+
+#' Get Runtime Value condensed overview
+#'
+#' @param ds 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_RT_overview.DataSet <- function(ds) {
+  data <- ds$RT
+  algId <- attr(ds, 'algId')
   
-#   data <- data[matched, , drop = FALSE]
-#   cbind(algId=algId,target=ftarget, as.data.table(data))
-# }
+  max_val <- max(data,na.rm = T)
+  min_val <- min(data,na.rm = T)
+  
+  runs <- ncol(data)
+  budget <- max(attr(ds,'maxRT'))
+  
+  c(min_val, max_val, runs, budget) %>%
+    t %>%
+    as.data.table %>% 
+    cbind(algId,.) %>% 
+    set_colnames(c('Algorithm ID', 'Minimum used evaluations',
+                   'Maximum used evaluations', 'Number of runs', 'Budget'))
+}
 
 #' Get RunTime Summary
 #'

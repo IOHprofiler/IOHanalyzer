@@ -41,7 +41,10 @@ ECDF <- function(ds, ...) UseMethod("ECDF", ds)
 ECDF.DataSet <- function(ds, ftarget) {
   runtime <- get_RT_sample(ds, ftarget, output = 'long')$RT
   runtime <- runtime[!is.na(runtime)]
-  fun <- ecdf(runtime)
+  if (length(runtime) == 0) 
+    fun <- ecdf(Inf)
+  else
+    fun <- ecdf(runtime)
   
   class(fun)[1] <- 'ECDF'
   attr(fun, 'min') <- min(runtime)

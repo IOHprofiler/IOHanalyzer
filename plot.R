@@ -92,16 +92,16 @@ gg_beanplot <- function(mapping, data, p = NULL, width = 3, fill = 'grey',
 }
 
 Set1 <- function(n) sequential_hcl(n, h = c(360, 40), c = c(100, NA, 90), l = c(28, 90), 
-                                   power = c(1, 1.1), gamma = NULL, fixup = TRUE, alpha = 1, 
-                                   palette = NULL, rev = FALSE)
+                                   power = c(1, 1.1), gamma = NULL, fixup = TRUE, 
+                                   alpha = 1)#, palette = NULL, rev = FALSE)
 
 Set2 <- function(n) sequential_hcl(n, c(261, 26), c = c(50, NA, 70), l = c(54, 77), 
                                    power = c(0.5, NA), gamma = NULL, 
-                                   fixup = TRUE, alpha = 1, palette = NULL, rev = FALSE)
+                                   fixup = TRUE, alpha = 1)#, palette = NULL, rev = FALSE)
 
 Set3 <- function(n) sequential_hcl(n, c(-88, 59), c = c(60, 75, 55), l = c(40, 90), 
                                    power = c(0.1, 1.2), gamma = NULL, 
-                                   fixup = TRUE, alpha = 1, palette = NULL, rev = FALSE)
+                                   fixup = TRUE, alpha = 1)#, palette = NULL, rev = FALSE)
 
 # TODO: incoporate more colors
 color_palettes <- function(ncolor) {
@@ -109,7 +109,7 @@ color_palettes <- function(ncolor) {
   require(colorRamps)
   require(RColorBrewer)
   
-  if (ncolor < 5) return(Set2(ncolor))
+  if (ncolor < 5) return(Set3(ncolor)) #Was set2, which gave NAFF as color?
   
   brewer <- function(n) {
     colors <- brewer.pal(n, 'Spectral')

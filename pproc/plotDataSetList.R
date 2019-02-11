@@ -29,6 +29,22 @@ insert_best_parts <- function(from_data, to_data, best_is_min) {
     pmax(from_data, to_data, na.rm = T)
 }
 
+#Adding S3 generics
+plot_RT_line <- function(dsList,...) UseMethod("plot_RT_line", dsList)
+plot_FV_line <- function(dsList,...) UseMethod("plot_FV_line", dsList)
+plot_RT_PMF <- function(dsList,...) UseMethod("plot_RT_PMF", dsList)
+plot_RT_HIST <- function(dsList,...) UseMethod("plot_RT_HIST", dsList)
+plot_RT_ECDF <- function(dsList,...) UseMethod("plot_RT_ECDF", dsList)
+plot_RT_ECDF_AGGR <- function(dsList,...) UseMethod("plot_RT_ECDF_AGGR", dsList)
+plot_RT_AUC <- function(dsList,...) UseMethod("plot_RT_AUC", dsList)
+plot_FV_PDF <- function(dsList,...) UseMethod("plot_FV_PDF", dsList)
+plot_FV_HIST <- function(dsList,...) UseMethod("plot_FV_HIST", dsList)
+plot_FCE_ECDF_PER_TARGET <- function(dsList,...) UseMethod("plot_FCE_ECDF_PER_TARGET", dsList)
+plot_FV_ECDF_AGGR <- function(dsList,...) UseMethod("plot_FV_ECDF_AGGR", dsList)
+plot_FV_AUC <- function(dsList,...) UseMethod("plot_FV_AUC", dsList)
+plot_PAR_Line <- function(dsList,...) UseMethod("plot_PAR_Line", dsList)
+plot_RT_ECDF_MULTI <- function(dsList,...) UseMethod("plot_RT_ECDF_MULTI", dsList)
+
 plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL, 
                                      show.ERT = T, show.CI = T, show.mean = F,
                                      show.runs = F, show.density = 50,

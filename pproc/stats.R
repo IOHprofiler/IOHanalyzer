@@ -72,15 +72,16 @@ ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
       data <- subset(dsList, funcId == Id)
       if (length(data) == 0) return(NA)
       res <- get_RT_sample(data, ftarget[[i]], output = 'long')$RT
-      res[!is.na(res)]
+      res[is.na(res)] <- Inf
+      res
     }) %>%
       unlist
   } else {
     runtime <- get_RT_sample(dsList, ftarget, output = 'long')$RT
+    runtime[is.na(runtime)] <- Inf
   }
 
-  runtime <- runtime[!is.na(runtime)]
-  
+
   if (length(runtime) == 0) return(NULL)
   
   fun <- ecdf(runtime)

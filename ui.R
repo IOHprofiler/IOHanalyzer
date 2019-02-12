@@ -147,22 +147,25 @@ body <- dashboardBody(
                            HTML('<p align="left" style="font-size:120%;"><b>Remove all data you uploaded</b></p>'),
                            actionButton('RM_DATA', 'Clear data')
                          )
-                         # mainPanel(
-                         #   width = 12,
-                         #   HTML('<p style="font-size:120%;">The processed folders are:</p>'),
-                         #   verbatimTextOutput('upload_data_promt'),
-                         #   tags$head(tags$style("#upload_data_promt{color:black; font-size:12px; font-style:italic;
-                         #                        overflow-y:visible; max-height: 100px; background: ghostwhite;}"))
-                         # )
                      )
               ),
-              
               column(width = 6,
-                     box(title = HTML('<p style="font-size:120%;">Data Processing Prompt</p>'), width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Load Data from repository</p>'), width = 12,
                          solidHeader = T, status = "primary", collapsible = F, height = '620px',
-                         verbatimTextOutput('process_data_promt'),
-                         tags$head(tags$style("#process_data_promt{color:black; font-size:12px; font-style:italic;
-                                              overflow-y:visible; max-height: 500px; background: ghostwhite;}"))
+                         sidebarPanel(
+                           width = 12,
+                           
+                           selectInput('REPOSITORY_SUITE', label = HTML('<p align="left" style="font-size:120%;">Please choose the suite</p>'),
+                                       choices = c("none",IOHprofiler, COCO), selected = "none", width = '50%'),
+                           selectInput('REPOSITORY_FUNCID', label = HTML('<p align="left" style="font-size:120%;">Please choose the function</p>'),
+                                       choices = NULL, selected = NULL, width = '50%'),
+                           selectInput('REPOSITORY_DIM', label = HTML('<p align="left" style="font-size:120%;">Please choose the dimension</p>'),
+                                       choices = NULL, selected = NULL, width = '50%'),
+                           selectInput('REPOSITORY_ALGID', label = HTML('<p align="left" style="font-size:120%;">Please choose the algorithm</p>'),
+                                       choices = NULL, selected = NULL, width = '50%'),
+                           
+                           actionButton('REPOSITORY_LOAD', 'Load data')
+                         )
                      )
               )
             ),
@@ -172,6 +175,16 @@ body <- dashboardBody(
                      box(title = HTML('<p style="font-size:120%;">List of Processed Data</p>'), width = 12,
                          solidHeader = T, status = "primary", collapsible = T, 
                          dataTableOutput('DATASETLIST_INFO')
+                     )
+              )
+            ),
+            fluidRow(
+              column(width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Data Processing Prompt</p>'), width = 12,
+                         solidHeader = T, status = "primary", collapsible = F,
+                         verbatimTextOutput('process_data_promt'),
+                         tags$head(tags$style("#process_data_promt{color:black; font-size:12px; font-style:italic;
+                                                overflow-y:visible; max-height: 500px; background: ghostwhite;}"))
                      )
               )
             )

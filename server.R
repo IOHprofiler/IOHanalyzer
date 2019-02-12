@@ -47,6 +47,10 @@ format_RT <- function(v) as.integer(v)
 # directory where data are extracted from the zip file
 exdir <- file.path(Sys.getenv('HOME'), 'data')
 
+# directory where rds-data is stored
+rdsdir <- file.path(Sys.getenv('HOME'), 'repository')
+repository <- NULL
+
 setTextInput <- function(session, id, name, alternative) {
   v <- REG[[id]]
   if (name %in% names(v)) {
@@ -96,6 +100,40 @@ shinyServer(function(input, output, session) {
   observe({
     sub_sampling <<- input$SUBSAMPLING  
   })
+  
+  # Load correct options for repository
+  observe({
+    if(input$REPOSITORY_SUITE == IOHprofiler & is.null(repository)){
+      file_location <- file.path(rdsdir, "2019gecco.rds")
+      repository <<- readRDS(file_location)
+    }
+    else{
+      shinyjs::disable("REPOSITORY_LOAD")
+      return(NULL)
+    }
+    algId <- c(get_AlgId(repository), 'all')
+    updateSelectInput(session, 'REPOSITORY_ALGID', choices = algId, selected = 'all')
+    dim <- c(get_DIM(repository), 'all')
+    updateSelectInput(session, 'REPOSITORY_DIM', choices = dim, selected = 'all')
+    func <- c(get_funcId(repository), 'all')
+    updateSelectInput(session, 'REPOSITORY_FUNCID', choices = func, selected = 'all')
+    shinyjs::enable("REPOSITORY_LOAD")
+  })
+  
+  observeEvent(input$REPOSITORY_LOAD, {
+    to_load = repository
+    if(input$REPOSITORY_FUNCID != 'all')
+      to_load <- subset(to_load, funcId==input$REPOSITORY_FUNCID)
+    if(input$REPOSITORY_DIM != 'all')
+      to_load <- subset(to_load, DIM==input$REPOSITORY_DIM)
+    if(input$REPOSITORY_ALGID != 'all')
+      to_load <- subset(to_load, algId==input$REPOSITORY_ALGID)
+    
+    DataList$data <- c(DataList$data, to_load)
+  })
+  
+  
+  
   
   # IMPORTANT: this only works locally, keep it for the local version
   # links to users file systems

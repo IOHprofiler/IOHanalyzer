@@ -130,8 +130,8 @@ CDF_discrete <- function(x) {
 #TODO: inconsistent use of format_func gives slightly different results between
 #generated and uploaded targets
 get_default_ECDF_targets <- function(data, format_func = as.integer){
-  funcIds <- unique(attr(data, 'funcId'))
-  dims <- unique(attr(data, 'DIM'))
+  funcIds <- get_funcId(data)
+  dims <- get_DIM(data)
   
   targets <- list()
   for (i in seq_along(funcIds)) {

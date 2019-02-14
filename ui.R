@@ -295,7 +295,7 @@ body <- dashboardBody(
                              textInput('ERTPlot.Min', 
                                        label = F_MIN_LABEL, 
                                        value = ''),
-                             textInput('ERTPlot.MAx', 
+                             textInput('ERTPlot.Max', 
                                        label = F_MAX_LABEL, 
                                        value = ''),
                              

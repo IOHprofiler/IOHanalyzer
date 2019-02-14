@@ -8,12 +8,12 @@ options(datatable.print.nrows = 20)
 options(width = 120)
 
 # ploting settings for UI ---------------------
-# aspect_ratio <-  4 / 3
-# fig_height <- 1100
-# fig_height2 <- 1100
-# fig_width <- fig_height * aspect_ratio
-# fig_width2 <- fig_height * (16 / 10)
-# 
+aspect_ratio <-  4 / 3
+fig_height <- 1100
+fig_height2 <- 1100
+fig_width <- fig_height * aspect_ratio
+fig_width2 <- fig_height * (16 / 10)
+
 # plotly_height <- paste0(fig_height, "px")
 # plotly_width <- paste0(fig_width, "px")
 # plotly_height2 <- paste0(fig_height2, "px")
@@ -61,7 +61,7 @@ PARSample_csv_name <- parse(text = "paste0('PARSample-', paste(Sys.Date(), input
 
 max_samples <- 100
 
-FIG_NAME_ERT_PER_FUN <- parse(text = "paste0('ERT-', Sys.Date(), '.', input$FIG_FORMAT_ERT_PER_FUN)")
+FIG_NAME_ERT_PER_FUN <- parse(text = "paste0('ERT-', Sys.Date(), '.', input$ERTPlot.Format)")
 FIG_NAME_RT_PMF <- parse(text = "paste0('RT_PMF-', Sys.Date(), '.', input$FIG_FORMAT_RT_PMF)")
 FIG_NAME_RT_HIST <- parse(text = "paste0('RT_HIST-', Sys.Date(), '.', input$FIG_FORMAT_RT_HIST)")
 FIG_NAME_RT_ECDF_AGGR <- parse(text = "paste0('RT_ECDF_AGGR-', Sys.Date(), '.', input$FIG_FORMAT_RT_ECDF_AGGR)")

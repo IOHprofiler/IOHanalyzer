@@ -181,12 +181,12 @@ seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
 
 # ID of the control widget, whose current value should de always recorded and restored ----
 # those control widget are switched on and off
-widget_id <- c('fstart',
-               'fstop',
-               'fstep',
-               'F_MIN_SAMPLE', 
-               'F_MAX_SAMPLE',
-               'F_STEP_SAMPLE', 
+widget_id <- c('RTSummary.Statistics.Min',
+               'RTSummary.Statistics.Max',
+               'RTSummary.Statistics.Step',
+               'RTSummary.Sample.Min', 
+               'RTSummary.Sample.Max',
+               'RTSummary.Sample.Step', 
                'RT_fstart',
                'RT_fstop', 
                'RT_fstep', 

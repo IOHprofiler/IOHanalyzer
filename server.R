@@ -94,63 +94,62 @@ shinyServer(function(input, output, session) {
   
   # update maximization indication, trans_funeval according to src_format 
   observe({
-    selected_format <<- input$DATA_SRC_FORMAT
-    maximization <<- input$DATA_SRC_MINMAX
+    selected_format <<- input$Upload.format
+    maximization <<- input$Upload.minmax
   })
   
   # should subsamping be turned on?
   observe({
-    sub_sampling <<- input$SUBSAMPLING  
+    sub_sampling <<- input$Upload.subsampling  
   })
   
   # Load correct options for repository
   observe({
-    if(input$REPOSITORY_OFFICIAL == "Official"){
-      if(input$REPOSITORY_SUITE == IOHprofiler & is.null(repository)){
-        file_location <- file.path(rdsdir, "2019gecco.rds")
-        repository <<- readRDS(file_location)
+    if(input$Repository.source == "Official"){
+      if(input$Repository.suite == IOHprofiler){
+        if(is.null(repository)){
+          file_location <- file.path(rdsdir, "2019gecco.rds")
+          repository <<- readRDS(file_location)
+        }
       }
       else{
-        shinyjs::disable("REPOSITORY_LOAD")
+        shinyjs::disable("Repository.load")
         return(NULL)
       }
       algId <- c(get_AlgId(repository), 'all')
-      updateSelectInput(session, 'REPOSITORY_ALGID', choices = algId, selected = 'all')
       dim <- c(get_DIM(repository), 'all')
-      updateSelectInput(session, 'REPOSITORY_DIM', choices = dim, selected = 'all')
       func <- c(get_funcId(repository), 'all')
-      updateSelectInput(session, 'REPOSITORY_FUNCID', choices = func, selected = 'all')
-      shinyjs::enable("REPOSITORY_LOAD")
     }
     else{
       #TODO: change how the selectinputs are updated based on previously selected values
-      if(input$REPOSITORY_SUITE != IOHprofiler & input$REPOSITORY_SUITE != COCO){
-        shinyjs::disable("REPOSITORY_LOAD")
+      if(input$Repository.suite != IOHprofiler & input$Repository.suite != COCO){
+        shinyjs::disable("Repository.load")
         return(NULL)
       }
-      algId <- c(get_available_algs(input$REPOSITORY_SUITE), 'all')
-      updateSelectInput(session, 'REPOSITORY_ALGID', choices = algId, selected = 'all')
-      dim <- c(get_available_dims(input$REPOSITORY_SUITE), 'all')
-      updateSelectInput(session, 'REPOSITORY_DIM', choices = dim, selected = 'all')
-      func <- c(get_available_funcs(input$REPOSITORY_SUITE), 'all')
-      updateSelectInput(session, 'REPOSITORY_FUNCID', choices = func, selected = 'all')
-      shinyjs::enable("REPOSITORY_LOAD")
+      algId <- c(get_available_algs(input$Repository.suite), 'all')
+      dim <- c(get_available_dims(input$Repository.suite), 'all')
+      func <- c(get_available_funcs(input$Repository.suite), 'all')
     }
+    updateSelectInput(session, 'Repository.algid', choices = algId, selected = 'all')
+    updateSelectInput(session, 'Repository.dim', choices = dim, selected = 'all')
+    updateSelectInput(session, 'Repository.funcid', choices = func, selected = 'all')
+    shinyjs::enable("Repository.load")
+    
   })
   
-  observeEvent(input$REPOSITORY_LOAD, {
-    if(input$REPOSITORY_OFFICIAL == "Official"){
+  observeEvent(input$Repository.load, {
+    if(input$Repository.source == "Official"){
       to_load = repository
-      if(input$REPOSITORY_FUNCID != 'all')
-        to_load <- subset(to_load, funcId==input$REPOSITORY_FUNCID)
-      if(input$REPOSITORY_DIM != 'all')
-        to_load <- subset(to_load, DIM==input$REPOSITORY_DIM)
-      if(input$REPOSITORY_ALGID != 'all')
-        to_load <- subset(to_load, algId==input$REPOSITORY_ALGID)
+      if(input$Repository.funcid != 'all')
+        to_load <- subset(to_load, funcId==input$Repository.funcid)
+      if(input$Repository.dim != 'all')
+        to_load <- subset(to_load, DIM==input$Repository.dim)
+      if(input$Repository.algid != 'all')
+        to_load <- subset(to_load, algId==input$Repository.algid)
     }
     else{
-      to_load <- load_from_repository(input$REPOSITORY_SUITE, algid = input$REPOSITORY_ALGID,
-                                      dim = input$REPOSITORY_DIM, funcid = input$REPOSITORY_FUNCID)
+      to_load <- load_from_repository(input$Repository.suite, algid = input$Repository.algid,
+                                      dim = input$Repository.dim, funcid = input$Repository.funcid)
     }
     DataList$data <- c(DataList$data, to_load)
   })
@@ -174,9 +173,9 @@ shinyServer(function(input, output, session) {
   
   # the folder where the uploaded zip file is uncompressed
   selected_folders <- reactive({
-    if (!is.null(input$ZIP)) {
-      datapath <- input$ZIP$datapath
-      filename <- input$ZIP$name
+    if (!is.null(input$Upload.zip)) {
+      datapath <- input$Upload.zip$datapath
+      filename <- input$Upload.zip$name
       folders <- rep('', length(datapath))
       
       for (i in seq(datapath)) {
@@ -256,7 +255,7 @@ shinyServer(function(input, output, session) {
                                  maximization = minmax,
                                  format = format,
                                  subsampling = sub_sampling)
-        if(input$REPOSITORY_ADD) upload_dataSetList(new_dataList)
+        if(input$Upload.add_repository) upload_dataSetList(new_dataList)
         DataList$data <- c(DataList$data, new_dataList)
         src_format <<- format
         shinyjs::html("upload_data_promt", 
@@ -266,7 +265,7 @@ shinyServer(function(input, output, session) {
   })
   
   # remove all uploaded data set
-  observeEvent(input$RM_DATA, {
+  observeEvent(input$Upload.remove, {
     if (length(DataList$data) != 0) {
       DataList$data <- DataSetList() # must be a 'DataSetList'
       folderList$data <- list() 
@@ -298,10 +297,10 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, 'FUNCID_INPUT', choices = funcID, selected = funcID[1])
     
     algId <- c(get_AlgId(data), 'all')
-    updateSelectInput(session, 'ALGID_INPUT', choices = algId, selected = 'all')
-    updateSelectInput(session, 'ALGID_INPUT_SUMMARY', choices = algId, selected = 'all')
+    updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algId, selected = 'all')
+    updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'FCE_ALGID_INPUT_SUMMARY', choices = algId, selected = 'all')
-    updateSelectInput(session, 'ALGID_RAW_INPUT', choices = algId, selected = 'all')
+    updateSelectInput(session, 'RTSummary.Sample.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'PAR_ALGID_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'FCE_ALGID_INPUT', choices = algId, selected = 'all')
     updateSelectInput(session, 'FCE_ALGID_RAW_INPUT', choices = algId, selected = 'all')
@@ -367,13 +366,13 @@ shinyServer(function(input, output, session) {
       step <- log10(fseq[3]) - log10(fseq[2])
     
     name <- get_data_id(data)
-    setTextInput(session, 'fstart', name, alternative = format_FV(start))
-    setTextInput(session, 'fstop', name, alternative = format_FV(stop))
-    setTextInput(session, 'fstep', name, alternative = format_FV(step))
+    setTextInput(session, 'RTSummary.Statistics.Min', name, alternative = format_FV(start))
+    setTextInput(session, 'RTSummary.Statistics.Max', name, alternative = format_FV(stop))
+    setTextInput(session, 'RTSummary.Statistics.Step', name, alternative = format_FV(step))
     
-    setTextInput(session, 'F_MIN_SAMPLE', name, alternative = format_FV(start))
-    setTextInput(session, 'F_MAX_SAMPLE', name, alternative = format_FV(stop))
-    setTextInput(session, 'F_STEP_SAMPLE', name, alternative = format_FV(step))
+    setTextInput(session, 'RTSummary.Sample.Min', name, alternative = format_FV(start))
+    setTextInput(session, 'RTSummary.Sample.Max', name, alternative = format_FV(stop))
+    setTextInput(session, 'RTSummary.Sample.Step', name, alternative = format_FV(step))
     
     setTextInput(session, 'RT_fstart', name, alternative = format_FV(start))
     setTextInput(session, 'RT_fstop', name, alternative = format_FV(stop))
@@ -459,24 +458,24 @@ shinyServer(function(input, output, session) {
   
   # Data summary for Fixed-Target Runtime (ERT)  --------------
   runtime_summary <- reactive({
-    req(input$fstart, input$fstop, input$fstep)
+    req(input$RTSummary.Statistics.Min, input$RTSummary.Statistics.Max, input$RTSummary.Statistics.Step)
     
-    fstart <- format_FV(input$fstart) %>% as.numeric
-    fstop <- format_FV(input$fstop) %>% as.numeric
-    fstep <- format_FV(input$fstep) %>% as.numeric
+    fstart <- format_FV(input$RTSummary.Statistics.Min) %>% as.numeric
+    fstop <- format_FV(input$RTSummary.Statistics.Max) %>% as.numeric
+    fstep <- format_FV(input$RTSummary.Statistics.Step) %>% as.numeric
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     
     data <- DATA()
     fall <- get_Funvals(data)
     
-    if (input$singleF)
+    if (input$RTSummary.Statistics.Single)
       fstop <- fstart
     
     fseq <- seq_FV(fall, fstart, fstop, fstep)
     req(fseq)
     
-    df <- get_RT_summary(data, fseq, algorithm = input$ALGID_INPUT)
+    df <- get_RT_summary(data, fseq, algorithm = input$RTSummary.Statistics.Algid)
     df[, c('DIM', 'funcId') := NULL]
   })
   
@@ -497,11 +496,11 @@ shinyServer(function(input, output, session) {
   runtime_summary_condensed <- reactive({
     data <- DATA()
     fall <- get_Funvals(data)
-    get_FV_overview(data, algorithm = input$ALGID_INPUT_SUMMARY)
+    get_FV_overview(data, algorithm = input$RTSummary.Overview.Algid)
   })
   
   output$table_FV_summary_condensed <- renderTable({
-    req(input$ALGID_INPUT_SUMMARY)
+    req(input$RTSummary.Overview.Algid)
     df <- runtime_summary_condensed()
     
     df$"Budget" %<>% as.integer
@@ -513,12 +512,12 @@ shinyServer(function(input, output, session) {
     df
   })
   
-  output$downloadData <- downloadHandler(
+  output$RTSummary.Statistics.Download <- downloadHandler(
     filename = {
       data <- DATA()
-      fstart <- format_FV(input$fstart)
-      fstop <- format_FV(input$fstop)
-      fstep <- format_FV(input$fstep) 
+      fstart <- format_FV(input$RTSummary.Statistics.Min)
+      fstop <- format_FV(input$RTSummary.Statistics.Max)
+      fstep <- format_FV(input$RTSummary.Statistics.Step) 
       eval(RT_csv_name)
     }, 
     content = function(file) {
@@ -528,11 +527,11 @@ shinyServer(function(input, output, session) {
   )
   
   get_RT <- reactive({
-    req(input$fstart, input$fstop, input$fstep)
+    req(input$RTSummary.Sample.Min, input$RTSummary.Sample.Max, input$RTSummary.Sample.Step)
     
-    fstart <- format_FV(input$F_MIN_SAMPLE) %>% as.numeric
-    fstop <- format_FV(input$F_MAX_SAMPLE) %>% as.numeric
-    fstep <- format_FV(input$F_STEP_SAMPLE) %>% as.numeric
+    fstart <- format_FV(input$RTSummary.Sample.Min) %>% as.numeric
+    fstop <- format_FV(input$RTSummary.Sample.Max) %>% as.numeric
+    fstep <- format_FV(input$RTSummary.Sample.Step) %>% as.numeric
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     
@@ -543,7 +542,7 @@ shinyServer(function(input, output, session) {
       fall <- get_Funvals(data)
     })
     
-    if (input$F_SAMPLE_SINGLE)
+    if (input$RTSummary.Sample.Single)
       fstop <- fstart
     
     fseq <- seq_FV(fall, fstart, fstop, fstep)
@@ -551,8 +550,8 @@ shinyServer(function(input, output, session) {
     # res <- list()
     # n_runs_max <- sapply(data, function(ds) length(attr(ds, 'instance'))) %>% max
     
-    get_RT_sample(data, ftarget = fseq, algorithm = input$ALGID_RAW_INPUT, 
-                  output = input$RT_download_format)
+    get_RT_sample(data, ftarget = fseq, algorithm = input$RTSummary.Sample.Algid, 
+                  output = input$RTSummary.Sample.DownloadFormat)
     
     # for (i in seq_along(data)) {
     #   ds <- data[[i]]
@@ -571,13 +570,13 @@ shinyServer(function(input, output, session) {
     # do.call(rbind, res) 
   })
   
-  output$download_runtime <- downloadHandler(
+  output$RTSummary.Sample.Download <- downloadHandler(
     filename = {
       data <- DATA()
       algId <- paste0(get_AlgId(data), collapse = ';')
-      fstart <- input$F_MIN_SAMPLE %>% format_FV
-      fstop <- input$F_MAX_SAMPLE %>% format_FV
-      fstep <- input$F_STEP_SAMPLE %>% format_FV
+      fstart <- input$RTSummary.Sample.Min %>% format_FV
+      fstop <- input$RTSummary.Sample.Max %>% format_FV
+      fstep <- input$RTSummary.Sample.Step %>% format_FV
       eval(RTSample_csv_name)
     },
     content = function(file) {

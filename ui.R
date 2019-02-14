@@ -128,26 +128,26 @@ body <- dashboardBody(
                          sidebarPanel(
                            width = 12,
                            
-                           selectInput('DATA_SRC_FORMAT', label = HTML('<p align="left" style="font-size:120%;">Please choose the format of your data sets</p>'),
+                           selectInput('Upload.format', label = HTML('<p align="left" style="font-size:120%;">Please choose the format of your data sets</p>'),
                                        choices = c(AUTOMATIC,IOHprofiler, COCO, TWO_COL), selected = AUTOMATIC, width = '50%'),
-                           selectInput('DATA_SRC_MINMAX', label = HTML('<p align="left" style="font-size:100%;">Use maximization or minimization?</p>'),
+                           selectInput('Upload.minmax', label = HTML('<p align="left" style="font-size:100%;">Use maximization or minimization?</p>'),
                                        choices = c(AUTOMATIC,"MAXIMIZE", "MINIMIZE"), selected = AUTOMATIC, width = '50%'),
                            
                            HTML('<p align="justify" style="font-size:120%;">When the data set is huge, the alignment
                                 can take a very long time. In this case, you could toggle the efficient mode to subsample 
                                 the data set. However, the precision of data will be compromised.</p>'),
-                           checkboxInput('SUBSAMPLING', label = HTML('<p align="left" style="font-size:120%;">Efficient mode</p>'), value = F),
+                           checkboxInput('Upload.subsampling', label = HTML('<p align="left" style="font-size:120%;">Efficient mode</p>'), value = F),
                            
-                           checkboxInput('REPOSITORY_ADD', label = HTML('<p align="left" style="font-size:120%;">Upload data to IOHProfiler database for use by others?</p>'), value = F),
+                           checkboxInput('Upload.add_repository', label = HTML('<p align="left" style="font-size:120%;">Upload data to IOHProfiler database for use by others?</p>'), value = F),
                            
-                           fileInput("ZIP", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>zip file</i> containing the benchmark data</p>'),
+                           fileInput("Upload.zip", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>zip file</i> containing the benchmark data</p>'),
                                      multiple = TRUE, accept = c("Application/zip", ".zip")),
                            
                            # TODO: keep this for the local version
                            # shinyDirButton('directory', 'Browse the folder', 
                            #                title = 'Please choose a directory containing the benchmark data'),
                            HTML('<p align="left" style="font-size:120%;"><b>Remove all data you uploaded</b></p>'),
-                           actionButton('RM_DATA', 'Clear data')
+                           actionButton('Upload.remove', 'Clear data')
                          )
                      )
               ),
@@ -157,18 +157,18 @@ body <- dashboardBody(
                          sidebarPanel(
                            width = 12,
                            
-                           radioButtons('REPOSITORY_OFFICIAL',label = "select the source to be used", choices = c("Official", "User-uploaded"),selected = "Official"),
+                           radioButtons('Repository.source',label = "select the source to be used", choices = c("Official", "User-uploaded"),selected = "Official"),
                            
-                           selectInput('REPOSITORY_SUITE', label = HTML('<p align="left" style="font-size:120%;">Please choose the suite</p>'),
+                           selectInput('Repository.suite', label = HTML('<p align="left" style="font-size:120%;">Please choose the suite</p>'),
                                        choices = c("none",IOHprofiler, COCO), selected = "none", width = '50%'),
-                           selectInput('REPOSITORY_FUNCID', label = HTML('<p align="left" style="font-size:120%;">Please choose the function</p>'),
+                           selectInput('Repository.funcid', label = HTML('<p align="left" style="font-size:120%;">Please choose the function</p>'),
                                        choices = NULL, selected = NULL, width = '50%'),
-                           selectInput('REPOSITORY_DIM', label = HTML('<p align="left" style="font-size:120%;">Please choose the dimension</p>'),
+                           selectInput('Repository.dim', label = HTML('<p align="left" style="font-size:120%;">Please choose the dimension</p>'),
                                        choices = NULL, selected = NULL, width = '50%'),
-                           selectInput('REPOSITORY_ALGID', label = HTML('<p align="left" style="font-size:120%;">Please choose the algorithm</p>'),
+                           selectInput('Repository.algid', label = HTML('<p align="left" style="font-size:120%;">Please choose the algorithm</p>'),
                                        choices = NULL, selected = NULL, width = '50%'),
                            
-                           actionButton('REPOSITORY_LOAD', 'Load data')
+                           actionButton('Repository.load', 'Load data')
                          )
                      )
               )
@@ -205,9 +205,8 @@ body <- dashboardBody(
                      width = 3,
                      HTML('<p align="justify">Select which algorithms to show.</p>'),
                      
-                     # TODO: find better naming scheme for 'fstart, fstop, singleF'
-                     selectInput('ALGID_INPUT_SUMMARY', 'Algorithms', choices = NULL, selected = NULL),
-                     downloadButton("downloadData_summary", "Save this table as csv")
+                     selectInput('RTSummary.Overview.Algid', 'Algorithms', choices = NULL, selected = NULL),
+                     downloadButton("RTSummary.Download.overview", "Save this table as csv")
                      ),
                    
                    mainPanel(
@@ -224,14 +223,14 @@ body <- dashboardBody(
                           The table will show fixed-target runtimes for evenly spaced target values.</p>'),
                      
                      # TODO: find better naming scheme for 'fstart, fstop, singleF'
-                     textInput('fstart', label = F_MIN_LABEL, value = ''),
-                     textInput('fstop', label = F_MAX_LABEL, value = ''),
-                     textInput('fstep', label = F_STEP_LABEL, value = ''),
-                     checkboxInput('singleF', label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
+                     textInput('RTSummary.Statistics.Min', label = F_MIN_LABEL, value = ''),
+                     textInput('RTSummary.Statistics.Max', label = F_MAX_LABEL, value = ''),
+                     textInput('RTSummary.Statistics.Step', label = F_STEP_LABEL, value = ''),
+                     checkboxInput('RTSummary.Statistics.Single', label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
                                                            Once toggled, only \\(f_{\\text{min}}\\) is 
                                                            used to generate the table on the right.</p>'), value = FALSE),
-                     selectInput('ALGID_INPUT', 'Algorithms', choices = NULL, selected = NULL),
-                     downloadButton("downloadData", "Save this table as csv")
+                     selectInput('RTSummary.Statistics.Algid', 'Algorithms', choices = NULL, selected = NULL),
+                     downloadButton("RTSummary.Statistics.Download", "Save this table as csv")
                    ),
                    
                    mainPanel(
@@ -248,10 +247,10 @@ body <- dashboardBody(
                      HTML('<p align="justify">Set the range and the granularity of the results.
                           The table will show fixed-target runtimes for evenly spaced target values.</p>'),
                      
-                     textInput('F_MIN_SAMPLE', label = F_MIN_LABEL, value = ''),
-                     textInput('F_MAX_SAMPLE', label = F_MAX_LABEL, value = ''),
-                     textInput('F_STEP_SAMPLE', label = F_STEP_LABEL, value = ''),
-                     checkboxInput('F_SAMPLE_SINGLE', 
+                     textInput('RTSummary.Sample.Min', label = F_MIN_LABEL, value = ''),
+                     textInput('RTSummary.Sample.Max', label = F_MAX_LABEL, value = ''),
+                     textInput('RTSummary.Sample.Step', label = F_STEP_LABEL, value = ''),
+                     checkboxInput('RTSummary.Sample.Single', 
                                     label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
                                                   Once toggled, only \\(f_{\\text{min}}\\) is 
                                                   used to generate the table on the right.</p>'), value = FALSE),
@@ -259,12 +258,12 @@ body <- dashboardBody(
                      # TODO: do we need this log scaling?
                      # checkboxInput('F_LOGSPACE_DATA_SUMMARY',
                      #               label = HTML('Evenly space target values in \\(log_{10}\\) space')),
-                     selectInput('ALGID_RAW_INPUT', 'Algorithms', 
+                     selectInput('RTSummary.Sample.Algid', 'Algorithms', 
                                  choices = NULL, selected = NULL),
                      
-                     selectInput('RT_download_format', 'Format of the csv', 
+                     selectInput('RTSummary.Sample.DownloadFormat', 'Format of the csv', 
                                  choices = c('long', 'wide'), selected = 'wide'),
-                     downloadButton("download_runtime", "Save the aligned runtime samples as csv")
+                     downloadButton("RTSummary.Sample.Download", "Save the aligned runtime samples as csv")
                      ),
                    
                    mainPanel(

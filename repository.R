@@ -19,18 +19,12 @@ prodecure_algids <- "CALL `iohprofiler`.`get_algs`("
 prodecure_dims <- "CALL `iohprofiler`.`get_dims`("
 
 upload_dataSetList <- function(dsList){
-  # to_upload <- DataSetList()
-  should_upload <- F
-  for (ds in dsList){
-    # if (verify_upload_dataSet(ds)) to_upload = c(to_upload,ds)
-    should_upload <- should_upload | verify_upload_dataSet(ds)
-  }
-  if(!should_upload) return(0)
+  #Only upload new data
+  dsList <- subset(dsList, lapply(dsList, verify_upload_dataSet))
+  if(length(dsList) == 0) return(0)
   
-  filename <- basename(tempfile(pattern = "rds_file",tmpdir = rds_location))
-  
-  # result <- do.call(c.DataSetList, to_upload)
-  saveRDS(dsList, file = file.path(rds_location, paste0(filename,".rds")))
+  filename <- basename(tempfile(pattern = "rds_file", tmpdir = rds_location))
+    saveRDS(dsList, file = file.path(rds_location, paste0(filename, ".rds")))
   
   succes <- 0
   for (ds in dsList){
@@ -40,25 +34,26 @@ upload_dataSetList <- function(dsList){
 }
 
 upload_dataSet <- function(ds, filename){
-  algid <- attr(ds,'algId')
-  funcid <- attr(ds,'funcId')
-  dim <- attr(ds,'DIM')
-  suite <- attr(ds,'src')
-  statement <- paste0(prodecure_upload,  funcid,",'", suite,"',", dim,",'", algid, "','" , filename , "');")
-  return(dbExecute(con,statement))
+  algid <- attr(ds, 'algId')
+  funcid <- attr(ds, 'funcId')
+  dim <- attr(ds, 'DIM')
+  suite <- attr(ds, 'src')
+  statement <- paste0(prodecure_upload,  funcid, ",'", suite, "',", dim,",'", 
+                      algid, "','" , filename , "');")
+  return(dbExecute(con, statement))
 }
 
 verify_upload_dataSet <- function(ds){
-  algid <- attr(ds,'algId')
-  funcid <- attr(ds,'funcId')
-  dim <- attr(ds,'DIM')
-  suite <- attr(ds,'src')
-  return(length(get_repository_filename(suite,algid,funcid,dim)) == 0)
+  algid <- attr(ds, 'algId')
+  funcid <- attr(ds, 'funcId')
+  dim <- attr(ds, 'DIM')
+  suite <- attr(ds, 'src')
+  return(length(get_repository_filename(suite, algid, funcid, dim)) == 0)
 }
 
 
 get_repository_filename <- function(suite, algid = "NULL", funcid = "-1", dim = "-1"){
-  statement <- paste0(prodecure_filename,  funcid,",'", suite,"',", dim,",'", algid, "');")
+  statement <- paste0(prodecure_filename,  funcid, ",'", suite, "',", dim, ",'", algid, "');")
   response <- dbSendQuery(con, statement)
   ans <- dbFetch(response, n=-1)
   dbClearResult(response)
@@ -92,7 +87,7 @@ get_available_funcs <- function(suite, algid = "all", dim = "all" ){
   if (algid == "all") algid <- "NULL"
   if (dim == "all") dim <- "-1"
   
-  statement <-  paste0(prodecure_funcids, "'", suite,"','", algid,"',", dim, ");")
+  statement <-  paste0(prodecure_funcids, "'", suite,"','", algid, "',", dim, ");")
   response <- dbSendQuery(con, statement)
   ans <- dbFetch(response, n=-1)
   dbClearResult(response)
@@ -104,7 +99,7 @@ get_available_dims <- function(suite, funcid = "all", algid = "all" ){
   if (algid == "all") algid <- "NULL"
   if (funcid == "all") funcid <- "-1"
   
-  statement <-  paste0(prodecure_dims, "'", suite,"',", funcid,",'", algid, "');")
+  statement <-  paste0(prodecure_dims, "'", suite, "',", funcid,",'", algid, "');")
   response <- dbSendQuery(con, statement)
   ans <- dbFetch(response, n=-1)
   dbClearResult(response)
@@ -116,7 +111,7 @@ get_available_algs <- function(suite, funcid = "all", dim = "all" ){
   if (funcid == "all") funcid <- "-1"
   if (dim == "all") dim <- "-1"
   
-  statement <-  paste0(prodecure_algids, "'", suite,"',", funcid,",", dim, ");")
+  statement <-  paste0(prodecure_algids, "'", suite, "',", funcid,",", dim, ");")
   response <- dbSendQuery(con, statement)
   ans <- dbFetch(response, n=-1)
   dbClearResult(response)

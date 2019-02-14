@@ -123,6 +123,7 @@ shinyServer(function(input, output, session) {
       shinyjs::enable("REPOSITORY_LOAD")
     }
     else{
+      #TODO: change how the selectinputs are updated based on previously selected values
       if(input$REPOSITORY_SUITE != IOHprofiler & input$REPOSITORY_SUITE != COCO){
         shinyjs::disable("REPOSITORY_LOAD")
         return(NULL)

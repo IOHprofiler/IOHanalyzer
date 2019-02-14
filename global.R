@@ -8,16 +8,21 @@ options(datatable.print.nrows = 20)
 options(width = 120)
 
 # ploting settings for UI ---------------------
-aspect_ratio <-  4 / 3
-fig_height <- 1100
-fig_height2 <- 1100
-fig_width <- fig_height * aspect_ratio
-fig_width2 <- fig_height * (16 / 10)
+# aspect_ratio <-  4 / 3
+# fig_height <- 1100
+# fig_height2 <- 1100
+# fig_width <- fig_height * aspect_ratio
+# fig_width2 <- fig_height * (16 / 10)
+# 
+# plotly_height <- paste0(fig_height, "px")
+# plotly_width <- paste0(fig_width, "px")
+# plotly_height2 <- paste0(fig_height2, "px")
+# plotly_width2 <- paste0(fig_width2, "px")
 
-plotly_height <- paste0(fig_height, "px")
-plotly_width <- paste0(fig_width, "px")
-plotly_height2 <- paste0(fig_height2, "px")
-plotly_width2 <- paste0(fig_width2, "px")
+plotly_height <- "auto"
+plotly_width <- "auto"
+plotly_height2 <- "auto"
+plotly_width2 <- "auto"
 
 IOHprofiler <- 'IOHprofiler'
 COCO <- 'COCO'
@@ -193,8 +198,8 @@ widget_id <- c('RTSummary.Statistics.Min',
                'RT_fselect', 
                'RT_PMF_FTARGET', 
                'RT_PMF_HIST_FTARGET', 
-               'ERT_FSTART', 
-               'ERT_FSTOP', 
+               'ERTPlot.Min', 
+               'ERTPlot.Max', 
                'RT_ECDF_FTARGET1', 
                'RT_ECDF_FTARGET2', 
                'RT_ECDF_FTARGET3', 

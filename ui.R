@@ -222,7 +222,6 @@ body <- dashboardBody(
                      HTML('<p align="justify">Set the range and the granularity of the results.
                           The table will show fixed-target runtimes for evenly spaced target values.</p>'),
                      
-                     # TODO: find better naming scheme for 'fstart, fstop, singleF'
                      textInput('RTSummary.Statistics.Min', label = F_MIN_LABEL, value = ''),
                      textInput('RTSummary.Statistics.Max', label = F_MAX_LABEL, value = ''),
                      textInput('RTSummary.Statistics.Step', label = F_STEP_LABEL, value = ''),
@@ -293,60 +292,60 @@ body <- dashboardBody(
                              width = 3,
                              HTML('<p style="font-size:120%;">Range of the displayed target values</p>'),
                              
-                             textInput('ERT_FSTART', 
+                             textInput('ERTPlot.Min', 
                                        label = F_MIN_LABEL, 
                                        value = ''),
-                             textInput('ERT_FSTOP', 
+                             textInput('ERTPlot.MAx', 
                                        label = F_MAX_LABEL, 
                                        value = ''),
                              
-                             checkboxInput('show.ERT', 
+                             checkboxInput('ERTPlot.show.ERT', 
                                            label = 'show/hide ERT',
                                            value = T),
                              
-                             checkboxInput('show.mean', 
+                             checkboxInput('ERTPlot.show.mean', 
                                            label = 'show/hide mean',
                                            value = F),
                              
-                             checkboxInput('show.CI', 
+                             checkboxInput('ERTPlot.show.CI', 
                                            label = 'show/hide mean +/- sd',
                                            value = F),
                              
-                             checkboxInput('show.median', 
+                             checkboxInput('ERTPlot.show.median', 
                                            label = 'show/hide median',
                                            value = F),
                              
-                             checkboxInput('semilogx', 
+                             checkboxInput('ERTPlot.semilogx', 
                                            label = 'scale x axis log10',
                                            value = T),
                              
-                             checkboxInput('semilogy', 
+                             checkboxInput('ERTPlot.semilogy', 
                                            label = 'scale y axis log10',
                                            value = T),
                              
-                             checkboxInput('show_all',
+                             checkboxInput('ERTPlot.show_all',
                                            label = 'show/hide multiple runs',
                                            value = F),
-                             conditionalPanel(condition = "input.show_all == true",
+                             conditionalPanel(condition = "ERTPlot.input.show_all == true",
                                               
                                               fluidRow(column(
                                                 11,
                                                 offset = 1,
-                                                sliderInput('show.density',
+                                                sliderInput('ERTPlot.show.density',
                                                             label = "Runs density(%)",
                                                             min = 1, max = 100, value = 50, step = 1),
-                                                checkboxInput('show.best_of_all',
+                                                checkboxInput('ERTPlot.show.best_of_all',
                                                               label = 'show/hide best run',
                                                               value = F),
-                                                checkboxInput('show.pareto_optima',
+                                                checkboxInput('ERTPlot.show.pareto_optima',
                                                               label = 'show/hide pareto optimal front',
                                                               value = F)
                                               ))),
                              
-                             selectInput('FIG_FORMAT_ERT_PER_FUN', label = 'select the figure format',
+                             selectInput('ERTPlot.Format', label = 'select the figure format',
                                          choices = supported_fig_format, selected = 'pdf'),
                              
-                             downloadButton('FIG_DOWNLOAD_ERT_PER_FUN', label = 'download the figure')
+                             downloadButton('ERTPlot.Download', label = 'download the figure')
                              
                              # checkboxInput('show.instance', 
                              #               label = 'show each independent run',

@@ -384,8 +384,8 @@ shinyServer(function(input, output, session) {
     
     # s <- ((stop - start) * 0.1 + start)
     # e <- ((stop - start) * 0.9 + start)
-    setTextInput(session, 'ERT_FSTART', name, alternative = format_FV(start))
-    setTextInput(session, 'ERT_FSTOP', name, alternative = format_FV(stop))
+    setTextInput(session, 'ERTPlot.Min', name, alternative = format_FV(start))
+    setTextInput(session, 'ERTPlot.Max', name, alternative = format_FV(stop))
     
     setTextInput(session, 'RT_ECDF_FTARGET1', name, alternative = format_FV(q[1]))
     setTextInput(session, 'RT_ECDF_FTARGET2', name, alternative = format_FV(q[2]))
@@ -596,28 +596,28 @@ shinyServer(function(input, output, session) {
     render_ERT_PER_FUN()
   })
   
-  output$FIG_DOWNLOAD_ERT_PER_FUN <- downloadHandler(
+  output$ERTPlot.Download <- downloadHandler(
     filename = function() {
       eval(FIG_NAME_ERT_PER_FUN)
     },
     content = function(file) {
       save_plotly(render_ERT_PER_FUN(), file, 
-                  format = input$FIG_FORMAT_ERT_PER_FUN, 
+                  format = input$ERTPlot.Format, 
                   width = fig_width2, height = fig_height)
     },
-    contentType = paste0('image/', input$FIG_FORMAT_ERT_PER_FUN)
+    contentType = paste0('image/', input$ERTPlot.Format)
   )
   
   render_ERT_PER_FUN <- reactive({
-    fstart <- input$ERT_FSTART %>% as.numeric
-    fstop <- input$ERT_FSTOP %>% as.numeric
+    fstart <- input$ERTPlot.Min %>% as.numeric
+    fstop <- input$ERTPlot.Max %>% as.numeric
     
     plot_RT_line.DataSetList(DATA(),Fstart = fstart ,Fstop = fstop,
-                              show.CI = input$show.CI, show.density = input$show.density,
-                              show.runs = input$show_all, show.optimal = input$show.best_of_all,
-                              show.pareto = input$show.pareto_optima, show.ERT = input$show.ERT,
-                              show.mean = input$show.mean, show.median = input$show.median,
-                              scale.xlog = input$semilogx, scale.ylog = input$semilogy,
+                              show.CI = input$ERTPlot.show.CI, show.density = input$ERTPlot.show.density,
+                              show.runs = input$ERTPlot.show_all, show.optimal = input$ERTPlot.show.best_of_all,
+                              show.pareto = input$ERTPlot.show.pareto_optima, show.ERT = input$ERTPlot.show.ERT,
+                              show.mean = input$ERTPlot.show.mean, show.median = input$ERTPlot.show.median,
+                              scale.xlog = input$ERTPlot.semilogx, scale.ylog = input$ERTPlot.semilogy,
                               scale.reverse = (src_format == COCO))
 
   })

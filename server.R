@@ -20,6 +20,7 @@ for (f in list.files('pproc', pattern = '.R', full.names = T)) {
 }
 
 source('plot.R')
+source('repository.R')
 
 options(width = 80)
 options(shiny.maxRequestSize = 200 * 1024 ^ 2)   # maximal number of requests, this is too many...
@@ -83,6 +84,7 @@ shinyServer(function(input, output, session) {
   
   # clean up the temporarsy files on server when exiting  
   session$onSessionEnded(function() {
+    disconnect_db()
     unlink(exdir, recursive = T)
   })
   
@@ -103,32 +105,52 @@ shinyServer(function(input, output, session) {
   
   # Load correct options for repository
   observe({
-    if(input$REPOSITORY_SUITE == IOHprofiler & is.null(repository)){
-      file_location <- file.path(rdsdir, "2019gecco.rds")
-      repository <<- readRDS(file_location)
+    if(input$REPOSITORY_OFFICIAL == "Official"){
+      if(input$REPOSITORY_SUITE == IOHprofiler & is.null(repository)){
+        file_location <- file.path(rdsdir, "2019gecco.rds")
+        repository <<- readRDS(file_location)
+      }
+      else{
+        shinyjs::disable("REPOSITORY_LOAD")
+        return(NULL)
+      }
+      algId <- c(get_AlgId(repository), 'all')
+      updateSelectInput(session, 'REPOSITORY_ALGID', choices = algId, selected = 'all')
+      dim <- c(get_DIM(repository), 'all')
+      updateSelectInput(session, 'REPOSITORY_DIM', choices = dim, selected = 'all')
+      func <- c(get_funcId(repository), 'all')
+      updateSelectInput(session, 'REPOSITORY_FUNCID', choices = func, selected = 'all')
+      shinyjs::enable("REPOSITORY_LOAD")
     }
     else{
-      shinyjs::disable("REPOSITORY_LOAD")
-      return(NULL)
+      if(input$REPOSITORY_SUITE != IOHprofiler & input$REPOSITORY_SUITE != COCO){
+        shinyjs::disable("REPOSITORY_LOAD")
+        return(NULL)
+      }
+      algId <- c(get_available_algs(input$REPOSITORY_SUITE), 'all')
+      updateSelectInput(session, 'REPOSITORY_ALGID', choices = algId, selected = 'all')
+      dim <- c(get_available_dims(input$REPOSITORY_SUITE), 'all')
+      updateSelectInput(session, 'REPOSITORY_DIM', choices = dim, selected = 'all')
+      func <- c(get_available_funcs(input$REPOSITORY_SUITE), 'all')
+      updateSelectInput(session, 'REPOSITORY_FUNCID', choices = func, selected = 'all')
+      shinyjs::enable("REPOSITORY_LOAD")
     }
-    algId <- c(get_AlgId(repository), 'all')
-    updateSelectInput(session, 'REPOSITORY_ALGID', choices = algId, selected = 'all')
-    dim <- c(get_DIM(repository), 'all')
-    updateSelectInput(session, 'REPOSITORY_DIM', choices = dim, selected = 'all')
-    func <- c(get_funcId(repository), 'all')
-    updateSelectInput(session, 'REPOSITORY_FUNCID', choices = func, selected = 'all')
-    shinyjs::enable("REPOSITORY_LOAD")
   })
   
   observeEvent(input$REPOSITORY_LOAD, {
-    to_load = repository
-    if(input$REPOSITORY_FUNCID != 'all')
-      to_load <- subset(to_load, funcId==input$REPOSITORY_FUNCID)
-    if(input$REPOSITORY_DIM != 'all')
-      to_load <- subset(to_load, DIM==input$REPOSITORY_DIM)
-    if(input$REPOSITORY_ALGID != 'all')
-      to_load <- subset(to_load, algId==input$REPOSITORY_ALGID)
-    
+    if(input$REPOSITORY_OFFICIAL == "Official"){
+      to_load = repository
+      if(input$REPOSITORY_FUNCID != 'all')
+        to_load <- subset(to_load, funcId==input$REPOSITORY_FUNCID)
+      if(input$REPOSITORY_DIM != 'all')
+        to_load <- subset(to_load, DIM==input$REPOSITORY_DIM)
+      if(input$REPOSITORY_ALGID != 'all')
+        to_load <- subset(to_load, algId==input$REPOSITORY_ALGID)
+    }
+    else{
+      to_load <- load_from_repository(input$REPOSITORY_SUITE, algid = input$REPOSITORY_ALGID,
+                                      dim = input$REPOSITORY_DIM, funcid = input$REPOSITORY_FUNCID)
+    }
     DataList$data <- c(DataList$data, to_load)
   })
   
@@ -229,10 +251,12 @@ shinyServer(function(input, output, session) {
           minmax <- ifelse((maximization == "MAXIMIZE"), TRUE, FALSE)
         }
         print_fun <- function(s) shinyjs::html("process_data_promt", s, add = TRUE)
-        DataList$data <- c(DataList$data, read_dir(folder, print_fun = print_fun,
-                                                   maximization = minmax,
-                                                   format = format,
-                                                   subsampling = sub_sampling))
+        new_dataList <- read_dir(folder, print_fun = print_fun,
+                                 maximization = minmax,
+                                 format = format,
+                                 subsampling = sub_sampling)
+        if(input$REPOSITORY_ADD) upload_dataSetList(new_dataList)
+        DataList$data <- c(DataList$data, new_dataList)
         src_format <<- format
         shinyjs::html("upload_data_promt", 
                       sprintf('%d: %s\n', length(folderList$data), folder), add = TRUE)

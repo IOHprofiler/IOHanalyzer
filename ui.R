@@ -138,6 +138,8 @@ body <- dashboardBody(
                                 the data set. However, the precision of data will be compromised.</p>'),
                            checkboxInput('SUBSAMPLING', label = HTML('<p align="left" style="font-size:120%;">Efficient mode</p>'), value = F),
                            
+                           checkboxInput('REPOSITORY_ADD', label = HTML('<p align="left" style="font-size:120%;">Upload data to IOHProfiler database for use by others?</p>'), value = F),
+                           
                            fileInput("ZIP", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>zip file</i> containing the benchmark data</p>'),
                                      multiple = TRUE, accept = c("Application/zip", ".zip")),
                            
@@ -154,6 +156,8 @@ body <- dashboardBody(
                          solidHeader = T, status = "primary", collapsible = F, height = '620px',
                          sidebarPanel(
                            width = 12,
+                           
+                           radioButtons('REPOSITORY_OFFICIAL',label = "select the source to be used", choices = c("Official", "User-uploaded"),selected = "Official"),
                            
                            selectInput('REPOSITORY_SUITE', label = HTML('<p align="left" style="font-size:120%;">Please choose the suite</p>'),
                                        choices = c("none",IOHprofiler, COCO), selected = "none", width = '50%'),

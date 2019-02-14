@@ -5,14 +5,18 @@
 
 library(DBI)
 
-#TODO: open and close the connection when needed
+#TODO: open and close the connection when needed?
 con <- dbConnect(RMariaDB::MariaDB(), user='IOHProfiler', dbname="iohprofiler",
                       password="IOHProfiler", host='localhost')
 
 rds_location <- file.path(Sys.getenv('HOME'), 'repository')
 
+#TODO: cleaner solution?
 prodecure_filename <- "CALL `iohprofiler`.`get_filenames`("
 prodecure_upload <- "CALL `iohprofiler`.`insert_item`("
+prodecure_funcids <- "CALL `iohprofiler`.`get_fids`("
+prodecure_algids <- "CALL `iohprofiler`.`get_algs`("
+prodecure_dims <- "CALL `iohprofiler`.`get_dims`("
 
 upload_dataSetList <- function(dsList){
   # to_upload <- DataSetList()
@@ -60,4 +64,67 @@ get_repository_filename <- function(suite, algid = "NULL", funcid = "-1", dim = 
   dbClearResult(response)
   ans[[1]]
 }
+
+load_from_repository <- function(suite, algid = "all", funcid = "all", dim = "all"){
+  #Ensure inputs are valid for calling the stored procedures
+  if (algid == "all") algid <- "NULL"
+  if (funcid == "all") funcid <- "-1"
+  if (dim == "all") dim <- "-1"
+  
+  filenames <- get_repository_filename(suite, algid, funcid, dim)
+  dsList <- DataSetList()
+  for (filename in filenames){
+    file_location <- file.path(rds_location, paste0(filename,".rds"))
+    dslist <- readRDS(file_location)
+    dsList <- c(dsList, dslist)
+  }
+  if(funcid != "-1")
+    dsList <- subset(dsList, funcId==funcid)
+  if(dim != "-1")
+    dsList <- subset(dsList, DIM==dim)
+  if(algid != "NULL")
+    dsList <- subset(dsList, algId==algid)
+  return(dsList)
+}
+
+get_available_funcs <- function(suite, algid = "all", dim = "all" ){
+  #Ensure inputs are valid for calling the stored procedures
+  if (algid == "all") algid <- "NULL"
+  if (dim == "all") dim <- "-1"
+  
+  statement <-  paste0(prodecure_funcids, "'", suite,"','", algid,"',", dim, ");")
+  response <- dbSendQuery(con, statement)
+  ans <- dbFetch(response, n=-1)
+  dbClearResult(response)
+  ans[[1]]
+}
+
+get_available_dims <- function(suite, funcid = "all", algid = "all" ){
+  #Ensure inputs are valid for calling the stored procedures
+  if (algid == "all") algid <- "NULL"
+  if (funcid == "all") funcid <- "-1"
+  
+  statement <-  paste0(prodecure_dims, "'", suite,"',", funcid,",'", algid, "');")
+  response <- dbSendQuery(con, statement)
+  ans <- dbFetch(response, n=-1)
+  dbClearResult(response)
+  ans[[1]]
+}
+
+get_available_algs <- function(suite, funcid = "all", dim = "all" ){
+  #Ensure inputs are valid for calling the stored procedures
+  if (funcid == "all") funcid <- "-1"
+  if (dim == "all") dim <- "-1"
+  
+  statement <-  paste0(prodecure_algids, "'", suite,"',", funcid,",", dim, ");")
+  response <- dbSendQuery(con, statement)
+  ans <- dbFetch(response, n=-1)
+  dbClearResult(response)
+  ans[[1]]
+}
+
+disconnect_db <- function(){
+  dbDisconnect(con)
+}
+
 

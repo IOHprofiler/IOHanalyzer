@@ -5,9 +5,7 @@
 
 library(DBI)
 
-#TODO: open and close the connection when needed?
-con <- dbConnect(RMariaDB::MariaDB(), user='IOHProfiler', dbname="iohprofiler",
-                      password="IOHProfiler", host='localhost')
+con <- NULL
 
 rds_location <- file.path(Sys.getenv('HOME'), 'repository')
 
@@ -18,11 +16,31 @@ prodecure_funcids <- "CALL `iohprofiler`.`get_fids`("
 prodecure_algids <- "CALL `iohprofiler`.`get_algs`("
 prodecure_dims <- "CALL `iohprofiler`.`get_dims`("
 
+open_connection <- function(){
+  if(!is.null(con)) return(T)
+  succes <- T
+  tryCatch({
+    con <<- dbConnect(RMariaDB::MariaDB(), user='IOHProfiler', dbname="iohprofiler",
+                     password="IOHProfiler", host='localhost')
+  },
+  error = function(cond){
+    # message(cond)
+    # message("Setting succes to F")
+    succes <<- F
+    })
+  return(succes)
+}
+
+close_connection <- function(){
+  if(!is.null(con)) dbDisconnect(con)
+}
+
 upload_dataSetList <- function(dsList){
   #Only upload new data
   dsList <- subset(dsList, lapply(dsList, verify_upload_dataSet))
-  if(length(dsList) == 0) return(0)
-  
+  if(length(dsList) == 0){
+    return(0)
+  }
   filename <- basename(tempfile(pattern = "rds_file", tmpdir = rds_location))
     saveRDS(dsList, file = file.path(rds_location, paste0(filename, ".rds")))
   
@@ -118,8 +136,6 @@ get_available_algs <- function(suite, funcid = "all", dim = "all" ){
   ans[[1]]
 }
 
-disconnect_db <- function(){
-  dbDisconnect(con)
-}
+
 
 

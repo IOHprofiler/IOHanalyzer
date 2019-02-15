@@ -84,7 +84,7 @@ shinyServer(function(input, output, session) {
   
   # clean up the temporarsy files on server when exiting  
   session$onSessionEnded(function() {
-    disconnect_db()
+    close_connection()
     unlink(exdir, recursive = T)
   })
   
@@ -122,13 +122,14 @@ shinyServer(function(input, output, session) {
     }
     else{
       #TODO: change how the selectinputs are updated based on previously selected values
-      if(input$Repository.suite != IOHprofiler & input$Repository.suite != COCO){
+      if(!open_connection() | (input$Repository.suite != IOHprofiler & input$Repository.suite != COCO)){
         shinyjs::disable("Repository.load")
         return(NULL)
       }
       algId <- c(get_available_algs(input$Repository.suite), 'all')
       dim <- c(get_available_dims(input$Repository.suite), 'all')
       func <- c(get_available_funcs(input$Repository.suite), 'all')
+      close_connection()
     }
     updateSelectInput(session, 'Repository.algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'Repository.dim', choices = dim, selected = 'all')
@@ -148,8 +149,10 @@ shinyServer(function(input, output, session) {
         to_load <- subset(to_load, algId==input$Repository.algid)
     }
     else{
-      to_load <- load_from_repository(input$Repository.suite, algid = input$Repository.algid,
-                                      dim = input$Repository.dim, funcid = input$Repository.funcid)
+      if(open_connection())
+        to_load <- load_from_repository(input$Repository.suite, algid = input$Repository.algid,
+                                        dim = input$Repository.dim, funcid = input$Repository.funcid)
+      close_connection()
     }
     DataList$data <- c(DataList$data, to_load)
   })
@@ -255,7 +258,11 @@ shinyServer(function(input, output, session) {
                                  maximization = minmax,
                                  format = format,
                                  subsampling = sub_sampling)
-        if(input$Upload.add_repository) upload_dataSetList(new_dataList)
+        if(input$Upload.add_repository) {
+          if(open_connection())
+            upload_dataSetList(new_dataList)
+          close_connection()
+        }
         DataList$data <- c(DataList$data, new_dataList)
         src_format <<- format
         shinyjs::html("upload_data_promt", 

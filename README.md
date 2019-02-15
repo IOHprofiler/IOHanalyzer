@@ -21,6 +21,8 @@ After R environment is correctly installed on you machine, several R packages ar
 install.packages(c('shiny', 'shinyjs', 'shinydashboard', 'magrittr', 'dplyr', 'reshape2', 'data.table', 'markdown', 'Rcpp', 'plotly','colorRamps'))
 ```
 
+
+
 Note that it is important to check if aforementioned packages are correctly installed. The easiest method is to test if those packasges can be loaded:
 
 ```r
@@ -38,6 +40,13 @@ library(colorRamps)
 ```
 
 Error messages will be shown in your R console if there is any installation issue.
+
+To use the repository, the following additional packages are required
+```r
+install.packages(c('DBI','RMariaDB'))
+```
+
+To allow for downloading of plots, orca[https://github.com/plotly/orca] and inkscape[https://inkscape.org/release/inkscape-0.92.4/] are needed.
 
 Then, please clone (or downlaod) this repository into your own system. To clone the repository, please execute the following command in your __system console__ (terminal):
 

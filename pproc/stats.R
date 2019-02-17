@@ -27,6 +27,7 @@ EPMF <- function() {
 
 ECDF <- function(ds, ...) UseMethod("ECDF", ds)
 
+
 # TODO: also implement the ecdf functions for function values and parameters
 #' Empirical Cumulative Dsitribution Function of Runtime of a single data set
 #'
@@ -39,7 +40,9 @@ ECDF <- function(ds, ...) UseMethod("ECDF", ds)
 #' @examples
 ECDF.DataSet <- function(ds, ftarget) {
   runtime <- get_RT_sample(ds, ftarget, output = 'long')$RT
-  runtime <- runtime[!is.na(runtime)]
+  if (length(runtime) == 0) return(NULL)
+  
+  runtime[!is.na(runtime)] <- Inf
   fun <- ecdf(runtime)
   
   class(fun)[1] <- 'ECDF'
@@ -47,6 +50,7 @@ ECDF.DataSet <- function(ds, ftarget) {
   attr(fun, 'max') <- max(runtime)  # the sample can be retrieved by knots(fun)
   fun
 }
+
 
 #' Empirical Cumulative Dsitribution Function of Runtime of a list of data sets
 #'

@@ -139,7 +139,8 @@ body <- dashboardBody(
                            checkboxInput('SUBSAMPLING', label = HTML('<p align="left" style="font-size:120%;">Efficient mode</p>'), value = F),
                            
                            fileInput("ZIP", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>zip file</i> containing the benchmark data</p>'),
-                                     multiple = TRUE, accept = c("Application/zip", ".zip")),
+                                     multiple = TRUE),
+                                     # accept = c("Application/zip", ".zip")),
                            
                            # TODO: keep this for the local version
                            # shinyDirButton('directory', 'Browse the folder', 
@@ -294,7 +295,7 @@ body <- dashboardBody(
                              
                              checkboxInput('show.CI', 
                                            label = 'show/hide mean +/- sd',
-                                           value = T),
+                                           value = F),
                              
                              checkboxInput('show.median', 
                                            label = 'show/hide median',
@@ -456,7 +457,7 @@ body <- dashboardBody(
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
                                       Distribution of the runtime: Aggregation</p>'), 
-                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = F,
+                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = T,
                          sidebarPanel(
                            width = 3,
                            HTML('<p align="justify">Set the range and the granularity 
@@ -500,8 +501,8 @@ body <- dashboardBody(
               ),
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
-                                      Distribution of the runtime: With added aggregation</p>'), 
-                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = F,
+                                      Distribution of the runtime: Across Functions</p>'), 
+                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = T,
                          sidebarPanel(
                            width = 3,
                            # checkboxInput("Aggregate_dim","Aggregate dimensions", value = F),
@@ -548,7 +549,7 @@ body <- dashboardBody(
               
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Area Under the ECDF</p>'),  
-                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = F,
+                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = T,
                          sidebarPanel(
                            width = 3,
                            HTML('<p align="justify">Set the range and the granularity of
@@ -580,7 +581,7 @@ body <- dashboardBody(
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
                                       Distribution of the Runtime: Single Target</p>'), 
-                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = F,
+                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
                          sidebarLayout(
                            sidebarPanel(
                              width = 3,
@@ -795,6 +796,10 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                                              label = 'show/hide median',
                                              value = F),
                                
+                               checkboxInput('show.CI.FCE', 
+                                             label = 'show/hide mean +/- sd',
+                                             value = F),
+                               
                                checkboxInput('FCE_semilogx', 
                                              label = 'scale x axis log10',
                                              value = T),
@@ -973,6 +978,10 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                             selectInput('PAR_show.mean', label = 'mean/median', 
                                         choices = c('mean', 'median'),
                                         selected = 'mean'),
+                            
+                            checkboxInput('show.CI.PAR', 
+                                          label = 'show/hide mean +/- sd',
+                                          value = F),
                             
                             checkboxInput('PAR_semilogx', 
                                           label = 'scale x axis log10',

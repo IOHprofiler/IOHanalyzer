@@ -116,13 +116,34 @@ shinyServer(function(input, output, session) {
   selected_folders <- reactive({
     if (!is.null(input$ZIP)) {
       datapath <- input$ZIP$datapath
-      filename <- input$ZIP$name
       folders <- rep('', length(datapath))
+      filetype <- sub('[^\\.]*\\.', '', basename(datapath), perl = T)
+      
+      if (filetype == 'zip') 
+        unzip_fct <- unzip
+      else if (filetype %in% c('bz2', 'bz', 'gz', 'tar', 'tar.gz', 'xz'))
+        unzip_fct <- untar
       
       for (i in seq(datapath)) {
-        unzip(datapath[i], list = FALSE, exdir = exdir)
-        name <- strsplit(filename[i], '\\.')[[1]][1]
-        folders[i] <- file.path(exdir, name)
+        if (filetype == 'zip')
+          files <- unzip_fct(datapath[i], list = T)$Name
+        else 
+          files <- unzip_fct(datapath[i], list = T)
+        
+        idx <- grep('*.info', files)[1]
+        info <- files[idx]
+        
+        if (is.null(info)) return(NULL)
+        if (basename(info) == info) {
+          folder <- Sys.time()  # generate a folder name here
+          .exdir <- file.path(exdir, folder)
+          unzip_fct(datapath[i], list = FALSE, exdir = .exdir)
+          folders[i] <- .exdir
+        } else {
+          folder <- dirname(info)
+          unzip_fct(datapath[i], list = FALSE, exdir = exdir)
+          folders[i] <- file.path(exdir, folder)
+        }
       }
       return(folders)
     } else
@@ -946,7 +967,7 @@ shinyServer(function(input, output, session) {
   render_FV_PER_FUN <- reactive({
     rt_min <- input$FCE_RT_MIN %>% as.integer
     rt_max <- input$FCE_RT_MAX %>% as.integer
-    plot_FV_line.DataSetList(DATA(), RTstart = rt_min, RTstop = rt_max,
+    plot_FV_line.DataSetList(DATA(), RTstart = rt_min, RTstop = rt_max, show.CI = input$show.CI.FCE,
                              show.density = input$FCE_show.density, show.pareto = input$FCE_show.pareto_optima,
                              show.runs = input$FCE_show_all, show.optimal = input$FCE_show.best_of_all,
                              show.mean = input$FCE_show.mean, show.median = input$FCE_show.median,
@@ -1092,6 +1113,7 @@ shinyServer(function(input, output, session) {
     plot_PAR_Line.DataSetList(DATA(),f_min,f_max,algids = input$PAR_ALGID_INPUT,
                               show.mean = (input$PAR_show.mean == 'mean'),
                               show.median = (input$PAR_show.mean == 'median'),
+                              show.CI = input$show.CI.PAR,
                               scale.xlog = input$PAR_semilogx,
                               scale.ylog = input$PAR_semilogy)
   })

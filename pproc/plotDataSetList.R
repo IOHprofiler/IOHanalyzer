@@ -1009,3 +1009,77 @@ plot_RT_ECDF_MULTI.DataSetList <- function(dsList, targets = NULL, dim = NULL,
   p
 
 }
+
+
+plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'overlay', scale.xlog = F,
+                                       scale.ylog = F, scale.reverse = F){
+  
+  N <- length(get_AlgId(dsList))
+  colors <- color_palettes(N)
+  
+  funcs <- get_funcId(dsList)
+  M <- length(funcs)
+  if (M <= 10)
+    nrows <- ceiling(M / 2.) # keep to columns for the histograms
+  else 
+    nrows <- ceiling(M / 3.) # keep to columns for the histograms
+  
+  if (plot_mode == 'overlay') {
+    p <- plot_ly_default(x.title = "function evaluations", y.title = "ERT")
+  } else if (plot_mode == 'subplot') {
+    p <- lapply(seq(M), function(x) {
+      plot_ly_default(x.title = "function evaluations", y.title = "ERT")
+    })
+  }
+  
+  for (j in seq_along(funcs)) {
+    dsList_filetered <- subset(dsList,funcId==funcs[[j]])
+    Fall <- get_Funvals(dsList_filetered)
+    Fstart <- min(Fall)
+    Fstop <- max(Fall)
+    
+    Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
+    if (length(Fseq) == 0) return(NULL)
+    
+    dt <- get_RT_summary(dsList_filetered, ftarget = Fseq)
+    dt[, `:=`(upper = mean + sd, lower = mean - sd)]
+    
+    
+    for (i in seq_along(dsList_filetered)){
+      
+      ds_ERT <- dt[algId == attr(dsList_filetered[[i]], 'algId') &
+                     funcId == attr(dsList_filetered[[i]], 'funcId') &
+                     DIM == attr(dsList_filetered[[i]], 'DIM')]
+      
+      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.35)')
+      
+      df <- dsList_filetered[[i]]
+      algId <- attr(df, 'algId')
+
+      if (plot_mode == 'overlay') {
+        p %<>%
+          add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
+                    mode = 'lines+markers',
+                    marker = list(color = rgb_str),
+                    line = list(color = rgb_str))
+      } else if (plot_mode == 'subplot') {
+        p[[j]] %<>% 
+          add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
+                    mode = 'lines+markers',
+                    marker = list(color = rgb_str),
+                    line = list(color = rgb_str))
+      }
+    }
+  }
+  
+  if (plot_mode == 'subplot') {
+    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.025)
+  }
+  p %<>%
+    layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
+           yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
+  if (scale.reverse)
+    p %<>% layout(xaxis = list(autorange = "reversed"))
+  p
+}

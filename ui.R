@@ -280,12 +280,11 @@ body <- dashboardBody(
     
     # RT: Expected Convergence Curve ---------------------------------------------
     tabItem(tabName = 'ERT_convergence', 
-            fluidRow(
-              column(width = 12,
+            fluidRow(column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Expected Runtime 
                                       (per function)</p>'), 
                          width = 12,
-                         collapsible = TRUE, solidHeader = TRUE, status = "primary",
+                         collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
                          div(style = "width: 90%;",
                            sidebarPanel(
                              width = 3,
@@ -368,8 +367,56 @@ body <- dashboardBody(
                      # box(title = HTML('<p style="font-size:120%;">Expected Runtime 
                      #                  (across all functions)</p>'), 
                      #     height = 800, width = 12,
-                     #     collapsible = TRUE, solidHeader = TRUE, status = 'primary')
+                 
+                  #     collapsible = TRUE, solidHeader = TRUE, status = 'primary')
+              ),
+              column(width = 12,
+                       box(title = HTML('<p style="font-size:120%;">Expected Runtime 
+                                        (all functions)</p>'), 
+                           width = 12,
+                           collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
+                           div(style = "width: 90%;",
+                               sidebarPanel(
+                                 width = 3,
+                                 HTML('<p style="font-size:120%;">Range of the displayed target values</p>'),
+                                 
+                                
+                                 checkboxInput('ERTPlot.Multi.Logx', 
+                                               label = 'scale x axis log10',
+                                               value = T),
+                                 
+                                 checkboxInput('ERTPlot.Multi.Logy', 
+                                               label = 'scale y axis log10',
+                                               value = T),
+                                 
+                                 selectInput('ERTPlot.Multi.Mode',label = 'Select the plotting mode',
+                                             choices = c('overlay','subplot'), selected = 'subplot'),
+
+                                 selectInput('ERTPlot.Multi.Format', label = 'Select the figure format',
+                                             choices = supported_fig_format, selected = 'pdf'),
+                                 
+                                 downloadButton('ERTPlot.Multi.Download', label = 'Download the figure')
+                                 
+                                 # checkboxInput('show.instance', 
+                                 #               label = 'show each independent run',
+                                 #               value = F)
+                               )
+                           ),
+                           
+                           mainPanel(width = 9,
+                                     column(width = 12, align = "center",
+                                            plotlyOutput('ERTPlot.Multi.Plot', height = plotly_height, width = plotly_width2)
+                                     )
+                           )
+                       )
+                       
+                       # box(title = HTML('<p style="font-size:120%;">Expected Runtime 
+                       #                  (across all functions)</p>'), 
+                       #     height = 800, width = 12,
+                       
+                       #     collapsible = TRUE, solidHeader = TRUE, status = 'primary')
               )
+              
             )
     ),
     

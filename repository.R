@@ -23,7 +23,7 @@ open_connection <- function(){
   if(!is.null(con)) return(T)
   succes <- T
   tryCatch({
-    con <<- dbConnect(RMariaDB::MariaDB(), user='IOHProfiler', dbname="iohprofiler",
+    con <<- dbConnect(RMariaDB::MariaDB(), user='IOHProfiler', dbname="IOHProfiler",
                      password="IOHProfiler", host='localhost')
   },
   error = function(cond){
@@ -42,6 +42,7 @@ upload_dataSetList <- function(dsList){
   if(length(dsList) == 0){
     return(0)
   }
+  
   filename <- basename(tempfile(pattern = "rds_file", tmpdir = rds_location))
     saveRDS(dsList, file = file.path(rds_location, paste0(filename, ".rds")))
   

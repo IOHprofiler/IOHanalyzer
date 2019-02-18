@@ -2,11 +2,11 @@ library(stringr)
 
 tmp <- list()
 i <- 1
-exdir <- '~/tmp/'
+exdir <- 'data_to_test/tmp'
 
 unlink(file.path(exdir, '*'), recursive = T)
 
-for (file in list.files('~/Dropbox/data/2019gecco/ins1-11runs/', 
+for (file in list.files('data_to_test/data/2019gecco-zip/ins1-11runs/', 
                         pattern = '.zip', recursive = T, full.names = T)) {
   print(file)
 
@@ -24,13 +24,13 @@ for (i in seq_along(res1)) {
   attr(res1[[i]], 'algId') <- paste0(attr(res1[[i]], 'algId'), '_1')
 }
 
-saveRDS(res1, file = "./data/2019gecco-ins1-11run.rds")
+saveRDS(res1, file = "data_to_test/data/2019gecco-ins1-11run.rds")
 
 tmp <- list()
 i <- 1
 unlink(file.path(exdir, '*'), recursive = T)
 
-for (file in list.files('~/Dropbox/data/2019gecco/ins11-1run/', 
+for (file in list.files('data_to_test/data/2019gecco-zip/ins11-1run/', 
                         pattern = '.zip', recursive = T, full.names = T)) {
   print(file)
   
@@ -48,7 +48,7 @@ for (i in seq_along(res2)) {
   attr(res2[[i]], 'algId') <- paste0(attr(res2[[i]], 'algId'), '_11')
 }
 
-saveRDS(res2, file = "./data/2019gecco-ins11-1run.rds")
+saveRDS(res2, file = "data_to_test/data/2019gecco-ins11-1run.rds")
 
 res <- c(res1, res2)
-saveRDS(res, file = "./data/2019gecco.rds")
+saveRDS(res, file = "data_to_test/data/2019gecco.rds")

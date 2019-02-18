@@ -622,6 +622,31 @@ shinyServer(function(input, output, session) {
 
   })
   
+  output$ERTPlot.Multi.Plot <- renderPlotly(
+    render_ERTPlot_multi_plot()
+  )
+  
+  render_ERTPlot_multi_plot <- reactive({
+    data <- DATA_UNFILTERED()
+    if(length(data) == 0) return(NULL)
+    data <- subset(data, DIM==input$Overall.Dim)
+    plot_ERT_MULTI.DataSetList(data, plot_mode = input$ERTPlot.Multi.Mode, 
+                             scale.xlog = input$ERTPlot.semilogx, scale.ylog = input$ERTPlot.semilogy,
+                             scale.reverse = (src_format == COCO))
+    
+  })
+  
+  output$ERTPlot.Multi.Download <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_ERT_PER_FUN_MULTI)
+    },
+    content = function(file) {
+      save_plotly(render_ERTPlot_multi_plot(), file, 
+                  format = input$ERTPlot.Multi.Format, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$ERTPlot.Multi.Format)
+  )
   # empirical p.m.f. of the runtime
   output$RT_PMF <- renderPlotly({
     render_RT_PMF()

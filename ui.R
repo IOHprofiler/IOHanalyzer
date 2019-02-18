@@ -59,7 +59,7 @@ sidebar <- dashboardSidebar(
   conditionalPanel("input.tabs!='upload' && input.tabs!='readme' && input.tabs!='about'",
                    fluidRow(
                      column(11,
-                            selectInput("FUNCID_INPUT", 
+                            selectInput("Overall.Funcid", 
                                         label = HTML('<p style="font-size:120%;">Please select the function ID</p>'), 
                                         choices = NULL, selected = NULL)
                      )
@@ -67,7 +67,7 @@ sidebar <- dashboardSidebar(
                    
                    fluidRow(
                      column(11,
-                            selectInput("DIM_INPUT",
+                            selectInput("Overall.Dim",
                                         label = HTML('<p style="font-size:120%;">Please select the dimension</p>'), 
                                         choices = NULL, selected = NULL)
                      )
@@ -198,7 +198,6 @@ body <- dashboardBody(
     tabItem(tabName = 'ERT_data', 
       fluidRow(
         column(width = 12,
-               #TODO: better naming scheme
                box(title = HTML('<p style="font-size:120%;">Overview of runtime values</p>'), width = 12,
                    solidHeader = T, status = "primary", collapsible = T,
                    sidebarPanel(
@@ -206,7 +205,7 @@ body <- dashboardBody(
                      HTML('<p align="justify">Select which algorithms to show.</p>'),
                      
                      selectInput('RTSummary.Overview.Algid', 'Algorithms', choices = NULL, selected = NULL),
-                     downloadButton("RTSummary.Download.overview", "Save this table as csv")
+                     downloadButton("RTSummary.Overview.Download", "Save this table as csv")
                      ),
                    
                    mainPanel(
@@ -383,19 +382,19 @@ body <- dashboardBody(
                        status = "primary",
                        sidebarPanel(
                          width = 2,
-                         textInput('RT_PMF_HIST_FTARGET', label = HTML('Select the target value'), 
+                         textInput('RTPMF.Hist.Target', label = HTML('Select the target value'), 
                                    value = ''),
                          
                          HTML('Choose whether the histograms are <b>overlaid</b> in one plot 
                               or <b>separated</b> in several subplots:'),
-                         selectInput('ERT_illu_mode', '', 
+                         selectInput('RTPMF.Hist.Mode', '', 
                                      choices = c("overlay", "subplot"), 
                                      selected = 'subplot'),
                          
-                         selectInput('FIG_FORMAT_RT_HIST', label = 'select the figure format',
+                         selectInput('RTPMF.Hist.Format', label = 'select the figure format',
                                      choices = supported_fig_format, selected = 'pdf'),
                          
-                         downloadButton('FIG_DOWNLOAD_RT_HIST', label = 'download the figure')
+                         downloadButton('RTPMF.Hist.Download', label = 'download the figure')
                          ),
                        
                        mainPanel(
@@ -423,14 +422,14 @@ body <- dashboardBody(
                       width = 2,
                       HTML('Select the target value for which the runtime distribution is shown'),
                       
-                      textInput('RT_PMF_FTARGET', label = '', value = ''),
-                      checkboxInput('RT_SHOW_SAMPLE', label = 'show runtime for each run', value = T),
-                      checkboxInput('RT_PMF_LOGY', label = 'scale y axis log10', value = F),
+                      textInput('RTPMF.Bar.Target', label = '', value = ''),
+                      checkboxInput('RTPMF.Bar.Sample', label = 'show runtime for each run', value = T),
+                      checkboxInput('RTPMF.Bar.Logy', label = 'scale y axis log10', value = F),
                       
-                      selectInput('FIG_FORMAT_RT_PMF', label = 'select the figure format',
+                      selectInput('RTPMF.Bar.Format', label = 'select the figure format',
                                   choices = supported_fig_format, selected = 'pdf'),
                       
-                      downloadButton('FIG_DOWNLOAD_RT_PMF', label = 'download the figure')
+                      downloadButton('RTPMF.Bar.Download', label = 'download the figure')
                       
                       # HTML('Kernel density estimation uses the following <b>kernel function</b>:'),
                       # selectInput('RT_PMF_KER', '',
@@ -476,14 +475,14 @@ body <- dashboardBody(
                            sidebarPanel(
                              width = 3,
                              HTML('Select the target values for which EDCF curves are displayed'),
-                             textInput('RT_ECDF_FTARGET1', label = HTML('<p>\\(f_1\\)</p>'), 
+                             textInput('RTECDF.Single.Target1', label = HTML('<p>\\(f_1\\)</p>'), 
                                        value = ''),
-                             textInput('RT_ECDF_FTARGET2', label = HTML('<p>\\(f_2\\)</p>'), 
+                             textInput('RTECDF.Single.Target2', label = HTML('<p>\\(f_2\\)</p>'), 
                                        value = ''),
-                             textInput('RT_ECDF_FTARGET3', label = HTML('<p>\\(f_3\\)</p>'), 
+                             textInput('RTECDF.Single.Target3', label = HTML('<p>\\(f_3\\)</p>'), 
                                        value = ''),
                              
-                             checkboxInput('RT_ECDF_semilogx', label = 'scale x axis log10', value = F)
+                             checkboxInput('RTECDF.Single.Logx', label = 'scale x axis log10', value = F)
                            ), 
                            
                            mainPanel(width = 9,
@@ -509,20 +508,20 @@ body <- dashboardBody(
                            HTML('<p align="justify">Set the range and the granularity 
                                 of the quality targets taken into account in the ECDF curve. 
                                 The plot will show the ECDF curves for evenly spaced target values.</p>'),
-                           textInput('RT_fstart', label = F_MIN_LABEL, value = ''),
-                           textInput('RT_fstop', label = F_MAX_LABEL, value = ''),
-                           textInput('RT_fstep', label = F_STEP_LABEL, value = ''),
-                           checkboxInput('RT_ECDF_per_target',
+                           textInput('RTECDF.Multi.Min', label = F_MIN_LABEL, value = ''),
+                           textInput('RTECDF.Multi.Max', label = F_MAX_LABEL, value = ''),
+                           textInput('RTECDF.Multi.Step', label = F_STEP_LABEL, value = ''),
+                           checkboxInput('RTECDF.Multi.Targets',
                                          label = 'show ECDFs for each target',
                                          value = F),
-                           checkboxInput('RT_ECDF_AGGR_semilogx', 
+                           checkboxInput('RTECDF.Multi.Logx', 
                                          label = 'scale x axis log10',
                                          value = F),
                            
-                           selectInput('FIG_FORMAT_RT_ECDF_AGGR', label = 'select the figure format',
+                           selectInput('RTECDF.Multi.Format', label = 'select the figure format',
                                        choices = supported_fig_format, selected = 'pdf'),
                            
-                           downloadButton('FIG_DOWNLOAD_RT_ECDF_AGGR', label = 'download the figure')
+                           downloadButton('RTECDF.Multi.Download', label = 'download the figure')
                          ),
                          
                          mainPanel(width = 9,
@@ -559,19 +558,19 @@ body <- dashboardBody(
                                   or use the automatically generated targets (see below). Please consider keeping the file format when
                                   modifying the csv given below.'),
                            tableOutput('RT_GRID_GENERATED'),
-                           downloadButton('TARGET_TABLE_EXAMPLE_DOWNLOAD', label = 'download this example'),
+                           downloadButton('RTECDF.Aggr.Table.Download', label = 'download this example'),
                            
                            hr(),
                            br(),
-                           fileInput("CSV_Targets_upload", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>csv file</i> containing the targets</p>'),
+                           fileInput("RTECDF.Aggr.Table.Upload", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>csv file</i> containing the targets</p>'),
                                      multiple = FALSE, accept = c(
                                        "text/csv",
                                        "text/comma-separated-values,text/plain",
                                        ".csv")),
-                           selectInput('FIG_FORMAT_RT_ECDF_MULT', label = 'select the figure format',
+                           selectInput('RTECDF.Aggr.Format', label = 'select the figure format',
                                        choices = supported_fig_format, selected = 'pdf'),
                            
-                           downloadButton('FIG_DOWNLOAD_RT_ECDF_MULT', label = 'download the figure')
+                           downloadButton('RTECDF.Aggr.Download', label = 'download the figure')
                            
                          ),
                          
@@ -602,13 +601,13 @@ body <- dashboardBody(
                            width = 3,
                            HTML('<p align="justify">Set the range and the granularity of
                                 the evenly spaced quality targets taken into account in the plot.</p>'),
-                           textInput('RT_AUC_FSTART', label = F_MIN_LABEL, value = ''),
-                           textInput('RT_AUC_FSTOP', label = F_MAX_LABEL, value = ''),
-                           textInput('RT_AUC_FSTEP', label = F_STEP_LABEL, value = ''),
+                           textInput('RTECDF.AUC.Min', label = F_MIN_LABEL, value = ''),
+                           textInput('RTECDF.AUC.Max', label = F_MAX_LABEL, value = ''),
+                           textInput('RTECDF.AUC.Step', label = F_STEP_LABEL, value = ''),
                            
-                           selectInput('FIG_FORMAT_RT_AUC', label = 'select the figure format',
+                           selectInput('RTECDF.AUC.Format', label = 'select the figure format',
                                        choices = supported_fig_format, selected = 'pdf'),
-                           downloadButton('FIG_DOWNLOAD_RT_AUC', label = 'download the figure')
+                           downloadButton('RTECDF.AUC.Download', label = 'download the figure')
                          ),
                          
                          mainPanel(width = 9,
@@ -665,16 +664,15 @@ body <- dashboardBody(
     tabItem(tabName = 'FCE_DATA', 
             fluidRow(
               column(width = 12,
-                     #TODO: better naming scheme
                      box(title = HTML('<p style="font-size:120%;">Overview of runtime values</p>'), width = 12,
                          solidHeader = T, status = "primary", collapsible = T,
                          sidebarPanel(
                            width = 3,
                            HTML('<p align="justify">Select which algorithms to show.</p>'),
                            
-                           # TODO: find better naming scheme for 'fstart, fstop, singleF'
-                           selectInput('FCE_ALGID_INPUT_SUMMARY', 'Algorithms', choices = NULL, selected = NULL),
-                           downloadButton("FCE_downloadData_summary", "Save this table as csv")
+                           selectInput('FCESummary.Overview.Algid', 'Algorithms', choices = NULL, selected = NULL),
+                           #TODO: implement this button
+                           downloadButton("FCESummary.Overview.Download", "Save this table as csv")
                          ),
                          
                          mainPanel(
@@ -688,14 +686,14 @@ body <- dashboardBody(
                            width = 3,
                            HTML(FCE_GRID_INPUT_TEXT),
                            
-                           textInput('RT_MIN', label = RT_MIN_LABEL, value = ''),
-                           textInput('RT_MAX', label = RT_MAX_LABEL, value = ''),
-                           textInput('RT_STEP', label = RT_STEP_LABEL, value = ''),
-                           checkboxInput('RT_SINGLE', label = HTML('<p>\\(B_{\\text{min}} = B_{\\text{max}}\\)?
+                           textInput('FCESummary.Statistics.Min', label = RT_MIN_LABEL, value = ''),
+                           textInput('FCESummary.Statistics.Max', label = RT_MAX_LABEL, value = ''),
+                           textInput('FCESummary.Statistics.Step', label = RT_STEP_LABEL, value = ''),
+                           checkboxInput('FCESummary.Statistics.Single', label = HTML('<p>\\(B_{\\text{min}} = B_{\\text{max}}\\)?
                                                            Once toggled, only \\(B_{\\text{min}}\\) is 
                                                            used to generate the table on the right.</p>'), value = FALSE),
-                           selectInput('FCE_ALGID_INPUT', 'Algorithms', choices = NULL, selected = NULL),
-                           downloadButton("FCE_SUMMARY_download", "Save this table as csv")
+                           selectInput('FCESummary.Statistics.Algid', 'Algorithms', choices = NULL, selected = NULL),
+                           downloadButton("FCESummary.Statistics.Download", "Save this table as csv")
                            ),
                          
                          mainPanel(
@@ -713,19 +711,19 @@ body <- dashboardBody(
                            width = 3,
                            HTML(FCE_GRID_INPUT_TEXT),
                            
-                           textInput('RT_MIN_SAMPLE', label = RT_MIN_LABEL, value = ''),
-                           textInput('RT_MAX_SAMPLE', label = RT_MAX_LABEL, value = ''),
-                           textInput('RT_STEP_SAMPLE', label = RT_STEP_LABEL, value = ''),
-                           checkboxInput('RT_SINGLE_SAMPLE', 
+                           textInput('FCESummary.Sample.Min', label = RT_MIN_LABEL, value = ''),
+                           textInput('FCESummary.Sample.Max', label = RT_MAX_LABEL, value = ''),
+                           textInput('FCESummary.Sample.Step', label = RT_STEP_LABEL, value = ''),
+                           checkboxInput('FCESummary.Sample.Single', 
                                          label = HTML('<p>\\(B_{\\text{min}} = B_{\\text{max}}\\)?
                                                        Once toggled, only \\(B_{\\text{min}}\\) is 
                                                        used to generate the table on the right.</p>'), value = FALSE),
-                           selectInput('FCE_ALGID_RAW_INPUT', 'Algorithms', 
+                           selectInput('FCESummary.Sample.Algid', 'Algorithms', 
                                        choices = NULL, selected = NULL),
                            
-                           selectInput('download_format_FCE', 'Format of the csv', 
+                           selectInput('FCESummary.Sample.Format', 'Format of the csv', 
                                        choices = c('long', 'wide'), selected = 'wide'),
-                           downloadButton("FCE_SAMPLE_download", "Save the aligned runtime samples as csv")
+                           downloadButton("FCESummary.Sample.Download", "Save the aligned runtime samples as csv")
                            ),
                          
                          mainPanel(
@@ -752,19 +750,19 @@ body <- dashboardBody(
                          status = "primary",
                          sidebarPanel(
                            width = 2,
-                           textInput('FCE_HIST_RUNTIME', label = HTML('Select the budget value'), 
+                           textInput('FCEPDF.Hist.Runtime', label = HTML('Select the budget value'), 
                                      value = ''),
                            
                            HTML('Choose whether the histograms are <b>overlaid</b> in one plot 
                                 or <b>separated</b> in several subplots:'),
-                           selectInput('FCE_illu_mode', '', 
+                           selectInput('FCEPDF.Hist.Mode', '', 
                                        choices = c("overlay", "subplot"), 
                                        selected = 'subplot'),
                            
-                           selectInput('FIG_FORMAT_FV_HIST', label = 'select the figure format',
+                           selectInput('FCEPDF.Hist.Format', label = 'select the figure format',
                                        choices = supported_fig_format, selected = 'pdf'),
                            
-                           downloadButton('FIG_DOWNLOAD_FV_HIST', label = 'download the figure')
+                           downloadButton('FCEPDF.Hist.Download', label = 'download the figure')
                            
                            ),
                          
@@ -792,14 +790,14 @@ where \\(Q_1, Q_3\\) are the \\(25\\%\\) and \\(75\\%\\) percentile of the runti
                              width = 2,
                              HTML('Select the budget for which the distribution of best-so-far function values is shown'),
                              
-                             textInput('FCE_PDF_RUNTIME', label = '', value = ''),
-                             checkboxInput('FCE_SHOW_SAMPLE', label = 'show runtime samples', value = T),
-                             checkboxInput('FCE_LOGY', label = 'scale y axis log10', value = T),
+                             textInput('FCEPDF.Bar.Runtime', label = '', value = ''),
+                             checkboxInput('FCEPDF.Bar.Samples', label = 'show runtime samples', value = T),
+                             checkboxInput('FCEPDF.Bar.Logy', label = 'scale y axis log10', value = T),
                              
-                             selectInput('FIG_FORMAT_FV_PDF', label = 'select the figure format',
+                             selectInput('FCEPDF.Bar.Format', label = 'select the figure format',
                                          choices = supported_fig_format, selected = 'pdf'),
                              
-                             downloadButton('FIG_DOWNLOAD_FV_PDF', label = 'download the figure')
+                             downloadButton('FCEPDF.Bar.Download', label = 'download the figure')
                            ),
                            
                            mainPanel(
@@ -833,48 +831,48 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                                width = 3,
                                HTML('<p style="font-size:120%;">Range of the displayed budget values</p>'),
                                
-                               textInput('FCE_RT_MIN', label = RT_MIN_LABEL, value = ''),
-                               textInput('FCE_RT_MAX', label = RT_MAX_LABEL, value = ''),
+                               textInput('FCEPlot.Min', label = RT_MIN_LABEL, value = ''),
+                               textInput('FCEPlot.Max', label = RT_MAX_LABEL, value = ''),
                                
-                               checkboxInput('FCE_show.mean', 
+                               checkboxInput('FCEPlot.show.mean', 
                                              label = 'show/hide mean',
                                              value = T),
                                
-                               checkboxInput('FCE_show.median', 
+                               checkboxInput('FCEPlot.show.median', 
                                              label = 'show/hide median',
                                              value = F),
                                
-                               checkboxInput('FCE_semilogx', 
+                               checkboxInput('FCEPlot.semilogx', 
                                              label = 'scale x axis log10',
                                              value = T),
                                
-                               checkboxInput('FCE_semilogy', 
+                               checkboxInput('FCEPlot.semilogy', 
                                              label = 'scale y axis log10',
                                              value = T),
                                
-                               checkboxInput('FCE_show_all',
+                               checkboxInput('FCEPlot.show.all',
                                              label = 'show/hide multiple runs',
                                              value = F),
-                               conditionalPanel(condition = "input.FCE_show_all == true",
+                               conditionalPanel(condition = "FCEPlot.show.all == true",
                                                 
                                                 fluidRow(column(
                                                   11,
                                                   offset = 1,
-                                                  sliderInput('FCE_show.density',
+                                                  sliderInput('FCEPlot.show.density',
                                                               label = "Runs density(%)",
                                                               min = 1, max = 100, value = 50, step = 1),
-                                                  checkboxInput('FCE_show.best_of_all',
+                                                  checkboxInput('FCEPlot.show.best_of_all',
                                                                 label = 'show/hide best run',
                                                                 value = F),
-                                                  checkboxInput('FCE_show.pareto_optima',
+                                                  checkboxInput('FCEPlot.show.pareto_optima',
                                                                 label = 'show/hide pareto optimal front',
                                                                 value = F)
                                                 ))),
                                
-                               selectInput('FIG_FORMAT_FV_PER_FUN', label = 'select the figure format',
+                               selectInput('FCEPlot.Format', label = 'select the figure format',
                                            choices = supported_fig_format, selected = 'pdf'),
                                
-                               downloadButton('FIG_DOWNLOAD_FV_PER_FUN', label = 'download the figure')
+                               downloadButton('FCEPlot.Download', label = 'download the figure')
                              )
                          ),
                          
@@ -907,21 +905,21 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                            HTML('<p align="justify">Set the range and the granularity of the budgets 
                                 taken into account in the ECDF curve. The plot will show the ECDF curves 
                                 for evenly spaced budgets.</p>'),
-                           textInput('FCE_ECDF_RT_MIN', label = RT_MIN_LABEL, value = ''),
-                           textInput('FCE_ECDF_RT_MAX', label = RT_MAX_LABEL, value = ''),
-                           textInput('FCE_ECDF_RT_STEP', label = RT_STEP_LABEL, value = ''),
+                           textInput('FCEECDF.Mult.Min', label = RT_MIN_LABEL, value = ''),
+                           textInput('FCEECDF.Mult.Max', label = RT_MAX_LABEL, value = ''),
+                           textInput('FCEECDF.Mult.Step', label = RT_STEP_LABEL, value = ''),
                            
-                           checkboxInput('FCE_ECDF_per_target',
+                           checkboxInput('FCEECDF.Mult.Targets',
                                          label = 'show ECDF for each budget',
                                          value = F),
                            
-                           checkboxInput('FCE_ECDF_AGGR_semilogx', 
+                           checkboxInput('FCEECDF.Mult.Logx', 
                                          label = 'scale x axis log10',
                                          value = F),
-                           selectInput('FIG_FORMAT_FV_ECDF_AGGR', label = 'select the figure format',
+                           selectInput('FCEECDF.Mult.Format', label = 'select the figure format',
                                        choices = supported_fig_format, selected = 'pdf'),
                            
-                           downloadButton('FIG_DOWNLOAD_FV_ECDF_AGGR', label = 'download the figure')
+                           downloadButton('FCEECDF.Mult.Download', label = 'download the figure')
                            ),
                          
                          mainPanel(width = 9,
@@ -948,14 +946,14 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                          sidebarPanel(
                            width = 3,
                            HTML('<p align="justify">Set the range and the granularity of the evenly spaced budgets.</p>'),
-                           textInput('FCE_AUC_RT_MIN', label = RT_MIN_LABEL, value = ''),
-                           textInput('FCE_AUC_RT_MAX', label = RT_MAX_LABEL, value = ''),
-                           textInput('FCE_AUC_RT_STEP', label = RT_STEP_LABEL, value = ''),
+                           textInput('FCEECDF.AUC.Min', label = RT_MIN_LABEL, value = ''),
+                           textInput('FCEECDF.AUC.Max', label = RT_MAX_LABEL, value = ''),
+                           textInput('FCEECDF.AUC.Step', label = RT_STEP_LABEL, value = ''),
                            
-                           selectInput('FIG_FORMAT_FV_AUC', label = 'select the figure format',
+                           selectInput('FCEECDF.AUC.Format', label = 'select the figure format',
                                        choices = supported_fig_format, selected = 'pdf'),
                            
-                           downloadButton('FIG_DOWNLOAD_FV_AUC', label = 'download the figure')
+                           downloadButton('FCEECDF.AUC.Download', label = 'download the figure')
                            ),
                          
                          mainPanel(width = 9,
@@ -979,13 +977,13 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                            sidebarPanel(
                              width = 3,
                              HTML('Select the budgets for which EDCF curves are displayed '),
-                             textInput('FCE_ECDF_RT1', label = HTML('<p>\\(B_1\\)</p>'), 
+                             textInput('FCEECDF.Single.Target1', label = HTML('<p>\\(B_1\\)</p>'), 
                                        value = ''),
-                             textInput('FCE_ECDF_RT2', label = HTML('<p>\\(B_2\\)</p>'), 
+                             textInput('FCEECDF.Single.Target2', label = HTML('<p>\\(B_2\\)</p>'), 
                                        value = ''),
-                             textInput('FCE_ECDF_RT3', label = HTML('<p>\\(B_3\\)</p>'), 
+                             textInput('FCEECDF.Single.Target3', label = HTML('<p>\\(B_3\\)</p>'), 
                                        value = ''),
-                             checkboxInput('FCE_ECDF_semilogx', label = 'scale x axis log10', value = F)
+                             checkboxInput('FCEECDF.Single.Logx', label = 'scale x axis log10', value = F)
                            ), 
                            
                            mainPanel(width = 9,
@@ -1015,25 +1013,25 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                             width = 3,
                             HTML('<p style="font-size:120%;">Range of the function values (\\(x\\) axis)</p>'),
                             
-                            textInput('PAR_F_MIN', label = F_MIN_LABEL, value = ''),
-                            textInput('PAR_F_MAX', label = F_MAX_LABEL, value = ''),
+                            textInput('PAR.Plot.Min', label = F_MIN_LABEL, value = ''),
+                            textInput('PAR.Plot.Max', label = F_MAX_LABEL, value = ''),
                             
-                            selectInput('PAR_ALGID_INPUT', 'Algorithms', choices = NULL, selected = NULL),
-                            selectInput('PAR_show.mean', label = 'mean/median', 
+                            selectInput('PAR.Plot.Algid', 'Algorithms', choices = NULL, selected = NULL),
+                            selectInput('PAR.Plot.show.mean', label = 'mean/median', 
                                         choices = c('mean', 'median'),
                                         selected = 'mean'),
                             
-                            checkboxInput('PAR_semilogx', 
+                            checkboxInput('PAR.Plot.Logx', 
                                           label = 'scale x axis log10',
                                           value = T),
                             
-                            checkboxInput('PAR_semilogy', 
+                            checkboxInput('PAR.Plot.Logy', 
                                           label = 'scale y axis log10',
                                           value = T),
                             
-                            selectInput('FIG_FORMAT_PAR_PER_FUN', label = 'select the figure format',
+                            selectInput('PAR.Plot.Format', label = 'select the figure format',
                                         choices = supported_fig_format, selected = 'pdf'),
-                            downloadButton('FIG_DOWNLOAD_PAR_PER_FUN', label = 'download the figure')
+                            downloadButton('PAR.Plot.Download', label = 'download the figure')
                           )
                       ),
                       
@@ -1055,15 +1053,15 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                            HTML_P('Set the range and the granularity of the results.
                                 The table will show fixed-target parameter values for evenly spaced target values.'),
                            
-                           textInput('PAR_F_MIN_SUMMARY', label = F_MIN_LABEL, value = ''),
-                           textInput('PAR_F_MAX_SUMMARY', label = F_MAX_LABEL, value = ''),
-                           textInput('PAR_F_STEP_SUMMARY', label = F_STEP_LABEL, value = ''),
-                           checkboxInput('PAR_F_SINGLE', label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
+                           textInput('PAR.Summary.Min', label = F_MIN_LABEL, value = ''),
+                           textInput('PAR.Summary.Max', label = F_MAX_LABEL, value = ''),
+                           textInput('PAR.Summary.Step', label = F_STEP_LABEL, value = ''),
+                           checkboxInput('PAR.Summary.Single', label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
                                                                        Once toggled, only \\(f_{\\text{min}}\\) is 
                                                                        used to generate the table on the right.</p>'), value = FALSE),
-                           selectInput('PAR_ALGID_INPUT_SUMMARY', 'Algorithms', choices = NULL, selected = NULL),
-                           selectInput('PAR_INPUT', 'Parameters', choices = NULL, selected = NULL),
-                           downloadButton("PAR_downloadData", "Save this table as csv")
+                           selectInput('PAR.Summary.Algid', 'Algorithms', choices = NULL, selected = NULL),
+                           selectInput('PAR.Summary.Param', 'Parameters', choices = NULL, selected = NULL),
+                           downloadButton("PAR.Summary.Download", "Save this table as csv")
                            ),
                          
                          mainPanel(
@@ -1080,17 +1078,17 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                            HTML_P('Set the range and the granularity of the results.
                                 The table will show fixed-target parameter values for evenly spaced target values.'),
 
-                           textInput('PAR_F_MIN_SAMPLE', label = F_MIN_LABEL, value = ''),
-                           textInput('PAR_F_MAX_SAMPLE', label = F_MAX_LABEL, value = ''),
-                           textInput('PAR_F_STEP_SAMPLE', label = F_STEP_LABEL, value = ''),
-                           checkboxInput('PAR_SAMPLE_F_SINGLE', label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
+                           textInput('PAR.Sample.Min', label = F_MIN_LABEL, value = ''),
+                           textInput('PAR.Sample.Max', label = F_MAX_LABEL, value = ''),
+                           textInput('PAR.Sample.Step', label = F_STEP_LABEL, value = ''),
+                           checkboxInput('PAR.Sample.Single', label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
                                                                              Once toggled, only \\(f_{\\text{min}}\\) is 
                                                                              used to generate the table on the right.</p>'), value = FALSE),
-                           selectInput('PAR_ALGID_INPUT_SAMPLE', 'Algorithms', choices = NULL, selected = NULL),
-                           selectInput('PAR_INPUT_SAMPLE', 'Parameters', choices = NULL, selected = NULL),
-                           selectInput('PAR_download_format', 'Format of the csv', 
+                           selectInput('PAR.Sample.Algid', 'Algorithms', choices = NULL, selected = NULL),
+                           selectInput('PAR.Sample.Param', 'Parameters', choices = NULL, selected = NULL),
+                           selectInput('PAR.Sample.Format', 'Format of the csv', 
                                        choices = c('long', 'wide'), selected = 'wide'),
-                           downloadButton("PAR_SAMPLE_downloadData", "Save this table as csv")
+                           downloadButton("PAR.Sample.Download", "Save this table as csv")
                          ),
 
                          mainPanel(

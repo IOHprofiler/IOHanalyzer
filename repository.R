@@ -1,4 +1,6 @@
 # This file contains some functions for reading and writing to the repository
+# The repository itself is a single directory, containing .rds files
+# A database (MySQL) keeps track of which data is contained in which file
 #
 # Author: Diederick Vermetten
 # Email: d.vermetten@gmail.com
@@ -7,6 +9,7 @@ library(DBI)
 
 con <- NULL
 
+#Location where rds-files are stored
 rds_location <- file.path(Sys.getenv('HOME'), 'repository')
 
 #TODO: cleaner solution?
@@ -24,8 +27,6 @@ open_connection <- function(){
                      password="IOHProfiler", host='localhost')
   },
   error = function(cond){
-    # message(cond)
-    # message("Setting succes to F")
     succes <<- F
     })
   return(succes)
@@ -69,7 +70,6 @@ verify_upload_dataSet <- function(ds){
   return(length(get_repository_filename(suite, algid, funcid, dim)) == 0)
 }
 
-
 get_repository_filename <- function(suite, algid = "NULL", funcid = "-1", dim = "-1"){
   statement <- paste0(prodecure_filename,  funcid, ",'", suite, "',", dim, ",'", algid, "');")
   response <- dbSendQuery(con, statement)
@@ -87,7 +87,7 @@ load_from_repository <- function(suite, algid = "all", funcid = "all", dim = "al
   filenames <- get_repository_filename(suite, algid, funcid, dim)
   dsList <- DataSetList()
   for (filename in filenames){
-    file_location <- file.path(rds_location, paste0(filename,".rds"))
+    file_location <- file.path(rds_location, paste0(filename, ".rds"))
     dslist <- readRDS(file_location)
     dsList <- c(dsList, dslist)
   }

@@ -39,12 +39,6 @@ sub_sampling <- TRUE
 format_FV <- function(v) format(v, digits = 2, nsmall = 2)
 format_RT <- function(v) as.integer(v)
 
-# transformations applied on the function value
-# trans_funeval <- `log10`
-# reverse_trans_funeval <- function(x) 10 ^ x
-
-# transformations applied on runtime values
-
 # directory where data are extracted from the zip file
 exdir <- file.path(Sys.getenv('HOME'), 'data')
 
@@ -298,31 +292,31 @@ shinyServer(function(input, output, session) {
       return()
     
     dim <- get_DIM(data)
-    updateSelectInput(session, 'DIM_INPUT', choices = dim, selected = dim[1])
+    updateSelectInput(session, 'Overall.Dim', choices = dim, selected = dim[1])
     
     funcID <- get_funcId(data)
-    updateSelectInput(session, 'FUNCID_INPUT', choices = funcID, selected = funcID[1])
+    updateSelectInput(session, 'Overall.Funcid', choices = funcID, selected = funcID[1])
     
     algId <- c(get_AlgId(data), 'all')
     updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algId, selected = 'all')
-    updateSelectInput(session, 'FCE_ALGID_INPUT_SUMMARY', choices = algId, selected = 'all')
+    updateSelectInput(session, 'FCESummary.Overview.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'RTSummary.Sample.Algid', choices = algId, selected = 'all')
-    updateSelectInput(session, 'PAR_ALGID_INPUT', choices = algId, selected = 'all')
-    updateSelectInput(session, 'FCE_ALGID_INPUT', choices = algId, selected = 'all')
-    updateSelectInput(session, 'FCE_ALGID_RAW_INPUT', choices = algId, selected = 'all')
-    updateSelectInput(session, 'PAR_ALGID_INPUT_SUMMARY', choices = algId, selected = 'all')
-    updateSelectInput(session, 'PAR_ALGID_INPUT_SAMPLE', choices = algId, selected = 'all')
+    updateSelectInput(session, 'PAR.Plot.Algid', choices = algId, selected = 'all')
+    updateSelectInput(session, 'FCESummary.Statistics.Algid', choices = algId, selected = 'all')
+    updateSelectInput(session, 'FCESummary.Sample.Algid', choices = algId, selected = 'all')
+    updateSelectInput(session, 'PAR.Summary.Algid', choices = algId, selected = 'all')
+    updateSelectInput(session, 'PAR.Sample.Algid', choices = algId, selected = 'all')
     
     parId <- c(get_ParId(data), 'all')
-    updateSelectInput(session, 'PAR_INPUT', choices = parId, selected = 'all')
-    updateSelectInput(session, 'PAR_INPUT_SAMPLE', choices = parId, selected = 'all')
+    updateSelectInput(session, 'PAR.Summary.Param', choices = parId, selected = 'all')
+    updateSelectInput(session, 'PAR.Sample.Param', choices = parId, selected = 'all')
   })
   
   # update (filter) according to users selection DataSets 
   DATA <- reactive({
-    dim <- input$DIM_INPUT
-    id <- input$FUNCID_INPUT
+    dim <- input$Overall.Dim
+    id <- input$Overall.Funcid
     
     if (length(DataList$data) == 0)
       return(NULL)
@@ -381,37 +375,36 @@ shinyServer(function(input, output, session) {
     setTextInput(session, 'RTSummary.Sample.Max', name, alternative = format_FV(stop))
     setTextInput(session, 'RTSummary.Sample.Step', name, alternative = format_FV(step))
     
-    setTextInput(session, 'RT_fstart', name, alternative = format_FV(start))
-    setTextInput(session, 'RT_fstop', name, alternative = format_FV(stop))
-    setTextInput(session, 'RT_fstep', name, alternative = format_FV(step))
-    setTextInput(session, 'RT_fselect', name, alternative = format_FV(median(v)))
-    
-    setTextInput(session, 'RT_PMF_FTARGET', name, alternative = format_FV(median(v)))
-    setTextInput(session, 'RT_PMF_HIST_FTARGET', name, alternative = format_FV(median(v)))
+    setTextInput(session, 'RTECDF.Multi.Min', name, alternative = format_FV(start))
+    setTextInput(session, 'RTECDF.Multi.Max', name, alternative = format_FV(stop))
+    setTextInput(session, 'RTECDF.Multi.Step', name, alternative = format_FV(step))
+
+    setTextInput(session, 'RTPMF.Bar.Target', name, alternative = format_FV(median(v)))
+    setTextInput(session, 'RTPMF.Hist.Target', name, alternative = format_FV(median(v)))
     
     # s <- ((stop - start) * 0.1 + start)
     # e <- ((stop - start) * 0.9 + start)
     setTextInput(session, 'ERTPlot.Min', name, alternative = format_FV(start))
     setTextInput(session, 'ERTPlot.Max', name, alternative = format_FV(stop))
     
-    setTextInput(session, 'RT_ECDF_FTARGET1', name, alternative = format_FV(q[1]))
-    setTextInput(session, 'RT_ECDF_FTARGET2', name, alternative = format_FV(q[2]))
-    setTextInput(session, 'RT_ECDF_FTARGET3', name, alternative = format_FV(q[3]))
+    setTextInput(session, 'RTECDF.Single.Target1', name, alternative = format_FV(q[1]))
+    setTextInput(session, 'RTECDF.Single.Target2', name, alternative = format_FV(q[2]))
+    setTextInput(session, 'RTECDF.Single.Target3', name, alternative = format_FV(q[3]))
     
-    setTextInput(session, 'RT_AUC_FSTART', name, alternative = format_FV(start))
-    setTextInput(session, 'RT_AUC_FSTOP', name, alternative = format_FV(stop))
-    setTextInput(session, 'RT_AUC_FSTEP', name, alternative = format_FV(step))
+    setTextInput(session, 'RTECDF.AUC.Min', name, alternative = format_FV(start))
+    setTextInput(session, 'RTECDF.AUC.Max', name, alternative = format_FV(stop))
+    setTextInput(session, 'RTECDF.AUC.Step', name, alternative = format_FV(step))
     
-    setTextInput(session, 'PAR_F_MIN', name, alternative = format_FV(start))
-    setTextInput(session, 'PAR_F_MAX', name, alternative = format_FV(stop))
+    setTextInput(session, 'PAR.Plot.Min', name, alternative = format_FV(start))
+    setTextInput(session, 'PAR.Plot.Max', name, alternative = format_FV(stop))
     
-    setTextInput(session, 'PAR_F_MIN_SUMMARY', name, alternative = format_FV(start))
-    setTextInput(session, 'PAR_F_MAX_SUMMARY', name, alternative = format_FV(stop))
-    setTextInput(session, 'PAR_F_STEP_SUMMARY', name, alternative = format_FV(step))
+    setTextInput(session, 'PAR.Summary.Min', name, alternative = format_FV(start))
+    setTextInput(session, 'PAR.Summary.Max', name, alternative = format_FV(stop))
+    setTextInput(session, 'PAR.Summary.Step', name, alternative = format_FV(step))
     
-    setTextInput(session, 'PAR_F_MIN_SAMPLE', name, alternative = format_FV(start))
-    setTextInput(session, 'PAR_F_MAX_SAMPLE', name, alternative = format_FV(stop))
-    setTextInput(session, 'PAR_F_STEP_SAMPLE', name, alternative = format_FV(step))
+    setTextInput(session, 'PAR.Sample.Min', name, alternative = format_FV(start))
+    setTextInput(session, 'PAR.Sample.Max', name, alternative = format_FV(stop))
+    setTextInput(session, 'PAR.Sample.Step', name, alternative = format_FV(step))
     
   })
   
@@ -434,33 +427,33 @@ shinyServer(function(input, output, session) {
     stop <- max(v)
     
     name <- get_data_id(data)
-    setTextInput(session, 'RT_MIN', name, alternative = min(v))
-    setTextInput(session, 'RT_MAX', name, alternative = max(v))
-    setTextInput(session, 'RT_STEP', name, alternative = step)
+    setTextInput(session, 'FCESummary.Statistics.Min', name, alternative = min(v))
+    setTextInput(session, 'FCESummary.Statistics.Max', name, alternative = max(v))
+    setTextInput(session, 'FCESummary.Statistics.Step', name, alternative = step)
     
-    setTextInput(session, 'RT_MIN_SAMPLE', name, alternative = min(v))
-    setTextInput(session, 'RT_MAX_SAMPLE', name, alternative = max(v))
-    setTextInput(session, 'RT_STEP_SAMPLE', name, alternative = step)
+    setTextInput(session, 'FCESummary.Sample.Min', name, alternative = min(v))
+    setTextInput(session, 'FCESummary.Sample.Max', name, alternative = max(v))
+    setTextInput(session, 'FCESummary.Sample.Step', name, alternative = step)
     
-    setTextInput(session, 'FCE_HIST_RUNTIME', name, alternative = median(v))
-    setTextInput(session, 'FCE_PDF_RUNTIME', name, alternative = median(v))
+    setTextInput(session, 'FCEPDF.Hist.Runtime', name, alternative = median(v))
+    setTextInput(session, 'FCEPDF.Bar.Runtime', name, alternative = median(v))
     
     # s <- ((max(v) - min(v)) * 0.05 + min(v)) %>% as.integer
     # e <- ((max(v) - min(v)) * 0.95 + min(v)) %>% as.integer
-    setTextInput(session, 'FCE_RT_MIN', name, alternative = start)
-    setTextInput(session, 'FCE_RT_MAX', name, alternative = stop)
+    setTextInput(session, 'FCEPlot.Min', name, alternative = start)
+    setTextInput(session, 'FCEPlot.Max', name, alternative = stop)
     
-    setTextInput(session, 'FCE_ECDF_RT_MIN', name, alternative = min(v))
-    setTextInput(session, 'FCE_ECDF_RT_MAX', name, alternative = max(v))
-    setTextInput(session, 'FCE_ECDF_RT_STEP', name, alternative = step)
+    setTextInput(session, 'FCEECDF.Mult.Min', name, alternative = min(v))
+    setTextInput(session, 'FCEECDF.Mult.Max', name, alternative = max(v))
+    setTextInput(session, 'FCEECDF.Mult.Step', name, alternative = step)
     
-    setTextInput(session, 'FCE_AUC_RT_MIN', name, alternative = min(v))
-    setTextInput(session, 'FCE_AUC_RT_MAX', name, alternative = max(v))
-    setTextInput(session, 'FCE_AUC_RT_STEP', name, alternative = step)
+    setTextInput(session, 'FCEECDF.AUC.Min', name, alternative = min(v))
+    setTextInput(session, 'FCEECDF.AUC.Max', name, alternative = max(v))
+    setTextInput(session, 'FCEECDF.AUC.Step', name, alternative = step)
     
-    setTextInput(session, 'FCE_ECDF_RT1', name, alternative = q[1])
-    setTextInput(session, 'FCE_ECDF_RT2', name, alternative = q[2])
-    setTextInput(session, 'FCE_ECDF_RT3', name, alternative = q[3])
+    setTextInput(session, 'FCEECDF.Single.Target1', name, alternative = q[1])
+    setTextInput(session, 'FCEECDF.Single.Target2', name, alternative = q[2])
+    setTextInput(session, 'FCEECDF.Single.Target3', name, alternative = q[3])
   })
   
   # Data summary for Fixed-Target Runtime (ERT)  --------------
@@ -634,22 +627,22 @@ shinyServer(function(input, output, session) {
     render_RT_PMF()
   })
   
-  output$FIG_DOWNLOAD_RT_PMF <- downloadHandler(
+  output$RTPMF.Bar.Download <- downloadHandler(
     filename = function() {
       eval(FIG_NAME_RT_PMF)
     },
     content = function(file) {
       save_plotly(render_RT_PMF(), file,
-           format = input$FIG_FORMAT_RT_PMF, 
+           format = input$RTPMF.Bar.Format, 
            width = fig_width2, height = fig_height)
     },
-    contentType = paste0('image/', input$FIG_FORMAT_RT_PMF)
+    contentType = paste0('image/', input$RTPMF.Bar.Format)
   )
   
   render_RT_PMF <- reactive({
-    ftarget <- input$RT_PMF_FTARGET %>% as.numeric
-    plot_RT_PMF.DatasetList(DATA(), ftarget, show.sample = input$RT_SHOW_SAMPLE, 
-                            scale.ylog = input$RT_PMF_LOGY)
+    ftarget <- input$RTPMF.Bar.Target %>% as.numeric
+    plot_RT_PMF.DatasetList(DATA(), ftarget, show.sample = input$RTPMF.Bar.Sample, 
+                            scale.ylog = input$RTPMF.Bar.Logy)
   })
   
   # historgram of the running time
@@ -657,22 +650,22 @@ shinyServer(function(input, output, session) {
     render_RT_HIST()
   })
   
-  output$FIG_DOWNLOAD_RT_HIST <- downloadHandler(
+  output$RTPMF.Hist.Download <- downloadHandler(
     filename = function() {
       eval(FIG_NAME_RT_HIST)
     },
     content = function(file) {
       save_plotly(render_RT_HIST(), file,
-           format = input$FIG_FORMAT_RT_HIST, 
+           format = input$RTPMF.Hist.Format, 
            width = fig_width2, height = fig_height2)
     },
-    contentType = paste0('image/', input$FIG_FORMAT_RT_HIST)
+    contentType = paste0('image/', input$RTPMF.Hist.Format)
   )
   
   render_RT_HIST <- reactive({
-    req(input$RT_PMF_HIST_FTARGET)
-    ftarget <- format_FV(input$RT_PMF_HIST_FTARGET) %>% as.numeric
-    plot_mode <- input$ERT_illu_mode
+    req(input$RTPMF.Hist.Target)
+    ftarget <- format_FV(input$RTPMF.Hist.Target) %>% as.numeric
+    plot_mode <- input$RTPMF.Hist.Mode
     
 
     # TODO: remove 'DataSetList' in the future
@@ -685,7 +678,7 @@ shinyServer(function(input, output, session) {
 
   render_RT_ECDF_MULT <- reactive({
 
-    dsList <- subset(DATA_UNFILTERED(), DIM == input$DIM_INPUT)
+    dsList <- subset(DATA_UNFILTERED(), DIM == input$Overall.Dim)
     targets <- uploaded_RT_ECDF_targets()
     
     if (is.null(targets)) 
@@ -717,16 +710,16 @@ shinyServer(function(input, output, session) {
     p
   })
   
-  output$FIG_DOWNLOAD_RT_ECDF_MULT <- downloadHandler(
+  output$RTECDF.Aggr.Download <- downloadHandler(
     filename = function() {
       eval(FIG_NAME_RT_ECDF_MULT)
     },
     content = function(file) {
       save_plotly(render_RT_ECDF_MULT(), file,
-                  format = input$FIG_FORMAT_RT_ECDF_MULT, 
+                  format = input$RTECDF.Aggr.Format, 
                   width = fig_width2, height = fig_height)
     },
-    contentType = paste0('image/', input$FIG_FORMAT_RT_ECDF_MULT)
+    contentType = paste0('image/', input$RTECDF.Aggr.Format)
   )
   
 
@@ -735,7 +728,7 @@ shinyServer(function(input, output, session) {
     funcId <- names(targets)
     
     if (is.null(targets)) {
-      data <- subset(DATA_UNFILTERED(), DIM == input$DIM_INPUT)
+      data <- subset(DATA_UNFILTERED(), DIM == input$Overall.Dim)
       targets <- get_default_ECDF_targets(data) 
       funcId <- unique(attr(data, 'funcId')) %>% sort
     }
@@ -754,8 +747,8 @@ shinyServer(function(input, output, session) {
   })
   
   uploaded_RT_ECDF_targets <- reactive({
-    if (!is.null(input$CSV_Targets_upload)) {
-      df <- read.csv(input$CSV_Targets_upload$datapath, header = T, sep = ';')
+    if (!is.null(input$RTECDF.Aggr.Table.Upload)) {
+      df <- read.csv(input$RTECDF.Aggr.Table.Upload$datapath, header = T, sep = ';')
       value <- as.character(df$target)
       
       lapply(value, 
@@ -768,7 +761,7 @@ shinyServer(function(input, output, session) {
       NULL
   })
   
-  output$TARGET_TABLE_EXAMPLE_DOWNLOAD <- downloadHandler(
+  output$RTECDF.Aggr.Table.Download <- downloadHandler(
     filename = 'Example_ECDF_TARGETS.csv',
     content = function(file) {
       write.table(RT_ECDF_MULTI_TABLE(), file, row.names = F, 
@@ -779,23 +772,23 @@ shinyServer(function(input, output, session) {
 
   # The ECDF plots for the runtime ----------------
   output$RT_ECDF <- renderPlotly({
-    req(input$RT_ECDF_FTARGET1, input$RT_ECDF_FTARGET2, input$RT_ECDF_FTARGET3)
+    req(input$RTECDF.Single.Target1, input$RTECDF.Single.Target2, input$RTECDF.Single.Target3)
     ftargets <- c(
-      format_FV(input$RT_ECDF_FTARGET1),
-      format_FV(input$RT_ECDF_FTARGET2),
-      format_FV(input$RT_ECDF_FTARGET3)) %>% 
+      format_FV(input$RTECDF.Single.Target1),
+      format_FV(input$RTECDF.Single.Target2),
+      format_FV(input$RTECDF.Single.Target3)) %>% 
       as.numeric 
     
-    plot_RT_ECDF.DataSetList(DATA(), ftargets, scale.xlog = input$RT_ECDF_semilogx)
+    plot_RT_ECDF.DataSetList(DATA(), ftargets, scale.xlog = input$RTECDF.Single.Logx)
     
   })
   
   output$RT_GRID <- renderPrint({
-    req(input$RT_fstart, input$RT_fstop, input$RT_fstep)
+    req(input$RTECDF.Multi.Min, input$RTECDF.Multi.Max, input$RTECDF.Multi.Step)
     
-    fstart <- format_FV(input$RT_fstart) %>% as.numeric
-    fstop <- format_FV(input$RT_fstop) %>% as.numeric 
-    fstep <- format_FV(input$RT_fstep) %>% as.numeric
+    fstart <- format_FV(input$RTECDF.Multi.Min) %>% as.numeric
+    fstop <- format_FV(input$RTECDF.Multi.Max) %>% as.numeric 
+    fstep <- format_FV(input$RTECDF.Multi.Step) %>% as.numeric
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
@@ -808,30 +801,30 @@ shinyServer(function(input, output, session) {
     render_RT_ECDF_AGGR()
   })
   
-  output$FIG_DOWNLOAD_RT_ECDF_AGGR <- downloadHandler(
+  output$RTECDF.Multi.Download <- downloadHandler(
     filename = function() {
       eval(FIG_NAME_RT_ECDF_AGGR)
     },
     content = function(file) {
       save_plotly(render_RT_ECDF_AGGR(), file,
-           format = input$FIG_FORMAT_RT_ECDF_AGGR, 
+           format = input$RTECDF.Multi.Format, 
            width = fig_width2, height = fig_height)
     },
-    contentType = paste0('image/', input$FIG_FORMAT_RT_ECDF_AGGR)
+    contentType = paste0('image/', input$RTECDF.Multi.Format)
   )
   
   render_RT_ECDF_AGGR <- reactive({
-    req(input$RT_fstart, input$RT_fstop, input$RT_fstep)
+    req(input$RTECDF.Multi.Min, input$RTECDF.Multi.Max, input$RTECDF.Multi.Step)
     
-    fstart <- format_FV(input$RT_fstart) %>% as.numeric
-    fstop <- format_FV(input$RT_fstop) %>% as.numeric 
-    fstep <- format_FV(input$RT_fstep) %>% as.numeric
+    fstart <- format_FV(input$RTECDF.Multi.Min) %>% as.numeric
+    fstop <- format_FV(input$RTECDF.Multi.Max) %>% as.numeric 
+    fstep <- format_FV(input$RTECDF.Multi.Step) %>% as.numeric
     
 
     plot_RT_ECDF_AGGR.DataSetList(
       DATA(), fstart, fstop, fstep, 
-      show.per_target = input$RT_ECDF_per_target,
-      scale.xlog = input$RT_ECDF_AGGR_semilogx
+      show.per_target = input$RTECDF.Multi.Targets,
+      scale.xlog = input$RTECDF.Multi.Logx
     )
   })
   
@@ -840,24 +833,24 @@ shinyServer(function(input, output, session) {
     render_RT_AUC()
   })
   
-  output$FIG_DOWNLOAD_RT_AUC <- downloadHandler(
+  output$RTECDF.AUC.Download <- downloadHandler(
     filename = function() {
       eval(FIG_NAME_RT_AUC)
     },
     content = function(file) {
       save_plotly(render_RT_AUC(), file,
-           format = input$FIG_FORMAT_RT_AUC, 
+           format = input$RTECDF.AUC.Format, 
            width = fig_width2, height = fig_height)
     },
-    contentType = paste0('image/', input$FIG_FORMAT_RT_AUC)
+    contentType = paste0('image/', input$RTECDF.AUC.Format)
   )
   
   render_RT_AUC <- reactive({
-    req(input$RT_AUC_FSTART, input$RT_AUC_FSTOP, input$RT_AUC_FSTEP)
+    req(input$RTECDF.AUC.Min, input$RTECDF.AUC.Max, input$RTECDF.AUC.Step)
     
-    fstart <- format_FV(input$RT_AUC_FSTART) %>% as.numeric
-    fstop <- format_FV(input$RT_AUC_FSTOP) %>% as.numeric 
-    fstep <- format_FV(input$RT_AUC_FSTEP) %>% as.numeric
+    fstart <- format_FV(input$RTECDF.AUC.Min) %>% as.numeric
+    fstop <- format_FV(input$RTECDF.AUC.Max) %>% as.numeric 
+    fstep <- format_FV(input$RTECDF.AUC.Step) %>% as.numeric
     
     plot_RT_AUC.DataSetList(
       DATA(), fstart, fstop, fstep, fval_formatter = format_FV
@@ -869,11 +862,11 @@ shinyServer(function(input, output, session) {
   FCE_runtime_summary_condensed <- reactive({
     data <- DATA()
     fall <- get_Funvals(data)
-    get_RT_overview(data, algorithm = input$FCE_ALGID_INPUT_SUMMARY)
+    get_RT_overview(data, algorithm = input$FCESummary.Overview.Algid)
   })
   
   output$table_RT_summary_condensed <- renderTable({
-    req(input$FCE_ALGID_INPUT_SUMMARY)
+    req(input$FCESummary.Overview.Algid)
     df <- FCE_runtime_summary_condensed()
     
     df$"Number of runs" %<>% as.integer
@@ -885,23 +878,23 @@ shinyServer(function(input, output, session) {
   })
   
   get_FCE_summary <- reactive({
-    req(input$RT_MIN, input$RT_MAX, input$RT_STEP)
+    req(input$FCESummary.Statistics.Min, input$FCESummary.Statistics.Max, input$FCESummary.Statistics.Step)
     
-    rt_min <- input$RT_MIN %>% as.integer
-    rt_max <- input$RT_MAX %>% as.integer
-    rt_step <- input$RT_STEP %>% as.integer
+    rt_min <- input$FCESummary.Statistics.Min %>% as.integer
+    rt_max <- input$FCESummary.Statistics.Max %>% as.integer
+    rt_step <- input$FCESummary.Statistics.Step %>% as.integer
     
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     data <- DATA()
     rt <- get_Runtimes(data)
     
-    if (input$RT_SINGLE)
+    if (input$FCESummary.Statistics.Single)
       rt_max <- rt_min
     
     rt_seq <- seq_RT(rt, rt_min, rt_max, by = rt_step)
     req(rt_seq)
     
-    get_FV_summary(data, rt_seq, algorithm = input$FCE_ALGID_INPUT)[
+    get_FV_summary(data, rt_seq, algorithm = input$FCESummary.Statistics.Algid)[
       , c('DIM', 'funcId') := NULL
       ]
   })
@@ -924,13 +917,13 @@ shinyServer(function(input, output, session) {
     df
   })
   
-  output$FCE_SUMMARY_download <- downloadHandler(
+  output$FCESummary.Statistics.Download <- downloadHandler(
     filename = {
       data <- DATA()
       algId <- paste0(get_AlgId(data), collapse = ';')
-      rt_min <- input$RT_MIN %>% as.integer %>% as.character
-      rt_max <- input$RT_MAX %>% as.integer %>% as.character
-      rt_step <- input$RT_STEP %>% as.integer %>% as.character
+      rt_min <- input$FCESummary.Statistics.Min %>% as.integer %>% as.character
+      rt_max <- input$FCESummary.Statistics.Max %>% as.integer %>% as.character
+      rt_step <- input$FCESummary.Statistics.Step %>% as.integer %>% as.character
       eval(FV_csv_name)
     },
     content = function(file) {
@@ -940,10 +933,10 @@ shinyServer(function(input, output, session) {
   )
   
   get_FCE <- reactive({
-    req(input$RT_MIN_SAMPLE, input$RT_MAX_SAMPLE, input$RT_STEP_SAMPLE)
-    rt_min <- input$RT_MIN_SAMPLE %>% as.integer
-    rt_max <- input$RT_MAX_SAMPLE %>% as.integer
-    rt_step <- input$RT_STEP_SAMPLE %>% as.integer
+    req(input$FCESummary.Sample.Min, input$FCESummary.Sample.Max, input$FCESummary.Sample.Step)
+    rt_min <- input$FCESummary.Sample.Min %>% as.integer
+    rt_max <- input$FCESummary.Sample.Max %>% as.integer
+    rt_step <- input$FCESummary.Sample.Step %>% as.integer
     
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     data <- DATA()
@@ -955,8 +948,8 @@ shinyServer(function(input, output, session) {
     rt_seq <- seq_RT(rt, rt_min, rt_max, by = rt_step)
     req(rt_seq)
     
-    get_FV_sample(data, rt_seq, algorithm = input$FCE_ALGID_RAW_INPUT,
-                  output = input$download_format_FCE)
+    get_FV_sample(data, rt_seq, algorithm = input$FCESummary.Sample.Algid,
+                  output = input$FCESummary.Sample.Format)
     
     # res <- list()
     # n_runs_max <- sapply(data, function(x) length(attr(x, 'instance'))) %>% max
@@ -964,11 +957,11 @@ shinyServer(function(input, output, session) {
     # for (i in seq_along(data)) {
     #   ds <- data[[i]]
     #   algId <- attr(ds, 'algId') 
-    #   if (input$FCE_ALGID_RAW_INPUT != 'all' && algId != input$FCE_ALGID_RAW_INPUT)
+    #   if (input$FCESummary.Sample.Algid != 'all' && algId != input$FCESummary.Sample.Algid)
     #     next
     #   
-    #   rt <- get_FV_sample(ds, rt_seq, output = input$download_format_FCE)
-    #   if (input$download_format_FCE == 'wide') {
+    #   rt <- get_FV_sample(ds, rt_seq, output = input$FCESummary.Sample.Format)
+    #   if (input$FCESummary.Sample.Format == 'wide') {
     #     # impute the missing records
     #     n <- ncol(rt) - 2
     #     if (n < n_runs_max) 
@@ -979,11 +972,11 @@ shinyServer(function(input, output, session) {
     # do.call(rbind, res) 
   })
   
-  output$FCE_SAMPLE_download <- downloadHandler(
+  output$FCESummary.Sample.Download <- downloadHandler(
     filename = {
       data <- DATA()
       algId <- paste0(get_AlgId(data), collapse = ';')
-      rt_min <- input$RT_MIN %>% as.integer %>% as.character
+      rt_min <- input$FCESummary.Statistics.Min %>% as.integer %>% as.character
       rt_max <- input$RT_MAX %>% as.integer %>% as.character
       rt_step <- input$RT_STEP %>% as.integer %>% as.character
       eval(FVSample_csv_name)
@@ -1004,46 +997,46 @@ shinyServer(function(input, output, session) {
     render_FV_PER_FUN()
   })
   
-  output$FIG_DOWNLOAD_FV_PER_FUN <- downloadHandler(
+  output$FCEPlot.Download <- downloadHandler(
     filename = function() {
       eval(FIG_NAME_FV_PER_FUN)
     },
     content = function(file) {
       save_plotly(render_FV_PER_FUN(), file, 
-                  format = input$FIG_FORMAT_FV_PER_FUN, 
+                  format = input$FCEPlot.Format, 
                   width = fig_width2, height = fig_height)
     },
-    contentType = paste0('image/', input$FIG_FORMAT_FV_PER_FUN)
+    contentType = paste0('image/', input$FCEPlot.Format)
   )
   
   render_FV_PER_FUN <- reactive({
-    rt_min <- input$FCE_RT_MIN %>% as.integer
-    rt_max <- input$FCE_RT_MAX %>% as.integer
+    rt_min <- input$FCEPlot.Min %>% as.integer
+    rt_max <- input$FCEPlot.Max %>% as.integer
     plot_FV_line.DataSetList(DATA(), RTstart = rt_min, RTstop = rt_max,
-                             show.density = input$FCE_show.density, show.pareto = input$FCE_show.pareto_optima,
-                             show.runs = input$FCE_show_all, show.optimal = input$FCE_show.best_of_all,
-                             show.mean = input$FCE_show.mean, show.median = input$FCE_show.median,
-                             scale.xlog = input$FCE_semilogx, scale.ylog = input$FCE_semilogy)
+                             show.density = input$FCEPlot.show.density, show.pareto = input$FCEPlot.show.pareto_optima,
+                             show.runs = input$FCEPlot.show.all, show.optimal = input$FCEPlot.show.best_of_all,
+                             show.mean = input$FCEPlot.show.mean, show.median = input$FCEPlot.show.median,
+                             scale.xlog = input$FCEPlot.semilogx, scale.ylog = input$FCEPlot.semilogy)
   })
   
   # empirical p.d.f. of the target value
   render_FV_PDF <- reactive({
-    req(input$FCE_PDF_RUNTIME)  
-    runtime <- input$FCE_PDF_RUNTIME %>% as.integer 
-    plot_FV_PDF.DataSetList(DATA(), runtime, show.sample = input$FCE_SHOW_SAMPLE,
-                            scale.ylog = input$FCE_LOGY )
+    req(input$FCEPDF.Bar.Runtime)  
+    runtime <- input$FCEPDF.Bar.Runtime %>% as.integer 
+    plot_FV_PDF.DataSetList(DATA(), runtime, show.sample = input$FCEPDF.Bar.Samples,
+                            scale.ylog = input$FCEPDF.Bar.Logy )
   })
   
-  output$FIG_DOWNLOAD_FV_PDF <- downloadHandler(
+  output$FCEPDF.Bar.Download <- downloadHandler(
     filename = function() {
       eval(FIG_NAME_FV_PDF)
     },
     content = function(file) {
       save_plotly(render_FV_PDF(), file, 
-                  format = input$FIG_FORMAT_FV_PDF, 
+                  format = input$FCEPDF.Bar.Format, 
                   width = fig_width2, height = fig_height)
     },
-    contentType = paste0('image/', input$FIG_FORMAT_FV_PDF)
+    contentType = paste0('image/', input$FCEPDF.Bar.Format)
   )
   
   output$FCE_PDF <- renderPlotly({
@@ -1052,21 +1045,21 @@ shinyServer(function(input, output, session) {
   
   # historgram of the target values -----------
   render_FV_HIST <- reactive({
-    req(input$FCE_HIST_RUNTIME != "")   # require non-empty input
-    runtime <- input$FCE_HIST_RUNTIME %>% as.integer 
-    plot_FV_HIST.DataSetList(DATA(), runtime, plot_mode = input$FCE_illu_mode)
+    req(input$FCEPDF.Hist.Runtime != "")   # require non-empty input
+    runtime <- input$FCEPDF.Hist.Runtime %>% as.integer 
+    plot_FV_HIST.DataSetList(DATA(), runtime, plot_mode = input$FCEPDF.Hist.Mode)
   })
   
-  output$FIG_DOWNLOAD_FV_HIST <- downloadHandler(
+  output$FCEPDF.Hist.Download <- downloadHandler(
     filename = function() {
       eval(FIG_NAME_FV_HIST)
     },
     content = function(file) {
       save_plotly(render_FV_HIST(), file, 
-                  format = input$FIG_FORMAT_FV_HIST, 
+                  format = input$FCEPDF.Hist.Format, 
                   width = fig_width2, height = fig_height2)
     },
-    contentType = paste0('image/', input$FIG_FORMAT_FV_HIST)
+    contentType = paste0('image/', input$FCEPDF.Hist.Format)
   )
   
   output$FCE_HIST <- renderPlotly({
@@ -1075,21 +1068,21 @@ shinyServer(function(input, output, session) {
   
   # The ECDF plots for the target value ----------------
   output$FCE_ECDF_PER_TARGET <- renderPlotly({
-    req(input$FCE_ECDF_RT1, input$FCE_ECDF_RT2, input$FCE_ECDF_RT3)
+    req(input$FCEECDF.Single.Target1, input$FCEECDF.Single.Target2, input$FCEECDF.Single.Target3)
     runtimes <- c(
-      as.integer(input$FCE_ECDF_RT1),
-      as.integer(input$FCE_ECDF_RT2),
-      as.integer(input$FCE_ECDF_RT3))
+      as.integer(input$FCEECDF.Single.Target1),
+      as.integer(input$FCEECDF.Single.Target2),
+      as.integer(input$FCEECDF.Single.Target3))
     
-    plot_FCE_ECDF_PER_TARGET.DataSetList(DATA(),runtimes, scale.xlog = input$FCE_ECDF_semilogx)
+    plot_FCE_ECDF_PER_TARGET.DataSetList(DATA(),runtimes, scale.xlog = input$FCEECDF.Single.Logx)
   })
   
   output$FCE_RT_GRID <- renderPrint({
-    req(input$FCE_ECDF_RT_MIN, input$FCE_ECDF_RT_MAX, input$FCE_ECDF_RT_STEP)
+    req(input$FCEECDF.Mult.Min, input$FCEECDF.Mult.Max, input$FCEECDF.Mult.Step)
     
-    rt_min <- input$FCE_ECDF_RT_MIN %>% as.integer
-    rt_max <- input$FCE_ECDF_RT_MAX %>% as.integer
-    rt_step <- input$FCE_ECDF_RT_STEP %>% as.integer
+    rt_min <- input$FCEECDF.Mult.Min %>% as.integer
+    rt_max <- input$FCEECDF.Mult.Max %>% as.integer
+    rt_step <- input$FCEECDF.Mult.Step %>% as.integer
     
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     data <- DATA()
@@ -1099,28 +1092,28 @@ shinyServer(function(input, output, session) {
   })
   
   render_FV_ECDF_AGGR <- reactive({
-    req(input$FCE_ECDF_RT_MIN, input$FCE_ECDF_RT_MAX, input$FCE_ECDF_RT_STEP)
+    req(input$FCEECDF.Mult.Min, input$FCEECDF.Mult.Max, input$FCEECDF.Mult.Step)
     
-    rt_min <- input$FCE_ECDF_RT_MIN %>% as.integer
-    rt_max <- input$FCE_ECDF_RT_MAX %>% as.integer
-    rt_step <- input$FCE_ECDF_RT_STEP %>% as.integer
+    rt_min <- input$FCEECDF.Mult.Min %>% as.integer
+    rt_max <- input$FCEECDF.Mult.Max %>% as.integer
+    rt_step <- input$FCEECDF.Mult.Step %>% as.integer
     
     plot_FV_ECDF_AGGR.DataSetList(DATA(),rt_min = rt_min, 
                                   rt_max = rt_max, rt_step = rt_step, 
-                                  scale.xlog = input$FCE_ECDF_AGGR_semilogx,
-                                  show.per_target = input$FCE_ECDF_per_target)
+                                  scale.xlog = input$FCEECDF.Mult.Logx,
+                                  show.per_target = input$FCEECDF.Mult.Targets)
   })
   
-  output$FIG_DOWNLOAD_FV_ECDF_AGGR <- downloadHandler(
+  output$FCEECDF.Mult.Download <- downloadHandler(
     filename = function() {
       eval(FIG_NAME_FV_ECDF_AGGR)
     },
     content = function(file) {
       save_plotly(render_FV_ECDF_AGGR(), file, 
-                  format = input$FIG_FORMAT_FV_ECDF_AGGR, 
+                  format = input$FCEECDF.Mult.Format, 
                   width = fig_width2, height = fig_height)
     },
-    contentType = paste0('image/', input$FIG_FORMAT_FV_ECDF_AGGR)
+    contentType = paste0('image/', input$FCEECDF.Mult.Format)
   )
   
   output$FCE_ECDF_AGGR <- renderPlotly({
@@ -1129,26 +1122,26 @@ shinyServer(function(input, output, session) {
   
   # evaluation rake of all courses 
   render_FV_AUC <- reactive({
-    req(input$FCE_AUC_RT_MIN, input$FCE_AUC_RT_MAX, input$FCE_AUC_RT_STEP)
+    req(input$FCEECDF.AUC.Min, input$FCEECDF.AUC.Max, input$FCEECDF.AUC.Step)
     
-    rt_min <- input$FCE_AUC_RT_MIN %>% as.integer
-    rt_max <- input$FCE_AUC_RT_MAX %>% as.integer
-    rt_step <- input$FCE_AUC_RT_STEP %>% as.integer
+    rt_min <- input$FCEECDF.AUC.Min %>% as.integer
+    rt_max <- input$FCEECDF.AUC.Max %>% as.integer
+    rt_step <- input$FCEECDF.AUC.Step %>% as.integer
     plot_FV_AUC.DataSetList(DATA(), rt_min = rt_min, 
                             rt_max = rt_max, rt_step = rt_step)
     
   })
   
-  output$FIG_DOWNLOAD_FV_AUC <- downloadHandler(
+  output$FCEECDF.AUC.Download <- downloadHandler(
     filename = function() {
       eval(FIG_NAME_FV_AUC)
     },
     content = function(file) {
       save_plotly(render_FV_AUC(), file, 
-                  format = input$FIG_FORMAT_FV_AUC, 
+                  format = input$FCEECDF.AUC.Format, 
                   width = fig_width2, height = fig_height)
     },
-    contentType = paste0('image/', input$FIG_FORMAT_FV_AUC)
+    contentType = paste0('image/', input$FCEECDF.AUC.Format)
   )
   
   output$FCE_AUC <- renderPlotly({
@@ -1157,28 +1150,28 @@ shinyServer(function(input, output, session) {
   
   # Expected Evolution of parameters in the algorithm
   render_PAR_PER_FUN <- reactive({
-    req(input$PAR_F_MIN, input$PAR_F_MAX)
+    req(input$PAR.Plot.Min, input$PAR.Plot.Max)
     
-    f_min <- format_FV(input$PAR_F_MIN) %>% as.numeric
-    f_max <- format_FV(input$PAR_F_MAX) %>% as.numeric  
+    f_min <- format_FV(input$PAR.Plot.Min) %>% as.numeric
+    f_max <- format_FV(input$PAR.Plot.Max) %>% as.numeric  
     
-    plot_PAR_Line.DataSetList(DATA(),f_min,f_max,algids = input$PAR_ALGID_INPUT,
-                              show.mean = (input$PAR_show.mean == 'mean'),
-                              show.median = (input$PAR_show.mean == 'median'),
-                              scale.xlog = input$PAR_semilogx,
-                              scale.ylog = input$PAR_semilogy)
+    plot_PAR_Line.DataSetList(DATA(),f_min,f_max,algids = input$PAR.Plot.Algid,
+                              show.mean = (input$PAR.Plot.show.mean == 'mean'),
+                              show.median = (input$PAR.Plot.show.mean == 'median'),
+                              scale.xlog = input$PAR.Plot.Logx,
+                              scale.ylog = input$PAR.Plot.Logy)
   })
   
-  output$FIG_DOWNLOAD_PAR_PER_FUN <- downloadHandler(
+  output$PAR.Plot.Download <- downloadHandler(
     filename = function() {
       eval(FIG_NAME_PAR_PER_FUN)
     },
     content = function(file) {
       save_plotly(render_PAR_PER_FUN(), file, 
-                  format = input$FIG_FORMAT_PAR_PER_FUN, 
+                  format = input$PAR.Plot.Format, 
                   width = fig_width2, height = fig_height)
     },
-    contentType = paste0('image/', input$FIG_FORMAT_PAR_PER_FUN)
+    contentType = paste0('image/', input$PAR.Plot.Format)
   )
   
   output$PAR_PER_FUN <- renderPlotly({
@@ -1205,48 +1198,48 @@ shinyServer(function(input, output, session) {
   # 
   
   parameter_summary <- reactive({
-    req(input$PAR_F_MIN_SUMMARY, input$PAR_F_MAX_SUMMARY, input$PAR_F_STEP_SUMMARY)
+    req(input$PAR.Summary.Min, input$PAR.Summary.Max, input$PAR.Summary.Step)
     
-    fstart <- format_FV(input$PAR_F_MIN_SUMMARY) %>% as.numeric
-    fstop <- format_FV(input$PAR_F_MAX_SUMMARY) %>% as.numeric
-    fstep <- format_FV(input$PAR_F_STEP_SUMMARY) %>% as.numeric
+    fstart <- format_FV(input$PAR.Summary.Min) %>% as.numeric
+    fstop <- format_FV(input$PAR.Summary.Max) %>% as.numeric
+    fstep <- format_FV(input$PAR.Summary.Step) %>% as.numeric
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
     fall <- get_Funvals(data)
     
-    if (input$PAR_F_SINGLE)
+    if (input$PAR.Summary.Single)
       fstop <- fstart
     
     fseq <- seq_FV(fall, fstart, fstop, by = fstep)
     req(fseq)
     
-    get_PAR_summary(data, fseq, input$PAR_ALGID_INPUT_SUMMARY, input$PAR_INPUT)
+    get_PAR_summary(data, fseq, input$PAR.Summary.Algid, input$PAR.Summary.Param)
   })
   
   parameter_sample <- reactive({
-    req(input$PAR_ALGID_INPUT_SAMPLE, input$PAR_F_MAX_SAMPLE, 
-        input$PAR_F_STEP_SAMPLE, input$PAR_F_MIN_SAMPLE,
-        input$PAR_INPUT_SAMPLE)
+    req(input$PAR.Sample.Algid, input$PAR.Sample.Max, 
+        input$PAR.Sample.Step, input$PAR.Sample.Min,
+        input$PAR.Sample.Param)
     
-    fstart <- format_FV(input$PAR_F_MIN_SAMPLE) %>% as.numeric
-    fstop <- format_FV(input$PAR_F_MAX_SAMPLE) %>% as.numeric
-    fstep <- format_FV(input$PAR_F_STEP_SAMPLE) %>% as.numeric
+    fstart <- format_FV(input$PAR.Sample.Min) %>% as.numeric
+    fstop <- format_FV(input$PAR.Sample.Max) %>% as.numeric
+    fstep <- format_FV(input$PAR.Sample.Step) %>% as.numeric
     
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
     fall <- get_Funvals(data)
     
-    if (input$PAR_SAMPLE_F_SINGLE)
+    if (input$PAR.Sample.Single)
       fstop <- fstart
     
     fseq <- seq_FV(fall, fstart, fstop, by = fstep)
     req(fseq)
     
     get_PAR_sample(data, ftarget = fseq, 
-                   algorithm = input$PAR_ALGID_INPUT_SAMPLE, 
-                   parId = input$PAR_INPUT_SAMPLE,
-                   output = input$PAR_download_format)
+                   algorithm = input$PAR.Sample.Algid, 
+                   parId = input$PAR.Sample.Param,
+                   output = input$PAR.Sample.Format)
   })
   
   output$table_PAR_SAMPLE <- renderDataTable({
@@ -1272,11 +1265,11 @@ shinyServer(function(input, output, session) {
     dt
   })
   
-  output$PAR_SAMPLE_downloadData <- downloadHandler(
+  output$PAR.Sample.Download <- downloadHandler(
     filename = {
-      fstart <- format_FV(input$PAR_F_MIN_SAMPLE)
-      fstop <- format_FV(input$PAR_F_MAX_SAMPLE)
-      fstep <- format_FV(input$PAR_F_STEP_SAMPLE)
+      fstart <- format_FV(input$PAR.Sample.Min)
+      fstop <- format_FV(input$PAR.Sample.Max)
+      fstep <- format_FV(input$PAR.Sample.Step)
       eval(PARSample_csv_name)
     },
     content = function(file) {
@@ -1285,11 +1278,11 @@ shinyServer(function(input, output, session) {
     contentType = "text/csv"
   )
   
-  output$PAR_downloadData <- downloadHandler(
+  output$PAR.Summary.Download <- downloadHandler(
     filename = {
-      fstart <- format_FV(input$PAR_F_MIN_SUMMARY)
-      fstop <- format_FV(input$PAR_F_MAX_SUMMARY)
-      fstep <- format_FV(input$PAR_F_STEP_SUMMARY) 
+      fstart <- format_FV(input$PAR.Summary.Min)
+      fstop <- format_FV(input$PAR.Summary.Max)
+      fstep <- format_FV(input$PAR.Summary.Step) 
       eval(PAR_csv_name)
     }, 
     content = function(file) {

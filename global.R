@@ -40,41 +40,41 @@ C_quantile <- function(x, pct = probs) quantile(x, pct, names = F, na.rm = T)
 
 
 # download file names: csv, image ---------------------
-RT_csv_name <- parse(text = "paste0('RT-', paste(Sys.Date(), input$DIM_INPUT, 
-                             paste0('F', input$FUNCID_INPUT), fstart, fstop, fstep, 
+RT_csv_name <- parse(text = "paste0('RT-', paste(Sys.Date(), input$Overall.Dim, 
+                             paste0('F', input$Overall.Funcid), fstart, fstop, fstep, 
                              sep = '-'), '.csv')")
-RTSample_csv_name <- parse(text = "paste0('RTSample-', paste(Sys.Date(), input$DIM_INPUT, 
-                                   paste0('F', input$FUNCID_INPUT), fstart, fstop, 
+RTSample_csv_name <- parse(text = "paste0('RTSample-', paste(Sys.Date(), input$Overall.Dim, 
+                                   paste0('F', input$Overall.Funcid), fstart, fstop, 
                                    fstep, sep = '-'), '.csv')")
-FV_csv_name <- parse(text = "paste0('FV-', paste(Sys.Date(), input$DIM_INPUT, 
-                             paste0('F', input$FUNCID_INPUT), rt_min, rt_max, rt_step,
+FV_csv_name <- parse(text = "paste0('FV-', paste(Sys.Date(), input$Overall.Dim, 
+                             paste0('F', input$Overall.Funcid), rt_min, rt_max, rt_step,
                              sep = '-'), '.csv')")
-FVSample_csv_name <- parse(text = "paste0('FVSample-', paste(Sys.Date(), input$DIM_INPUT, 
-                                   paste0('F', input$FUNCID_INPUT), rt_min, rt_max, 
+FVSample_csv_name <- parse(text = "paste0('FVSample-', paste(Sys.Date(), input$Overall.Dim, 
+                                   paste0('F', input$Overall.Funcid), rt_min, rt_max, 
                                    rt_step, sep = '-'), '.csv')")
-PAR_csv_name <- parse(text = "paste0('PAR-', paste(Sys.Date(), input$DIM_INPUT, 
-                              paste0('F', input$FUNCID_INPUT), fstart, fstop, fstep, 
+PAR_csv_name <- parse(text = "paste0('PAR-', paste(Sys.Date(), input$Overall.Dim, 
+                              paste0('F', input$Overall.Funcid), fstart, fstop, fstep, 
                               sep = '-'), '.csv')")
-PARSample_csv_name <- parse(text = "paste0('PARSample-', paste(Sys.Date(), input$DIM_INPUT,
-                                    paste0('F', input$FUNCID_INPUT), fstart, fstop, fstep, 
+PARSample_csv_name <- parse(text = "paste0('PARSample-', paste(Sys.Date(), input$Overall.Dim,
+                                    paste0('F', input$Overall.Funcid), fstart, fstop, fstep, 
                                     sep = '-'), '.csv')")
 
 max_samples <- 100
 
 FIG_NAME_ERT_PER_FUN <- parse(text = "paste0('ERT-', Sys.Date(), '.', input$ERTPlot.Format)")
-FIG_NAME_RT_PMF <- parse(text = "paste0('RT_PMF-', Sys.Date(), '.', input$FIG_FORMAT_RT_PMF)")
-FIG_NAME_RT_HIST <- parse(text = "paste0('RT_HIST-', Sys.Date(), '.', input$FIG_FORMAT_RT_HIST)")
-FIG_NAME_RT_ECDF_AGGR <- parse(text = "paste0('RT_ECDF_AGGR-', Sys.Date(), '.', input$FIG_FORMAT_RT_ECDF_AGGR)")
-FIG_NAME_RT_ECDF_MULT <- parse(text = "paste0('RT_ECDF_MULT-', Sys.Date(), '.', input$FIG_FORMAT_RT_ECDF_MULT)")
-FIG_NAME_RT_AUC <- parse(text = "paste0('RT_AUC-', Sys.Date(), '.', input$FIG_FORMAT_RT_AUC)")
+FIG_NAME_RT_PMF <- parse(text = "paste0('RT_PMF-', Sys.Date(), '.', input$RTPMF.Bar.Format)")
+FIG_NAME_RT_HIST <- parse(text = "paste0('RT_HIST-', Sys.Date(), '.', input$RTPMF.Hist.Format)")
+FIG_NAME_RT_ECDF_AGGR <- parse(text = "paste0('RT_ECDF_AGGR-', Sys.Date(), '.', input$RTECDF.Multi.Format)")
+FIG_NAME_RT_ECDF_MULT <- parse(text = "paste0('RT_ECDF_MULT-', Sys.Date(), '.', input$RTECDF.Aggr.Format)")
+FIG_NAME_RT_AUC <- parse(text = "paste0('RT_AUC-', Sys.Date(), '.', input$RTECDF.AUC.Format)")
 
-FIG_NAME_FV_PER_FUN <- parse(text = "paste0('FV-', Sys.Date(), '.', input$FIG_FORMAT_FV_PER_FUN)")
-FIG_NAME_FV_PDF <- parse(text = "paste0('FV_PMF-', Sys.Date(), '.', input$FIG_FORMAT_FV_PDF)")
-FIG_NAME_FV_HIST <- parse(text = "paste0('FV_HIST-', Sys.Date(), '.', input$FIG_FORMAT_FV_HIST)")
-FIG_NAME_FV_ECDF_AGGR <- parse(text = "paste0('FV_ECDF_AGGR-', Sys.Date(), '.', input$FIG_FORMAT_FV_ECDF_AGGR)")
-FIG_NAME_FV_AUC <- parse(text = "paste0('FV_AUC-', Sys.Date(), '.', input$FIG_FORMAT_FV_AUC)")
+FIG_NAME_FV_PER_FUN <- parse(text = "paste0('FV-', Sys.Date(), '.', input$FCEPlot.Format)")
+FIG_NAME_FV_PDF <- parse(text = "paste0('FV_PMF-', Sys.Date(), '.', input$FCEPDF.Bar.Format)")
+FIG_NAME_FV_HIST <- parse(text = "paste0('FV_HIST-', Sys.Date(), '.', input$FCEPDF.Hist.Format)")
+FIG_NAME_FV_ECDF_AGGR <- parse(text = "paste0('FV_ECDF_AGGR-', Sys.Date(), '.', input$FCEECDF.Mult.Format)")
+FIG_NAME_FV_AUC <- parse(text = "paste0('FV_AUC-', Sys.Date(), '.', input$FCEECDF.AUC.Format)")
 
-FIG_NAME_PAR_PER_FUN <- parse(text = "paste0('PAR-', Sys.Date(), '.', input$FIG_FORMAT_PAR_PER_FUN)")
+FIG_NAME_PAR_PER_FUN <- parse(text = "paste0('PAR-', Sys.Date(), '.', input$PAR.Plot.Format)")
 
 # function for generating sequences for RT and FV ---------------------
 # TODO: add Roxygen docs...
@@ -192,47 +192,46 @@ widget_id <- c('RTSummary.Statistics.Min',
                'RTSummary.Sample.Min', 
                'RTSummary.Sample.Max',
                'RTSummary.Sample.Step', 
-               'RT_fstart',
-               'RT_fstop', 
-               'RT_fstep', 
-               'RT_fselect', 
-               'RT_PMF_FTARGET', 
-               'RT_PMF_HIST_FTARGET', 
+               'RTECDF.Multi.Min',
+               'RTECDF.Multi.Max', 
+               'RTECDF.Multi.Step', 
+               'RTPMF.Bar.Target', 
+               'RTPMF.Hist.Target', 
                'ERTPlot.Min', 
                'ERTPlot.Max', 
-               'RT_ECDF_FTARGET1', 
-               'RT_ECDF_FTARGET2', 
-               'RT_ECDF_FTARGET3', 
-               'RT_AUC_FSTART', 
-               'RT_AUC_FSTOP', 
-               'RT_AUC_FSTEP', 
-               'PAR_F_MIN', 
-               'PAR_F_MAX', 
-               'PAR_F_MIN_SUMMARY', 
-               'PAR_F_MAX_SUMMARY', 
-               'PAR_F_STEP_SUMMARY', 
-               'PAR_F_MIN_SAMPLE', 
-               'PAR_F_MAX_SAMPLE', 
-               'PAR_F_STEP_SAMPLE',
-               'RT_MIN',
-               'RT_MAX',
-               'RT_STEP',
-               'RT_MIN_SAMPLE',
-               'RT_MAX_SAMPLE',
-               'RT_STEP_SAMPLE',
-               'FCE_HIST_RUNTIME',
-               'FCE_PDF_RUNTIME',
-               'FCE_RT_MIN',
-               'FCE_RT_MAX',
-               'FCE_ECDF_RT_MIN',
-               'FCE_ECDF_RT_MAX',
-               'FCE_ECDF_RT_STEP',
-               'FCE_AUC_RT_MIN',
-               'FCE_AUC_RT_MAX',
-               'FCE_AUC_RT_STEP',
-               'FCE_ECDF_RT1',
-               'FCE_ECDF_RT2',
-               'FCE_ECDF_RT3')
+               'RTECDF.Single.Target1', 
+               'RTECDF.Single.Target2', 
+               'RTECDF.Single.Target3', 
+               'RTECDF.AUC.Min', 
+               'RTECDF.AUC.Max', 
+               'RTECDF.AUC.Step', 
+               'PAR.Plot.Min', 
+               'PAR.Plot.Max', 
+               'PAR.Summary.Min', 
+               'PAR.Summary.Max', 
+               'PAR.Summary.Step', 
+               'PAR.Sample.Min', 
+               'PAR.Sample.Max', 
+               'PAR.Sample.Step',
+               'FCESummary.Statistics.Min',
+               'FCESummary.Statistics.Max',
+               'FCESummary.Statistics.Step',
+               'FCESummary.Sample.Min',
+               'FCESummary.Sample.Max',
+               'FCESummary.Sample.Step',
+               'FCEPDF.Hist.Runtime',
+               'FCEPDF.Bar.Runtime',
+               'FCEPlot.Min',
+               'FCEPlot.Max',
+               'FCEECDF.Mult.Min',
+               'FCEECDF.Mult.Max',
+               'FCEECDF.Mult.Step',
+               'FCEECDF.AUC.Min',
+               'FCEECDF.AUC.Max',
+               'FCEECDF.AUC.Step',
+               'FCEECDF.Single.Target1',
+               'FCEECDF.Single.Target2',
+               'FCEECDF.Single.Target3')
 
 eventExpr <- parse(text = paste0('{', paste(paste0('input$', widget_id), collapse = "\n"), '}'))
 

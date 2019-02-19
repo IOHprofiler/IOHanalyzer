@@ -121,7 +121,7 @@ shinyServer(function(input, output, session) {
       
       if (filetype == 'zip') 
         unzip_fct <- unzip
-      else if (filetype %in% c('bz2', 'bz', 'gz', 'tar', 'tar.gz', 'xz'))
+      else if (filetype %in% c('bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz'))
         unzip_fct <- untar
       
       for (i in seq(datapath)) {

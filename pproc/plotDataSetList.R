@@ -1017,6 +1017,10 @@ plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'overlay', scale.xlog
   N <- length(get_AlgId(dsList))
   colors <- color_palettes(N)
   
+  in_legend <- integer(N)
+  names(in_legend) <- get_AlgId(dsList)
+  names(colors) <- get_AlgId(dsList)
+  
   funcs <- get_funcId(dsList)
   M <- length(funcs)
   if (M <= 10)
@@ -1046,29 +1050,32 @@ plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'overlay', scale.xlog
     
     
     for (i in seq_along(dsList_filetered)){
-      
-      ds_ERT <- dt[algId == attr(dsList_filetered[[i]], 'algId') &
-                     funcId == attr(dsList_filetered[[i]], 'funcId') &
-                     DIM == attr(dsList_filetered[[i]], 'DIM')]
-      
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.35)')
-      
       df <- dsList_filetered[[i]]
       algId <- attr(df, 'algId')
+      to_show_legend <- (in_legend[[algId]] == 0)
+      in_legend[[algId]] <- 1
+      ds_ERT <- dt[algId == attr(df, 'algId') &
+                     funcId == attr(df, 'funcId') &
+                     DIM == attr(df, 'DIM')]
+      
+      color <- colors[[algId]]
+      rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
+      
+
 
       if (plot_mode == 'overlay') {
         p %<>%
           add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
                     mode = 'lines+markers',
                     marker = list(color = rgb_str),
-                    line = list(color = rgb_str))
+                    line = list(color = rgb_str),name = algId, showlegend=to_show_legend)
       } else if (plot_mode == 'subplot') {
         p[[j]] %<>% 
           add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
                     mode = 'lines+markers',
                     marker = list(color = rgb_str),
-                    line = list(color = rgb_str))
+                    line = list(color = rgb_str),name = algId, showlegend=to_show_legend)
       }
     }
   }

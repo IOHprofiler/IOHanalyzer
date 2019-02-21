@@ -307,6 +307,7 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, 'FCESummary.Sample.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'PAR.Summary.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'PAR.Sample.Algid', choices = algId, selected = 'all')
+    updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = get_AlgId(data), selected = NULL )
     
     parId <- c(get_ParId(data), 'all')
     updateSelectInput(session, 'PAR.Summary.Param', choices = parId, selected = 'all')
@@ -626,13 +627,18 @@ shinyServer(function(input, output, session) {
     render_ERTPlot_multi_plot()
   )
   
+  
+  
   render_ERTPlot_multi_plot <- reactive({
+    req(input$ERTPlot.Multi.PlotButton)
     data <- DATA_UNFILTERED()
+    data <- subset(data, algId %in% input$ERTPlot.Multi.Algs)
     if(length(data) == 0) return(NULL)
     data <- subset(data, DIM==input$Overall.Dim)
     plot_ERT_MULTI.DataSetList(data, plot_mode = input$ERTPlot.Multi.Mode, 
                              scale.xlog = input$ERTPlot.semilogx, scale.ylog = input$ERTPlot.semilogy,
-                             scale.reverse = (src_format == COCO))
+                             scale.reverse = (src_format == COCO), 
+                             aggr_on = ifelse(input$ERTPlot.Multi.Aggregator == 'Functions', 'funcId', 'DIM'))
     
   })
   

@@ -378,8 +378,9 @@ body <- dashboardBody(
                            div(style = "width: 90%;",
                                sidebarPanel(
                                  width = 3,
-                                 HTML('<p style="font-size:120%;">Range of the displayed target values</p>'),
-                                 
+                                
+                                 selectInput('ERTPlot.Multi.Algs', label = 'Select the algs to show', 
+                                             multiple = T, selected = NULL, choices = NULL),
                                 
                                  checkboxInput('ERTPlot.Multi.Logx', 
                                                label = 'scale x axis log10',
@@ -389,17 +390,18 @@ body <- dashboardBody(
                                                label = 'scale y axis log10',
                                                value = T),
                                  
-                                 selectInput('ERTPlot.Multi.Mode',label = 'Select the plotting mode',
+                                 selectInput('ERTPlot.Multi.Mode', label = 'Select the plotting mode',
                                              choices = c('overlay','subplot'), selected = 'subplot'),
-
+                                 
+                                 selectInput('ERTPlot.Multi.Aggregator', label = 'Aggregate on?',
+                                             choices = c('Functions','Dimensions'), selected = 'Functions'),
+                                 
+                                 actionButton('ERTPlot.Multi.PlotButton', label = 'Plot the figure'),
+                                 
                                  selectInput('ERTPlot.Multi.Format', label = 'Select the figure format',
                                              choices = supported_fig_format, selected = 'pdf'),
                                  
                                  downloadButton('ERTPlot.Multi.Download', label = 'Download the figure')
-                                 
-                                 # checkboxInput('show.instance', 
-                                 #               label = 'show each independent run',
-                                 #               value = F)
                                )
                            ),
                            

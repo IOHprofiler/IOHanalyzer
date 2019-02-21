@@ -1011,8 +1011,8 @@ plot_RT_ECDF_MULTI.DataSetList <- function(dsList, targets = NULL, dim = NULL,
 }
 
 
-plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'overlay', scale.xlog = F,
-                                       scale.ylog = F, scale.reverse = F){
+plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog = F,
+                                       scale.ylog = F, scale.reverse = F, aggr_on = 'funcId'){
   
   N <- length(get_AlgId(dsList))
   colors <- color_palettes(N)
@@ -1021,8 +1021,8 @@ plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'overlay', scale.xlog
   names(in_legend) <- get_AlgId(dsList)
   names(colors) <- get_AlgId(dsList)
   
-  funcs <- get_funcId(dsList)
-  M <- length(funcs)
+  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  M <- length(aggr_attr)
   if (M <= 10)
     nrows <- ceiling(M / 2.) # keep to columns for the histograms
   else 
@@ -1036,8 +1036,10 @@ plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'overlay', scale.xlog
     })
   }
   
-  for (j in seq_along(funcs)) {
-    dsList_filetered <- subset(dsList,funcId==funcs[[j]])
+  for (j in seq_along(aggr_attr)) {
+    dsList_filetered <- if(aggr_on == 'funcId') subset(dsList,funcId==aggr_attr[[j]])
+                        else subset(dsList,DIM==aggr_attr[[j]])
+    
     Fall <- get_Funvals(dsList_filetered)
     Fstart <- min(Fall)
     Fstop <- max(Fall)

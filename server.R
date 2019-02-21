@@ -634,7 +634,8 @@ shinyServer(function(input, output, session) {
     data <- DATA_UNFILTERED()
     data <- subset(data, algId %in% input$ERTPlot.Multi.Algs)
     if(length(data) == 0) return(NULL)
-    data <- subset(data, DIM==input$Overall.Dim)
+    if(input$ERTPlot.Multi.Aggregator == 'Functions') data <- subset(data, DIM==input$Overall.Dim)
+    else data <- subset(data, funcId==input$Overall.Funcid)
     plot_ERT_MULTI.DataSetList(data, plot_mode = input$ERTPlot.Multi.Mode, 
                              scale.xlog = input$ERTPlot.semilogx, scale.ylog = input$ERTPlot.semilogy,
                              scale.reverse = (src_format == COCO), 

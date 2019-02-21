@@ -372,7 +372,7 @@ body <- dashboardBody(
               ),
               column(width = 12,
                        box(title = HTML('<p style="font-size:120%;">Expected Runtime 
-                                        (all functions)</p>'), 
+                                        (aggregated)</p>'), 
                            width = 12,
                            collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
                            div(style = "width: 90%;",
@@ -393,7 +393,7 @@ body <- dashboardBody(
                                  selectInput('ERTPlot.Multi.Mode', label = 'Select the plotting mode',
                                              choices = c('overlay','subplot'), selected = 'subplot'),
                                  
-                                 selectInput('ERTPlot.Multi.Aggregator', label = 'Aggregate on?',
+                                 selectInput('ERTPlot.Multi.Aggregator', label = 'Create plot for all?',
                                              choices = c('Functions','Dimensions'), selected = 'Functions'),
                                  
                                  actionButton('ERTPlot.Multi.PlotButton', label = 'Plot the figure'),

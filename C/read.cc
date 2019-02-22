@@ -38,7 +38,7 @@ Rcpp::NumericMatrix make_mat(Rcpp::List input_list){
 // [[Rcpp::export]]
 List c_read_dat(std::string dat, int NC, std::string leading) {
     int i;
-    std::string line, val;
+    std::string line, val, replacement (" ");
     std::ifstream fp(dat.c_str());
     std::regex re("\\s+|\t+");  // in case of multiple whitespaces or tab
 
@@ -54,7 +54,7 @@ List c_read_dat(std::string dat, int NC, std::string leading) {
             continue;
         }
 
-        line = std::regex_replace(line, re, " ");
+        line = std::regex_replace(line, re, replacement);
         std::stringstream ss(line);
         
         for (i = 0; i < NC; ++i) {

@@ -76,8 +76,8 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
       dat <- read_dat(datFile, subsampling)         # read the dat file
       cdat <- read_dat(cdatFile, subsampling)       # read the cdat file
     } else if (format == COCO) {
-      dat <- read_COCO_dat(datFile, subsampling)    # read the dat file
-      cdat <- read_COCO_dat(tdatFile, subsampling)   # read the tdat file
+      dat <- read_COCO_dat2(datFile, subsampling)    # read the dat file
+      cdat <- read_COCO_dat2(tdatFile, subsampling)   # read the tdat file
     } else if (format == TWO_COL) {
       dat <- read_dat(datFile, subsampling)
     }

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <regex>
 
 using namespace Rcpp;
 using namespace std;
@@ -39,6 +40,7 @@ List c_read_dat(std::string dat, int NC, std::string leading) {
     int i;
     std::string line, val;
     std::ifstream fp(dat.c_str());
+    std::regex re("\\s+|\t+");  // in case of multiple whitespaces or tab
 
     List dataSets, one_run;
     NumericVector row(NC);
@@ -46,18 +48,20 @@ List c_read_dat(std::string dat, int NC, std::string leading) {
     while (std::getline(fp, line)) {
         if (line.find(leading) == 0) {
             if (one_run.size() != 0) {
-                
                 dataSets.push_back(make_mat(one_run));
             }
             one_run = Rcpp::List::create();
             continue;
         }
-           
+
+        line = std::regex_replace(line, re, " ");
         std::stringstream ss(line);
+        
         for (i = 0; i < NC; ++i) {
             std::getline(ss, val, ' ');
             row[i] = std::stod(val);
         }
+
         one_run.push_back(Rcpp::clone(row));
     }
     dataSets.push_back(make_mat(one_run));

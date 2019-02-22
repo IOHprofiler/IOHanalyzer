@@ -78,7 +78,9 @@ read_IndexFile <- function(fname) {
       info <- strsplit(res[2, ], '\\|') %>% unlist %>% matrix(nrow = 2)
     }
     
+    record[1] <-  gsub("\\\\", "/", record[1])
     datafile <- file.path(path, record[1])
+    
     # TODO: check the name of the attributes and fix them!
     data[[i]] <- c(
       header,
@@ -183,7 +185,29 @@ read_COCO_dat <- function(fname, subsampling = FALSE) {
   #            ans
   #        })
   # NOTE: the C implementation is only faster for small data set
-  c_read_dat(path.expand(fname), 7, '%')
+  c_read_dat(path.expand(fname), 5, '%')
+}
+
+read_COCO_dat2 <- function(fname, subsampling = FALSE) {
+  select <- seq(5)
+  # read the file as a character vector (one string per row)
+  X <- fread(fname, header = FALSE, sep = '\n', colClasses = 'character')[[1]]
+  idx <- which(startsWith(X, '%'))
+  X <- gsub('\\s+|\\t', ' ', X, perl = T)
+  
+  header <- gsub(' \\| ', '|', X[1], perl = T) %>% 
+    gsub('\\.\\.\\.|% ', '', ., perl = T) %>% {
+      strsplit(., split = '\\|')[[1]][select]
+    }
+  
+  df <- fread(text = X[-idx], header = F, sep = ' ', select = select, fill = T)
+  idx <- c((idx + 1) - seq_along(idx), nrow(df))
+  
+  lapply(seq(length(idx) - 1), function(i) {
+    i1 <- idx[i]
+    i2 <- idx[i + 1] - 1
+    as.matrix(df[i1:i2, ])
+  })
 }
 
 # TODO: double check the index of the target column
@@ -527,106 +551,3 @@ align_function_value <- function(data, include_param = TRUE, format = IOHprofile
     list(FV = FV)
   }
 }
-
-# NOTE: this is slow and incorrect...
-# TODO: remove this in the next commit
-# align_function_value_old <- function(data, type = 'full', format = IOHprofiler) {
-#   
-#   if (format == IOHprofiler) {
-#     maximization <- TRUE
-#     idxTarget <- 5
-#   } else if (format == COCO) {
-#     maximization <- FALSE
-#     idxTarget <- 3
-#   }
-#   
-#   N <- length(data) 
-#   data <- lapply(data, as.matrix)   # matrices are faster for indexing?
-#   
-#   n_rows <- sapply(data, nrow)
-#   n_column <- sapply(data, . %>% ncol) %>% unique
-#   
-#   if (format == COCO)
-#     n_param <- 0
-#   else
-#     n_param <- n_column - n_data_column
-# 
-#   if (length(n_column) > 1)
-#     stop('inconsistent number of columns in each run!')
-#   
-#   index <- rep(1, N)  # index of the 'iterator'
-#   curr_fvalues <- rep(NA_real_, N)  # NOTE: only NA_real_ work with the Rcpp code below
-#   next_lines <- lapply(data, function(x) x[1, ]) %>% 
-#     unlist %>% matrix(nrow = N, byrow = T)
-#   
-#   runtime <- lapply(data, function(x) x[, idxEvals]) %>% unlist %>% unique %>% sort
-#   nrow_max <- length(runtime)
-#   res <- matrix(NA, nrow = nrow_max, ncol = N)  # the aligned data
-#   
-#   if (n_param > 0) { # the aligned parameters
-#     param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
-#     param <- lapply(seq(n_param), . %>% {matrix(NA, nrow = nrow_max, ncol = N)}) %>% 
-#       set_names(param_names)  
-#   }
-#   
-#   if (type == 'full') {
-#     for (i in seq(nrow_max)) {
-#       r <- runtime[i]
-#       
-#       # Rcpp implementation
-#       align_function_value_inner_loop(r, idxEvals - 1, idxTarget - 1, data, n_rows,
-#                                   index - 1, next_lines, curr_fvalues)
-#       
-#       # the slower implementation
-#       # for (k in seq_along(data)) {
-#       #   d <- data[[k]]
-#       #   n_row <- n_rows[k]
-#       #   iter <- index[k]
-#       # 
-#       #   while (!is.na(next_lines[k, idxEvals])) {
-#       #     if (next_lines[k, idxEvals] >= r) {
-#       #       curr_fvalues[k] <- next_lines[k, idxTarget]
-#       #       break
-#       #     }
-#       # 
-#       #     if (iter < n_row) {
-#       #       iter <- iter + 1
-#       #       next_lines[k, ] <- d[iter, ]
-#       #     } else {
-#       #       curr_fvalues[k] <- next_lines[k, idxTarget]  # !IMPORTANT: store the last Target value
-#       #       next_lines[k, idxEvals] <- NA
-#       #     }
-#       #   }
-#       #   index[k] <- iter
-#       # }
-#       # 
-#       runtime[i] <- r
-#       res[i, ] <- curr_fvalues
-#       
-#       # store the aligned parameters
-#       if (n_param > 0) {
-#         for (k in seq(n_param)) {
-#           param[[k]][i, ] <- next_lines[, k + n_data_column]
-#         }
-#       }
-#       
-#       if (all(is.na(next_lines[, idxEvals])))
-#         break 
-#     }
-#   }
-#   
-#   res <- res[1:i, ]
-#   runtime <- runtime[1:i]
-#   rownames(res) <- runtime
-#   
-#   # store the aligned parameters first
-#   if (n_param > 0) {
-#     for (k in seq(n_param)) {
-#       param[[k]] <- param[[k]][1:i, ] %>% 
-#         set_rownames(runtime) 
-#     }
-#     c(list(by_runtime = res), param)
-#   } else {
-#     list(by_runtime = res)
-#   }
-# }

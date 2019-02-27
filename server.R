@@ -123,7 +123,6 @@ shinyServer(function(input, output, session) {
       algId <- c(get_available_algs(input$Repository.suite), 'all')
       dim <- c(get_available_dims(input$Repository.suite), 'all')
       func <- c(get_available_funcs(input$Repository.suite), 'all')
-      close_connection()
     }
     updateSelectInput(session, 'Repository.algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'Repository.dim', choices = dim, selected = 'all')
@@ -146,7 +145,6 @@ shinyServer(function(input, output, session) {
       if(open_connection())
         to_load <- load_from_repository(input$Repository.suite, algid = input$Repository.algid,
                                         dim = input$Repository.dim, funcid = input$Repository.funcid)
-      close_connection()
     }
     DataList$data <- c(DataList$data, to_load)
   })
@@ -255,7 +253,6 @@ shinyServer(function(input, output, session) {
         if(input$Upload.add_repository) {
           if(open_connection())
             upload_dataSetList(new_dataList)
-          close_connection()
         }
         DataList$data <- c(DataList$data, new_dataList)
         src_format <<- format

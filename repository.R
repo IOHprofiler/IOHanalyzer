@@ -5,9 +5,9 @@
 # Author: Diederick Vermetten
 # Email: d.vermetten@gmail.com
 
-library(DBI)
-library(dbplyr)
-library(dplyr)
+suppressMessages(library(DBI))
+suppressMessages(library(dbplyr))
+suppressMessages(library(dplyr))
 
 con <- NULL
 
@@ -33,7 +33,7 @@ open_connection <- function(){
 
 close_connection <- function(){
   if(!is.null(con)) dbDisconnect(con)
-  con <- NULL
+  con <<- NULL
 }
 
 upload_dataSetList <- function(dsList){
@@ -92,11 +92,11 @@ load_from_repository <- function(suite, algid = "all", funcid = "all", dim = "al
     dslist <- readRDS(file_location)
     dsList <- c(dsList, dslist)
   }
-  if(funcid != "-1")
+  if(funcid != "all")
     dsList <- subset(dsList, funcId==funcid)
-  if(dim != "-1")
+  if(dim != "all")
     dsList <- subset(dsList, DIM==dim)
-  if(algid != "NULL")
+  if(algid != "all")
     dsList <- subset(dsList, algId==algid)
   return(dsList)
 }

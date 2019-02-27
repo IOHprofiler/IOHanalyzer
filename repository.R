@@ -6,6 +6,8 @@
 # Email: d.vermetten@gmail.com
 
 library(DBI)
+library(dbplyr)
+library(dplyr)
 
 con <- NULL
 

@@ -23,7 +23,7 @@ open_connection <- function(){
   if(!is.null(con)) return(T)
   succes <- T
   tryCatch({
-    con <<- dbConnect(RMariaDB::MariaDB(), user='IOHProfiler', dbname="IOHProfiler",
+    con <<- dbConnect(RMariaDB::MariaDB(), user='IOHProfiler', dbname="iohprofiler",
                      password="IOHProfiler", host='localhost')
   },
   error = function(cond){

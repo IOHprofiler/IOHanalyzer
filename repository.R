@@ -13,17 +13,14 @@ con <- NULL
 rds_location <- file.path(Sys.getenv('HOME'), 'repository')
 
 #TODO: cleaner solution?
-prodecure_filename <- "CALL `iohprofiler`.`get_filenames`("
 prodecure_upload <- "CALL `iohprofiler`.`insert_item`("
-prodecure_funcids <- "CALL `iohprofiler`.`get_fids`("
-prodecure_algids <- "CALL `iohprofiler`.`get_algs`("
-prodecure_dims <- "CALL `iohprofiler`.`get_dims`("
+
 
 open_connection <- function(){
   if(!is.null(con)) return(T)
   succes <- T
   tryCatch({
-    con <<- dbConnect(RMariaDB::MariaDB(), user='IOHProfiler', dbname="IOHProfiler",
+    con <<- dbConnect(RMariaDB::MariaDB(), user='IOHProfiler', dbname="iohprofiler",
                      password="IOHProfiler", host='localhost')
   },
   error = function(cond){
@@ -34,6 +31,7 @@ open_connection <- function(){
 
 close_connection <- function(){
   if(!is.null(con)) dbDisconnect(con)
+  con <- NULL
 }
 
 upload_dataSetList <- function(dsList){
@@ -71,20 +69,20 @@ verify_upload_dataSet <- function(ds){
   return(length(get_repository_filename(suite, algid, funcid, dim)) == 0)
 }
 
-get_repository_filename <- function(suite, algid = "NULL", funcid = "-1", dim = "-1"){
-  statement <- paste0(prodecure_filename,  funcid, ",'", suite, "',", dim, ",'", algid, "');")
-  response <- dbSendQuery(con, statement)
-  ans <- dbFetch(response, n=-1)
-  dbClearResult(response)
-  ans[[1]]
+get_repository_filename <- function(suiteIn, algidIn = "all", funcIn = "all", dimIn = "all"){
+  ans <- tbl(con,"repository_index") %>% 
+    filter((dim == dimIn || dimIn == 'all') 
+           && (func == funcIn || funcIn =='all')
+           && (algid == algidIn || algidIn == 'all')
+           && suite == suiteIn ) %>%
+    select(filename) %>% 
+    collect()%>%
+    .[["filename"]] %>%
+    unique
+  return(ans)
 }
 
 load_from_repository <- function(suite, algid = "all", funcid = "all", dim = "all"){
-  #Ensure inputs are valid for calling the stored procedures
-  if (algid == "all") algid <- "NULL"
-  if (funcid == "all") funcid <- "-1"
-  if (dim == "all") dim <- "-1"
-  
   filenames <- get_repository_filename(suite, algid, funcid, dim)
   dsList <- DataSetList()
   for (filename in filenames){
@@ -101,40 +99,40 @@ load_from_repository <- function(suite, algid = "all", funcid = "all", dim = "al
   return(dsList)
 }
 
-get_available_funcs <- function(suite, algid = "all", dim = "all" ){
-  #Ensure inputs are valid for calling the stored procedures
-  if (algid == "all") algid <- "NULL"
-  if (dim == "all") dim <- "-1"
-  
-  statement <-  paste0(prodecure_funcids, "'", suite,"','", algid, "',", dim, ");")
-  response <- dbSendQuery(con, statement)
-  ans <- dbFetch(response, n=-1)
-  dbClearResult(response)
-  ans[[1]]
+get_available_funcs <- function(suiteIn, algidIn = "all", dimIn = "all" ){
+  ans <- tbl(con,"repository_index") %>% 
+    filter((dim == dimIn || dimIn == 'all') 
+           && (algid == algidIn || algidIn == 'all')
+           && suite == suiteIn ) %>%
+    select(func) %>% 
+    collect()%>%
+    .[["func"]] %>%
+    unique
+  return(ans)
 }
 
-get_available_dims <- function(suite, funcid = "all", algid = "all" ){
-  #Ensure inputs are valid for calling the stored procedures
-  if (algid == "all") algid <- "NULL"
-  if (funcid == "all") funcid <- "-1"
-  
-  statement <-  paste0(prodecure_dims, "'", suite, "',", funcid,",'", algid, "');")
-  response <- dbSendQuery(con, statement)
-  ans <- dbFetch(response, n=-1)
-  dbClearResult(response)
-  ans[[1]]
+get_available_dims <- function(suiteIn, funcIn = "all", algidIn = "all" ){
+  ans <- tbl(con,"repository_index") %>% 
+    filter((func == funcIn || funcIn =='all')
+           && (algid == algidIn || algidIn == 'all')
+           && suite == suiteIn ) %>%
+    select(dim) %>% 
+    collect()%>%
+    .[["dim"]] %>%
+    unique
+  return(ans)
 }
 
-get_available_algs <- function(suite, funcid = "all", dim = "all" ){
-  #Ensure inputs are valid for calling the stored procedures
-  if (funcid == "all") funcid <- "-1"
-  if (dim == "all") dim <- "-1"
-  
-  statement <-  paste0(prodecure_algids, "'", suite, "',", funcid,",", dim, ");")
-  response <- dbSendQuery(con, statement)
-  ans <- dbFetch(response, n=-1)
-  dbClearResult(response)
-  ans[[1]]
+get_available_algs <- function(suiteIn, funcIn = "all", dimIn = "all" ){
+  ans <- tbl(con,"repository_index") %>% 
+    filter((dim == dimIn || dimIn == 'all') 
+           && (func == funcIn || funcIn =='all')
+           && suite == suiteIn ) %>%
+    select(algid) %>% 
+    collect() %>%
+    .[["algid"]] %>%
+    unique
+  return(ans)
 }
 
 

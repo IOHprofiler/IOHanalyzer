@@ -1092,3 +1092,94 @@ plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog
     p %<>% layout(xaxis = list(autorange = "reversed"))
   p
 }
+
+plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, 
+                                      plot_mode = 'radar', use_rank = F,
+                                      scale.ylog = T, maximize = TRUE){
+  
+  N <- length(get_AlgId(dsList))
+  colors <- color_palettes(N)
+  
+  in_legend <- integer(N)
+  names(in_legend) <- get_AlgId(dsList)
+  names(colors) <- get_AlgId(dsList)
+  
+  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  if(!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
+  
+  second_aggr <- if(aggr_on == 'funcId') get_DIM(dsList) else get_funcId(dsList)
+  if(length(second_aggr) >1 ) return(NULL)
+  
+  plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
+  
+  p <- if(plot_mode == "radar")  plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
+  else plot_ly_default(title = plot_title)
+    
+  erts <- c()
+  ertranks <- c()
+  
+  for (j in seq_along(aggr_attr)) {
+    dsList_filetered <- if(aggr_on == 'funcId') subset(dsList,funcId==aggr_attr[[j]])
+    else subset(dsList, DIM==aggr_attr[[j]])
+    
+    if(is.null(targets)){
+      Fall <- get_Funvals(dsList_filetered)
+      Fval <- ifelse(maximize, max(Fall), min(Fall))
+    }
+    else
+      Fval <- targets[[j]]
+    ert <- get_RT_summary(dsList_filetered, ftarget = Fval)$ERT
+    erts <- rbind(erts, ert)
+    
+    if(use_rank){ 
+      ertrank <- rank(ert)
+      ertranks <- rbind(ertranks,ertrank)
+    }
+  }
+  erts[is.infinite(erts)] <- 10^12
+  if (use_rank) dataert <- ertranks
+  else dataert <- erts
+  
+  for (i in seq_along(get_AlgId(dsList))){
+    algId <- get_AlgId(dsList)[[i]]
+    color <- colors[[algId]]
+    rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
+    if(plot_mode == "radar")
+      p %<>% 
+      add_trace(type = 'scatterpolar', r = dataert[,i], 
+                theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr), 
+                fill = 'toself', connectgaps = T, fillcolor = rgba_str,
+                marker = list(color = rgb_str), hoverinfo = 'text',
+                text = paste0('ERT: ', format(erts[,i], digits = 3, nsmall = 3)),
+                name = algId) 
+    else
+      p %<>% add_trace(x = aggr_attr, y = dataert[,i], type = 'scatter',
+                       mode = 'lines+markers',
+                       marker = list(color = rgb_str), hoverinfo = 'text',
+                       text = paste0('ERT: ', format(erts[,i], digits = 3, nsmall = 3)),
+                       line = list(color = rgb_str),name = algId)
+  }
+  if (plot_mode == "radar"){
+    if(use_rank)
+      p %<>%
+        layout(polar = list(radialaxis = list(type = 'linear', visible=F, autorange = 'reversed')))
+    else
+      p %<>%
+        layout(polar = list(radialaxis = list(type = 'log', visible=F, autorange = 'reverse')))
+  }
+  else{
+    if(use_rank)
+      p %<>%
+        layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear', autorange = 'reverse')),
+              xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+    else
+      p %<>%
+        layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
+             xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+  }
+ p
+}
+
+
+

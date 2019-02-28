@@ -305,7 +305,7 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, 'PAR.Summary.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'PAR.Sample.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = get_AlgId(data), selected = NULL )
-    
+
     parId <- c(get_ParId(data), 'all')
     updateSelectInput(session, 'PAR.Summary.Param', choices = parId, selected = 'all')
     updateSelectInput(session, 'PAR.Sample.Param', choices = parId, selected = 'all')
@@ -403,7 +403,6 @@ shinyServer(function(input, output, session) {
     setTextInput(session, 'PAR.Sample.Min', name, alternative = format_FV(start))
     setTextInput(session, 'PAR.Sample.Max', name, alternative = format_FV(stop))
     setTextInput(session, 'PAR.Sample.Step', name, alternative = format_FV(step))
-    
   })
   
   # update the values for the grid of running times
@@ -651,6 +650,66 @@ shinyServer(function(input, output, session) {
     },
     contentType = paste0('image/', input$ERTPlot.Multi.Format)
   )
+  
+  output$ERTPlot.Aggr.Plot <- renderPlotly(
+    render_ERTPlot_aggr_plot()
+  )
+  
+  get_max_targets <- function(data, aggr_on, maximize){
+    targets <- c()
+    aggr_attr <- if(aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
+    
+    for (j in seq_along(aggr_attr)) {
+      dsList_filetered <- if(aggr_on == 'funcId') subset(data,funcId==aggr_attr[[j]])
+      else subset(data, DIM==aggr_attr[[j]])
+
+      Fall <- get_Funvals(dsList_filetered)
+      Fval <- ifelse(maximize, max(Fall), min(Fall))
+      targets <- c(targets,Fval)
+    }
+    targets
+  }
+  
+  render_ERTPlot_aggr_plot <- reactive({
+    data <- DATA_UNFILTERED()
+    if(length(data) == 0) return(NULL)
+    if(input$ERTPlot.Aggr.Aggregator == 'Functions') data <- subset(data, DIM==input$Overall.Dim)
+    else data <- subset(data, funcId==input$Overall.Funcid)
+    aggr_on = ifelse(input$ERTPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
+    aggr_attr <- if(aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
+    update_targets <- F
+    if(input$ERTPlot.Aggr.Targets == ""){
+      update_targets <- T
+    }
+    else{
+      targets <- as.numeric(unlist(strsplit(input$ERTPlot.Aggr.Targets,",")))
+      if(length(targets) != length(aggr_attr)){
+        update_targets <- T
+      }
+    }
+    if(update_targets){
+      targets <- get_max_targets(data, aggr_on, maximize = !(src_format == COCO))
+      updateTextInput(session, 'ERTPlot.Aggr.Targets', value = targets %>% toString)
+    }
+    plot_ERT_AGGR.DataSetList(data, plot_mode = input$ERTPlot.Aggr.Mode, targets = targets,
+                               scale.ylog = input$ERTPlot.Aggr.semilogy,
+                               maximize = !(src_format == COCO), use_rank = input$ERTPlot.Aggr.Ranking,
+                               aggr_on = aggr_on)
+
+  })
+  
+  output$ERTPlot.Multi.Download <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_ERT_AGGR)
+    },
+    content = function(file) {
+      save_plotly(render_ERTPlot_aggr_plot(), file, 
+                  format = input$ERTPlot.Aggr.Format, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$ERTPlot.Aggr.Format)
+  )
+  
   # empirical p.m.f. of the runtime
   output$RT_PMF <- renderPlotly({
     render_RT_PMF()

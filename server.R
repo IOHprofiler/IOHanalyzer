@@ -633,7 +633,7 @@ shinyServer(function(input, output, session) {
     if(input$ERTPlot.Multi.Aggregator == 'Functions') data <- subset(data, DIM==input$Overall.Dim)
     else data <- subset(data, funcId==input$Overall.Funcid)
     plot_ERT_MULTI.DataSetList(data, plot_mode = input$ERTPlot.Multi.Mode, 
-                             scale.xlog = input$ERTPlot.semilogx, scale.ylog = input$ERTPlot.semilogy,
+                             scale.xlog = input$ERTPlot.Multi.Logx, scale.ylog = input$ERTPlot.Multi.Logy,
                              scale.reverse = (src_format == COCO), 
                              aggr_on = ifelse(input$ERTPlot.Multi.Aggregator == 'Functions', 'funcId', 'DIM'))
     
@@ -692,7 +692,7 @@ shinyServer(function(input, output, session) {
       updateTextInput(session, 'ERTPlot.Aggr.Targets', value = targets %>% toString)
     }
     plot_ERT_AGGR.DataSetList(data, plot_mode = input$ERTPlot.Aggr.Mode, targets = targets,
-                               scale.ylog = input$ERTPlot.Aggr.semilogy,
+                               scale.ylog = input$ERTPlot.Aggr.Logy,
                                maximize = !(src_format == COCO), use_rank = input$ERTPlot.Aggr.Ranking,
                                aggr_on = aggr_on)
 

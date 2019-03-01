@@ -1086,7 +1086,7 @@ plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog
   }
   
   if (plot_mode == 'subplot') {
-    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.05)
+    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.005)
   }
   p %<>%
     layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),

@@ -407,7 +407,7 @@ body <- dashboardBody(
                            
                            mainPanel(width = 9,
                                      column(width = 12, align = "center",
-                                            plotlyOutput('ERTPlot.Multi.Plot', height = plotly_height, width = plotly_width2)
+                                            plotlyOutput('ERTPlot.Multi.Plot', height = "1800px", width = plotly_width2)
                                      )
                            )
                        )

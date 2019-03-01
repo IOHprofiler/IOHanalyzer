@@ -698,7 +698,7 @@ shinyServer(function(input, output, session) {
 
   })
   
-  output$ERTPlot.Multi.Download <- downloadHandler(
+  output$ERTPlot.Aggr.Download <- downloadHandler(
     filename = function() {
       eval(FIG_NAME_ERT_AGGR)
     },

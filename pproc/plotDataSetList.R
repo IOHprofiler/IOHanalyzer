@@ -1139,14 +1139,11 @@ plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL
     
     if(use_rank){ 
       ertrank <- rank(ert)
-      # names(ertrank) <- get_AlgId(dsList_filetered)
       ertranks <- rbind(ertranks, ertrank[get_AlgId(dsList)])
     }
   }
   if (use_rank) dataert <- ertranks
   else {
-    #TODO: think of a better solution to infinite ERTs?
-    erts[is.infinite(erts)] <- 10^7
     dataert <- erts
   }
   
@@ -1157,20 +1154,41 @@ plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL
     data <- data[2:length(data)]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
-    if(plot_mode == "radar")
+    if(plot_mode == "radar"){
       p %<>% 
       add_trace(type = 'scatterpolar', r = data, 
                 theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr), 
                 fill = 'toself', connectgaps = T, fillcolor = rgba_str,
                 marker = list(color = rgb_str), hoverinfo = 'text',
                 text = paste0('ERT: ', format(erts[2:(1+length(aggr_attr)),i], digits = 3, nsmall = 3)),
-                name = algId) 
-    else
+                name = algId, legendgroup = algId) 
+      #TODO: cleaner solution?
+      data2 <- data
+      data2[is.infinite(data2)] <- 10e7
+      data2[data2<10e7] <- NA
+      p %<>% 
+        add_trace(type='scatterpolar', mode='markers', r = data2,
+                  theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr), 
+                  marker = list(color = rgb_str, symbol = 'diamond', size = '12'), hoverinfo = 'text',
+                  text = paste0('ERT: ', format(erts[2:(1+length(aggr_attr)),i], digits = 3, nsmall = 3)),
+                  showlegend = F, legendgroup = algId)
+    }
+    else{
       p %<>% add_trace(x = aggr_attr, y = data, type = 'scatter',
                        mode = 'lines+markers',
                        marker = list(color = rgb_str), hoverinfo = 'text',
                        text = paste0('ERT: ', format(erts[2:(1+length(aggr_attr)),i], digits = 3, nsmall = 3)),
-                       line = list(color = rgb_str), name = algId)
+                       line = list(color = rgb_str), name = algId, legendgroup = algId)
+      data2 <- data
+      data2[is.infinite(data2)] <- 10e7
+      data2[data2<10e7] <- NA
+      p %<>% 
+        add_trace(type='scatter', mode='markers', x = aggr_attr, y = data2,
+                  marker = list(color = rgb_str, symbol = 'diamond', size = '12'), hoverinfo = 'text',
+                  text = paste0('ERT: ', format(erts[2:(1+length(aggr_attr)),i], digits = 3, nsmall = 3)),
+                  showlegend = F, legendgroup = algId )
+      
+    }
   }
   if (plot_mode == "radar"){
     if(use_rank)

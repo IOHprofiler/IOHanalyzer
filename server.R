@@ -385,6 +385,8 @@ shinyServer(function(input, output, session) {
     setTextInput(session, 'ERTPlot.Min', name, alternative = format_FV(start))
     setTextInput(session, 'ERTPlot.Max', name, alternative = format_FV(stop))
     
+    setTextInput(session, 'ERTPlot.Aggr.Targets', name, alternative = "")
+    
     setTextInput(session, 'RTECDF.Single.Target1', name, alternative = format_FV(q[1]))
     setTextInput(session, 'RTECDF.Single.Target2', name, alternative = format_FV(q[2]))
     setTextInput(session, 'RTECDF.Single.Target3', name, alternative = format_FV(q[3]))

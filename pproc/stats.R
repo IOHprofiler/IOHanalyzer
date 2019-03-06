@@ -20,6 +20,112 @@ SP <- function(data, max_runtime) {
   list(ERT = rowSums(data) / succ, runs = succ, succ_rate = succ_rate)
 }
 
+# function for generating sequences for RT and FV ---------------------
+# TODO: add Roxygen docs...
+# TODO: maybe merge 'seq_FV' and 'seq_RT'...
+# TODO: determine when the sequence should be generate in log-linear way
+seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, scale = NULL) {
+  from <- max(from, min(FV))
+  to <- min(to, max(FV))
+  
+  rev_trans <- function(x) x
+  
+  # Auto detect scaling
+  # TODO: Improve this detection (based on FV?). Currently very arbitrary
+  if (is.null(scale)) {
+    if (to < 0 || from < 0)
+      scale <- 'linear'
+    else if (abs(log10(mean(FV)) - log10(median(FV))) > 1)
+      scale <- 'log'
+    else
+      scale <- 'linear'
+  }
+  
+  if (scale == 'log') {
+    trans <- log10
+    rev_trans <- function(x) 10 ^ x
+    # TODO: Better way to deal with negative values 
+    #       set lowest possible target globally instead of arbitrary 1e-12
+    from <- max(1e-12, from)
+    to <- max(1e-12 ,to)
+    from <- trans(from)
+    to <- trans(to)
+  }
+  
+  #Avoid generating too many samples
+  if(!is.null(by)){
+    nr_samples_generated <- (to-from)/by
+    if (nr_samples_generated > max_samples){
+      by <- NULL
+      if(is.null(length.out))
+        length.out <- max_samples
+    }
+  }
+  
+  if (is.null(by) || by > to - from) {
+    if (is.null(length.out)) {
+      length.out <- 10
+      args <- list(from = from, to = to, by = (to - from) / (length.out - 1))
+    } else 
+      args <- list(from = from, to = to, length.out = length.out)
+  } else 
+    args <- list(from = from, to = to, by = by)
+  
+  # tryCatch({
+  do.call(seq, args) %>% 
+    c(from, ., to) %>%    # always include the starting / ending value
+    unique %>%
+    rev_trans
+  # }, error = function(e) {
+  # c()
+  # })
+}
+
+# TODO: Roxygen doc...
+seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL, 
+                   scale = 'linear') {
+  rev_trans <- function(x) x
+  
+  # Do this first to avoid the log-values being overwritten.
+  from <- max(from, min(RT))
+  to <- min(to, max(RT))
+  
+  if (scale == 'log') {
+    RT <- log10(RT)
+    rev_trans <- function(x) 10 ^ x
+    if (!is.null(from))
+      from <- log10(from)
+    if (!is.null(to))
+      to <- log10(to)
+    if (!is.null(by))
+      by <- log10(by)
+  }
+  
+  #Avoid generating too many samples
+  if(!is.null(by)){
+    nr_samples_generated <- (to-from)/by
+    if (nr_samples_generated > max_samples){
+      by <- NULL
+      if(is.null(length.out))
+        length.out <- max_samples
+    }
+  }
+  
+  # Also reset by if it is too large
+  if (is.null(by) || by > to - from) {
+    if (is.null(length.out)) {
+      length.out <- 10
+      args <- list(from = from, to = to, by = (to - from) / (length.out - 1))
+    } else 
+      args <- list(from = from, to = to, length.out = length.out)
+  } else 
+    args <- list(from = from, to = to, by = by)
+  
+  do.call(seq, args) %>% 
+    c(from, ., to) %>%    # always include the starting / ending value
+    unique %>%
+    rev_trans
+}
 
 # TODO: implement the empirical p.m.f. for runtime 
 EPMF <- function() {

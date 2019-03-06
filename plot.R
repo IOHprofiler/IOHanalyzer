@@ -18,8 +18,8 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
   plot_ly() %>% 
     layout(title = title,
            autosize = T, hovermode = 'compare',
-           legend = list(x = 1.02, y = 0.98, orientation = 'v',
-                         font = list(size = 21, family = 'Old Standard TT, serif')),
+           legend = list(x = 1, y = 0.98, orientation = 'v', 
+                         font = list(size = 12, family = 'sans-serif')),
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
            font = list(size = 25, family = 'sans-serif'),
            titlefont = list(size = 16, family = 'sans-serif'),

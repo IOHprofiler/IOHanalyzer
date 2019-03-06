@@ -376,12 +376,12 @@ body <- dashboardBody(
                            width = 12,
                            collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
                            div(style = "width: 90%;",
-                               sidebarPanel(
-                                 width = 3,
+                               box(
+                                 width = 12,
                                 
                                  selectInput('ERTPlot.Multi.Algs', label = 'Select the algs to show', 
                                              multiple = T, selected = NULL, choices = NULL),
-                                
+                                 column( width = 6,
                                  checkboxInput('ERTPlot.Multi.Logx', 
                                                label = 'scale x axis log10',
                                                value = T),
@@ -396,16 +396,17 @@ body <- dashboardBody(
                                  selectInput('ERTPlot.Multi.Aggregator', label = 'Create plot for all?',
                                              choices = c('Functions','Dimensions'), selected = 'Functions'),
                                  
-                                 actionButton('ERTPlot.Multi.PlotButton', label = 'Plot the figure'),
-                                 
-                                 selectInput('ERTPlot.Multi.Format', label = 'Select the figure format',
+                                 actionButton('ERTPlot.Multi.PlotButton', label = 'Plot the figure')
+                                 ),
+                                 column( width = 6,
+                                   selectInput('ERTPlot.Multi.Format', label = 'Select the figure format',
                                              choices = supported_fig_format, selected = 'pdf'),
                                  
-                                 downloadButton('ERTPlot.Multi.Download', label = 'Download the figure')
+                                 downloadButton('ERTPlot.Multi.Download', label = 'Download the figure'))
                                )
                            ),
                            
-                           mainPanel(width = 9,
+                           mainPanel(width = 12,
                                      column(width = 12, align = "center",
                                             plotlyOutput('ERTPlot.Multi.Plot', height = "1800px", width = plotly_width2)
                                      )

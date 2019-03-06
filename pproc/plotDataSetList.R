@@ -1035,7 +1035,7 @@ plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog
       plot_ly_default(x.title = "function evaluations", y.title = "ERT") %>% 
         add_annotations(text=paste0(ifelse(aggr_on=='funcId', "F ", "D "),aggr_attr[[x]]), 
                         showarrow=F, xanchor = 'center', yanchor = 'top', 
-                        y = 1.1, yref = 'paper', x = 0.5, xref= 'paper')
+                        y = 1.15, yref = 'paper', x = 0.5, xref= 'paper')
     })
   }
   
@@ -1086,7 +1086,7 @@ plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog
   }
   
   if (plot_mode == 'subplot') {
-    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.005)
+    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.04)
   }
   p %<>%
     layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),

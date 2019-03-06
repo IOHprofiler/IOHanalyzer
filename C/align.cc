@@ -95,12 +95,12 @@ NumericMatrix c_impute_runtime(NumericVector index, // index value recorded
 }
 
 // [[Rcpp::export]]
-List c_align_runtime(List data, NumericVector FV, NumericVector idxValue, bool maximization) {
+List c_align_runtime(List data, NumericVector FV, NumericVector idxValue, bool maximization, int idxTarget) {
   int NC = data.size();
   int NR = FV.size();
   int M = idxValue.size();
-  int idxTarget = 2;
-
+  // int idxTarget = 2;
+  
   List res(M);
   for (int i = 0; i < M; i++) {
     NumericMatrix aux(NR, NC);

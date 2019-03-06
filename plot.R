@@ -7,15 +7,21 @@
 suppressMessages(library(plotly))
 suppressMessages(library(ggplot2))
 
-plot_ly_default <- function(title = NULL,
-                            x.title = NULL,
-                            y.title = NULL) {
+# font No. 2...
+f2 <- list(
+  family = 'Old Standard TT, serif',
+  size = 23,
+  color = 'black'
+)
+
+plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
   plot_ly() %>% 
     layout(title = title,
            autosize = T, hovermode = 'compare',
-           legend = list(x = 0, y = -0.2, orientation = 'h'),
+           legend = list(x = 1.01, y = 0.9, orientation = 'v',
+                         font = list(size = 21, family = 'Old Standard TT, serif')),
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
-           font = list(size = 18, family = 'sans-serif'),
+           font = list(size = 25, family = 'sans-serif'),
            titlefont = list(size = 16, family = 'sans-serif'),
            xaxis = list(title = x.title,
                         gridcolor = 'rgb(255,255,255)',
@@ -25,6 +31,8 @@ plot_ly_default <- function(title = NULL,
                         tickcolor = 'rgb(127,127,127)',
                         ticks = 'outside',
                         ticklen = 9,
+                        tickfont = f2,
+                        exponentformat = 'E',
                         zeroline = F),
            yaxis = list(title = y.title,
                         gridcolor = 'rgb(255,255,255)',
@@ -34,6 +42,8 @@ plot_ly_default <- function(title = NULL,
                         tickcolor = 'rgb(127,127,127)',
                         ticks = 'outside',
                         ticklen = 9,
+                        tickfont = f2,
+                        exponentformat = 'E',
                         zeroline = F)) 
 }
 
@@ -49,7 +59,6 @@ t <- theme_grey() +
         #                                  linetype = "solid")
   )
 theme_set(t)
-
 
 gg_beanplot <- function(mapping, data, p = NULL, width = 3, fill = 'grey', 
                         colour = 'grey', alpha = 1, kernel = 'gaussian', bw = 'SJ', 
@@ -80,4 +89,76 @@ gg_beanplot <- function(mapping, data, p = NULL, width = 3, fill = 'grey',
   # geom_segment(aes(x = x - width / 2.2, xend = x + width / 2.2, y = y, yend = y),
   #              df, col = 'black', size = 0.2, alpha = 0.3, linetype = linetype)
   p
+}
+
+Set1 <- function(n) sequential_hcl(n, h = c(360, 40), c = c(100, NA, 90), l = c(28, 90), 
+                                   power = c(1, 1.1), gamma = NULL, fixup = TRUE, alpha = 1, 
+                                   palette = NULL, rev = FALSE)
+
+Set2 <- function(n) sequential_hcl(n, c(261, 26), c = c(50, NA, 70), l = c(54, 77), 
+                                   power = c(0.5, NA), gamma = NULL, 
+                                   fixup = TRUE, alpha = 1, palette = NULL, rev = FALSE)
+
+Set3 <- function(n) sequential_hcl(n, c(-88, 59), c = c(60, 75, 55), l = c(40, 90), 
+                                   power = c(0.1, 1.2), gamma = NULL, 
+                                   fixup = TRUE, alpha = 1, palette = NULL, rev = FALSE)
+
+# TODO: incoporate more colors
+color_palettes <- function(ncolor) {
+  require(colorspace)
+  require(colorRamps)
+  require(RColorBrewer)
+  
+  if (ncolor < 5) return(Set2(ncolor))
+  
+  brewer <- function(n) {
+    colors <- brewer.pal(n, 'Spectral')
+    colors[colors == "#FFFFBF"] <- "#B2B285"
+    colors
+  } 
+  
+  color_fcts <- c(grDevices::cm.colors, Set3)
+  
+  n <- min(11, ncolor)
+  colors <- brewer(n)
+  ncolor <- ncolor - n
+  
+  i <- 1
+  while (ncolor > 0) {
+    n <- min(8, ncolor)
+    if (i > length(color_fcts)) {
+      colors <- c(colors, primary.colors(ncolor))
+      break
+    } else {
+      colors <- c(colors, color_fcts[[i]](n))
+      ncolor <- ncolor - n
+    }
+    i <- i + 1
+  }
+  colors
+}
+
+# TODO: we have to change the working directory back and force because 
+# function 'orca' always generates figures in the current folder
+save_plotly <- function(p, file, format = 'svg', ...) {
+  pwd.calling <- getwd()
+  des <- dirname(file)
+  file <- basename(file)
+  
+  pwd <- file.path(Sys.getenv('HOME'))
+  dir.create(pwd, showWarnings = FALSE)
+  setwd(pwd)
+  
+  if (format %in% c('svg', 'png'))
+    orca(p, file, format = format, ...)
+  else {
+    file_svg <- paste0(file, '.svg')
+    orca(p, file_svg, format = 'svg', ...)
+    invisible(system(paste('inkscape', file_svg, paste0('--export-', format, '=', file)), 
+                     intern = T))
+    file.remove(file_svg)
+  }
+  
+  file.rename(file, file.path(des, file))
+  setwd(pwd.calling)
 }

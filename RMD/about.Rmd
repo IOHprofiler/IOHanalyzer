@@ -1,6 +1,6 @@
-<img src="../logo/leiden.png" style="width:10%"> &nbsp;&nbsp;
-<img src="../logo/CNRS.gif" style="width:6%"> &nbsp;&nbsp;
-<img src="../logo/SU.jpg" style="width:10%">
+<img src="../img/leiden.png" style="width:10%"> &nbsp;&nbsp;
+<img src="../img/CNRS.gif" style="width:6%"> &nbsp;&nbsp;
+<img src="../img/SU.jpg" style="width:10%">
 
 ## Iterative Optimization Heuristics Profiler
 

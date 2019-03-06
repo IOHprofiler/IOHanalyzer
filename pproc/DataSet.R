@@ -66,37 +66,61 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     } else if (format == COCO) {
       datFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
       tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
+    } else if (format == TWO_COL) {
+      datFile <-  file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
     }
+    
     
     # TODO: whether to keep the raw data set list?
     if (format == IOHprofiler) {
       dat <- read_dat(datFile, subsampling)         # read the dat file
       cdat <- read_dat(cdatFile, subsampling)       # read the cdat file
     } else if (format == COCO) {
-      dat <- read_COCO_dat(datFile, subsampling)    # read the dat file
-      cdat <- read_COCO_dat(tdatFile, subsampling)   # read the tdat file
+      dat <- read_COCO_dat2(datFile, subsampling)    # read the dat file
+      cdat <- read_COCO_dat2(tdatFile, subsampling)   # read the tdat file
+    } else if (format == TWO_COL) {
+      dat <- read_dat(datFile, subsampling)
     }
     
     # check if the number of instances does not match
-    stopifnot(length(dat) == length(cdat))
+    if (format != TWO_COL)
+      stopifnot(length(dat) == length(cdat))
     
-    if (format == IOHprofiler)
+    if (format == IOHprofiler || format == TWO_COL)
       maximization <- TRUE
     else if (format == COCO)
       maximization <- FALSE
     
     # RT <- align_by_target(dat, maximization = maximization, format = format) # runtime
     RT <- align_runtime(dat, format = format)
-    FV <- align_function_value(cdat, format = format)  # function value
+    
+    #TODO: check if this works correctly without CDAT-file
+    if (format == TWO_COL)
+      FV <- align_function_value(dat, format = format)  # function value
+    else
+      FV <- align_function_value(cdat, format = format)  # function value
     
     # TODO: remove this and incorporate the parameters aligned by runtimes
     FV[names(FV) != 'FV'] <- NULL
     
-    maxRT <- sapply(cdat, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
-    if (any(maxRT != info$maxRT))
-      warning('Inconsitent maxRT in *.info file and *.cdat file')
+    # TODO: add more data sanity checks
     
-    finalFV <- sapply(dat, function(d) d[nrow(d), idxTarget]) %>% set_names(NULL)
+    # TODO: add the same sanity checks for TWO_COL format
+    if (format != TWO_COL){
+      maxRT <- sapply(cdat, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
+      if (any(maxRT != info$maxRT))
+        warning('Inconsitent maxRT in *.info file and *.cdat file')
+    }
+    else{
+      maxRT <- info$maxRT 
+    }
+    
+    #TODO: Clean up these if-statements: Function to set idxTarget and n_data_column?
+    if (format == TWO_COL)
+      finalFV <- sapply(dat, function(d) d[nrow(d), idxTarget-1]) %>% set_names(NULL)
+    else
+      finalFV <- sapply(dat, function(d) d[nrow(d), idxTarget]) %>% set_names(NULL)
+    
     if (any(finalFV != info$finalFV))
       warning('Inconsitent finalFvalue in *.info file and *.dat file')
     
@@ -210,8 +234,8 @@ plot_ERT <- function(ds, backend = 'ggplot2') {
                        line = list(color = rgb_str, dash = 'dash'))
   }
   p %<>%
-    layout(xaxis = list(type = switch(input$semilogx, T = 'log', F = 'linear')),
-           yaxis = list(type = switch(input$semilogy, T = 'log', F = 'linear')))
+    layout(xaxis = list(type = ifelse(input$semilogx, 'log', 'linear')),
+           yaxis = list(type = ifelse(input$semilogy, 'log', 'linear')))
   
   # minimization for COCO
   if (src_format == 'COCO')
@@ -219,7 +243,7 @@ plot_ERT <- function(ds, backend = 'ggplot2') {
   p
 }
 
-# TODO: implement the save option
+# TODO: implement the 'save' option
 plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
   dt <- data.table(ds$RT) 
   NC <- ncol(dt)
@@ -296,6 +320,65 @@ get_FV_summary <- function(ds, ...) UseMethod("get_FV_summary", ds)
 get_PAR_sample <- function(ds, ...) UseMethod("get_PAR_sample", ds)
 get_PAR_summary <- function(ds, ...) UseMethod("get_PAR_summary", ds)
 get_PAR_name <- function(ds) UseMethod("get_PAR_name", ds)
+get_FV_overview <- function(ds,...) UseMethod("get_FV_overview", ds)
+get_RT_overview <- function(ds,...) UseMethod("get_RT_overview", ds)
+
+#' Get Function Value condensed overview
+#'
+#' @param ds 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_FV_overview.DataSet <- function(ds) {
+  data <- ds$FV
+  algId <- attr(ds, 'algId')
+  maximization <- attr(ds, 'maximization')
+  op_inv <- ifelse(maximization,min,max)
+  op <- ifelse(maximization,max,min)
+  
+  maxs <- apply(data,2,op)
+  
+  max_val <- op(maxs)
+  min_val <- op_inv(maxs)
+  mean_max <- mean(maxs)
+  
+  runs <- ncol(data)
+  budget <- max(attr(ds,'maxRT'))
+  
+  c(max_val,min_val,mean_max,runs,budget) %>%
+    t %>%
+    as.data.table %>% 
+    cbind(algId,.) %>% 
+    set_colnames(c("Algorithm ID","Best reached value","Worst reached value","Mean reached value","Number of runs","Budget"))
+}
+
+#' Get Runtime Value condensed overview
+#'
+#' @param ds 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_RT_overview.DataSet <- function(ds) {
+  data <- ds$RT
+  algId <- attr(ds, 'algId')
+  
+  max_val <- max(data,na.rm = T)
+  min_val <- min(data,na.rm = T)
+  
+  runs <- ncol(data)
+  budget <- max(attr(ds,'maxRT'))
+  
+  c(min_val, max_val, runs, budget) %>%
+    t %>%
+    as.data.table %>% 
+    cbind(algId,.) %>% 
+    set_colnames(c('Algorithm ID', 'Minimum used evaluations',
+                   'Maximum used evaluations', 'Number of runs', 'Budget'))
+}
 
 #' Get RunTime Summary
 #'
@@ -307,7 +390,6 @@ get_PAR_name <- function(ds) UseMethod("get_PAR_name", ds)
 #'
 #' @examples
 get_RT_summary.DataSet <- function(ds, ftarget) {
-  # data <- ds$RT.summary
   data <- ds$RT
   maxRT <- attr(ds, 'maxRT')
   algId <- attr(ds, 'algId')
@@ -315,7 +397,6 @@ get_RT_summary.DataSet <- function(ds, ftarget) {
   
   ftarget <- c(ftarget) %>% as.double %>% sort(decreasing = !maximization)
   FValues <- rownames(data) %>% as.numeric
-  # FValues <- data[, target]
   idx <- seq_along(FValues)
   op <- ifelse(maximization, `>=`, `<=`)
   
@@ -325,6 +406,10 @@ get_RT_summary.DataSet <- function(ds, ftarget) {
       idx[`op`(FValues, f)][1]
     }
   )
+  
+  if (is.list(matched)) {
+    return(data.table())
+  }
   
   if (1 < 2) {
     data <- data[matched, , drop = FALSE]
@@ -394,6 +479,37 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide') {
   }
   res
 }
+
+# #' Get Function Value Runs
+# #'
+# #' @param ds A DataSet object
+# #' @param runtime A Numerical vector. Runtimes at which function values are reached
+# #'
+# #' @return
+# #' @export
+# #'
+# #' @examples
+# get_FV_runs.DataSet <- function(ds, runtime) {
+#   data <- ds$FV
+  
+#   NC <- ncol(data)
+#   NR <- nrow(data)
+#   algId <- attr(ds, 'algId')
+#   maximization <- attr(ds, 'maximization')
+  
+#   runtime <- c(runtime) %>% unique %>% as.numeric %>% sort
+#   RT <- rownames(data) %>% as.numeric
+#   idx <- seq_along(RT)
+  
+#   matched <- sapply(runtime, function(r) {
+#     res <- idx[RT >= r][1]
+#     ifelse(is.na(res), NR, res)
+#   })
+  
+#   data <- data[matched, , drop = FALSE]
+  
+#   cbind(algId=algId, runtime=runtime, as.data.table(data))
+# }
 
 #' Get Function Value Summary
 #'

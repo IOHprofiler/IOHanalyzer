@@ -1098,7 +1098,12 @@ plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog
 
 plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, 
                                       plot_mode = 'radar', use_rank = F,
-                                      scale.ylog = T, maximize = TRUE){
+                                      scale.ylog = T, maximize = T,
+                                      erts = NULL){
+  if (is.null(erts))
+    erts <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, maximize = maximize)
+  if (is.null(erts))
+    return(NULL)
   
   N <- length(get_AlgId(dsList))
   colors <- color_palettes(N)
@@ -1118,31 +1123,13 @@ plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL
   p <- if(plot_mode == "radar")  plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
   else plot_ly_default(title = plot_title)
     
-  erts <- seq(0, 0, length.out = length(get_AlgId(dsList)))
-  names(erts) <- get_AlgId(dsList)
-  ertranks <- erts
-  
-  for (j in seq_along(aggr_attr)) {
-    dsList_filetered <- if(aggr_on == 'funcId') subset(dsList, funcId==aggr_attr[[j]])
-    else subset(dsList, DIM==aggr_attr[[j]])
-    
-    if(is.null(targets)){
-      Fall <- get_Funvals(dsList_filetered)
-      Fval <- ifelse(maximize, max(Fall), min(Fall))
+  if (use_rank){
+    ertranks <- seq(0, 0, length.out = length(get_AlgId(dsList)))
+    for (i in seq_along(aggr_attr)){
+      ertranks <- rbind(ertranks, rank(erts[i, ]))
     }
-    else
-      Fval <- targets[[j]]
-    summary <- get_RT_summary(dsList_filetered, ftarget = Fval)
-    ert <- summary$ERT
-    names(ert) <- summary$algId
-    erts <- rbind(erts, ert[get_AlgId(dsList)])
-    
-    if(use_rank){ 
-      ertrank <- rank(ert)
-      ertranks <- rbind(ertranks, ertrank[get_AlgId(dsList)])
-    }
+    dataert <- ertranks[-1, ]
   }
-  if (use_rank) dataert <- ertranks
   else {
     dataert <- erts
   }
@@ -1151,7 +1138,6 @@ plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL
     algId <- get_AlgId(dsList)[[i]]
     color <- colors[[algId]]
     data <- dataert[,i]
-    data <- data[2:length(data)]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
     if(plot_mode == "radar"){
@@ -1160,32 +1146,49 @@ plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL
                 theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr), 
                 fill = 'toself', connectgaps = T, fillcolor = rgba_str,
                 marker = list(color = rgb_str), hoverinfo = 'text',
-                text = paste0('ERT: ', format(erts[2:(1+length(aggr_attr)),i], digits = 3, nsmall = 3)),
+                text = paste0('ERT: ', format(erts[,i], digits = 3, nsmall = 3)),
                 name = algId, legendgroup = algId) 
-      #TODO: cleaner solution?
+      #TODO: cleaner solution!!!!!
       data2 <- data
-      data2[is.infinite(data2)] <- 10e7
+      data2[is.infinite(data2)] <- 10e7 * (1+(i/20))
       data2[data2<10e7] <- NA
       p %<>% 
         add_trace(type='scatterpolar', mode='markers', r = data2,
                   theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr), 
-                  marker = list(color = rgb_str, symbol = 'diamond', size = '12'), hoverinfo = 'text',
-                  text = paste0('ERT: ', format(erts[2:(1+length(aggr_attr)),i], digits = 3, nsmall = 3)),
+                  marker = list(color = rgb_str, symbol = 'diamond', size = '10'), hoverinfo = 'text',
+                  text = paste0('ERT: ', format(erts[,i], digits = 3, nsmall = 3)),
+                  showlegend = F, legendgroup = algId)
+      data2 <- data
+      data2[is.na(data2)] <- 10e7 * (1+(i/20))
+      data2[data2<10e7] <- NA
+      p %<>% 
+        add_trace(type='scatterpolar', mode='markers', r = data2,
+                  theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr), 
+                  marker = list(color = rgb_str, symbol = 'x', size = '10'), hoverinfo = 'text',
+                  text = paste0('ERT: ', format(erts[,i], digits = 3, nsmall = 3)),
                   showlegend = F, legendgroup = algId)
     }
     else{
       p %<>% add_trace(x = aggr_attr, y = data, type = 'scatter',
                        mode = 'lines+markers',
                        marker = list(color = rgb_str), hoverinfo = 'text',
-                       text = paste0('ERT: ', format(erts[2:(1+length(aggr_attr)),i], digits = 3, nsmall = 3)),
+                       text = paste0('ERT: ', format(erts[,i], digits = 3, nsmall = 3)),
                        line = list(color = rgb_str), name = algId, legendgroup = algId)
       data2 <- data
-      data2[is.infinite(data2)] <- 10e7
+      data2[is.infinite(data2)] <- 10e7 * (1+(i/20))
       data2[data2<10e7] <- NA
       p %<>% 
         add_trace(type='scatter', mode='markers', x = aggr_attr, y = data2,
-                  marker = list(color = rgb_str, symbol = 'diamond', size = '12'), hoverinfo = 'text',
-                  text = paste0('ERT: ', format(erts[2:(1+length(aggr_attr)),i], digits = 3, nsmall = 3)),
+                  marker = list(color = rgb_str, symbol = 'diamond', size = '10'), hoverinfo = 'text',
+                  text = paste0('ERT: ', format(erts[,i], digits = 3, nsmall = 3)),
+                  showlegend = F, legendgroup = algId )
+      data2 <- data
+      data2[is.na(data2)] <- 10e7 * (1+(i/20))
+      data2[data2<10e7] <- NA
+      p %<>% 
+        add_trace(type='scatter', mode='markers', x = aggr_attr, y = data2,
+                  marker = list(color = rgb_str, symbol = 'x', size = '10'), hoverinfo = 'text',
+                  text = paste0('ERT: ', format(erts[,i], digits = 3, nsmall = 3)),
                   showlegend = F, legendgroup = algId )
       
     }

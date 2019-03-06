@@ -328,6 +328,18 @@ shinyServer(function(input, output, session) {
     DataList$data
   })
   
+  MAX_ERTS_FUNC <- reactive({
+    dim <- input$Overall.Dim
+    data <- subset(DataList$data, DIM == dim)
+    max_ERTs(data, aggr_on = 'funcId', maximize = !(src_format == COCO))
+  })
+  
+  MAX_ERTS_DIM <- reactive({
+    func <- input$Overall.Funcid
+    data <- subset(DataList$data, funcId == func)
+    max_ERTs(data, aggr_on = 'DIM', maximize = !(src_format == COCO))
+  })
+  
   # TODO: make this urgely snippet look better...
   # register the TextInput and restore them when switching funcID and DIM
   observeEvent(eval(eventExpr), {
@@ -673,10 +685,17 @@ shinyServer(function(input, output, session) {
   }
   
   render_ERTPlot_aggr_plot <- reactive({
+    #TODO: figure out how to avoid plotting again when default targets are written to input
     data <- DATA_UNFILTERED()
     if(length(data) == 0) return(NULL)
-    if(input$ERTPlot.Aggr.Aggregator == 'Functions') data <- subset(data, DIM==input$Overall.Dim)
-    else data <- subset(data, funcId==input$Overall.Funcid)
+    if(input$ERTPlot.Aggr.Aggregator == 'Functions'){
+      data <- subset(data, DIM==input$Overall.Dim)
+      erts <- MAX_ERTS_FUNC()
+    }
+    else{
+      data <- subset(data, funcId==input$Overall.Funcid)
+      erts <- MAX_ERTS_DIM()
+    }
     aggr_on = ifelse(input$ERTPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
     aggr_attr <- if(aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
     update_targets <- F
@@ -696,7 +715,7 @@ shinyServer(function(input, output, session) {
     plot_ERT_AGGR.DataSetList(data, plot_mode = input$ERTPlot.Aggr.Mode, targets = targets,
                                scale.ylog = input$ERTPlot.Aggr.Logy,
                                maximize = !(src_format == COCO), use_rank = input$ERTPlot.Aggr.Ranking,
-                               aggr_on = aggr_on)
+                               aggr_on = aggr_on, erts = erts)
 
   })
   

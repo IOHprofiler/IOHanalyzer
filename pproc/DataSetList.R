@@ -354,3 +354,36 @@ max_ERTs.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, max
   }
   return(erts[-1,])
 }
+
+mean_FVs <- function(dsList, aggr_on = 'funcId', runtimes = NULL) UseMethod("mean_FVs", dsList)
+
+
+mean_FVs.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NULL) {
+  N <- length(get_AlgId(dsList))
+  
+  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  if(!is.null(runtimes) && length(runtimes) != length(aggr_attr)) targets <- NULL
+  
+  second_aggr <- if(aggr_on == 'funcId') get_DIM(dsList) else get_funcId(dsList)
+  if(length(second_aggr) >1 ) return(NULL)
+  
+  erts <- seq(0, 0, length.out = length(get_AlgId(dsList)))
+  names(erts) <- get_AlgId(dsList)
+  
+  for (j in seq_along(aggr_attr)) {
+    dsList_filetered <- if(aggr_on == 'funcId') subset(dsList, funcId==aggr_attr[[j]])
+    else subset(dsList, DIM==aggr_attr[[j]])
+    
+    if(is.null(runtimes)){
+      RTall <- get_Runtimes(dsList_filetered)
+      RTval <- max(RTall)
+    }
+    else
+      RTval <- runtimes[[j]]
+    summary <- get_FV_summary(dsList_filetered, runtime = RTval)
+    ert <- summary$mean
+    names(ert) <- summary$algId
+    erts <- rbind(erts, ert[get_AlgId(dsList)])
+  }
+  return(erts[-1,])
+}

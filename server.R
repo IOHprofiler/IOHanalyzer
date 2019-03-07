@@ -305,7 +305,8 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, 'PAR.Summary.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'PAR.Sample.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = get_AlgId(data), selected = NULL )
-
+    updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = get_AlgId(data), selected = NULL )
+    
     parId <- c(get_ParId(data), 'all')
     updateSelectInput(session, 'PAR.Summary.Param', choices = parId, selected = 'all')
     updateSelectInput(session, 'PAR.Sample.Param', choices = parId, selected = 'all')
@@ -338,6 +339,18 @@ shinyServer(function(input, output, session) {
     func <- input$Overall.Funcid
     data <- subset(DataList$data, funcId == func)
     max_ERTs(data, aggr_on = 'DIM', maximize = !(src_format == COCO))
+  })
+  
+  MEAN_FVALS_FUNC <- reactive({
+    dim <- input$Overall.Dim
+    data <- subset(DataList$data, DIM == dim)
+    mean_FVs(data, aggr_on = 'funcId')
+  })
+  
+  MEAN_FVALS_DIM <- reactive({
+    func <- input$Overall.Funcid
+    data <- subset(DataList$data, funcId == func)
+    mean_FVs(data, aggr_on = 'DIM')
   })
   
   # TODO: make this urgely snippet look better...
@@ -398,6 +411,7 @@ shinyServer(function(input, output, session) {
     setTextInput(session, 'ERTPlot.Max', name, alternative = format_FV(stop))
     
     setTextInput(session, 'ERTPlot.Aggr.Targets', name, alternative = "")
+    setTextInput(session, 'FCEPlot.Aggr.Targets', name, alternative = "")
     
     setTextInput(session, 'RTECDF.Single.Target1', name, alternative = format_FV(q[1]))
     setTextInput(session, 'RTECDF.Single.Target2', name, alternative = format_FV(q[2]))
@@ -1127,6 +1141,105 @@ shinyServer(function(input, output, session) {
                              show.mean = input$FCEPlot.show.mean, show.median = input$FCEPlot.show.median,
                              scale.xlog = input$FCEPlot.semilogx, scale.ylog = input$FCEPlot.semilogy)
   })
+  
+
+  output$FCEPlot.Multi.Plot <- renderPlotly(
+    render_FCEPlot_multi_plot()
+  )
+
+
+
+  render_FCEPlot_multi_plot <- reactive({
+    req(input$FCEPlot.Multi.PlotButton)
+    data <- DATA_UNFILTERED()
+    data <- subset(data, algId %in% input$FCEPlot.Multi.Algs)
+    if(length(data) == 0) return(NULL)
+    if(input$FCEPlot.Multi.Aggregator == 'Functions') data <- subset(data, DIM==input$Overall.Dim)
+    else data <- subset(data, funcId==input$Overall.Funcid)
+    plot_FCE_MULTI.DataSetList(data, plot_mode = input$FCEPlot.Multi.Mode,
+                               scale.xlog = input$FCEPlot.Multi.Logx, scale.ylog = input$FCEPlot.Multi.Logy,
+                               aggr_on = ifelse(input$FCEPlot.Multi.Aggregator == 'Functions', 'funcId', 'DIM'))
+
+  })
+
+  output$ERTPlot.Multi.Download <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_FV_PER_FUN_MULTI)
+    },
+    content = function(file) {
+      save_plotly(render_FCEPlot_multi_plot(), file,
+                  format = input$FCEPlot.Multi.Format,
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$FCEPlot.Multi.Format)
+  )
+  
+  output$FCEPlot.Aggr.Plot <- renderPlotly(
+    render_FCEPlot_aggr_plot()
+  )
+  
+  get_max_runtimes <- function(data, aggr_on){
+    runtimes <- c()
+    aggr_attr <- if(aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
+    
+    for (j in seq_along(aggr_attr)) {
+      dsList_filetered <- if(aggr_on == 'funcId') subset(data,funcId==aggr_attr[[j]])
+      else subset(data, DIM==aggr_attr[[j]])
+      
+      RTall <- get_Runtimes(dsList_filetered)
+      RTval <- max(RTall)
+      runtimes <- c(runtimes,RTval)
+    }
+    runtimes
+  }
+  
+  render_FCEPlot_aggr_plot <- reactive({
+    #TODO: figure out how to avoid plotting again when default targets are written to input
+    data <- DATA_UNFILTERED()
+    if(length(data) == 0) return(NULL)
+    if(input$FCEPlot.Aggr.Aggregator == 'Functions'){
+      data <- subset(data, DIM==input$Overall.Dim)
+      fvs <- MEAN_FVALS_FUNC()
+    }
+    else{
+      data <- subset(data, funcId==input$Overall.Funcid)
+      fvs <- MEAN_FVALS_DIM()
+    }
+    aggr_on = ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
+    aggr_attr <- if(aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
+    update_targets <- F
+    if(input$FCEPlot.Aggr.Targets == ""){
+      update_targets <- T
+    }
+    else{
+      runtimes <- as.numeric(unlist(strsplit(input$FCEPlot.Aggr.Targets,",")))
+      if(length(runtimes) != length(aggr_attr)){
+        update_targets <- T
+      }
+    }
+    if(update_targets){
+      runtimes <- get_max_runtimes(data, aggr_on)
+      updateTextInput(session, 'FCEPlot.Aggr.Targets', value = runtimes %>% toString)
+    }
+    plot_FCE_AGGR.DataSetList(data, plot_mode = input$FCEPlot.Aggr.Mode, runtimes = runtimes,
+                              scale.ylog = input$FCEPlot.Aggr.Logy,
+                              use_rank = input$FCEPlot.Aggr.Ranking,
+                              aggr_on = aggr_on, fvs = fvs)
+    
+  })
+  
+  output$FCEPlot.Aggr.Download <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_FV_AGGR)
+    },
+    content = function(file) {
+      save_plotly(render_FCEPlot_aggr_plot(), file, 
+                  format = input$ERTPlot.Aggr.Format, 
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$FCEPlot.Aggr.Format)
+  )
+  
   
   # empirical p.d.f. of the target value
   render_FV_PDF <- reactive({

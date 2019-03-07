@@ -1214,5 +1214,187 @@ plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL
  p
 }
 
+plot_FCE_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NULL, 
+                                      plot_mode = 'radar', use_rank = F,
+                                      scale.ylog = T, fvs = NULL){
+  if (is.null(fvs))
+    fvs <- mean_FVs(dsList, aggr_on = aggr_on, runtimes = runtimes)
+  if (is.null(fvs))
+    return(NULL)
+  
+  N <- length(get_AlgId(dsList))
+  colors <- color_palettes(N)
+  
+  in_legend <- integer(N)
+  names(in_legend) <- get_AlgId(dsList)
+  names(colors) <- get_AlgId(dsList)
+  
+  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  if(!is.null(runtimes) && length(runtimes) != length(aggr_attr)) runtimes <- NULL
+  
+  second_aggr <- if(aggr_on == 'funcId') get_DIM(dsList) else get_funcId(dsList)
+  if(length(second_aggr) >1 ) return(NULL)
+  
+  plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
+  
+  p <- if(plot_mode == "radar")  plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
+  else plot_ly_default(title = plot_title)
+  
+  if (use_rank){
+    ertranks <- seq(0, 0, length.out = length(get_AlgId(dsList)))
+    fvs2 <- -fvs
+    fvs2[is.na(fvs2)] <- Inf
+    for (i in seq_along(aggr_attr)){
+      ertranks <- rbind(ertranks, rank(fvs2[i, ]))
+    }
+    dataert <- ertranks[-1, ]
+  }
+  else {
+    dataert <- fvs
+  }
+  
+  for (i in seq_along(get_AlgId(dsList))){
+    algId <- get_AlgId(dsList)[[i]]
+    color <- colors[[algId]]
+    data <- dataert[,i]
+    rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
+    if(plot_mode == "radar"){
+      p %<>% 
+        add_trace(type = 'scatterpolar', r = data, 
+                  theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr), 
+                  fill = 'toself', connectgaps = T, fillcolor = rgba_str,
+                  marker = list(color = rgb_str), hoverinfo = 'text',
+                  text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
+                  name = algId, legendgroup = algId) 
+      #TODO: cleaner solution!!!!!
+      data2 <- data
+      data2[is.na(data2)] <- 0
+      data2[!is.na(data)] <- NA
+      p %<>% 
+        add_trace(type='scatterpolar', mode='markers', r = data2,
+                  theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr), 
+                  marker = list(color = rgb_str, symbol = 'x', size = '10'), hoverinfo = 'text',
+                  text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
+                  showlegend = F, legendgroup = algId, fill = 'nofill')
+    }
+    else{
+      p %<>% add_trace(x = aggr_attr, y = data, type = 'scatter',
+                       mode = 'lines+markers',
+                       marker = list(color = rgb_str), hoverinfo = 'text',
+                       text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
+                       line = list(color = rgb_str), name = algId, legendgroup = algId)
+      data2 <- data
+      data2[is.na(data2)] <- 0
+      data2[!is.na(data)] <- NA
+      p %<>% 
+        add_trace(type='scatter', mode='markers', x = aggr_attr, y = data2,
+                  marker = list(color = rgb_str, symbol = 'x', size = '10'), hoverinfo = 'text',
+                  text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
+                  showlegend = F, legendgroup = algId )
+      
+    }
+  }
+  if (plot_mode == "radar"){
+    if(use_rank)
+      p %<>%
+      layout(polar = list(radialaxis = list(type = 'linear', visible=F, autorange='reversed')))
+    else
+      p %<>%
+      layout(polar = list(radialaxis = list(type = 'log', visible=F)))
+  }
+  else{
+    if(use_rank)
+      p %<>%
+      layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
+             xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+    else
+      p %<>%
+      layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
+             xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+  }
+  p
+}
 
-
+plot_FCE_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog = F,
+                                       scale.ylog = F, aggr_on = 'funcId'){
+  
+  N <- length(get_AlgId(dsList))
+  colors <- color_palettes(N)
+  
+  in_legend <- integer(N)
+  names(in_legend) <- get_AlgId(dsList)
+  names(colors) <- get_AlgId(dsList)
+  
+  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  M <- length(aggr_attr)
+  if (M <= 10)
+    nrows <- ceiling(M / 2.) # keep to columns for the histograms
+  else 
+    nrows <- ceiling(M / 3.) # keep to columns for the histograms
+  
+  if (plot_mode == 'overlay') {
+    p <- plot_ly_default(x.title = "function evaluations", y.title = "ERT")
+  } else if (plot_mode == 'subplot') {
+    p <- lapply(seq(M), function(x) {
+      plot_ly_default(x.title = "function evaluations", y.title = "ERT") %>% 
+        add_annotations(text=paste0(ifelse(aggr_on=='funcId', "F ", "D "),aggr_attr[[x]]), 
+                        showarrow=F, xanchor = 'center', yanchor = 'top', 
+                        y = 1.15, yref = 'paper', x = 0.5, xref= 'paper')
+    })
+  }
+  
+  for (j in seq_along(aggr_attr)) {
+    dsList_filetered <- if(aggr_on == 'funcId') subset(dsList,funcId==aggr_attr[[j]])
+    else subset(dsList,DIM==aggr_attr[[j]])
+    
+    RTall <- get_Runtimes(dsList_filetered)
+    RTstart <- min(RTall)
+    RTstop <- max(RTall)
+    
+    RTseq <- seq_FV(RTall, RTstart, RTstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
+    if (length(RTseq) == 0) return(NULL)
+    
+    dt <- get_FV_summary(dsList_filetered, runtime = RTseq)
+    dt[, `:=`(upper = mean + sd, lower = mean - sd)]
+    
+    
+    for (i in seq_along(dsList_filetered)){
+      df <- dsList_filetered[[i]]
+      algId <- attr(df, 'algId')
+      to_show_legend <- (in_legend[[algId]] == 0)
+      in_legend[[algId]] <- 1
+      ds_FCE <- dt[algId == attr(df, 'algId') &
+                     funcId == attr(df, 'funcId') &
+                     DIM == attr(df, 'DIM')]
+      
+      color <- colors[[algId]]
+      rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
+      
+      
+      
+      if (plot_mode == 'overlay') {
+        p %<>%
+          add_trace(data = ds_FCE, x = ~runtime, y = ~mean, type = 'scatter',
+                    mode = 'lines+markers',
+                    marker = list(color = rgb_str),
+                    line = list(color = rgb_str),name = algId, showlegend=to_show_legend)
+      } else if (plot_mode == 'subplot') {
+        p[[j]] %<>% 
+          add_trace(data = ds_FCE, x = ~runtime, y = ~mean, type = 'scatter',
+                    mode = 'lines+markers',
+                    marker = list(color = rgb_str),
+                    line = list(color = rgb_str),name = algId, showlegend=to_show_legend)
+      }
+    }
+  }
+  
+  if (plot_mode == 'subplot') {
+    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.04)
+  }
+  p %<>%
+    layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
+           yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
+  p
+}

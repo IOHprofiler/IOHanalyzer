@@ -923,7 +923,7 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                      box(title = HTML('<p style="font-size:120%;">Expected Target Value 
                                       (per function)</p>'), 
                          width = 12,
-                         collapsible = TRUE, solidHeader = TRUE, status = "primary", 
+                         collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
                          div(style = "width: 90%;",
                              sidebarPanel(
                                width = 3,
@@ -986,7 +986,104 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                                           )
                                   )
                      )
-                )
+                ),
+              column(width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Expected Target value 
+                                      (aggregated)</p>'), 
+                         width = 12,
+                         collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
+                         div(style = "width: 90%;",
+                             box(
+                               width = 12,
+                               
+                               selectInput('FCEPlot.Multi.Algs', label = 'Select the algs to show', 
+                                           multiple = T, selected = NULL, choices = NULL),
+                               column( width = 6,
+                                       checkboxInput('FCEPlot.Multi.Logx', 
+                                                     label = 'scale x axis log10',
+                                                     value = T),
+                                       
+                                       checkboxInput('FCEPlot.Multi.Logy', 
+                                                     label = 'scale y axis log10',
+                                                     value = T),
+                                       
+                                       selectInput('FCEPlot.Multi.Mode', label = 'Select the plotting mode',
+                                                   choices = c('overlay','subplot'), selected = 'subplot'),
+                                       
+                                       selectInput('FCEPlot.Multi.Aggregator', label = 'Create plot for all?',
+                                                   choices = c('Functions','Dimensions'), selected = 'Functions'),
+                                       
+                                       actionButton('FCEPlot.Multi.PlotButton', label = 'Plot the figure')
+                               ),
+                               column( width = 6,
+                                       selectInput('FCEPlot.Multi.Format', label = 'Select the figure format',
+                                                   choices = supported_fig_format, selected = 'pdf'),
+                                       
+                                       downloadButton('FCEPlot.Multi.Download', label = 'Download the figure'))
+                             )
+                         ),
+                         
+                         mainPanel(width = 12,
+                                   column(width = 12, align = "center",
+                                          plotlyOutput('FCEPlot.Multi.Plot', height = "1800px", width = plotly_width2)
+                                   )
+                         )
+                     )
+                     
+                     # box(title = HTML('<p style="font-size:120%;">Expected Runtime 
+                     #                  (across all functions)</p>'), 
+                     #     height = 800, width = 12,
+                     
+                     #     collapsible = TRUE, solidHeader = TRUE, status = 'primary')
+              ),
+              column(width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Expected Target value 
+                                      comparisons</p>'), 
+                         width = 12,
+                         collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
+                         div(style = "width: 90%;",
+                             sidebarPanel(
+                               width = 3,
+                               
+                               
+                               
+                               selectInput('FCEPlot.Aggr.Mode', label = 'Select the plotting mode',
+                                           choices = c('radar','line'), selected = 'radar'),
+                               
+                               selectInput('FCEPlot.Aggr.Aggregator', label = 'Create plot for all?',
+                                           choices = c('Functions','Dimensions'), selected = 'Functions'),
+                               
+                               checkboxInput('FCEPlot.Aggr.Ranking', 
+                                             label = 'Use ranking instead of ERT-values',
+                                             value = T),
+                               
+                               checkboxInput('FCEPlot.Aggr.Logy', 
+                                             label = 'scale y axis log10',
+                                             value = F),
+                               
+                               textInput('FCEPlot.Aggr.Targets', label = 'choose the ERT-targets (comma-separated)'),
+                               
+                               
+                               selectInput('FCEPlot.Aggr.Format', label = 'Select the figure format',
+                                           choices = supported_fig_format, selected = 'pdf'),
+                               
+                               downloadButton('FCEPlot.Aggr.Download', label = 'Download the figure')
+                             )
+                         ),
+                         
+                         mainPanel(width = 9,
+                                   column(width = 12, align = "center",
+                                          plotlyOutput('FCEPlot.Aggr.Plot', height = plotly_height, width = plotly_width2)
+                                   )
+                         )
+                     )
+                     
+                     # box(title = HTML('<p style="font-size:120%;">Expected Runtime 
+                     #                  (across all functions)</p>'), 
+                     #     height = 800, width = 12,
+                     
+                     #     collapsible = TRUE, solidHeader = TRUE, status = 'primary')
+              )
               )
       ),
     

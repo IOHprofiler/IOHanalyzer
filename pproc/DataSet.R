@@ -34,7 +34,7 @@ suppressMessages(library(data.table))
 #' @param info A List. Contains a set of in a *.info file.
 #' @param verbose Logical. 
 #' @param maximization Logical. Whether the underlying optimization algorithm performs a maximization?
-#' @param format A character. The format of data source, either 'IOHProfiler' or 'COCO'.
+#' @param format A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL'.
 #' @param subsampling Logical. Whether *.cdat files are subsampled?
 #'
 #' @return A S3 object 'DataSet'
@@ -326,7 +326,7 @@ get_RT_overview <- function(ds,...) UseMethod("get_RT_overview", ds)
 
 #' Get Function Value condensed overview
 #'
-#' @param ds 
+#' @param ds A DataSet object
 #'
 #' @return
 #' @export
@@ -357,7 +357,7 @@ get_FV_overview.DataSet <- function(ds) {
 
 #' Get Runtime Value condensed overview
 #'
-#' @param ds 
+#' @param ds A DataSet object
 #'
 #' @return
 #' @export
@@ -383,8 +383,8 @@ get_RT_overview.DataSet <- function(ds) {
 
 #' Get RunTime Summary
 #'
-#' @param ds 
-#' @param ftarget 
+#' @param ds A DataSet object
+#' @param ftarget The function target(s) for which to get the runtime summary
 #'
 #' @return
 #' @export
@@ -437,63 +437,6 @@ get_RT_summary.DataSet <- function(ds, ftarget) {
       data[matched, -c('target')] %>% cbind(algId, ftarget, .)
     }
   }
-}
-
-#' Get Function Value condensed overview
-#'
-#' @param ds 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-get_FV_overview.DataSet <- function(ds){
-  data <- ds$FV
-  algId <- attr(ds, 'algId')
-  maximization <- attr(ds, 'maximization')
-  op_inv <- ifelse(maximization,min,max)
-  op <- ifelse(maximization,max,min)
-  
-  maxs <- apply(data,2,op)
-  
-  max_val <- op(maxs)
-  min_val <- op_inv(maxs)
-  mean_max <- mean(maxs)
-  
-  runs <- ncol(data)
-  budget <- max(attr(ds,'maxRT'))
-  
-  c(max_val,min_val,mean_max,runs,budget) %>%
-    t %>%
-    as.data.table %>% 
-    cbind(algId,.) %>% 
-    set_colnames(c("Algorithm ID","Best reached value","Worst reached value","Mean reached value","Number of runs","Budget"))
-}
-
-#' Get Runtime Value condensed overview
-#'
-#' @param ds 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-get_RT_overview.DataSet <- function(ds){
-  data <- ds$RT
-  algId <- attr(ds, 'algId')
-  # maxs <- apply(data,2,max,na.rm = F)
-
-  max_val <- max(data,na.rm = T)
-  min_val <- min(data,na.rm = T)
-
-  runs <- ncol(data)
-  budget <- max(attr(ds,'maxRT'))
-  
-  c(min_val,max_val,runs,budget) %>%
-    t %>%
-    as.data.table %>% 
-    cbind(algId,.) %>% 
-    set_colnames(c("Algorithm ID","Minimum used evaluations","Maximum used evaluations", "Number of runs","Budget"))
 }
 
 

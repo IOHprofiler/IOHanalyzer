@@ -1,9 +1,9 @@
 #' Estimator 'SP' for the Expected Running Time (ERT)
 #'
 #' @param data A dataframe or matrix
-#' @param max_runtime A Numerical vector. Should has the same size as columns of data 
+#' @param max_runtime A Numerical vector. Should have the same size as columns of data 
 #'
-#' @return
+#' @return A list containing ERTs, number of succesfull runs and the succes rate
 #' @export
 #'
 #' @examples
@@ -20,10 +20,23 @@ SP <- function(data, max_runtime) {
   list(ERT = rowSums(data) / succ, runs = succ, succ_rate = succ_rate)
 }
 
-# function for generating sequences for RT and FV ---------------------
-# TODO: add Roxygen docs...
-# TODO: maybe merge 'seq_FV' and 'seq_RT'...
-# TODO: determine when the sequence should be generate in log-linear way
+#TODO: improve formatting
+#' Function for generating sequences of function values
+#'
+#' @param FV A list of function values
+#' @param from Starting function value. Will be replaced by min(FV) if it is NULL or too small
+#' @param to Stopping function value. Will be replaced by max(FV) if it is NULL or too large
+#' @param by Stepsize of the sequence. Will be replaced if it is too small
+#' @param length.out Number of values in the sequence. 
+#'   'by' takes preference if both it and length.out are provided.
+#' @param scale Scaling of the sequence. Can be either 'linear' or 'log', indicating a
+#'   linear or log-linear spacing respectively. If NULL, the scale will be predicted 
+#'   based on FV
+#'   
+#' @return A sequence of function values
+#' @export
+#'
+#' @examples
 seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, scale = NULL) {
   from <- max(from, min(FV))
   to <- min(to, max(FV))
@@ -81,7 +94,21 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
   # })
 }
 
-# TODO: Roxygen doc...
+#' Function for generating sequences of runtime values
+#'
+#' @param RT A list of runtime values
+#' @param from Starting runtime value. Will be replaced by min(RT) if it is NULL or too small
+#' @param to Stopping runtime value. Will be replaced by max(RT) if it is NULL or too large
+#' @param by Stepsize of the sequence. Will be replaced if it is too small
+#' @param length.out Number of values in the sequence. 
+#'   'by' takes preference if both it and length.out are provided.
+#' @param scale Scaling of the sequence. Can be either 'linear' or 'log', indicating a
+#'   linear or log-linear spacing respectively. 
+#'   
+#' @return A sequence of runtime values
+#' @export
+#'
+#' @examples
 seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL, 
                    scale = 'linear') {
   rev_trans <- function(x) x
@@ -132,7 +159,16 @@ EPMF <- function() {
 
 }
 
-ECDF <- function(ds, ...) UseMethod("ECDF", ds)
+#' Empirical Cumulative Dsitribution Function of Runtime of a single data set
+#'
+#' @param ds A DataSet object.
+#' @param ftarget A Numerical vector. Function values at which runtime values are consumed
+#'
+#' @return a object of type 'ECDF'
+#' @export
+#'
+#' @examples
+ECDF <- function(ds, ftarget) UseMethod("ECDF", ds)
 
 # TODO: also implement the ecdf functions for function values and parameters
 #' Empirical Cumulative Dsitribution Function of Runtime of a single data set
@@ -141,7 +177,6 @@ ECDF <- function(ds, ...) UseMethod("ECDF", ds)
 #' @param ftarget A Numerical vector. Function values at which runtime values are consumed
 #'
 #' @return a object of type 'ECDF'
-#' @export
 #'
 #' @examples
 ECDF.DataSet <- function(ds, ftarget) {
@@ -166,7 +201,6 @@ ECDF.DataSet <- function(ds, ftarget) {
 #'                it should have the same length as dsList
 #'
 #' @return a object of type 'ECDF'
-#' @export
 #'
 #' @examples
 ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
@@ -197,17 +231,25 @@ ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
   fun
 }
 
-# calculate the area under ECDFs on user specified targets
-AUC <- function(fun, ...) UseMethod('AUC', fun)
-
 #' Area Under Curve (Empirical Cumulative Dsitribution Function)
 #'
 #' @param fun A ECDF object.
-#' @param from double Starting point of the area on x-axis
+#' @param from double. Starting point of the area on x-axis
 #' @param to   double. Ending point of the area on x-axis
 #'
 #' @return a object of type 'ECDF'
 #' @export
+#'
+#' @examples
+AUC <- function(fun, from = NULL, to = NULL) UseMethod('AUC', fun)
+
+#' Area Under Curve (Empirical Cumulative Dsitribution Function)
+#'
+#' @param fun A ECDF object.
+#' @param from double. Starting point of the area on x-axis
+#' @param to   double. Ending point of the area on x-axis
+#'
+#' @return a object of type 'ECDF'
 #'
 #' @examples
 AUC.ECDF <- function(fun, from = NULL, to = NULL) {
@@ -222,19 +264,28 @@ AUC.ECDF <- function(fun, from = NULL, to = NULL) {
     integrate(fun, lower = from, upper = to, subdivisions = 1e3L)$value / (to - from) 
 }
 
-# TODO: remove the function, deprecated!
-CDF_discrete <- function(x) {
-  x <- sort(x)
-  x.unique <- unique(x)
-  res <- seq_along(x) / length(x)
-  for (v in x.unique) {
-    res[x == v] <- max(res[x == v])
-  }
-  res
-}
+# # TODO: remove the function, deprecated!
+# CDF_discrete <- function(x) {
+#   x <- sort(x)
+#   x.unique <- unique(x)
+#   res <- seq_along(x) / length(x)
+#   for (v in x.unique) {
+#     res[x == v] <- max(res[x == v])
+#   }
+#   res
+# }
 
 #TODO: inconsistent use of format_func gives slightly different results between
 #generated and uploaded targets
+#' Generate ECDF targets for a DataSetList
+#'
+#' @param data A DataSetList
+#' @param format_func function to format the targets
+#'
+#' @return a vector of targets
+#' @export
+#'
+#' @examples
 get_default_ECDF_targets <- function(data, format_func = as.integer){
   funcIds <- get_funcId(data)
   dims <- get_DIM(data)

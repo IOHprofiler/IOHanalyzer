@@ -28,19 +28,19 @@ load_index <- function(file) {
 
 # TODO: put class DataSetList in a separate file
 
-#' S3 constructor of the 'DataSetList' 
+#' S3 constructor of the 'DataSetList'
 #'
 #' Attributes
 #'   funId
 #'   DIM
 #'   algId
-#   
-#' @param path 
-#' @param verbose 
-#' @param print_fun 
-#' @param maximization 
-#' @param format 
-#' @param subsampling 
+#
+#' @param path Path to the data files. Will look for all .info-files in this directory and use
+#'  the corresponding datafiles to create the DataSetList
+#' @param verbose Logical.
+#' @param maximization Logical. Whether the underlying optimization algorithm performs a maximization?
+#' @param format A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL'.
+#' @param subsampling Logical. Whether *.cdat files are subsampled?
 #'
 #' @return
 #' @export
@@ -170,19 +170,6 @@ summary.DataSetList <- function(data) {
     as.data.frame
 }
 
-get_FV_overview.DataSetList <- function(dsList, algorithm = 'all') {
-  if (algorithm != 'all')
-    dsList <- subset(dsList, algId == algorithm)
-  
-  lapply(dsList, function(ds) get_FV_overview(ds)) %>% rbindlist
-}
-
-get_RT_overview.DataSetList <- function(dsList, algorithm = 'all') {
-  if (algorithm != 'all')
-    dsList <- subset(dsList, algId == algorithm)
-  
-  lapply(dsList, function(ds) get_RT_overview(ds)) %>% rbindlist
-}
 
 get_RT_summary.DataSetList <- function(dsList, ftarget, algorithm = 'all') {
   if (algorithm != 'all')

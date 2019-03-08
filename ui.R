@@ -9,6 +9,10 @@ suppressMessages(library(shinyjs))
 suppressMessages(library(shinydashboard))
 suppressMessages(library(plotly))
 
+for (f in list.files('ui', pattern = '.R', full.names = T)) {
+  source(f)
+}
+
 # TODO: rename most of the id of the control widgets
 FCE_GRID_INPUT_TEXT <- '<p align="justify">Set the range and the granularity of the results. 
                         The table will show function values that have been reached within evenly
@@ -41,7 +45,7 @@ sidebar <- dashboardSidebar(
                        menuSubItem("Expected Runtime", tabName = "ERT_convergence", icon = icon("line-chart"), selected = F),
                        menuSubItem("probability Mass Function", tabName = "RT_PMF", icon = icon("bar-chart"), selected = F),
                        menuSubItem("Cumulative Distribution", tabName = "RT_ECDF", icon = icon("line-chart"), selected = F)
-                       ),
+              ),
               
               menuItem("Fixed-Budget Results", tabName = "FCE", icon = icon("file-text-o"),
                        menuSubItem("Data Summary", tabName = "FCE_DATA", icon = icon("table")),
@@ -53,8 +57,8 @@ sidebar <- dashboardSidebar(
               menuItem("Algorithm Parameters", tabName = "PARAMETER", icon = icon('file-text-o')),
               menuItem("ReadMe", tabName = "readme", icon = icon("mortar-board")),
               menuItem("About", tabName = "about", icon = icon("question"))
+              
   ),
-  
   hr(),
   conditionalPanel("input.tabs!='upload' && input.tabs!='readme' && input.tabs!='about'",
                    fluidRow(
@@ -144,31 +148,31 @@ body <- dashboardBody(
                            
                            # TODO: keep this for the local version
                            # shinyDirButton('directory', 'Browse the folder', 
-                           #                title = 'Please choose a directory containing the benchmark data'),
+                                           # title = 'Please choose a directory containing the benchmark data'),
                            HTML('<p align="left" style="font-size:120%;"><b>Remove all data you uploaded</b></p>'),
                            actionButton('RM_DATA', 'Clear data')
                          )
                      )
-              ),
-              column(width = 6,
-                     box(title = HTML('<p style="font-size:120%;">Load Data from repository</p>'), width = 12,
-                         solidHeader = T, status = "primary", collapsible = F, height = '620px',
-                         sidebarPanel(
-                           width = 12,
-                           
-                           selectInput('REPOSITORY_SUITE', label = HTML('<p align="left" style="font-size:120%;">Please choose the suite</p>'),
-                                       choices = c("none",IOHprofiler, COCO), selected = "none", width = '50%'),
-                           selectInput('REPOSITORY_FUNCID', label = HTML('<p align="left" style="font-size:120%;">Please choose the function</p>'),
-                                       choices = NULL, selected = NULL, width = '50%'),
-                           selectInput('REPOSITORY_DIM', label = HTML('<p align="left" style="font-size:120%;">Please choose the dimension</p>'),
-                                       choices = NULL, selected = NULL, width = '50%'),
-                           selectInput('REPOSITORY_ALGID', label = HTML('<p align="left" style="font-size:120%;">Please choose the algorithm</p>'),
-                                       choices = NULL, selected = NULL, width = '50%'),
-                           
-                           actionButton('REPOSITORY_LOAD', 'Load data')
-                         )
-                     )
               )
+              # column(width = 6,
+              #        box(title = HTML('<p style="font-size:120%;">Load Data from repository</p>'), width = 12,
+              #            solidHeader = T, status = "primary", collapsible = F, height = '620px',
+              #            sidebarPanel(
+              #              width = 12,
+              #              
+              #              selectInput('REPOSITORY_SUITE', label = HTML('<p align="left" style="font-size:120%;">Please choose the suite</p>'),
+              #                          choices = c("none",IOHprofiler, COCO), selected = "none", width = '50%'),
+              #              selectInput('REPOSITORY_FUNCID', label = HTML('<p align="left" style="font-size:120%;">Please choose the function</p>'),
+              #                          choices = NULL, selected = NULL, width = '50%'),
+              #              selectInput('REPOSITORY_DIM', label = HTML('<p align="left" style="font-size:120%;">Please choose the dimension</p>'),
+              #                          choices = NULL, selected = NULL, width = '50%'),
+              #              selectInput('REPOSITORY_ALGID', label = HTML('<p align="left" style="font-size:120%;">Please choose the algorithm</p>'),
+              #                          choices = NULL, selected = NULL, width = '50%'),
+              #              
+              #              actionButton('REPOSITORY_LOAD', 'Load data')
+              #            )
+              #        )
+              # )
             ),
             
             fluidRow(

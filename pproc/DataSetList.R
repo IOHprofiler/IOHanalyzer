@@ -200,13 +200,19 @@ get_RT_sample.DataSetList <- function(dsList, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_RT_sample(ds, ftarget, ...)) %>% rbindlist(fill = T)
+  lapply(dsList, function(ds){
+    res <- cbind(attr(ds, 'DIM'), attr(ds, 'funcId'), get_RT_sample(ds, ftarget, ...))
+    colnames(res)[1] <- 'DIM'
+    colnames(res)[2] <- 'funcId'
+    res
+  }) %>% rbindlist(fill = T)
 }
 
 get_FV_summary.DataSetList <- function(dsList, runtime, algorithm = 'all') {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
+
   lapply(dsList, function(ds) {
     res <- cbind(attr(ds, 'DIM'), attr(ds, 'funcId'), get_FV_summary(ds, runtime))
     colnames(res)[1] <- 'DIM'
@@ -215,11 +221,39 @@ get_FV_summary.DataSetList <- function(dsList, runtime, algorithm = 'all') {
   }) %>% rbindlist
 }
 
+get_FV_overview.DataSetList <- function(dsList, algorithm = 'all') {
+  if (algorithm != 'all')
+    dsList <- subset(dsList, algId == algorithm)
+  
+  lapply(dsList, function(ds) get_FV_overview(ds)) %>% rbindlist
+
+}
+
+get_RT_overview.DataSetList <- function(dsList, algorithm = 'all') {
+  if (algorithm != 'all')
+    dsList <- subset(dsList, algId == algorithm)
+  
+  lapply(dsList, function(ds) get_RT_overview(ds)) %>% rbindlist
+}
+
+# get_FV_runs.DataSetList <- function(dsList, runtime, algorithm = 'all') {
+#   if (algorithm != 'all')
+#     dsList <- subset(dsList, algId == algorithm)
+  
+#   lapply(dsList, function(ds) get_FV_runs(ds, runtime)) %>% rbindlist
+# }
+
+
 get_FV_sample.DataSetList <- function(dsList, runtime, algorithm = 'all', ...) {
   if (algorithm != 'all')
     dsList <- subset(dsList, algId == algorithm)
   
-  lapply(dsList, function(ds) get_FV_sample(ds, runtime, ...)) %>% rbindlist(fill = T)
+  lapply(dsList, function(ds){
+    res <- cbind(attr(ds, 'DIM'), attr(ds, 'funcId'), get_FV_sample(ds, runtime, ...))
+    colnames(res)[1] <- 'DIM'
+    colnames(res)[2] <- 'funcId'
+    res
+  }) %>% rbindlist(fill = T)
 }
 
 get_PAR_summary.DataSetList <- function(dsList, ftarget, algorithm = 'all', ...) {

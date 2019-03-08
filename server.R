@@ -47,6 +47,10 @@ format_RT <- function(v) as.integer(v)
 # directory where data are extracted from the zip file
 exdir <- file.path(Sys.getenv('HOME'), 'data')
 
+# directory where rds-data is stored
+rdsdir <- file.path(Sys.getenv('HOME'), 'repository')
+repository <- NULL
+
 setTextInput <- function(session, id, name, alternative) {
   v <- REG[[id]]
   if (name %in% names(v)) {
@@ -97,6 +101,40 @@ shinyServer(function(input, output, session) {
   observe({
     sub_sampling <<- input$SUBSAMPLING  
   })
+  
+  # Load correct options for repository
+  observe({
+    if(input$REPOSITORY_SUITE == IOHprofiler & is.null(repository)){
+      file_location <- file.path(rdsdir, "2019gecco.rds")
+      repository <<- readRDS(file_location)
+    }
+    else{
+      shinyjs::disable("REPOSITORY_LOAD")
+      return(NULL)
+    }
+    algId <- c(get_AlgId(repository), 'all')
+    updateSelectInput(session, 'REPOSITORY_ALGID', choices = algId, selected = 'all')
+    dim <- c(get_DIM(repository), 'all')
+    updateSelectInput(session, 'REPOSITORY_DIM', choices = dim, selected = 'all')
+    func <- c(get_funcId(repository), 'all')
+    updateSelectInput(session, 'REPOSITORY_FUNCID', choices = func, selected = 'all')
+    shinyjs::enable("REPOSITORY_LOAD")
+  })
+  
+  observeEvent(input$REPOSITORY_LOAD, {
+    to_load = repository
+    if(input$REPOSITORY_FUNCID != 'all')
+      to_load <- subset(to_load, funcId==input$REPOSITORY_FUNCID)
+    if(input$REPOSITORY_DIM != 'all')
+      to_load <- subset(to_load, DIM==input$REPOSITORY_DIM)
+    if(input$REPOSITORY_ALGID != 'all')
+      to_load <- subset(to_load, algId==input$REPOSITORY_ALGID)
+    
+    DataList$data <- c(DataList$data, to_load)
+  })
+  
+  
+  
   
   # IMPORTANT: this only works locally, keep it for the local version
   # links to users file systems
@@ -283,6 +321,7 @@ shinyServer(function(input, output, session) {
     subset(DataList$data, DIM == dim, funcId == id)
   })
   
+
   # TODO: give a different name for DATA and DATA_UNFILTERED
   DATA_UNFILTERED <- reactive({
     DataList$data
@@ -626,6 +665,7 @@ shinyServer(function(input, output, session) {
     ftarget <- format_FV(input$RT_PMF_HIST_FTARGET) %>% as.numeric
     plot_mode <- input$ERT_illu_mode
     
+
     # TODO: remove 'DataSetList' in the future
     plot_RT_HIST.DataSetList(DATA(), ftarget, plot_mode = plot_mode)
   })
@@ -635,6 +675,7 @@ shinyServer(function(input, output, session) {
   })
 
   render_RT_ECDF_MULT <- reactive({
+
     dsList <- subset(DATA_UNFILTERED(), DIM == input$DIM_INPUT)
     targets <- uploaded_RT_ECDF_targets()
     
@@ -679,6 +720,7 @@ shinyServer(function(input, output, session) {
     contentType = paste0('image/', input$FIG_FORMAT_RT_ECDF_MULT)
   )
   
+
   RT_ECDF_MULTI_TABLE <- reactive({
     targets <- uploaded_RT_ECDF_targets()
     funcId <- names(targets)
@@ -725,7 +767,7 @@ shinyServer(function(input, output, session) {
     },
     contentType = "text/csv"
   )
-  
+
   # The ECDF plots for the runtime ----------------
   output$RT_ECDF <- renderPlotly({
     req(input$RT_ECDF_FTARGET1, input$RT_ECDF_FTARGET2, input$RT_ECDF_FTARGET3)
@@ -776,6 +818,7 @@ shinyServer(function(input, output, session) {
     fstop <- format_FV(input$RT_fstop) %>% as.numeric 
     fstep <- format_FV(input$RT_fstep) %>% as.numeric
     
+
     plot_RT_ECDF_AGGR.DataSetList(
       DATA(), fstart, fstop, fstep, 
       show.per_target = input$RT_ECDF_per_target,
@@ -811,7 +854,7 @@ shinyServer(function(input, output, session) {
       DATA(), fstart, fstop, fstep, fval_formatter = format_FV
     )
   })
-  
+
   # TODO: rename 'FCE'...
   # Data summary for Fixed-Budget target (FCE)  --------------
   FCE_runtime_summary_condensed <- reactive({
@@ -1002,7 +1045,7 @@ shinyServer(function(input, output, session) {
   render_FV_HIST <- reactive({
     req(input$FCE_HIST_RUNTIME != "")   # require non-empty input
     runtime <- input$FCE_HIST_RUNTIME %>% as.integer 
-    plot_FV_HIST.DataSetList(DATA(),runtime, plot_mode = input$FCE_illu_mode)
+    plot_FV_HIST.DataSetList(DATA(), runtime, plot_mode = input$FCE_illu_mode)
   })
   
   output$FIG_DOWNLOAD_FV_HIST <- downloadHandler(

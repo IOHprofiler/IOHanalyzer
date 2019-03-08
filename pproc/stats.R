@@ -25,14 +25,15 @@ EPMF <- function() {
 
 }
 
+# add S3 generics
 ECDF <- function(ds, ...) UseMethod("ECDF", ds)
-
 
 # TODO: also implement the ecdf functions for function values and parameters
 #' Empirical Cumulative Dsitribution Function of Runtime of a single data set
 #'
 #' @param ds A DataSet object.
-#' @param ftarget A Numerical vector. Function values at which runtime values are consumed
+#' @param ftarget A Numerical vector. Function values at which runtime values are
+#'                consumed
 #'
 #' @return a object of type 'ECDF'
 #' @export
@@ -40,8 +41,10 @@ ECDF <- function(ds, ...) UseMethod("ECDF", ds)
 #' @examples
 ECDF.DataSet <- function(ds, ftarget) {
   runtime <- get_RT_sample(ds, ftarget, output = 'long')$RT
+  
   if (length(runtime) == 0) return(NULL)
   
+  # TODO: maybe we should set Inf in 'get_RT_sample'
   runtime[!is.na(runtime)] <- Inf
   fun <- ecdf(runtime)
   
@@ -51,13 +54,12 @@ ECDF.DataSet <- function(ds, ftarget) {
   fun
 }
 
-
 #' Empirical Cumulative Dsitribution Function of Runtime of a list of data sets
 #'
 #' @param dsList A DataSetList object
 #' @param ftarget A Numerical vector or a list of numerical vector. 
-#'                Function values at which runtime values are consumed. When it is a list,
-#'                it should have the same length as dsList
+#'                Function values at which runtime values are consumed. 
+#'                When it is a list, it should have the same length as dsList
 #'
 #' @return a object of type 'ECDF'
 #' @export
@@ -71,17 +73,16 @@ ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
       Id <- funcId[i]
       data <- subset(dsList, funcId == Id)
       if (length(data) == 0) return(NULL)
-      res <- get_RT_sample(data, ftarget[[i]], output = 'long')$RT
-      res[is.na(res)] <- Inf # very important!!!
-      res
+      get_RT_sample(data, ftarget[[i]], output = 'long')$RT
     }) %>%
       unlist
   } else {
     runtime <- get_RT_sample(dsList, ftarget, output = 'long')$RT
-    runtime[is.na(runtime)] <- Inf
   }
   
   if (length(runtime) == 0) return(NULL)
+  
+  runtime[is.na(runtime)] <- Inf # very important!!!
   
   fun <- ecdf(runtime)
   class(fun)[1] <- 'ECDF'
@@ -130,8 +131,8 @@ CDF_discrete <- function(x) {
 #TODO: inconsistent use of format_func gives slightly different results between
 #generated and uploaded targets
 get_default_ECDF_targets <- function(data, format_func = as.integer){
-  funcIds <- unique(attr(data, 'funcId'))
-  dims <- unique(attr(data, 'DIM'))
+  funcIds <- get_funcId(data)
+  dims <- get_DIM(data)
   
   targets <- list()
   for (i in seq_along(funcIds)) {
@@ -141,12 +142,12 @@ get_default_ECDF_targets <- function(data, format_func = as.integer){
       dim <- dims
       data_subsub <- subset(data_sub, DIM == dim)
       fall <- get_Funvals(data_subsub)
-      
       #TODO: Account for minimization / maximization
       fmin <- min(fall)
       fmax <- max(fall)
       
       fseq <- seq_FV(fall, fmin, fmax, length.out = 10) %>% format_func
+
       targets <- append(targets, list(fseq))
     }
   }

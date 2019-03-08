@@ -148,22 +148,25 @@ body <- dashboardBody(
                            HTML('<p align="left" style="font-size:120%;"><b>Remove all data you uploaded</b></p>'),
                            actionButton('RM_DATA', 'Clear data')
                          )
-                         # mainPanel(
-                         #   width = 12,
-                         #   HTML('<p style="font-size:120%;">The processed folders are:</p>'),
-                         #   verbatimTextOutput('upload_data_promt'),
-                         #   tags$head(tags$style("#upload_data_promt{color:black; font-size:12px; font-style:italic;
-                         #                        overflow-y:visible; max-height: 100px; background: ghostwhite;}"))
-                         # )
                      )
               ),
-              
               column(width = 6,
-                     box(title = HTML('<p style="font-size:120%;">Data Processing Prompt</p>'), width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Load Data from repository</p>'), width = 12,
                          solidHeader = T, status = "primary", collapsible = F, height = '620px',
-                         verbatimTextOutput('process_data_promt'),
-                         tags$head(tags$style("#process_data_promt{color:black; font-size:12px; font-style:italic;
-                                              overflow-y:visible; max-height: 500px; background: ghostwhite;}"))
+                         sidebarPanel(
+                           width = 12,
+                           
+                           selectInput('REPOSITORY_SUITE', label = HTML('<p align="left" style="font-size:120%;">Please choose the suite</p>'),
+                                       choices = c("none",IOHprofiler, COCO), selected = "none", width = '50%'),
+                           selectInput('REPOSITORY_FUNCID', label = HTML('<p align="left" style="font-size:120%;">Please choose the function</p>'),
+                                       choices = NULL, selected = NULL, width = '50%'),
+                           selectInput('REPOSITORY_DIM', label = HTML('<p align="left" style="font-size:120%;">Please choose the dimension</p>'),
+                                       choices = NULL, selected = NULL, width = '50%'),
+                           selectInput('REPOSITORY_ALGID', label = HTML('<p align="left" style="font-size:120%;">Please choose the algorithm</p>'),
+                                       choices = NULL, selected = NULL, width = '50%'),
+                           
+                           actionButton('REPOSITORY_LOAD', 'Load data')
+                         )
                      )
               )
             ),
@@ -173,6 +176,16 @@ body <- dashboardBody(
                      box(title = HTML('<p style="font-size:120%;">List of Processed Data</p>'), width = 12,
                          solidHeader = T, status = "primary", collapsible = T, 
                          dataTableOutput('DATASETLIST_INFO')
+                     )
+              )
+            ),
+            fluidRow(
+              column(width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Data Processing Prompt</p>'), width = 12,
+                         solidHeader = T, status = "primary", collapsible = F,
+                         verbatimTextOutput('process_data_promt'),
+                         tags$head(tags$style("#process_data_promt{color:black; font-size:12px; font-style:italic;
+                                                overflow-y:visible; max-height: 500px; background: ghostwhite;}"))
                      )
               )
             )
@@ -201,7 +214,7 @@ body <- dashboardBody(
                  ),
                
                box(title = HTML('<p style="font-size:120%;">Runtime Statistics at Chosen Target Values</p>'), width = 12,
-                   solidHeader = T, status = "primary", collapsible = T,
+                   solidHeader = T, status = "primary", collapsible = T, collapsed = T,
                    sidebarPanel(
                      width = 3,
                      HTML('<p align="justify">Set the range and the granularity of the results.
@@ -226,7 +239,7 @@ body <- dashboardBody(
                ),
                
                box(title = HTML('<p style="font-size:120%;">Original Runtime Samples</p>'), width = 12,
-                   solidHeader = TRUE, status = "primary",
+                   solidHeader = TRUE, status = "primary", collapsible = TRUE, collapsed = T,
                    sidebarPanel(
                      width = 3,
                      HTML('<p align="justify">Set the range and the granularity of the results.
@@ -365,7 +378,7 @@ body <- dashboardBody(
           fluidRow(
             column(width = 12,     
                    box(title = 'Histogram of Fixed-Target Runtimes', 
-                       width = 12, collapsible = TRUE, solidHeader = TRUE, 
+                       width = 12, collapsible = TRUE, solidHeader = TRUE,  collapsed = T,
                        status = "primary",
                        sidebarPanel(
                          width = 2,
@@ -403,7 +416,7 @@ body <- dashboardBody(
             
             column(width = 12,
               box(title = 'Empirical Probability Mass Function of the Runtime', 
-                  width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary",
+                  width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
                   sidebarLayout(
                     sidebarPanel(
                       width = 2,
@@ -456,7 +469,39 @@ body <- dashboardBody(
             fluidRow(
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
-                                      Distribution of the runtime: Aggregation</p>'), 
+                                      Distribution: Single target</p>'), 
+                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
+                         sidebarLayout(
+                           sidebarPanel(
+                             width = 3,
+                             HTML('Select the target values for which EDCF curves are displayed'),
+                             textInput('RT_ECDF_FTARGET1', label = HTML('<p>\\(f_1\\)</p>'), 
+                                       value = ''),
+                             textInput('RT_ECDF_FTARGET2', label = HTML('<p>\\(f_2\\)</p>'), 
+                                       value = ''),
+                             textInput('RT_ECDF_FTARGET3', label = HTML('<p>\\(f_3\\)</p>'), 
+                                       value = ''),
+                             
+                             checkboxInput('RT_ECDF_semilogx', label = 'scale x axis log10', value = F)
+                           ), 
+                           
+                           mainPanel(width = 9,
+                                     column(width = 12, align = "center",
+                                            HTML_P('Each EDCF curve shows the proportion of the runs 
+                                                   that have found a solution of at least the required 
+                                                   target value within the budget given by the \\(x\\)-axis. 
+                                                   The displayed curves can be selected by clicking on the legend on the right. A <b>tooltip</b> 
+                                                   and <b>toolbar</b> appears when hovering over the figure. 
+                                                   This also includes the option to download the plot as png file.'),
+                                            plotlyOutput("RT_ECDF", height = plotly_height, width = plotly_width2)
+                                            )
+                                     )
+                         )
+                       )
+                   ),
+              column(width = 12,
+                     box(title = HTML('<p style="font-size:120%;">Aggregated Empirical Cumulative 
+                                      Distribution: Single function</p>'), 
                          width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = T,
                          sidebarPanel(
                            width = 3,
@@ -500,11 +545,12 @@ body <- dashboardBody(
                          )
               ),
               column(width = 12,
-                     box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
-                                      Distribution of the runtime: Across Functions</p>'), 
+                     box(title = HTML('<p style="font-size:120%;">Aggregated Empirical Cumulative 
+                                      Distribution: All functions</p>'), 
                          width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = T,
                          sidebarPanel(
                            width = 3,
+
                            # checkboxInput("Aggregate_dim","Aggregate dimensions", value = F),
                            # checkboxInput("Aggregate_fun","Aggregate functions", value = T),
                            
@@ -544,6 +590,7 @@ body <- dashboardBody(
                                           )
                                    )
                          
+
                          )
                       ),
               
@@ -610,6 +657,39 @@ body <- dashboardBody(
                          )
                      )
               )
+              
+              # column(width = 12,
+              #        box(title = HTML('<p style="font-size:120%;">>Aggregated Empirical Cumulative 
+              #                         Distribution: Single target</p>'), 
+              #            width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
+              #            sidebarLayout(
+              #              sidebarPanel(
+              #                width = 3,
+              #                HTML('Select the target values for which EDCF curves are displayed'),
+              #                textInput('RT_ECDF_FTARGET1', label = HTML('<p>\\(f_1\\)</p>'), 
+              #                          value = ''),
+              #                textInput('RT_ECDF_FTARGET2', label = HTML('<p>\\(f_2\\)</p>'), 
+              #                          value = ''),
+              #                textInput('RT_ECDF_FTARGET3', label = HTML('<p>\\(f_3\\)</p>'), 
+              #                          value = ''),
+              #                
+              #                checkboxInput('RT_ECDF_semilogx', label = 'scale x axis log10', value = F)
+              #              ), 
+              #              
+              #              mainPanel(width = 9,
+              #                        column(width = 12, align = "center",
+              #                               HTML_P('Each EDCF curve shows the proportion of the runs 
+              #                                       that have found a solution of at least the required 
+              #                                       target value within the budget given by the \\(x\\)-axis. 
+              #                                       The displayed curves can be selected by clicking on the legend on the right. A <b>tooltip</b> 
+              #                                       and <b>toolbar</b> appears when hovering over the figure. 
+              #                                       This also includes the option to download the plot as png file.'),
+              #                                       plotlyOutput("RT_ECDF", height = plotly_height, width = plotly_width2)
+              #                               )
+              #                       )
+              #            )
+              #        )
+              # )
             )
     ),
     
@@ -635,7 +715,7 @@ body <- dashboardBody(
                          )
                      ),
                      box(title = HTML('<p style="font-size:120%;">Target Statistics at Chosen Budget Values</p>'), width = 12,
-                         solidHeader = T, status = "primary", collapsible = T,
+                         solidHeader = T, status = "primary", collapsible = T, collapsed = T,
                          sidebarPanel(
                            width = 3,
                            HTML(FCE_GRID_INPUT_TEXT),
@@ -660,7 +740,7 @@ body <- dashboardBody(
                      ),
                      
                      box(title = HTML('<p style="font-size:120%;">Original Target Samples</p>'), width = 12,
-                         solidHeader = TRUE, status = "primary",
+                         solidHeader = TRUE, status = "primary", collapsible = T, collapsed = T,
                          sidebarPanel(
                            width = 3,
                            HTML(FCE_GRID_INPUT_TEXT),
@@ -700,7 +780,7 @@ body <- dashboardBody(
             fluidRow(
               column(width = 12,     
                      box(title = 'Histogram of Fixed-Budget Targets', 
-                         width = 12, collapsible = TRUE, solidHeader = TRUE, 
+                         width = 12, collapsible = TRUE, solidHeader = TRUE,  collapsed = T,
                          status = "primary",
                          sidebarPanel(
                            width = 2,
@@ -738,7 +818,7 @@ where \\(Q_1, Q_3\\) are the \\(25\\%\\) and \\(75\\%\\) percentile of the runti
               
               column(width = 12,
                      box(title = 'Empirical Probability Density Function of Fixed-Budget Function Values', 
-                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary",
+                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
                          sidebarLayout(
                            sidebarPanel(
                              width = 2,
@@ -779,7 +859,7 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                      box(title = HTML('<p style="font-size:120%;">Expected Target Value 
                                       (per function)</p>'), 
                          width = 12,
-                         collapsible = TRUE, solidHeader = TRUE, status = "primary",
+                         collapsible = TRUE, solidHeader = TRUE, status = "primary", 
                          div(style = "width: 90%;",
                              sidebarPanel(
                                width = 3,
@@ -857,7 +937,7 @@ appear when hovering over the figure. A csv file with the runtime data can be do
                      box(title = HTML('<p style="font-size:120%;">Empirical Cumulative Distribution 
                                       of the Fixed-Budget Values: Aggregation</p>'), 
                          width = 12,
-                         solidHeader = T, status = "primary", collapsible = T,
+                         solidHeader = T, status = "primary", collapsible = T, collapsed = T,
                          sidebarPanel(
                            width = 3,
                            HTML('<p align="justify">Set the range and the granularity of the budgets 
@@ -900,7 +980,7 @@ appear when hovering over the figure. A csv file with the runtime data can be do
               
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Area Under the ECDF</p>'),  
-                         width = 12, solidHeader = T, status = "primary", collapsible = T,
+                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = T,
                          sidebarPanel(
                            width = 3,
                            HTML('<p align="justify">Set the range and the granularity of the evenly spaced budgets.</p>'),
@@ -930,7 +1010,7 @@ appear when hovering over the figure. A csv file with the runtime data can be do
               
               column(width = 12,
                      box(title = HTML('<p style="font-size:120%;">Empirical Cumulative Distribution of the Fixed-Budget Values: Single Budgets</p>'), 
-                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary",
+                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
                          sidebarLayout(
                            sidebarPanel(
                              width = 3,
@@ -965,7 +1045,7 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                      box(title = HTML('<p style="font-size:120%;">Expected Parameter Value 
                                       (per function)</p>'), 
                       width = 12,
-                      collapsible = TRUE, solidHeader = TRUE, status = "primary",
+                      collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
                       div(style = "width: 90%;",
                           sidebarPanel(
                             width = 3,
@@ -1009,7 +1089,7 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                       ),
                      
                      box(title = HTML('<p style="font-size:120%;">Parameter Statistics at Chosen Target Values</p>'), width = 12,
-                         solidHeader = T, status = "primary", collapsible = T,
+                         solidHeader = T, status = "primary", collapsible = T, collapsed = T,
                          sidebarPanel(
                            width = 3,
                            HTML_P('Set the range and the granularity of the results.
@@ -1034,7 +1114,7 @@ by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> appe
                      ),
                      
                      box(title = HTML('<p style="font-size:120%;">Parameter Sample at Chosen Target Values</p>'), width = 12,
-                         solidHeader = T, status = "primary", collapsible = T,
+                         solidHeader = T, status = "primary", collapsible = T, collapsed = T,
                          sidebarPanel(
                            width = 3,
                            HTML_P('Set the range and the granularity of the results.

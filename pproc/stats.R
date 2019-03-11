@@ -161,14 +161,14 @@ EPMF <- function() {
 
 #' Empirical Cumulative Dsitribution Function of Runtime of a single data set
 #'
-#' @param ds A DataSet object.
+#' @param ds A DataSet or DataSetList object.
 #' @param ftarget A Numerical vector. Function values at which runtime values are consumed
+#' @param ... Arguments passed to other methods
 #'
 #' @return a object of type 'ECDF'
-#' @export
 #'
 #' @examples
-ECDF <- function(ds, ftarget) UseMethod("ECDF", ds)
+ECDF <- function(ds, ftarget, ...) UseMethod("ECDF", ds)
 
 # TODO: also implement the ecdf functions for function values and parameters
 #' Empirical Cumulative Dsitribution Function of Runtime of a single data set

@@ -804,33 +804,7 @@ shinyServer(function(input, output, session) {
     dsList <- subset(DATA_UNFILTERED(), DIM == input$Overall.Dim)
     targets <- uploaded_RT_ECDF_targets()
     
-    if (is.null(targets)) 
-      targets <- get_default_ECDF_targets(dsList)
-    
-    algId <- unique(attr(dsList, 'algId'))
-    p <- plot_ly_default(x.title = "function evaluations",
-                         y.title = "Proportion of (run, target, ...) pairs")
-    
-    rts <- get_Runtimes(dsList)
-    x <- seq(min(rts), max(rts), length.out = 50)
-    colors <- color_palettes(length(algId))
-    
-    for (i in seq_along(algId)) {
-      Id <- algId[i]
-      data <- subset(dsList, algId == Id)
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      
-      fun <- ECDF(data, ftarget = targets, funcId = as.integer(names(targets)))
-      if (is.null(fun)) next
-      
-      df_plot <- data.frame(x = x, ecdf = fun(x))
-      p %<>% add_trace(data = df_plot, x = ~x, y = ~ecdf, type = 'scatter',
-                       mode = 'lines+markers', name = sprintf('%s', Id), 
-                       showlegend = T, 
-                       line = list(color = rgb_str, width = 3),
-                       marker = list(color = rgb_str, size = 10))
-    }
-    p
+    plot_RT_ECDF_MULTI(dsList, targets = targets)
   })
   
   output$RTECDF.Aggr.Download <- downloadHandler(

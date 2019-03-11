@@ -3,7 +3,7 @@
 #
 # Author: Hao Wang
 # Email: wangronin@gmail.com
-# 
+#
 # TODO:
 #   1. add Roxygen docs
 #   2. perhaps migrate to data.table completely for speed concern and simplicity
@@ -30,11 +30,11 @@ suppressMessages(library(data.table))
 #'  * maxEvals
 #'  * finalFunEvals
 #'  * comment
-#'  
+#'
 #' @param info A List. Contains a set of in a *.info file.
-#' @param verbose Logical. 
+#' @param verbose Logical.
 #' @param maximization Logical. Whether the underlying optimization algorithm performs a maximization?
-#' @param format A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL'.
+#' @param format A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL"
 #' @param subsampling Logical. Whether *.cdat files are subsampled?
 #'
 #' @return A S3 object 'DataSet'
@@ -48,7 +48,7 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     path <- dirname(info$datafile)
     filename <- basename(info$datafile)
     
-    # Data source:  
+    # Data source:
     # alignment by target values:
     #   IOHprofiler: *.dat
     #   COCO: *.dat
@@ -112,7 +112,7 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
         warning('Inconsitent maxRT in *.info file and *.cdat file')
     }
     else{
-      maxRT <- info$maxRT 
+      maxRT <- info$maxRT
     }
     
     #TODO: Clean up these if-statements: Function to set idxTarget and n_data_column?
@@ -129,7 +129,7 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
       info$instance <- seq(length(dat))
     }
     
-    # TODO: maybe the RT summary should not be always pre-computed 
+    # TODO: maybe the RT summary should not be always pre-computed
     AUX <- list()
     # data <- RT$RT
     # n_instance <- length(info$instance)
@@ -137,16 +137,16 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     #                          mean = apply(data, 1, .mean),
     #                          median = apply(data, 1, .median),
     #                          sd = apply(data, 1, .sd))
-    # 
+    #
     # names <- paste0(probs * 100, '%')
     # RT.summary[, (names) := t(apply(data, 1, D_quantile)) %>% split(c(col(.)))]
     # RT.summary[, c('ERT', 'runs', 'ps') := SP(data, maxRT)]
     # AUX$RT.summary <- RT.summary
     
-    do.call(function(...) structure(c(RT, FV, AUX), class = c('DataSet', 'list'), ...), 
+    do.call(function(...) structure(c(RT, FV, AUX), class = c('DataSet', 'list'), ...),
             c(info, list(maxRT = maxRT, finalFV = finalFV, src = format,
                          maximization = maximization)))
-     
+    
   } else {
     structure(list(), class = c('DataSet'))
   }
@@ -175,8 +175,8 @@ summary.DataSet <- function(ds) {
   
   n_instance <- length(ds_attr$instance)
   if (n_instance >= 15) {
-    inst <- paste0(paste(ds_attr$instance[1:7], collapse = ','), 
-                   ',...,', 
+    inst <- paste0(paste(ds_attr$instance[1:7], collapse = ','),
+                   ',...,',
                    paste(ds_attr$instance[(n_instance - 7):n_instance], collapse = ','))
     cat(sprintf('%d instance found: %s\n\n', n_instance, inst))
   }
@@ -203,7 +203,7 @@ summary.DataSet <- function(ds) {
 }
 
 plot_ERT <- function(ds, backend = 'ggplot2') {
-  p <- plot_ly_default(x.title = "best-so-far f(x)-value", 
+  p <- plot_ly_default(x.title = "best-so-far f(x)-value",
                        y.title = "function evaluations")
   
   for (i in seq_along(data)) {
@@ -213,24 +213,24 @@ plot_ERT <- function(ds, backend = 'ggplot2') {
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
     
-    p %<>% 
+    p %<>%
       add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-                line = list(color = rgba_str, width = 0),  
-                showlegend = F, name = 'mean +/- sd') %>% 
+                line = list(color = rgba_str, width = 0),
+                showlegend = F, name = 'mean +/- sd') %>%
       add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
                 fill = 'tonexty',  line = list(color = 'transparent'),
                 fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd')
     
     if (input$show.mean)
-      p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter', 
-                       mode = 'lines+markers', name = paste0(algId, '.mean'), 
-                       marker = list(color = rgb_str), 
+      p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
+                       mode = 'lines+markers', name = paste0(algId, '.mean'),
+                       marker = list(color = rgb_str),
                        line = list(color = rgb_str))
     
     if (input$show.median)
       p %<>% add_trace(data = ds_ERT, x = ~target, y = ~median, type = 'scatter',
-                       name = paste0(algId, '.median'), mode = 'lines+markers', 
-                       marker = list(color = rgb_str),  
+                       name = paste0(algId, '.median'), mode = 'lines+markers',
+                       marker = list(color = rgb_str),
                        line = list(color = rgb_str, dash = 'dash'))
   }
   p %<>%
@@ -245,7 +245,7 @@ plot_ERT <- function(ds, backend = 'ggplot2') {
 
 # TODO: implement the 'save' option
 plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
-  dt <- data.table(ds$RT) 
+  dt <- data.table(ds$RT)
   NC <- ncol(dt)
   colnames(dt) <- as.character(seq(ncol(dt)))
   dt[, target := as.numeric(rownames(ds$RT))]
@@ -257,14 +257,14 @@ plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
     target <- as.numeric(target[seq(1, N, by = ceiling(N / 30))])
   
   # plot runtime curves
-  p <- melt(dt, id.vars = 'target', variable.name = 'instance', value.name = 'runtime') %>% 
-    ggplot(aes(target, runtime, colour = as.factor(instance))) + 
+  p <- melt(dt, id.vars = 'target', variable.name = 'instance', value.name = 'runtime') %>%
+    ggplot(aes(target, runtime, colour = as.factor(instance))) +
     geom_line(aes(group = instance), alpha = 0.8) +
     geom_line(data = dt_mean, aes(target, mean), colour = 'black', size = 1.5, alpha = 0.8) +
-    scale_colour_manual(values = colorspace::rainbow_hcl(NC)) + 
-    scale_x_continuous(breaks = target) + 
+    scale_colour_manual(values = colorspace::rainbow_hcl(NC)) +
+    scale_x_continuous(breaks = target) +
     guides(colour = FALSE)
-    
+  
   print(p)
   
   if (ask) x <- readline("show data aligned by runtime?")
@@ -293,8 +293,8 @@ plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
     ggplot(aes(budget, Fvalue, colour = instance)) +
     geom_line(aes(group = instance), alpha = 0.8) +
     geom_line(data = dt_mean, aes(budget, mean), colour = 'black', size = 1.5, alpha = 0.8) +
-    scale_colour_manual(values = colorspace::rainbow_hcl(NC)) + 
-    # scale_x_continuous(breaks = budget) + 
+    scale_colour_manual(values = colorspace::rainbow_hcl(NC)) +
+    # scale_x_continuous(breaks = budget) +
     scale_x_log10() +
     guides(colour = FALSE)
   
@@ -302,10 +302,10 @@ plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
 }
 
 `==.DataSet` <- function(dsL, dsR) {
-  if (length(dsL) == 0 || length(dsR) == 0) 
+  if (length(dsL) == 0 || length(dsR) == 0)
     return(FALSE)
   
-   attr(dsL, 'funcId') == attr(dsR, 'funcId') &&
+  attr(dsL, 'funcId') == attr(dsR, 'funcId') &&
     attr(dsL, 'DIM') == attr(dsR, 'DIM') &&
     attr(dsL, 'Precision') == attr(dsR, 'Precision') &&
     attr(dsL, 'algId') == attr(dsR, 'algId') &&
@@ -328,7 +328,8 @@ get_RT_overview <- function(ds,...) UseMethod("get_RT_overview", ds)
 #'
 #' @param ds A DataSet object
 #'
-#' @return
+#' @return A data.table containing the algorithm ID, best, worst and mean reached function
+#' values, the number of runs and available budget for the DataSet
 #' @export
 #'
 #' @examples
@@ -350,17 +351,18 @@ get_FV_overview.DataSet <- function(ds) {
   
   c(max_val,min_val,mean_max,runs,budget) %>%
     t %>%
-    as.data.table %>% 
-    cbind(algId,.) %>% 
-    set_colnames(c("Algorithm ID","Best reached value","Worst reached value","Mean reached value","Number of runs","Budget"))
+    as.data.table %>%
+    cbind(algId,.) %>%
+    set_colnames(c("Algorithm ID","Best reached value","Worst reached value",
+                   "Mean reached value","Number of runs","Budget"))
 }
 
 #' Get Runtime Value condensed overview
 #'
 #' @param ds A DataSet object
 #'
-#' @return
-#' @export
+#' @return A data.table containing the algorithm ID, minimum and maximum used evaluations,
+#' number of runs and available budget for the DataSet
 #'
 #' @examples
 get_RT_overview.DataSet <- function(ds) {
@@ -375,8 +377,8 @@ get_RT_overview.DataSet <- function(ds) {
   
   c(min_val, max_val, runs, budget) %>%
     t %>%
-    as.data.table %>% 
-    cbind(algId,.) %>% 
+    as.data.table %>%
+    cbind(algId,.) %>%
     set_colnames(c('Algorithm ID', 'Minimum used evaluations',
                    'Maximum used evaluations', 'Number of runs', 'Budget'))
 }
@@ -386,7 +388,8 @@ get_RT_overview.DataSet <- function(ds) {
 #' @param ds A DataSet object
 #' @param ftarget The function target(s) for which to get the runtime summary
 #'
-#' @return
+#' @return A data.table containing the runtime statistics for each provided target
+#' function value
 #' @export
 #'
 #' @examples
@@ -446,7 +449,8 @@ get_RT_summary.DataSet <- function(ds, ftarget) {
 #' @param ftarget A Numerical vector. Function values at which runtime values are consumed
 #' @param output A character determining the format of output data.table: 'wide' or 'long'
 #'
-#' @return
+#' @return A data.table containing the runtime samples for each provided target
+#' function value
 #' @export
 #'
 #' @examples
@@ -468,9 +472,9 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide') {
     }
   )
   
-  res <- data[matched, , drop = FALSE] %>% 
-    as.data.table %>% 
-    cbind(algId, ftarget, .) %>% 
+  res <- data[matched, , drop = FALSE] %>%
+    as.data.table %>%
+    cbind(algId, ftarget, .) %>%
     set_colnames(c('algId', 'target', paste0('run.', seq(N))))
   
   if (output == 'long') {
@@ -493,23 +497,23 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide') {
 # #' @examples
 # get_FV_runs.DataSet <- function(ds, runtime) {
 #   data <- ds$FV
-  
+
 #   NC <- ncol(data)
 #   NR <- nrow(data)
 #   algId <- attr(ds, 'algId')
 #   maximization <- attr(ds, 'maximization')
-  
+
 #   runtime <- c(runtime) %>% unique %>% as.numeric %>% sort
 #   RT <- rownames(data) %>% as.numeric
 #   idx <- seq_along(RT)
-  
+
 #   matched <- sapply(runtime, function(r) {
 #     res <- idx[RT >= r][1]
 #     ifelse(is.na(res), NR, res)
 #   })
-  
+
 #   data <- data[matched, , drop = FALSE]
-  
+
 #   cbind(algId=algId, runtime=runtime, as.data.table(data))
 # }
 
@@ -518,7 +522,8 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide') {
 #' @param ds A DataSet object
 #' @param runtime A Numerical vector. Runtimes at which function values are reached
 #'
-#' @return
+#' @return A data.table containing the function value statistics for each provided
+#' target runtime value
 #' @export
 #'
 #' @examples
@@ -539,13 +544,13 @@ get_FV_summary.DataSet <- function(ds, runtime) {
   })
   
   data <- data[matched, , drop = FALSE]
-  apply(data, 1, C_quantile) %>% 
-    t %>% 
-    as.data.table %>% 
-    cbind(algId, runtime, NC, 
+  apply(data, 1, C_quantile) %>%
+    t %>%
+    as.data.table %>%
+    cbind(algId, runtime, NC,
           apply(data, 1, .mean),
           apply(data, 1, .median),
-          apply(data, 1, .sd), .) %>% 
+          apply(data, 1, .sd), .) %>%
     set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', 'sd', paste0(probs * 100, '%')))
 }
 
@@ -553,9 +558,10 @@ get_FV_summary.DataSet <- function(ds, runtime) {
 #'
 #' @param ds A DataSet object
 #' @param runtime A Numerical vector. Runtimes at which function values are reached
-#' @param output A character. The format of the output data: 'wide' or 'long' 
+#' @param output A character. The format of the output data: 'wide' or 'long'
 #'
-#' @return A data.table object
+#' @return A data.table containing the function value samples for each provided
+#' target runtime
 #' @export
 #'
 #' @examples
@@ -575,9 +581,9 @@ get_FV_sample.DataSet <- function(ds, runtime, output = 'wide') {
     ifelse(is.na(res), n_row, res)
   })
   
-  res <- data[matched, , drop = FALSE] %>% 
-    as.data.table %>% 
-    cbind(algId, runtime, .) %>% 
+  res <- data[matched, , drop = FALSE] %>%
+    as.data.table %>%
+    cbind(algId, runtime, .) %>%
     set_colnames(c('algId', 'runtime', paste0('run.', seq(N))))
   
   if (output == 'long') {
@@ -629,17 +635,17 @@ get_PAR_summary.DataSet <- function(ds, ftarget, parId = 'all') {
   lapply(par_name,
          function(par) {
            data <- ds[[par]][matched, , drop = FALSE]
-           apply(data, 1, C_quantile) %>% 
-             t %>% 
-             as.data.table %>% 
+           apply(data, 1, C_quantile) %>%
+             t %>%
+             as.data.table %>%
              cbind(algId, par, ftarget,
                    apply(data, 1, function(x) length(x[!is.na(x)])),
                    apply(data, 1, .mean),
                    apply(data, 1, .median),
-                   apply(data, 1, .sd), .) %>% 
-             set_colnames(c('algId', 'parId', 'target', 'runs', 'mean', 'median', 'sd', 
+                   apply(data, 1, .sd), .) %>%
+             set_colnames(c('algId', 'parId', 'target', 'runs', 'mean', 'median', 'sd',
                             paste0(probs * 100, '%')))
-         }) %>% 
+         }) %>%
     rbindlist
 }
 
@@ -648,7 +654,7 @@ get_PAR_summary.DataSet <- function(ds, ftarget, parId = 'all') {
 #' @param ds A DataSet object
 #' @param ftarget A Numerical vector. Function values at which parameter values are observed
 #' @param parId A character vector. Either 'all' or the name of parameters to be retrieved
-#' @param output A character. The format of the output data: 'wide' or 'long' 
+#' @param output A character. The format of the output data: 'wide' or 'long'
 #'
 #' @return A data.table object containing parameter values aligned at each given target value
 #' @export
@@ -678,13 +684,13 @@ get_PAR_sample.DataSet <- function(ds, ftarget, parId = 'all', output = 'wide') 
   )
   
   res <- lapply(par_name,
-         function(parId) {
-           data <- ds[[parId]]
-           data[matched, , drop = FALSE] %>% 
-             as.data.table %>% 
-             cbind(algId, parId, ftarget, .) %>% 
-             set_colnames(c('algId', 'parId', 'target', paste0('run.', seq(N))))
-         }) %>% 
+                function(parId) {
+                  data <- ds[[parId]]
+                  data[matched, , drop = FALSE] %>%
+                    as.data.table %>%
+                    cbind(algId, parId, ftarget, .) %>%
+                    set_colnames(c('algId', 'parId', 'target', paste0('run.', seq(N))))
+                }) %>%
     rbindlist
   
   if (output == 'long') {

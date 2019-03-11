@@ -45,6 +45,28 @@ plot_FV_AUC <- function(dsList,...) UseMethod("plot_FV_AUC", dsList)
 plot_PAR_Line <- function(dsList,...) UseMethod("plot_PAR_Line", dsList)
 plot_RT_ECDF_MULTI <- function(dsList,...) UseMethod("plot_RT_ECDF_MULTI", dsList)
 
+#' Plot lineplot of the ERTs of a DataSetList
+#' 
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param Fstart The starting function value.
+#' @param Fstop The final function value.
+#' @param show.ERT Whether or not to show the ERT-values
+#' @param show.CI Whether or not to show the standard deviations
+#' @param show.mean Whether or not to show the mean hitting times
+#' @param show.median Whether or not to show the median hitting times
+#' @param show.runs Whether or not to show the individual runs
+#' @param show.density Percentage of individual runs to show when show.runs is true
+#' @param show.pareto Whether or not to show the pareto-optimal run
+#' @param show.optimal Whether or not to show the optimal run
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
+#' @param backend Which plotting library to use. Can be 'plotly' or 'ggplot2'
+#' 
+#' @return A plot of ERT-values of the DataSetList
+#' @export
+#'
+#' @examples
 plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL, 
                                      show.ERT = T, show.CI = T, show.mean = F,
                                      show.runs = F, show.density = 50,
@@ -202,6 +224,26 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
   return(p)
 }
 
+#' Plot lineplot of the expected function values of a DataSetList
+#' 
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param RTstart The starting runtime value.
+#' @param RTstop The final runtime value.
+#' @param show.mean Whether or not to show the mean runtimes
+#' @param show.median Whether or not to show the median runtimes
+#' @param show.runs Whether or not to show the individual runs
+#' @param show.density Percentage of individual runs to show when show.runs is true
+#' @param show.pareto Whether or not to show the pareto-optimal run
+#' @param show.optimal Whether or not to show the optimal run
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
+#' @param backend Which plotting library to use. Can be 'plotly' or 'ggplot2'
+#' 
+#' @return A plot of ERT-values of the DataSetList
+#' @export
+#'
+#' @examples
 plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
                                      show.mean = T, show.median = F,
                                      show.runs = F, show.density = 50,
@@ -350,6 +392,19 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
   return(p)
 }
      
+#' Plot probablity mass function of the runtimes of a DataSetList at a certain target function value
+#' 
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ftarget The target function value.
+#' @param show.sample Whether or not to show the individual runtime samples
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param backend Which plotting library to use. Can be 'plotly' or 'ggplot2'
+#' 
+#' @return A plot of the probablity mass function of the runtimes at a the 
+#'         target function value of the DataSetList
+#' @export
+#'
+#' @examples
 plot_RT_PMF.DatasetList <- function(dsList, ftarget, show.sample = F, 
                                     scale.ylog = F, backend = 'plotly'){
 
@@ -388,6 +443,18 @@ plot_RT_PMF.DatasetList <- function(dsList, ftarget, show.sample = F,
            xaxis = list(tickangle = 45))
 }
 
+#' Plot histograms of the runtimes of a DataSetList at a certain target function value
+#' 
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ftarget The target function value.
+#' @param plot_mode How to plot the different hisograms for each algorithm. Can be either
+#'  'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.
+#' 
+#' @return A plot of the histograms of the runtimes at a the 
+#'         target function value of the DataSetList
+#' @export
+#'
+#' @examples
 plot_RT_HIST.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'){
 
   N <- length(dsList)
@@ -444,6 +511,18 @@ plot_RT_HIST.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'){
   p
 }
 
+#' Plot the empirical cumulative distriburtion as a function of the running times of 
+#' a DataSetList at certain target function values
+#' 
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ftargets The target function values
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' 
+#' @return A plot of the empirical cumulative distriburtion as a function of 
+#' the running times of the DataSetList at the target function values
+#' @export
+#'
+#' @examples
 plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F){
   req(length(ftargets) != 0)
   
@@ -490,6 +569,21 @@ plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F){
   p
 }
 
+#' Plot the aggregated empirical cumulative distriburtion as a function of the running times of 
+#' a DataSetList.
+#' 
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param fstart The starting function value
+#' @param fstop The final function value
+#' @param fstep The spacing between starting and final function values
+#' @param show.per_target Whether or not to show the individual ECDF-curves for each target
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' 
+#' @return A plot of the empirical cumulative distriburtion as a function of 
+#' the running times of the DataSetList
+#' @export
+#'
+#' @examples
 plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
                                           fstep = NULL, show.per_target = F,
                                           scale.xlog = F){
@@ -568,6 +662,18 @@ plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
   p
 }
 
+#' Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
+#' 
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param fstart The starting function value
+#' @param fstop The final function value
+#' @param fstep The spacing between starting and final function values
+#' @param fval_formatter Function to format the function-value labels
+#' 
+#' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
+#' @export
+#'
+#' @examples
 plot_RT_AUC.DataSetList <- function(dsList, fstart = NULL, 
                                     fstop = NULL, fstep = NULL,
                                     fval_formatter = as.integer){
@@ -628,6 +734,19 @@ plot_RT_AUC.DataSetList <- function(dsList, fstart = NULL,
 
 }
 
+#' Plot probablity density function of the function values of a DataSetList at 
+#' a certain target runtime
+#' 
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param runtime The target runtime
+#' @param show.sample Whether or not to show the individual function value samples
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' 
+#' @return A plot of the probablity density function of the runtimes at a the 
+#'         target function value of the DataSetList
+#' @export
+#'
+#' @examples
 plot_FV_PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog = F){
   points <- ifelse(show.sample, 'all', FALSE)
   
@@ -663,7 +782,18 @@ plot_FV_PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
   p
 }
 
-
+#' Plot histograms of the function values of a DataSetList at a certain target runtime
+#' 
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param runtime The target runtime
+#' @param plot_mode How to plot the different hisograms for each algorithm. Can be either
+#'  'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.
+#' 
+#' @return A plot of the histograms of the function values at a the 
+#'         target runtime of the DataSetList
+#' @export
+#'
+#' @examples
 plot_FV_HIST.DataSetList <- function(dsList, runtime, plot_mode='overlay'){
   n_algorithm <- length(dsList)
   colors <- color_palettes(n_algorithm)
@@ -720,6 +850,18 @@ plot_FV_HIST.DataSetList <- function(dsList, runtime, plot_mode='overlay'){
   p
 }
 
+#' Plot the empirical cumulative distriburtion as a function of the target values of 
+#' a DataSetList at certain target runtimes
+#' 
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param runtimes The target runtimes
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' 
+#' @return A plot of the empirical cumulative distriburtion as a function of 
+#' the fucntion values of the DataSetList at the target runtimes
+#' @export
+#'
+#' @examples
 plot_FCE_ECDF_PER_TARGET.DataSetList <- function(dsList, runtimes, scale.xlog = F){
   #TODO: Fvals in legend need to be formatted properly
   runtimes <- runtimes[!is.na(runtimes)]
@@ -769,6 +911,21 @@ plot_FCE_ECDF_PER_TARGET.DataSetList <- function(dsList, runtimes, scale.xlog = 
   p
 }
 
+#' Plot the aggregated empirical cumulative distriburtion as a function of the function values of 
+#' a DataSetList.
+#' 
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param rt_min The starting runtime
+#' @param rt_max The final runtime
+#' @param rt_step The spacing between starting and final runtimes
+#' @param show.per_target Whether or not to show the individual ECDF-curves for each runtime
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' 
+#' @return A plot of the empirical cumulative distriburtion as a function of 
+#' the function values of the DataSetList
+#' @export
+#'
+#' @examples
 plot_FV_ECDF_AGGR.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
                                           rt_step = NULL, scale.xlog = F,
                                           show.per_target = F){
@@ -835,6 +992,17 @@ plot_FV_ECDF_AGGR.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
   p
 }
 
+#' Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
+#' 
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param rt_min The starting runtime
+#' @param rt_max The final runtime
+#' @param rt_step The spacing between starting and final runtimes
+#' 
+#' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
+#' @export
+#'
+#' @examples
 plot_FV_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
                                     rt_step = NULL){
   rt <- get_Runtimes(dsList)
@@ -895,6 +1063,21 @@ plot_FV_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
   
 }
 
+#' Plot the parameter values recorded in a DataSetList
+#' 
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param f_min The starting function value.
+#' @param f_max The final function value.
+#' @param show.mean Whether or not to show the mean parameter values
+#' @param show.median Whether or not to show the median parameter values
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param algids Which algorithms from dsList to use
+#' 
+#' @return A plot of for every recorded parameter in the DataSetList
+#' @export
+#'
+#' @examples
 plot_PAR_Line.DataSetList <- function(dsList, f_min = NULL, f_max = NULL, 
                                       algids = 'all',
                                       scale.xlog = F, scale.ylog = F,
@@ -981,6 +1164,20 @@ plot_PAR_Line.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
                     font = list(size = 22, family = 'sans-serif'))
 }
 
+#' Plot the aggregated empirical cumulative distriburtion as a function of the running times of 
+#' a DataSetList. Aggregated over multiple functions or dimensions.
+#' 
+#' @param dsList A DataSetList.
+#' @param targets The target function values. Specified in a data.frame, as can be generated 
+#' by the function 'get_default_ECDF_targets'
+#' @param dim The dimension to use. If NULL, all dimensions will be used
+#' @param funcid The id of the function to use. If NULL, all functions will be used
+#' 
+#' @return A plot of the empirical cumulative distriburtion as a function of 
+#' the running times of the DataSetList
+#' @export
+#'
+#' @examples
 plot_RT_ECDF_MULTI.DataSetList <- function(dsList, targets = NULL, dim = NULL,
                                            funcid = NULL){
   
@@ -1010,7 +1207,20 @@ plot_RT_ECDF_MULTI.DataSetList <- function(dsList, targets = NULL, dim = NULL,
 
 }
 
-
+#' Plot ERT-plots for multiple functions or dimensions
+#' 
+#' @param dsList A DataSetList (should consist of only one function OR dimension).
+#' @param plot_mode How the plots should be created. Can be 'subplot' for one plot
+#' per function/dimension or 'overlay' for on plot containing all functions/dimensions
+#' @param aggr_on Whether to create a plot for each function ('funcId') or dimension ('DIM')
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
+#' 
+#' @return A plot of ERT-values of the DataSetList
+#' @export
+#'
+#' @examples
 plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog = F,
                                        scale.ylog = F, scale.reverse = F, aggr_on = 'funcId'){
   
@@ -1096,6 +1306,23 @@ plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog
   p
 }
 
+#' Plot ERT-based comparison over multiple functions or dimensions
+#' 
+#' @param dsList A DataSetList (should consist of only one function OR dimension).
+#' @param plot_mode How the plots should be created. Can be 'line' or 'radar' 
+#' @param aggr_on Whether to compare on functions ('funcId') or dimensions ('DIM')
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param maximize Wheter or not to the data is of a maximization problem
+#' @param targets Custom list of function-value targets, one for each function or dimension.
+#' @param use_rank Wheter to use a ranking system. If False, the actual ERT-values will be used.
+#' @param erts Pre-calculated ERT-values for the provided targets. Created by the max_ERTs function
+#' of DataSetList. Can be provided to prevent needless computation in recalculating ERTs when recreating
+#' this plot.
+#' 
+#' @return A plot of ERT-based comparison on the provided functions or dimensions of the DataSetList
+#' @export
+#'
+#' @examples
 plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, 
                                       plot_mode = 'radar', use_rank = F,
                                       scale.ylog = T, maximize = T,
@@ -1214,6 +1441,24 @@ plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL
  p
 }
 
+#' Plot expected function value-based comparison over multiple functions or dimensions
+#' 
+#' @param dsList A DataSetList (should consist of only one function OR dimension).
+#' @param plot_mode How the plots should be created. Can be 'line' or 'radar' 
+#' @param aggr_on Whether to compare on functions ('funcId') or dimensions ('DIM')
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param runtimes Custom list of function-value targets, one for each function or dimension.
+#' @param use_rank Wheter to use a ranking system. If False, the actual expected function-
+#' values will be used.
+#' @param fvs Pre-calculated expected function-values for the provided runtimes Created by the 
+#' max_ERTs function of DataSetList. Can be provided to prevent needless computation 
+#' in recalculating ERTs when recreating this plot.
+#' 
+#' @return A plot of expected function value-based comparison on the provided functions
+#'  or dimensions of the DataSetList
+#' @export
+#'
+#' @examples
 plot_FCE_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NULL, 
                                       plot_mode = 'radar', use_rank = F,
                                       scale.ylog = T, fvs = NULL){
@@ -1315,7 +1560,19 @@ plot_FCE_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NUL
   }
   p
 }
-
+#' Plot expected function value-plots for multiple functions or dimensions
+#' 
+#' @param dsList A DataSetList (should consist of only one function OR dimension).
+#' @param plot_mode How the plots should be created. Can be 'subplot' for one plot
+#' per function/dimension or 'overlay' for on plot containing all functions/dimensions
+#' @param aggr_on Whether to create a plot for each function ('funcId') or dimension ('DIM')
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' 
+#' @return A plot of expected function values of the DataSetList
+#' @export
+#'
+#' @examples
 plot_FCE_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog = F,
                                        scale.ylog = F, aggr_on = 'funcId'){
   

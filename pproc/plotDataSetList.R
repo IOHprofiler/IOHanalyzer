@@ -736,22 +736,22 @@ plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F, ...){
       if (all(is.na(rt)))
         next
       
-      # TODO: ECDF computation should be put in pproc/stats.R
-      ecdf <- CDF_discrete(rt)
-      
-      # position of the markers
-      x <- quantile(rt, probs = c(0.25, 0.5, 0.75), names = F, type = 3)
-      y <- sapply(x, function(x) ecdf[rt == x][1])
+      # TODO: Fix this function to use the updated ECDF-function correctely
+      ecdf <- ECDF(df, i)
+      vals <- ecdf(rt)
+      # # position of the markers
+      # x <- quantile(rt, probs = c(0.25, 0.5, 0.75), names = F, type = 3)
+      # y <- sapply(x, function(x) ecdf[rt == x][1])
       
       p %<>%
-        add_trace(data = NULL, x = rt, y = ecdf, type = 'scatter',
+        add_trace(data = NULL, x = rt, y = vals, type = 'scatter',
                   mode = 'lines', name = algId, showlegend = F,
                   legendgroup = paste0(k),
-                  line = list(color = rgb_str, width = 3)) %>%
-        add_trace(data = NULL, x = x, y = y, type = 'scatter',
-                  mode = 'markers',  legendgroup = paste0(k),
-                  name = sprintf('(%s, %.2e)', algId, ftargets[i]),
-                  marker = list(color = rgb_str, symbol = symbols[i], size = 13))
+                  line = list(color = rgb_str, width = 3))
+      # add_trace(data = NULL, x = x, y = y, type = 'scatter',
+      #           mode = 'markers',  legendgroup = paste0(k),
+      #           name = sprintf('(%s, %.2e)', algId, ftargets[i]),
+      #           marker = list(color = rgb_str, symbol = symbols[i], size = 13))
     }
   }
   
@@ -838,9 +838,10 @@ plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
         # TODO: plot the unsuccessful ECDF
         if (all(is.na(rt)))
           next
-        else
-          v <- CDF_discrete(rt)
-        
+        else{
+          ecdf <- ECDF(df, i)
+          v <- ecdf(rt)
+        }
         p %<>%
           add_trace(x = rt, y = v, type = 'scatter',
                     mode = 'lines', name = algId, showlegend = F,

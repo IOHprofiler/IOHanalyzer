@@ -1,0 +1,35 @@
+Package: IOHProfiler
+Type: Package
+Title: Analizer Part of the IOHProfiler
+Version: 0.1.0
+Authors@R: c(
+    person("Hao", "Wang", email = "h.wang@liacs.leidenuniv.nl", role = "cre"),
+    person("Carola", "Doerr", email = "Carola.Doerr@mpi-inf.mpg.de", role = "aut"),
+    person("Furong", "Ye", email="f.ye@liacs.leidenuniv.nl", role = "aut"),
+    person("Sander", "van Rijn", email="s.j.van.rijn@liacs.leidenuniv.nl", role = "aut"),
+    person("Thomas", "B\"ack", email="t.h.w.baeck@liacs.leidenuniv.nl", role = "aut"),
+    person("Diederick", "Vermetten", email="d.vermetten@gmail.com", role = "aut"))
+Description: This is the post-processing tool of the project 
+    Iterative Optimization Heuristics Profiler (IOHprofiler). 
+    This tool provides a web-based interface to analyze and visualize 
+    the benchmark data, collected from previous experiments. 
+    Importantly, we do support the widely used COCO data format 
+    (aka. Black-Box Optimization Benchmarking).
+License: BSD_3_clause + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: 
+  Rcpp,
+  magrittr,
+  dplyr,
+  reshape2,
+  data.table,
+  ggplot2,
+  colorspace,
+  plotly,
+  colorRamps,
+  RColorBrewer,
+  shiny
+LinkingTo: Rcpp
+SystemRequirements: C++11
+RoxygenNote: 6.1.1

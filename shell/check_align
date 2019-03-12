@@ -1,7 +1,0 @@
-#!/bin/bash
-
-profiler=$1
-baseline=$2
-
-diff <(echo $(cat $1 | cut -d',' -f4 | awk '{if(NR>1)print}')) <(echo $(cat $2 | cut -d',' -f3 | awk '{if(NR>1)print}'))
-

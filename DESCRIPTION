@@ -2,6 +2,8 @@ Package: IOHProfiler
 Type: Package
 Title: Analizer Part of the IOHProfiler
 Version: 0.0.0.9000
+Author: IOHProfiler-team
+Maintainer: IOHProfiler-team <IOHprofiler@liacs.leidenuniv.nl>
 Authors@R: c(
     person("Hao", "Wang", email = "h.wang@liacs.leidenuniv.nl", role = "cre"),
     person("Carola", "Doerr", email = "Carola.Doerr@mpi-inf.mpg.de", role = "aut"),
@@ -29,7 +31,12 @@ Imports:
   plotly,
   colorRamps,
   RColorBrewer,
-  shiny
+  shiny,
+  shinyjs,
+  shinydashboard,
+  markdown,
+  DBI,
+  dbplyr
 LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 6.1.1

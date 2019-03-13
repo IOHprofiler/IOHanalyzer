@@ -7,5 +7,21 @@ test_that("Can DataSetLists be loaded?",{
 
 test_that("Validate reading of files",{
   path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHProfiler")
-  expect_equal(check_format(path),"IOHprofiler")
+  expect_equal(check_format(path), "IOHprofiler")
+  dsl1 <- DataSetList(path)
+
+  expect_true(any(match(class(dsl1), "DataSetList")))
+  expect_equal(get_DIM(dsl1), 100)
+  expect_equal(get_AlgId(dsl1), "ONE_PLUS_LAMDA_EA")
+  expect_equal(get_funcId(dsl1), 1)
+
+  ds1 <- dsl1[[1]]
+  expect_true(any(match(class(ds1), "DataSet")))
+  expect_equal(attr(ds1,'DIM'), 100)
+  expect_equal(attr(ds1,'algId'), "ONE_PLUS_LAMDA_EA")
+  expect_equal(attr(ds1,'suite'), "PBO")
+  expect_equal(attr(ds1,'funcId'), 1)
+  expect_equal(attr(ds1,'instance'), c(1,1,1,1,1,1,1,1,1,1))
+  expect_equal(attr(ds1,'src'), "IOHprofiler")
+  expect_equal(attr(ds1,'maximization'), TRUE)
 })

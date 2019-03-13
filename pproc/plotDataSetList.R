@@ -53,15 +53,239 @@ grad_functions <- c(
   }
 )
 
+#S3 generics
+#TODO: decide which parameters need to be in the generics
 
-plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL, 
+#' Plot lineplot of the ERTs of a DataSetList
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of ERT-values of the DataSetList
+#' @export
+#'
+#' @examples
+plot_RT_line <- function(dsList, ...) UseMethod("plot_RT_line", dsList)
+#' Plot lineplot of the expected function values of a DataSetList
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of ERT-values of the DataSetList
+#' @export
+#'
+#' @examples
+plot_FV_line <- function(dsList,...) UseMethod("plot_FV_line", dsList)
+#' Plot probablity mass function of the runtimes of a DataSetList at a certain target function value
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the probablity mass function of the runtimes at a the
+#'         target function value of the DataSetList
+#' @export
+#'
+#' @examples
+plot_RT_PMF <- function(dsList,...) UseMethod("plot_RT_PMF", dsList)
+#' Plot histograms of the runtimes of a DataSetList at a certain target function value
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the histograms of the runtimes at a the
+#'         target function value of the DataSetList
+#' @export
+#'
+#' @examples
+plot_RT_HIST <- function(dsList,...) UseMethod("plot_RT_HIST", dsList)
+#' Plot the empirical cumulative distriburtion as a function of the running times of
+#' a DataSetList at certain target function values
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the empirical cumulative distriburtion as a function of
+#' the running times of the DataSetList at the target function values
+#' @export
+#'
+#' @examples
+plot_RT_ECDF <- function(dsList,...) UseMethod("plot_RT_ECDF", dsList)
+#' Plot the aggregated empirical cumulative distriburtion as a function of the running times of
+#' a DataSetList.
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the empirical cumulative distriburtion as a function of
+#' the running times of the DataSetList
+#' @export
+#'
+#' @examples
+plot_RT_ECDF_AGGR <- function(dsList,...) UseMethod("plot_RT_ECDF_AGGR", dsList)
+#' Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
+#' @export
+#'
+#' @examples
+plot_RT_AUC <- function(dsList,...) UseMethod("plot_RT_AUC", dsList)
+#' Plot probablity density function of the function values of a DataSetList at
+#' a certain target runtime
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the probablity density function of the runtimes at a the
+#'         target function value of the DataSetList
+#' @export
+#'
+#' @examples
+plot_FV_PDF <- function(dsList,...) UseMethod("plot_FV_PDF", dsList)
+#' Plot histograms of the function values of a DataSetList at a certain target runtime
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the histograms of the function values at a the
+#'         target runtime of the DataSetList
+#' @export
+#'
+#' @examples
+plot_FV_HIST <- function(dsList,...) UseMethod("plot_FV_HIST", dsList)
+#' Plot the empirical cumulative distriburtion as a function of the target values of
+#' a DataSetList at certain target runtimes
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the empirical cumulative distriburtion as a function of
+#' the fucntion values of the DataSetList at the target runtimes
+#' @export
+#'
+#' @examples
+plot_FCE_ECDF_PER_TARGET <- function(dsList,...) UseMethod("plot_FCE_ECDF_PER_TARGET", dsList)
+#' Plot the aggregated empirical cumulative distriburtion as a function of the function values of
+#' a DataSetList.
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the empirical cumulative distriburtion as a function of
+#' the function values of the DataSetList
+#' @export
+#'
+#' @examples
+plot_FV_ECDF_AGGR <- function(dsList,...) UseMethod("plot_FV_ECDF_AGGR", dsList)
+#' Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
+#' @export
+#'
+#' @examples
+plot_FV_AUC <- function(dsList,...) UseMethod("plot_FV_AUC", dsList)
+#' Plot the parameter values recorded in a DataSetList
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of for every recorded parameter in the DataSetList
+#' @export
+#'
+#' @examples
+plot_PAR_Line <- function(dsList,...) UseMethod("plot_PAR_Line", dsList)
+#' Plot the aggregated empirical cumulative distriburtion as a function of the running times of
+#' a DataSetList. Aggregated over multiple functions or dimensions.
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the empirical cumulative distriburtion as a function of
+#' the running times of the DataSetList
+#' @export
+#'
+#' @examples
+plot_RT_ECDF_MULTI <- function(dsList,...) UseMethod("plot_RT_ECDF_MULTI", dsList)
+#' Plot ERT-plots for multiple functions or dimensions
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of ERT-values of the DataSetList
+#' @export
+#'
+#' @examples
+plot_ERT_MULTI <- function(dsList,...) UseMethod("plot_ERT_MULTI", dsList)
+#' Plot ERT-based comparison over multiple functions or dimensions
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of ERT-based comparison on the provided functions or dimensions of the DataSetList
+#' @export
+#'
+#' @examples
+plot_ERT_AGGR <- function(dsList,...) UseMethod("plot_ERT_AGGR", dsList)
+#' Plot expected function value-based comparison over multiple functions or dimensions
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of expected function value-based comparison on the provided functions
+#'  or dimensions of the DataSetList
+#' @export
+#'
+#' @examples
+plot_FCE_AGGR <- function(dsList,...) UseMethod("plot_FCE_AGGR", dsList)
+#' Plot expected function value-plots for multiple functions or dimensions
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of expected function values of the DataSetList
+#' @export
+#'
+#' @examples
+plot_FCE_MULTI <- function(dsList,...) UseMethod("plot_FCE_MULTI", dsList)
+
+##Implementations
+
+#' Plot lineplot of the ERTs of a DataSetList
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param Fstart The starting function value.
+#' @param Fstop The final function value.
+#' @param show.ERT Whether or not to show the ERT-values
+#' @param show.CI Whether or not to show the standard deviations
+#' @param show.mean Whether or not to show the mean hitting times
+#' @param show.median Whether or not to show the median hitting times
+#' @param show.runs Whether or not to show the individual runs
+#' @param show.density Percentage of individual runs to show when show.runs is true
+#' @param show.pareto Whether or not to show the pareto-optimal run
+#' @param show.optimal Whether or not to show the optimal run
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
+#' @param backend Which plotting library to use. Can be 'plotly' or 'ggplot2'
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of ERT-values of the DataSetList
+#' @export
+#'
+#' @examples
+plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                      show.ERT = T, show.CI = T, show.mean = F,
                                      show.runs = F, show.density = 50,
                                      show.grad = F, show.intensity = 0,
                                      show.pareto = F, show.optimal = F,
                                      show.median = F, backend = 'plotly',
                                      scale.xlog = F, scale.ylog = F,
-                                     scale.reverse = F) {
+                                     scale.reverse = F, ...) {
   Fall <- get_Funvals(dsList)
   if (is.null(Fstart)) Fstart <- min(Fall)
   if (is.null(Fstop)) Fstop <- max(Fall)
@@ -77,27 +301,27 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
   
   if (backend == 'plotly') {
-    p <- plot_ly_default(x.title = "best-so-far f(x)-value", 
+    p <- plot_ly_default(x.title = "best-so-far f(x)-value",
                          y.title = "function evaluations")
     
     for (i in seq_along(dsList)) {
       legend <- legends[i]
       ds_ERT <- dt[algId == attr(dsList[[i]], 'algId') &
-                   funcId == attr(dsList[[i]], 'funcId') &
-                   DIM == attr(dsList[[i]], 'DIM')]
+                     funcId == attr(dsList[[i]], 'funcId') &
+                     DIM == attr(dsList[[i]], 'DIM')]
       
       algId <- attr(dsList[[i]], 'algId')
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.2)')
       
       if (show.CI)
-        p %<>% 
-          add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-                    line = list(color = rgba_str, width = 0), legendgroup = legend,
-                    showlegend = F, name = 'mean +/- sd') %>% 
-          add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
-                    fill = 'tonexty',  line = list(color = 'transparent'), legendgroup = legend,
-                    fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
+        p %<>%
+        add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
+                  line = list(color = rgba_str, width = 0), legendgroup = legend,
+                  showlegend = F, name = 'mean +/- sd') %>%
+        add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
+                  fill = 'tonexty',  line = list(color = 'transparent'), legendgroup = legend,
+                  fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
       
       if (show.ERT)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
@@ -106,23 +330,24 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                          line = list(color = rgb_str))
       
       if (show.mean)
-        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~mean, type = 'scatter', 
-                         mode = 'lines+markers', name = paste0(algId, '.mean'), 
+        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~mean, type = 'scatter',
+                         mode = 'lines+markers', name = paste0(algId, '.mean'),
                          marker = list(color = rgb_str), legendgroup = legend,
                          line = list(color = rgb_str, dash = 'dash'))
       
       if (show.median)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~median, type = 'scatter',
-                         name = paste0(legend, '.median'), mode = 'lines+markers', 
+                         name = paste0(legend, '.median'), mode = 'lines+markers',
                          marker = list(color = rgb_str), legendgroup = legend,
                          line = list(color = rgb_str, dash = 'dot'))
       
       if (show.runs||show.grad) {
-        
+        # TODO: Fix this for the case where algorithms do not have the same number of runs
         dr <- get_RT_sample(dsList, Fseq)
         dr_ERT <- dr[algId == attr(dsList[[i]], 'algId')&
                      funcId == attr(dsList[[i]], 'funcId') &
                      DIM == attr(dsList[[i]], 'DIM')]
+        
         names_to_show = sample(colnames(dr_ERT))
         names_to_show <-
           names_to_show[!names_to_show %in% c('algId', 'target', 'funcId','DIM')]
@@ -190,6 +415,7 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
           check_value <- best_parts[target_idx]
           for (run_v in names_to_show){
             found_val <- dr_ERT[[run_v]][target_idx]
+            
             if (!is.na(found_val) & check_value == found_val) {
               p %<>% add_trace(
                 data = dr_ERT,
@@ -225,24 +451,45 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
     
     if (scale.reverse)
       p %<>% layout(xaxis = list(autorange = "reversed"))
-  } 
+  }
   else if (backend == 'ggplot2') {
-    dt[, group := paste(algId, funcId, DIM, sep = '-')]
-    p <- ggplot(data = dt, aes(group = group, colour = group))
+    dt[, 'group' := paste(algId, funcId, DIM, sep = '-')]
+    p <- ggplot(data = dt, aes(group = 'group', colour = 'group'))
     
-    if (show.CI) p <- p + geom_ribbon(aes(target, ymin = lower, ymax = upper, fill = group),
+    if (show.CI) p <- p + geom_ribbon(aes(target, ymin = lower, ymax = upper, fill = 'group'),
                                       alpha = 0.2, colour = NA)
     if (show.ERT) p <- p + geom_line(aes(target, ERT), size = 1.2)
     if (show.mean) p <- p + geom_line(aes(target, mean), linetype = 'dashed')
     if (show.median) p <- p + geom_line(aes(target, median), linetype = 'dotted')
     
-    p <- p + 
-      scale_color_manual(values = colors) + 
+    p <- p +
+      scale_color_manual(values = colors) +
       scale_fill_manual(values = colors)
   }
   return(p)
 }
 
+#' Plot lineplot of the expected function values of a DataSetList
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param RTstart The starting runtime value.
+#' @param RTstop The final runtime value.
+#' @param show.mean Whether or not to show the mean runtimes
+#' @param show.median Whether or not to show the median runtimes
+#' @param show.runs Whether or not to show the individual runs
+#' @param show.density Percentage of individual runs to show when show.runs is true
+#' @param show.pareto Whether or not to show the pareto-optimal run
+#' @param show.optimal Whether or not to show the optimal run
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
+#' @param backend Which plotting library to use. Can be 'plotly' or 'ggplot2'
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of ERT-values of the DataSetList
+#' @export
+#'
+#' @examples
 plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
                                      show.CI = T,
                                      show.mean = F, show.median = F,
@@ -251,11 +498,12 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
                                      show.pareto = F, show.optimal = F,
                                      backend = 'plotly',
                                      scale.xlog = F, scale.ylog = F,
-                                     scale.reverse = F) {
+                                     scale.reverse = F, ...) {
   
   RTall <- get_Runtimes(dsList)
   if (is.null(RTstart)) Fstart <- min(RTall)
   if (is.null(RTstop)) Fstop <- max(RTall)
+  
   
   RTseq <- seq_RT(RTall, RTstart, RTstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
   if (length(RTseq) == 0) return(NULL)
@@ -267,7 +515,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
   fce <- get_FV_summary(dsList, RTseq)
   fce[, `:=`(upper = mean + sd, lower = mean - sd)]
   
-  if(backend == 'plotly'){
+  if (backend == 'plotly') {
     p <- plot_ly_default(y.title = "best-so-far f(x)-value", x.title = "runtime")
     
     for (i in seq_along(dsList)) {
@@ -275,8 +523,8 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
       algId <- attr(dsList[[i]], 'algId')
       
       ds_FCE <- fce[algId == attr(dsList[[i]], 'algId') &
-                     funcId == attr(dsList[[i]], 'funcId') &
-                     DIM == attr(dsList[[i]], 'DIM')]
+                      funcId == attr(dsList[[i]], 'funcId') &
+                      DIM == attr(dsList[[i]], 'DIM')]
       
       if (nrow(ds_FCE) == 0)
         next
@@ -296,14 +544,14 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
       }
       
       if (show.mean)
-        p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~mean, type = 'scatter', 
-                         mode = 'lines+markers', name = paste0(algId, '.mean'), 
+        p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~mean, type = 'scatter',
+                         mode = 'lines+markers', name = paste0(algId, '.mean'),
                          marker = list(color = rgb_str), legendgroup = legend,
                          line = list(color = rgb_str))
       
       if (show.median)
         p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~median, type = 'scatter',
-                         name = paste0(legend, '.median'), mode = 'lines+markers', 
+                         name = paste0(legend, '.median'), mode = 'lines+markers',
                          marker = list(color = rgb_str), legendgroup = legend,
                          line = list(color = rgb_str, dash = 'dash'))
       
@@ -311,8 +559,8 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
         fce_runs <- get_FV_sample(dsList, RTseq)
         
         fce_runs_ERT <- fce_runs[algId == attr(dsList[[i]], 'algId') &
-                                 funcId == attr(dsList[[i]], 'funcId') &
-                                 DIM == attr(dsList[[i]], 'DIM')]
+                                   funcId == attr(dsList[[i]], 'funcId') &
+                                   DIM == attr(dsList[[i]], 'DIM')]
         names_to_show <- sample(colnames(fce_runs_ERT))
         names_to_show <-
           names_to_show[!names_to_show %in% c('algId', 'runtime', 'funcId', 'DIM')]
@@ -322,6 +570,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
         all_names <- names_to_show
         names_to_show <- head(names_to_show, counter)
         best_parts <- NA
+        
         mentioned <- FALSE
         
         if (show.grad){
@@ -352,7 +601,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
         }
         
         if (show.runs){
-
+          
         for (run_v in names_to_show) {
           p %<>% add_trace(
             data = fce_runs_ERT,
@@ -368,7 +617,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
           best_parts <-
             insert_best_parts(best_parts, fce_runs_ERT[[run_v]], !attr(dsList[[i]],"maximization"))
         }
-
+        
         if (show.optimal) {
           mentioned <- FALSE
           check_value <- tail(best_parts, 1)
@@ -412,24 +661,38 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
       p %<>% layout(xaxis = list(autorange = "reversed"))
   }
   else if (backend == 'ggplot2'){
-    fce[, group := paste(algId, funcId, DIM, sep = '-')]
-    p <- ggplot(data = fce, aes(group = group, colour = group))
+    fce[, 'group' := paste(algId, funcId, DIM, sep = '-')]
+    p <- ggplot(data = fce, aes(group = 'group', colour = 'group'))
     
     if (show.mean) p <- p + geom_line(aes(runtime, mean), linetype = 'dashed')
     if (show.median) p <- p + geom_line(aes(runtime, median), linetype = 'dotted')
     
-    p <- p + 
-      scale_color_manual(values = colors) + 
+    p <- p +
+      scale_color_manual(values = colors) +
       scale_fill_manual(values = colors)
     
     #TODO: add individual run etc
   }
   return(p)
 }
-     
-plot_RT_PMF.DatasetList <- function(dsList, ftarget, show.sample = F, 
-                                    scale.ylog = F, backend = 'plotly'){
 
+#' Plot probablity mass function of the runtimes of a DataSetList at a certain target function value
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ftarget The target function value.
+#' @param show.sample Whether or not to show the individual runtime samples
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param backend Which plotting library to use. Can be 'plotly' or 'ggplot2'
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the probablity mass function of the runtimes at a the
+#'         target function value of the DataSetList
+#' @export
+#'
+#' @examples
+plot_RT_PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
+                                    scale.ylog = F, backend = 'plotly', ...){
+  
   points <- ifelse(show.sample, 'all', FALSE)
   
   N <- length(dsList)
@@ -465,13 +728,26 @@ plot_RT_PMF.DatasetList <- function(dsList, ftarget, show.sample = F,
            xaxis = list(tickangle = 45))
 }
 
-plot_RT_HIST.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'){
-
+#' Plot histograms of the runtimes of a DataSetList at a certain target function value
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ftarget The target function value.
+#' @param plot_mode How to plot the different hisograms for each algorithm. Can be either
+#'  'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the histograms of the runtimes at a the
+#'         target function value of the DataSetList
+#' @export
+#'
+#' @examples
+plot_RT_HIST.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay', ...){
+  
   N <- length(dsList)
   colors <- color_palettes(N)
   if (N <= 10)
     nrows <- ceiling(N / 2.) # keep to columns for the histograms
-  else 
+  else
     nrows <- ceiling(N / 3.) # keep to columns for the histograms
   
   if (plot_mode == 'overlay') {
@@ -497,8 +773,8 @@ plot_RT_HIST.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'){
     res <- hist(rt$RT, breaks = nclass.FD, plot = F)
     breaks <- res$breaks
     plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
-                            text = paste0('<b>count</b>: ', res$counts, '<br><b>breaks</b>: [', 
-                                          breaks[-length(breaks)], ',', breaks[-1], ']')) 
+                            text = paste0('<b>count</b>: ', res$counts, '<br><b>breaks</b>: [',
+                                          breaks[-length(breaks)], ',', breaks[-1], ']'))
     
     if (plot_mode == 'overlay') {
       p %<>%
@@ -507,7 +783,7 @@ plot_RT_HIST.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'){
                   marker = list(color = rgba_str,
                                 line = list(color = 'rgb(8,48,107)', width = 1.5)))
     } else if (plot_mode == 'subplot') {
-      p[[i]] %<>% 
+      p[[i]] %<>%
         add_trace(data = plot_data, x = ~x, y = ~y, width = ~width, type = 'bar',
                   name = algId, text = ~text, hoverinfo = 'text',
                   marker = list(color = rgba_str,
@@ -521,7 +797,20 @@ plot_RT_HIST.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'){
   p
 }
 
-plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F){
+#' Plot the empirical cumulative distriburtion as a function of the running times of
+#' a DataSetList at certain target function values
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ftargets The target function values
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the empirical cumulative distriburtion as a function of
+#' the running times of the DataSetList at the target function values
+#' @export
+#'
+#' @examples
+plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F, ...){
   req(length(ftargets) != 0)
   
   N <- length(data)
@@ -543,22 +832,22 @@ plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F){
       if (all(is.na(rt)))
         next
       
-      # TODO: ECDF computation should be put in pproc/stats.R
-      ecdf <- CDF_discrete(rt)
-      
-      # position of the markers
-      x <- quantile(rt, probs = c(0.25, 0.5, 0.75), names = F, type = 3)
-      y <- sapply(x, function(x) ecdf[rt == x][1])
+      # TODO: Fix this function to use the updated ECDF-function correctely
+      ecdf <- ECDF(df, i)
+      vals <- ecdf(rt)
+      # # position of the markers
+      # x <- quantile(rt, probs = c(0.25, 0.5, 0.75), names = F, type = 3)
+      # y <- sapply(x, function(x) ecdf[rt == x][1])
       
       p %<>%
-        add_trace(data = NULL, x = rt, y = ecdf, type = 'scatter',
+        add_trace(data = NULL, x = rt, y = vals, type = 'scatter',
                   mode = 'lines', name = algId, showlegend = F,
                   legendgroup = paste0(k),
-                  line = list(color = rgb_str, width = 3)) %>% 
-        add_trace(data = NULL, x = x, y = y, type = 'scatter',
-                  mode = 'markers',  legendgroup = paste0(k),
-                  name = sprintf('(%s, %.2e)', algId, ftargets[i]),
-                  marker = list(color = rgb_str, symbol = symbols[i], size = 13))
+                  line = list(color = rgb_str, width = 3))
+      # add_trace(data = NULL, x = x, y = y, type = 'scatter',
+      #           mode = 'markers',  legendgroup = paste0(k),
+      #           name = sprintf('(%s, %.2e)', algId, ftargets[i]),
+      #           marker = list(color = rgb_str, symbol = symbols[i], size = 13))
     }
   }
   
@@ -567,15 +856,30 @@ plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F){
   p
 }
 
+#' Plot the aggregated empirical cumulative distriburtion as a function of the running times of
+#' a DataSetList.
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param fstart The starting function value
+#' @param fstop The final function value
+#' @param fstep The spacing between starting and final function values
+#' @param show.per_target Whether or not to show the individual ECDF-curves for each target
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the empirical cumulative distriburtion as a function of
+#' the running times of the DataSetList
+#' @export
+#'
+#' @examples
 plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
                                           fstep = NULL, show.per_target = F,
-                                          scale.xlog = F){
+                                          scale.xlog = F, ...){
   fall <- get_Funvals(dsList)
   if (is.null(fstart)) fstart <- min(fall)
   if (is.null(fstop)) fstop <- max(fall)
-
   
-  fseq <- seq_FV(fall, fstart, fstop, fstep, 
+  fseq <- seq_FV(fall, fstart, fstop, fstep,
                  scale = ifelse(scale.xlog, 'log', 'linear'))
   req(fseq)
   
@@ -602,12 +906,12 @@ plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
         return(rep(0, length(x)))
       fun <- ecdf(rt)
       fun(x)
-    }) %>% 
+    }) %>%
       do.call(rbind, .)
     
-    df_plot <- data.frame(x = x, 
+    df_plot <- data.frame(x = x,
                           mean = apply(m, 2, . %>% mean(na.rm = T)),
-                          sd = apply(m, 2, . %>% sd(na.rm = T))) %>% 
+                          sd = apply(m, 2, . %>% sd(na.rm = T))) %>%
       mutate(upper = mean + sd, lower = mean - sd)
     
     p %<>%
@@ -619,7 +923,7 @@ plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
       #           fill = 'tonexty',  line = list(color = 'transparent'),
       #           fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd') %>%
       add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
-                mode = 'lines+markers', name = sprintf('%s', algId), 
+                mode = 'lines+markers', name = sprintf('%s', algId),
                 showlegend = T, legendgroup = paste0(k),
                 line = list(color = rgb_str, width = 4.5),
                 marker = list(color = rgb_str, size = 11))
@@ -630,9 +934,10 @@ plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
         # TODO: plot the unsuccessful ECDF
         if (all(is.na(rt)))
           next
-        else 
-          v <- CDF_discrete(rt)
-        
+        else{
+          ecdf <- ECDF(df, f)
+          v <- ecdf(rt)
+        }
         p %<>%
           add_trace(x = rt, y = v, type = 'scatter',
                     mode = 'lines', name = algId, showlegend = F,
@@ -646,15 +951,28 @@ plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
   p
 }
 
-plot_RT_AUC.DataSetList <- function(dsList, fstart = NULL, 
+#' Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param fstart The starting function value
+#' @param fstop The final function value
+#' @param fstep The spacing between starting and final function values
+#' @param fval_formatter Function to format the function-value labels
+#' @param ... Arguments passed to other methods
+#'
+#' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
+#' @export
+#'
+#' @examples
+plot_RT_AUC.DataSetList <- function(dsList, fstart = NULL,
                                     fstop = NULL, fstep = NULL,
-                                    fval_formatter = as.integer){
+                                    fval_formatter = as.integer, ...){
   fall <- get_Funvals(dsList)
   if (is.null(fstart)) fstart <- min(fall)
   if (is.null(fstop)) fstop <- max(fall)
   
   fseq <- seq_FV(fall, fstart, fstop, fstep)
-
+  
   N <- length(dsList)
   colors <- color_palettes(N)
   
@@ -669,31 +987,32 @@ plot_RT_AUC.DataSetList <- function(dsList, fstart = NULL,
     rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.2)')
     
     # calculate ECDFs on user specified targets
+    
     # funs <- lapply(fseq, function(f) {
     #   get_RT_sample(df, f, output = 'long')$RT %>% {
     #     if (all(is.na(.))) NULL
     #     else  RT.ECDF(.)
     #   }
     # })
-
+    
     auc <- sapply(fseq, function(fv) {
-        ECDF(df, fv) %>% AUC(from = 1, to = RT.max)
-      })
+      ECDF(df, fv) %>% AUC(from = 1, to = RT.max)
+    })
     
     # auc <- sapply(funs,
     #               function(fun) {
     #                 if (is.null(fun)) 0
-    #                 else integrate(fun, lower = attr(fun, 'min') - 1, upper = RT.max, 
+    #                 else integrate(fun, lower = attr(fun, 'min') - 1, upper = RT.max,
     #                                subdivisions = 5e3) %>% {'$'(., 'value') / RT.max}
     #               })
     
-    p %<>% 
-      add_trace(type = 'scatterpolar', r = auc, 
-                theta = paste0('f:', fval_formatter(fseq)), 
+    p %<>%
+      add_trace(type = 'scatterpolar', r = auc,
+                theta = paste0('f:', fval_formatter(fseq)),
                 fill = 'toself', fillcolor = rgba_str,
                 marker = list(color = rgb_str), hoverinfo = 'text',
                 text = paste0('area: ', format(auc, digits = 2, nsmall = 2)),
-                name = algId) 
+                name = algId)
   }
   
   p %<>%
@@ -702,10 +1021,24 @@ plot_RT_AUC.DataSetList <- function(dsList, fstart = NULL,
            autosize = T, hovermode = 'compare',
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)')
   p
-
+  
 }
 
-plot_FV_PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog = F){
+#' Plot probablity density function of the function values of a DataSetList at
+#' a certain target runtime
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param runtime The target runtime
+#' @param show.sample Whether or not to show the individual function value samples
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the probablity density function of the runtimes at a the
+#'         target function value of the DataSetList
+#' @export
+#'
+#' @examples
+plot_FV_PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog = F, ...){
   points <- ifelse(show.sample, 'all', FALSE)
   
   N <- length(dsList)
@@ -722,7 +1055,7 @@ plot_FV_PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
     
     p %<>%
       add_trace(data = get_FV_sample(ds, runtime, output = 'long'),
-                x = ~algId, y = ~`f(x)`, split = ~algId, type = 'violin',
+                x = ~algId, y = ~'f(x)', split = ~algId, type = 'violin',
                 hoveron = "points+kde",
                 box = list(visible = T),
                 points = points,
@@ -740,12 +1073,25 @@ plot_FV_PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
   p
 }
 
-plot_FV_HIST.DataSetList <- function(dsList, runtime, plot_mode='overlay'){
+#' Plot histograms of the function values of a DataSetList at a certain target runtime
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param runtime The target runtime
+#' @param plot_mode How to plot the different hisograms for each algorithm. Can be either
+#'  'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the histograms of the function values at a the
+#'         target runtime of the DataSetList
+#' @export
+#'
+#' @examples
+plot_FV_HIST.DataSetList <- function(dsList, runtime, plot_mode='overlay', ...){
   n_algorithm <- length(dsList)
   colors <- color_palettes(n_algorithm)
   if (n_algorithm <= 10)
     nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
-  else 
+  else
     nrows <- ceiling(n_algorithm / 3.) # keep to columns for the histograms
   
   if (plot_mode == 'overlay') {
@@ -765,15 +1111,15 @@ plot_FV_HIST.DataSetList <- function(dsList, runtime, plot_mode='overlay'){
     algId <- attr(ds, 'algId')
     fce <- get_FV_sample(ds, runtime, output = 'long')
     # skip if all target samples are NA
-    if (sum(!is.na(fce$`f(x)`)) < 2)
+    if (sum(!is.na(fce$'f(x)')) < 2)
       next
     
-    res <- hist(fce$`f(x)`, breaks = nclass.FD, plot = F)
+    res <- hist(fce$'f(x)', breaks = nclass.FD, plot = F)
     breaks <- res$breaks
     plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
-                            text = paste0('<b>count</b>: ', res$counts, 
-                                          '<br><b>breaks</b>: [', 
-                                          breaks[-length(breaks)], ',', breaks[-1], ']')) 
+                            text = paste0('<b>count</b>: ', res$counts,
+                                          '<br><b>breaks</b>: [',
+                                          breaks[-length(breaks)], ',', breaks[-1], ']'))
     
     if (plot_mode == 'overlay') {
       p %<>%
@@ -782,7 +1128,7 @@ plot_FV_HIST.DataSetList <- function(dsList, runtime, plot_mode='overlay'){
                   marker = list(color = rgba_str,
                                 line = list(color = 'rgb(8,48,107)', width = 1.5)))
     } else if (plot_mode == 'subplot') {
-      p[[i]] %<>% 
+      p[[i]] %<>%
         add_trace(data = plot_data, x = ~x, y = ~y, width = ~width, type = 'bar',
                   name = algId, text = ~text, hoverinfo = 'text',
                   marker = list(color = rgba_str,
@@ -790,13 +1136,26 @@ plot_FV_HIST.DataSetList <- function(dsList, runtime, plot_mode='overlay'){
     }
   }
   
-  if (plot_mode == 'subplot') 
+  if (plot_mode == 'subplot')
     p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.02)
   
   p
 }
 
-plot_FCE_ECDF_PER_TARGET.DataSetList <- function(dsList, runtimes, scale.xlog = F){
+#' Plot the empirical cumulative distriburtion as a function of the target values of
+#' a DataSetList at certain target runtimes
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param runtimes The target runtimes
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the empirical cumulative distriburtion as a function of
+#' the fucntion values of the DataSetList at the target runtimes
+#' @export
+#'
+#' @examples
+plot_FCE_ECDF_PER_TARGET.DataSetList <- function(dsList, runtimes, scale.xlog = F, ...){
   #TODO: Fvals in legend need to be formatted properly
   runtimes <- runtimes[!is.na(runtimes)]
   req(length(runtimes) != 0)
@@ -816,12 +1175,12 @@ plot_FCE_ECDF_PER_TARGET.DataSetList <- function(dsList, runtimes, scale.xlog = 
     rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.35)')
     
     for (i in seq_along(runtimes)) {
-      funvals <- get_FV_sample(ds, runtimes[i], output = 'long')$`f(x)` %>% sort
+      funvals <- get_FV_sample(ds, runtimes[i], output = 'long')$'f(x)' %>% sort
       
       if (all(is.na(funvals)))
         next
       
-      tmp <- ecdf(funvals) 
+      tmp <- ecdf(funvals)
       density <- tmp(funvals)
       
       # position of the markers
@@ -832,7 +1191,7 @@ plot_FCE_ECDF_PER_TARGET.DataSetList <- function(dsList, runtimes, scale.xlog = 
         add_trace(data = NULL, x = funvals, y = density, type = 'scatter',
                   mode = 'lines', name = algId, showlegend = F,
                   legendgroup = paste0(k),
-                  line = list(color = rgb_str, width = 3)) %>% 
+                  line = list(color = rgb_str, width = 3)) %>%
         add_trace(data = NULL, x = x, y = y, type = 'scatter',
                   mode = 'markers',  legendgroup = paste0(k),
                   name = sprintf('%s, %.2e', algId, runtimes[i]),
@@ -845,15 +1204,31 @@ plot_FCE_ECDF_PER_TARGET.DataSetList <- function(dsList, runtimes, scale.xlog = 
   p
 }
 
+#' Plot the aggregated empirical cumulative distriburtion as a function of the function values of
+#' a DataSetList.
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param rt_min The starting runtime
+#' @param rt_max The final runtime
+#' @param rt_step The spacing between starting and final runtimes
+#' @param show.per_target Whether or not to show the individual ECDF-curves for each runtime
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the empirical cumulative distriburtion as a function of
+#' the function values of the DataSetList
+#' @export
+#'
+#' @examples
 plot_FV_ECDF_AGGR.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
                                           rt_step = NULL, scale.xlog = F,
-                                          show.per_target = F){
-
+                                          show.per_target = F, ...){
+  
   rt <- get_Runtimes(dsList)
   if(is.null(rt_min)) rt_min <- min(rt)
   if(is.null(rt_max)) rt_max <- max(rt)
   
-  rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step, 
+  rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step,
                    scale = ifelse(scale.xlog,'log','linear'))
   req(rt_seq)
   
@@ -875,22 +1250,22 @@ plot_FV_ECDF_AGGR.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
     rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.15)')
     rgba_str2 <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.8)')
     
-    fun <- get_FV_sample(ds, rt_seq, output = 'long')$`f(x)` %>% ecdf
+    fun <- get_FV_sample(ds, rt_seq, output = 'long')$'f(x)' %>% ecdf
     m <- fun(x)
-
+    
     df_plot <- data.frame(x = x, mean = m)
-
+    
     
     p %<>%
-       add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
-                mode = 'lines+markers', name = sprintf('%s', algId), 
+      add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
+                mode = 'lines+markers', name = sprintf('%s', algId),
                 showlegend = T, legendgroup = paste0(k),
                 line = list(color = rgb_str, width = 4.5),
                 marker = list(color = rgb_str, size = 11))
     
     if (show.per_target) {
       for (r in rt_seq) {
-        ce <- get_FV_sample(ds, r, output = 'long') %>% '$'(`f(x)`) %>% sort
+        ce <- get_FV_sample(ds, r, output = 'long') %>% '$'('f(x)') %>% sort
         if (all(is.na(ce)))
           next
         else {
@@ -911,8 +1286,20 @@ plot_FV_ECDF_AGGR.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
   p
 }
 
+#' Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param rt_min The starting runtime
+#' @param rt_max The final runtime
+#' @param rt_step The spacing between starting and final runtimes
+#' @param ... Arguments passed to other methods
+#'
+#' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
+#' @export
+#'
+#' @examples
 plot_FV_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
-                                    rt_step = NULL){
+                                    rt_step = NULL, ...){
   rt <- get_Runtimes(dsList)
   if(is.null(rt_min)) rt_min <- min(rt)
   if(is.null(rt_max)) rt_max <- max(rt)
@@ -935,7 +1322,7 @@ plot_FV_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
     
     # calculate ECDFs on user specified targets
     funs <- lapply(rt_seq, function(r) {
-      get_FV_sample(df, r, output = 'long')$`f(x)` %>% {
+      get_FV_sample(df, r, output = 'long')$'f(x)' %>% {
         if (all(is.na(.))) NULL
         else  {
           f <- ecdf(.)
@@ -971,11 +1358,26 @@ plot_FV_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
   
 }
 
-plot_PAR_Line.DataSetList <- function(dsList, f_min = NULL, f_max = NULL, 
+#' Plot the parameter values recorded in a DataSetList
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param f_min The starting function value.
+#' @param f_max The final function value.
+#' @param show.mean Whether or not to show the mean parameter values
+#' @param show.median Whether or not to show the median parameter values
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param algids Which algorithms from dsList to use
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of for every recorded parameter in the DataSetList
+#' @export
+#'
+#' @examples
+plot_PAR_Line.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
                                       algids = 'all',
                                       scale.xlog = F, scale.ylog = F,
-                                      show.mean = T, show.median = F
-                                      ){
+                                      show.mean = T, show.median = F, ...){
   #TODO: clean this up
   req(xor(show.mean,show.median))
   
@@ -997,11 +1399,11 @@ plot_PAR_Line.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
   n_alg <- length(algorithms)
   colors <- color_palettes(n_alg)
   
-  nrows <- ceiling(n_param / 2) 
+  nrows <- ceiling(n_param / 2)
   # TODO: improve the efficiency of plotting here
-  p <- lapply(seq(n_param), 
+  p <- lapply(seq(n_param),
               function(i) {
-                plot_ly_default(y.title = par_name[i]) %>% 
+                plot_ly_default(y.title = par_name[i]) %>%
                   layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
                          yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
               })
@@ -1012,7 +1414,7 @@ plot_PAR_Line.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
     for (j in seq(n_param)) {
       if (j == 1)
         showlegend <- T
-      else 
+      else
         showlegend <- F
       
       name <- par_name[j]
@@ -1020,19 +1422,19 @@ plot_PAR_Line.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
       
-      p[[j]] %<>% 
+      p[[j]] %<>%
         add_trace(data = dt_plot, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-                  line = list(color = rgba_str, width = 0),  
-                  showlegend = F, legendgroup = ~algId, name = 'mean +/- sd') %>% 
+                  line = list(color = rgba_str, width = 0),
+                  showlegend = F, legendgroup = ~algId, name = 'mean +/- sd') %>%
         add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
                   fill = 'tonexty',  line = list(color = 'transparent'),
-                  fillcolor = rgba_str, showlegend = F, legendgroup = ~algId, 
+                  fillcolor = rgba_str, showlegend = F, legendgroup = ~algId,
                   name = 'mean +/- sd')
       
       if (show.mean)
-        p[[j]] %<>% add_trace(data = dt_plot, x = ~target, y = ~mean, 
-                              type = 'scatter', 
-                              mode = 'lines+markers', 
+        p[[j]] %<>% add_trace(data = dt_plot, x = ~target, y = ~mean,
+                              type = 'scatter',
+                              mode = 'lines+markers',
                               marker = list(color = rgb_str),
                               line = list(color = rgb_str),
                               name = alg,
@@ -1050,37 +1452,508 @@ plot_PAR_Line.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
                               showlegend = showlegend)
     }
   }
-
-  subplot(p, nrows = nrows, titleX = F, titleY = T, margin = 0.05) %>% 
-    add_annotations(x = 0.5 , y = -0.18, text = "best-so-far f(x)-value", 
+  
+  subplot(p, nrows = nrows, titleX = F, titleY = T, margin = 0.05) %>%
+    add_annotations(x = 0.5 , y = -0.18, text = "best-so-far f(x)-value",
                     showarrow = F, xref = 'paper', yref = 'paper',
                     font = list(size = 22, family = 'sans-serif'))
 }
 
-plot_RT_ECDF_MULTI.DataSetList <- function(dsList, targets = NULL, dim = NULL,
-                                           funcid = NULL){
+#' Plot the aggregated empirical cumulative distriburtion as a function of the running times of
+#' a DataSetList. Aggregated over multiple functions or dimensions.
+#'
+#' @param dsList A DataSetList.
+#' @param targets The target function values. Specified in a data.frame, as can be generated
+#' by the function 'get_default_ECDF_targets'
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of the empirical cumulative distriburtion as a function of
+#' the running times of the DataSetList
+#' @export
+#'
+#' @examples
+plot_RT_ECDF_MULTI.DataSetList <- function(dsList, targets = NULL, ...){
   
-  algId <- unique(attr(dsList,"algId"))
+  if (is.null(targets))
+    targets <- get_default_ECDF_targets(dsList)
+  
+  algId <- unique(attr(dsList, 'algId'))
   p <- plot_ly_default(x.title = "function evaluations",
                        y.title = "Proportion of (run, target, ...) pairs")
   
+  rts <- get_Runtimes(dsList)
+  x <- seq(min(rts), max(rts), length.out = 50)
+  colors <- color_palettes(length(algId))
+  
   for (i in seq_along(algId)) {
-    data <- dsList
-    if(!is.null(dim))
-      data <- subset(data,DIM == dim)
-    if(!is.null(funcid))
-      data <- subset(data,funcId == funcid)
+    Id <- algId[i]
+    data <- subset(dsList, algId == Id)
+    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
     
-    rts = get_Runtimes(data)
+    fun <- ECDF(data, ftarget = targets, funcId = as.integer(names(targets)))
+    if (is.null(fun)) next
     
-    algId <- algId[[i]]
-    df_plot <- calc_ECDF_MULTI(data, algId, targets, rts )
-    
-    p %<>% add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
-                     mode = 'lines+markers',name = sprintf('%s', algId), 
-                     showlegend = T, #, legendgroup = paste0(k),
-                     line = list( width = 4.5),
-                     marker = list(size = 11))
+    df_plot <- data.frame(x = x, ecdf = fun(x))
+    p %<>% add_trace(data = df_plot, x = ~x, y = ~ecdf, type = 'scatter',
+                     mode = 'lines+markers', name = sprintf('%s', Id),
+                     showlegend = T,
+                     line = list(color = rgb_str, width = 3),
+                     marker = list(color = rgb_str, size = 10))
   }
+  p
+  
+}
+
+#' Plot ERT-plots for multiple functions or dimensions
+#'
+#' @param dsList A DataSetList (should consist of only one function OR dimension).
+#' @param plot_mode How the plots should be created. Can be 'subplot' for one plot
+#' per function/dimension or 'overlay' for on plot containing all functions/dimensions
+#' @param aggr_on Whether to create a plot for each function ('funcId') or dimension ('DIM')
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of ERT-values of the DataSetList
+#' @export
+#'
+#' @examples
+plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog = F,
+                                       scale.ylog = F, scale.reverse = F,
+                                       aggr_on = 'funcId', ...){
+  
+  N <- length(get_AlgId(dsList))
+  colors <- color_palettes(N)
+  
+  in_legend <- integer(N)
+  names(in_legend) <- get_AlgId(dsList)
+  names(colors) <- get_AlgId(dsList)
+  
+  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  M <- length(aggr_attr)
+  if (M <= 10)
+    nrows <- ceiling(M / 2.) # keep to columns for the histograms
+  else
+    nrows <- ceiling(M / 3.) # keep to columns for the histograms
+  
+  if (plot_mode == 'overlay') {
+    p <- plot_ly_default(x.title = "function evaluations", y.title = "ERT")
+  } else if (plot_mode == 'subplot') {
+    p <- lapply(seq(M), function(x) {
+      plot_ly_default(x.title = "function evaluations", y.title = "ERT") %>%
+        add_annotations(text=paste0(ifelse(aggr_on=='funcId', "F ", "D "),aggr_attr[[x]]),
+                        showarrow=F, xanchor = 'center', yanchor = 'top',
+                        y = 1.15, yref = 'paper', x = 0.5, xref= 'paper')
+    })
+  }
+  
+  for (j in seq_along(aggr_attr)) {
+    dsList_filetered <- if(aggr_on == 'funcId') subset(dsList,funcId==aggr_attr[[j]])
+    else subset(dsList,DIM==aggr_attr[[j]])
+    
+    Fall <- get_Funvals(dsList_filetered)
+    Fstart <- min(Fall)
+    Fstop <- max(Fall)
+    
+    Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
+    if (length(Fseq) == 0) return(NULL)
+    
+    dt <- get_RT_summary(dsList_filetered, ftarget = Fseq)
+    dt[, `:=`(upper = mean + sd, lower = mean - sd)]
+    
+    
+    for (i in seq_along(dsList_filetered)){
+      df <- dsList_filetered[[i]]
+      algId <- attr(df, 'algId')
+      to_show_legend <- (in_legend[[algId]] == 0)
+      in_legend[[algId]] <- 1
+      ds_ERT <- dt[algId == attr(df, 'algId') &
+                     funcId == attr(df, 'funcId') &
+                     DIM == attr(df, 'DIM')]
+      
+      color <- colors[[algId]]
+      rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
+      
+      
+      
+      if (plot_mode == 'overlay') {
+        p %<>%
+          add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
+                    mode = 'lines+markers',
+                    marker = list(color = rgb_str),
+                    line = list(color = rgb_str),name = algId, showlegend=to_show_legend)
+      } else if (plot_mode == 'subplot') {
+        p[[j]] %<>%
+          add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
+                    mode = 'lines+markers',
+                    marker = list(color = rgb_str),
+                    line = list(color = rgb_str),name = algId, showlegend=to_show_legend)
+      }
+    }
+  }
+  
+  if (plot_mode == 'subplot') {
+    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.04)
+  }
+  p %<>%
+    layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
+           yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
+  if (scale.reverse)
+    p %<>% layout(xaxis = list(autorange = "reversed"))
+  p
+}
+
+#' Plot ERT-based comparison over multiple functions or dimensions
+#'
+#' @param dsList A DataSetList (should consist of only one function OR dimension).
+#' @param plot_mode How the plots should be created. Can be 'line' or 'radar'
+#' @param aggr_on Whether to compare on functions ('funcId') or dimensions ('DIM')
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param maximize Wheter or not to the data is of a maximization problem
+#' @param targets Custom list of function-value targets, one for each function or dimension.
+#' @param use_rank Wheter to use a ranking system. If False, the actual ERT-values will be used.
+#' @param erts Pre-calculated ERT-values for the provided targets. Created by the max_ERTs function
+#' of DataSetList. Can be provided to prevent needless computation in recalculating ERTs when recreating
+#' this plot.
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of ERT-based comparison on the provided functions or dimensions of the DataSetList
+#' @export
+#'
+#' @examples
+plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL,
+                                      plot_mode = 'radar', use_rank = F,
+                                      scale.ylog = T, maximize = T,
+                                      erts = NULL, ...){
+  if (is.null(erts))
+    erts <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, maximize = maximize)
+  if (is.null(erts))
+    return(NULL)
+  
+  N <- length(get_AlgId(dsList))
+  colors <- color_palettes(N)
+  
+  in_legend <- integer(N)
+  names(in_legend) <- get_AlgId(dsList)
+  names(colors) <- get_AlgId(dsList)
+  
+  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  if(!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
+  
+  second_aggr <- if(aggr_on == 'funcId') get_DIM(dsList) else get_funcId(dsList)
+  if(length(second_aggr) >1 ) return(NULL)
+  
+  plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
+  
+  p <- if(plot_mode == "radar")  plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
+  else plot_ly_default(title = plot_title)
+  
+  if (use_rank){
+    ertranks <- seq(0, 0, length.out = length(get_AlgId(dsList)))
+    for (i in seq_along(aggr_attr)){
+      ertranks <- rbind(ertranks, rank(erts[i, ]))
+    }
+    dataert <- ertranks[-1, ]
+  }
+  else {
+    dataert <- erts
+  }
+  
+  for (i in seq_along(get_AlgId(dsList))){
+    algId <- get_AlgId(dsList)[[i]]
+    color <- colors[[algId]]
+    data <- dataert[,i]
+    rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
+    if(plot_mode == "radar"){
+      p %<>%
+        add_trace(type = 'scatterpolar', r = data,
+                  theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
+                  fill = 'toself', connectgaps = T, fillcolor = rgba_str,
+                  marker = list(color = rgb_str), hoverinfo = 'text',
+                  text = paste0('ERT: ', format(erts[,i], digits = 3, nsmall = 3)),
+                  name = algId, legendgroup = algId)
+      #TODO: cleaner solution!!!!!
+      data2 <- data
+      data2[is.infinite(data2)] <- 10e7 * (1+(i/20))
+      data2[data2<10e7] <- NA
+      p %<>%
+        add_trace(type='scatterpolar', mode='markers', r = data2,
+                  theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
+                  marker = list(color = rgb_str, symbol = 'diamond', size = '10'), hoverinfo = 'text',
+                  text = paste0('ERT: ', format(erts[,i], digits = 3, nsmall = 3)),
+                  showlegend = F, legendgroup = algId)
+      data2 <- data
+      data2[is.na(data2)] <- 10e7 * (1+(i/20))
+      data2[data2<10e7] <- NA
+      p %<>%
+        add_trace(type='scatterpolar', mode='markers', r = data2,
+                  theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
+                  marker = list(color = rgb_str, symbol = 'x', size = '10'), hoverinfo = 'text',
+                  text = paste0('ERT: ', format(erts[,i], digits = 3, nsmall = 3)),
+                  showlegend = F, legendgroup = algId)
+    }
+    else{
+      p %<>% add_trace(x = aggr_attr, y = data, type = 'scatter',
+                       mode = 'lines+markers',
+                       marker = list(color = rgb_str), hoverinfo = 'text',
+                       text = paste0('ERT: ', format(erts[,i], digits = 3, nsmall = 3)),
+                       line = list(color = rgb_str), name = algId, legendgroup = algId)
+      data2 <- data
+      data2[is.infinite(data2)] <- 10e7 * (1+(i/20))
+      data2[data2<10e7] <- NA
+      p %<>%
+        add_trace(type='scatter', mode='markers', x = aggr_attr, y = data2,
+                  marker = list(color = rgb_str, symbol = 'diamond', size = '10'), hoverinfo = 'text',
+                  text = paste0('ERT: ', format(erts[,i], digits = 3, nsmall = 3)),
+                  showlegend = F, legendgroup = algId )
+      data2 <- data
+      data2[is.na(data2)] <- 10e7 * (1+(i/20))
+      data2[data2<10e7] <- NA
+      p %<>%
+        add_trace(type='scatter', mode='markers', x = aggr_attr, y = data2,
+                  marker = list(color = rgb_str, symbol = 'x', size = '10'), hoverinfo = 'text',
+                  text = paste0('ERT: ', format(erts[,i], digits = 3, nsmall = 3)),
+                  showlegend = F, legendgroup = algId )
+      
+    }
+  }
+  if (plot_mode == "radar"){
+    if(use_rank)
+      p %<>%
+      layout(polar = list(radialaxis = list(type = 'linear', visible=F, autorange = 'reversed')))
+    else
+      p %<>%
+      layout(polar = list(radialaxis = list(type = 'log', visible=F, autorange = 'reverse')))
+  }
+  else{
+    if(use_rank)
+      p %<>%
+      layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
+             xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+    else
+      p %<>%
+      layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
+             xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+  }
+  p
+}
+
+#' Plot expected function value-based comparison over multiple functions or dimensions
+#'
+#' @param dsList A DataSetList (should consist of only one function OR dimension).
+#' @param plot_mode How the plots should be created. Can be 'line' or 'radar'
+#' @param aggr_on Whether to compare on functions ('funcId') or dimensions ('DIM')
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param runtimes Custom list of function-value targets, one for each function or dimension.
+#' @param use_rank Wheter to use a ranking system. If False, the actual expected function-
+#' values will be used.
+#' @param fvs Pre-calculated expected function-values for the provided runtimes Created by the
+#' max_ERTs function of DataSetList. Can be provided to prevent needless computation
+#' in recalculating ERTs when recreating this plot.
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of expected function value-based comparison on the provided functions
+#'  or dimensions of the DataSetList
+#' @export
+#'
+#' @examples
+plot_FCE_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NULL,
+                                      plot_mode = 'radar', use_rank = F,
+                                      scale.ylog = T, fvs = NULL, ...){
+  if (is.null(fvs))
+    fvs <- mean_FVs(dsList, aggr_on = aggr_on, runtimes = runtimes)
+  if (is.null(fvs))
+    return(NULL)
+  
+  N <- length(get_AlgId(dsList))
+  colors <- color_palettes(N)
+  
+  in_legend <- integer(N)
+  names(in_legend) <- get_AlgId(dsList)
+  names(colors) <- get_AlgId(dsList)
+  
+  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  if(!is.null(runtimes) && length(runtimes) != length(aggr_attr)) runtimes <- NULL
+  
+  second_aggr <- if(aggr_on == 'funcId') get_DIM(dsList) else get_funcId(dsList)
+  if(length(second_aggr) >1 ) return(NULL)
+  
+  plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
+  
+  p <- if(plot_mode == "radar")  plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
+  else plot_ly_default(title = plot_title)
+  
+  if (use_rank){
+    ertranks <- seq(0, 0, length.out = length(get_AlgId(dsList)))
+    fvs2 <- -fvs
+    fvs2[is.na(fvs2)] <- Inf
+    for (i in seq_along(aggr_attr)){
+      ertranks <- rbind(ertranks, rank(fvs2[i, ]))
+    }
+    dataert <- ertranks[-1, ]
+  }
+  else {
+    dataert <- fvs
+  }
+  
+  for (i in seq_along(get_AlgId(dsList))){
+    algId <- get_AlgId(dsList)[[i]]
+    color <- colors[[algId]]
+    data <- dataert[,i]
+    rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
+    if(plot_mode == "radar"){
+      p %<>%
+        add_trace(type = 'scatterpolar', r = data,
+                  theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
+                  fill = 'toself', connectgaps = T, fillcolor = rgba_str,
+                  marker = list(color = rgb_str), hoverinfo = 'text',
+                  text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
+                  name = algId, legendgroup = algId)
+      #TODO: cleaner solution!!!!!
+      data2 <- data
+      data2[is.na(data2)] <- 0
+      data2[!is.na(data)] <- NA
+      p %<>%
+        add_trace(type='scatterpolar', mode='markers', r = data2,
+                  theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
+                  marker = list(color = rgb_str, symbol = 'x', size = '10'), hoverinfo = 'text',
+                  text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
+                  showlegend = F, legendgroup = algId, fill = 'nofill')
+    }
+    else{
+      p %<>% add_trace(x = aggr_attr, y = data, type = 'scatter',
+                       mode = 'lines+markers',
+                       marker = list(color = rgb_str), hoverinfo = 'text',
+                       text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
+                       line = list(color = rgb_str), name = algId, legendgroup = algId)
+      data2 <- data
+      data2[is.na(data2)] <- 0
+      data2[!is.na(data)] <- NA
+      p %<>%
+        add_trace(type='scatter', mode='markers', x = aggr_attr, y = data2,
+                  marker = list(color = rgb_str, symbol = 'x', size = '10'), hoverinfo = 'text',
+                  text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
+                  showlegend = F, legendgroup = algId )
+      
+    }
+  }
+  if (plot_mode == "radar"){
+    if(use_rank)
+      p %<>%
+      layout(polar = list(radialaxis = list(type = 'linear', visible=F, autorange='reversed')))
+    else
+      p %<>%
+      layout(polar = list(radialaxis = list(type = 'log', visible=F)))
+  }
+  else{
+    if(use_rank)
+      p %<>%
+      layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
+             xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+    else
+      p %<>%
+      layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
+             xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+  }
+  p
+}
+#' Plot expected function value-plots for multiple functions or dimensions
+#'
+#' @param dsList A DataSetList (should consist of only one function OR dimension).
+#' @param plot_mode How the plots should be created. Can be 'subplot' for one plot
+#' per function/dimension or 'overlay' for on plot containing all functions/dimensions
+#' @param aggr_on Whether to create a plot for each function ('funcId') or dimension ('DIM')
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param ... Arguments passed to other methods
+#'
+#' @return A plot of expected function values of the DataSetList
+#' @export
+#'
+#' @examples
+plot_FCE_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog = F,
+                                       scale.ylog = F, aggr_on = 'funcId', ...){
+  
+  N <- length(get_AlgId(dsList))
+  colors <- color_palettes(N)
+  
+  in_legend <- integer(N)
+  names(in_legend) <- get_AlgId(dsList)
+  names(colors) <- get_AlgId(dsList)
+  
+  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  M <- length(aggr_attr)
+  if (M <= 10)
+    nrows <- ceiling(M / 2.) # keep to columns for the histograms
+  else
+    nrows <- ceiling(M / 3.) # keep to columns for the histograms
+  
+  if (plot_mode == 'overlay') {
+    p <- plot_ly_default(x.title = "function evaluations", y.title = "ERT")
+  } else if (plot_mode == 'subplot') {
+    p <- lapply(seq(M), function(x) {
+      plot_ly_default(x.title = "function evaluations", y.title = "ERT") %>%
+        add_annotations(text=paste0(ifelse(aggr_on=='funcId', "F ", "D "),aggr_attr[[x]]),
+                        showarrow=F, xanchor = 'center', yanchor = 'top',
+                        y = 1.15, yref = 'paper', x = 0.5, xref= 'paper')
+    })
+  }
+  
+  for (j in seq_along(aggr_attr)) {
+    dsList_filetered <- if(aggr_on == 'funcId') subset(dsList,funcId==aggr_attr[[j]])
+    else subset(dsList,DIM==aggr_attr[[j]])
+    
+    RTall <- get_Runtimes(dsList_filetered)
+    RTstart <- min(RTall)
+    RTstop <- max(RTall)
+    
+    RTseq <- seq_FV(RTall, RTstart, RTstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
+    if (length(RTseq) == 0) return(NULL)
+    
+    dt <- get_FV_summary(dsList_filetered, runtime = RTseq)
+    dt[, `:=`(upper = mean + sd, lower = mean - sd)]
+    
+    
+    for (i in seq_along(dsList_filetered)){
+      df <- dsList_filetered[[i]]
+      algId <- attr(df, 'algId')
+      to_show_legend <- (in_legend[[algId]] == 0)
+      in_legend[[algId]] <- 1
+      ds_FCE <- dt[algId == attr(df, 'algId') &
+                     funcId == attr(df, 'funcId') &
+                     DIM == attr(df, 'DIM')]
+      
+      color <- colors[[algId]]
+      rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
+      
+      
+      
+      if (plot_mode == 'overlay') {
+        p %<>%
+          add_trace(data = ds_FCE, x = ~runtime, y = ~mean, type = 'scatter',
+                    mode = 'lines+markers',
+                    marker = list(color = rgb_str),
+                    line = list(color = rgb_str),name = algId, showlegend=to_show_legend)
+      } else if (plot_mode == 'subplot') {
+        p[[j]] %<>%
+          add_trace(data = ds_FCE, x = ~runtime, y = ~mean, type = 'scatter',
+                    mode = 'lines+markers',
+                    marker = list(color = rgb_str),
+                    line = list(color = rgb_str),name = algId, showlegend=to_show_legend)
+      }
+    }
+  }
+  
+  if (plot_mode == 'subplot') {
+    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.04)
+  }
+  p %<>%
+    layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
+           yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
   p
 }

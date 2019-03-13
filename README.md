@@ -18,7 +18,7 @@ This software is mainly written in __R__. To run it directly from the source cod
 After R environment is correctly installed on you machine, several R packages are needed to execute the sorftware. Please start up the __R console__, which can be done (in case you're not familiar with R) by either executing command `R` in your system terminal or open the R application. Once it is done, please copy-paste and execute the following commands into the R console to install all depedencies.
 
 ```r
-install.packages(c('shiny', 'shinyjs', 'shinydashboard', 'magrittr', 'dplyr', 'reshape2', 'data.table', 'markdown', 'Rcpp', 'plotly'))
+install.packages(c('shiny', 'shinyjs', 'shinydashboard', 'magrittr', 'dplyr', 'reshape2', 'data.table', 'markdown', 'Rcpp', 'plotly','colorRamps'))
 ```
 
 Note that it is important to check if aforementioned packages are correctly installed. The easiest method is to test if those packasges can be loaded:
@@ -34,6 +34,7 @@ library(data.table)
 library(markdown)
 library(Rcpp)
 library(plotly)
+library(colorRamps)
 ```
 
 Error messages will be shown in your R console if there is any installation issue.
@@ -252,6 +253,7 @@ If you have any questions, comments, suggestions or pull requests, please don't 
 The development team is:
 
 * [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
+* Diederick Vermetten, <i>Leiden Institute of Advanced Computer Science</i>,
 * [Carola Doerr](http://www-desir.lip6.fr/~doerr/), <i>CNRS and Sorbonne University</i>, 
 * [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
 * [Sander van Rijn](https://www.universiteitleiden.nl/en/staffmembers/sander-van-rijn#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,

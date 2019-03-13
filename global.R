@@ -54,6 +54,8 @@ PARSample_csv_name <- parse(text = "paste0('PARSample-', paste(Sys.Date(), input
                                     paste0('F', input$FUNCID_INPUT), fstart, fstop, fstep, 
                                     sep = '-'), '.csv')")
 
+max_samples <- 100
+
 FIG_NAME_ERT_PER_FUN <- parse(text = "paste0('ERT-', Sys.Date(), '.', input$FIG_FORMAT_ERT_PER_FUN)")
 FIG_NAME_RT_PMF <- parse(text = "paste0('RT_PMF-', Sys.Date(), '.', input$FIG_FORMAT_RT_PMF)")
 FIG_NAME_RT_HIST <- parse(text = "paste0('RT_HIST-', Sys.Date(), '.', input$FIG_FORMAT_RT_HIST)")
@@ -101,6 +103,16 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
     to <- trans(to)
   }
   
+  #Avoid generating too many samples
+  if (!is.null(by)) {
+    nr_samples_generated <- (to - from) / by
+    if (nr_samples_generated > max_samples) {
+      by <- NULL
+      if (is.null(length.out))
+        length.out <- max_samples
+    }
+  }
+
   if (is.null(by) || by > to - from) {
     if (is.null(length.out)) {
       length.out <- 10
@@ -139,7 +151,17 @@ seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
     if (!is.null(by))
       by <- log10(by)
   }
-
+  
+  #Avoid generating too many samples
+  if(!is.null(by)){
+    nr_samples_generated <- (to-from)/by
+    if (nr_samples_generated > max_samples){
+      by <- NULL
+      if(is.null(length.out))
+        length.out <- max_samples
+    }
+  }
+  
   # Also reset by if it is too large
   if (is.null(by) || by > to - from) {
     if (is.null(length.out)) {

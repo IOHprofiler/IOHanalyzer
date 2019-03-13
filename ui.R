@@ -13,70 +13,13 @@ for (f in list.files('ui', pattern = '.R', full.names = T)) {
   source(f)
 }
 
-# TODO: rename most of the id of the control widgets
-FCE_GRID_INPUT_TEXT <- '<p align="justify">Set the range and the granularity of the results. 
-                        The table will show function values that have been reached within evenly
-                        spaced evaluation budgets.</p>'
-
-RT_MIN_LABEL <- HTML('<p>\\(B_{\\text{min}}:\\) smallest budget value</p>')
-RT_MAX_LABEL <- HTML('<p>\\(B_{\\text{max}}:\\) largest budget value</p>')
-RT_STEP_LABEL <- HTML('<p>\\(\\Delta B:\\) granularity (step size)</p>')
-
-F_MIN_LABEL <- HTML('<p>\\(f_{\\text{min}}:\\) smallest target value</p>')
-F_MAX_LABEL <- HTML('<p>\\(f_{\\text{max}}:\\) largest target value</p>')
-F_STEP_LABEL <- HTML('<p>\\(\\Delta f:\\) granularity (step size)</p>')
-
-header <- dashboardHeader(title = HTML(paste0('<h4><div align="center"><b>', IOHprofiler, '</b><br>
-                                       <i>Post-Processing</i></div></h4>')))
-
-HTML_P <- function(s) HTML(paste0('<p align="left" style="font-size:120%;">', s, '</p>'))
-
-
 # The side bar layout ---------------------------------------------
 sidebar <- dashboardSidebar(
   useShinyjs(),
   hr(),
-  sidebarMenu(id = "tabs",
-              menuItem("Upload Data", tabName = "upload", icon = icon('upload', lib = 'glyphicon'), 
-                       selected = T),
-              
-              menuItem("Fixed-Target Results", tabName = "ERT", icon = icon("file-text-o"),
-                       menuSubItem("Data Summary", tabName = "ERT_data", icon = icon("table")),
-                       menuSubItem("Expected Runtime", tabName = "ERT_convergence", icon = icon("line-chart"), selected = F),
-                       menuSubItem("probability Mass Function", tabName = "RT_PMF", icon = icon("bar-chart"), selected = F),
-                       menuSubItem("Cumulative Distribution", tabName = "RT_ECDF", icon = icon("line-chart"), selected = F)
-              ),
-              
-              menuItem("Fixed-Budget Results", tabName = "FCE", icon = icon("file-text-o"),
-                       menuSubItem("Data Summary", tabName = "FCE_DATA", icon = icon("table")),
-                       menuSubItem("Expected Target Value", tabName = "FCE_convergence", icon = icon("bar-chart")),
-                       menuSubItem("probability Density Function", tabName = "FCE_PDF", icon = icon("bar-chart"), selected = F),
-                       menuSubItem("Cumulative Distribution", tabName = "FCE_ECDF", icon = icon("line-chart"))
-              ),
-              
-              menuItem("Algorithm Parameters", tabName = "PARAMETER", icon = icon('file-text-o')),
-              menuItem("ReadMe", tabName = "readme", icon = icon("mortar-board")),
-              menuItem("About", tabName = "about", icon = icon("question"))
-              
-  ),
+  sidebar_menu(),
   hr(),
-  conditionalPanel("input.tabs!='upload' && input.tabs!='readme' && input.tabs!='about'",
-                   fluidRow(
-                     column(11,
-                            selectInput("FUNCID_INPUT", 
-                                        label = HTML('<p style="font-size:120%;">Please select the function ID</p>'), 
-                                        choices = NULL, selected = NULL)
-                     )
-                   ),
-                   
-                   fluidRow(
-                     column(11,
-                            selectInput("DIM_INPUT",
-                                        label = HTML('<p style="font-size:120%;">Please select the dimension</p>'), 
-                                        choices = NULL, selected = NULL)
-                     )
-                   )
-  )
+  DIM_fID_panel()
 )
 
 body <- dashboardBody(
@@ -126,33 +69,9 @@ body <- dashboardBody(
     # data uploading functionalities -----------------
     tabItem(tabName = 'upload',
             fluidRow(
-              column(width = 6,
-                     box(title = HTML('<p style="font-size:120%;">Upload Data</p>'), width = 12,
-                         solidHeader = T, status = "primary", collapsible = F, height = '620px',
-                         sidebarPanel(
-                           width = 12,
-                           
-                           selectInput('DATA_SRC_FORMAT', label = HTML('<p align="left" style="font-size:120%;">Please choose the format of your data sets</p>'),
-                                       choices = c(AUTOMATIC,IOHprofiler, COCO, TWO_COL), selected = AUTOMATIC, width = '50%'),
-                           selectInput('DATA_SRC_MINMAX', label = HTML('<p align="left" style="font-size:100%;">Use maximization or minimization?</p>'),
-                                       choices = c(AUTOMATIC,"MAXIMIZE", "MINIMIZE"), selected = AUTOMATIC, width = '50%'),
-                           
-                           HTML('<p align="justify" style="font-size:120%;">When the data set is huge, the alignment
-                                can take a very long time. In this case, you could toggle the efficient mode to subsample 
-                                the data set. However, the precision of data will be compromised.</p>'),
-                           checkboxInput('SUBSAMPLING', label = HTML('<p align="left" style="font-size:120%;">Efficient mode</p>'), value = F),
-                           
-                           fileInput("ZIP", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>zip file</i> containing the benchmark data</p>'),
-                                     multiple = TRUE),
-                                     # accept = c("Application/zip", ".zip")),
-                           
-                           # TODO: keep this for the local version
-                           # shinyDirButton('directory', 'Browse the folder', 
-                                           # title = 'Please choose a directory containing the benchmark data'),
-                           HTML('<p align="left" style="font-size:120%;"><b>Remove all data you uploaded</b></p>'),
-                           actionButton('RM_DATA', 'Clear data')
-                         )
-                     )
+              column(
+                width = 6, 
+                upload_box()
               )
               # column(width = 6,
               #        box(title = HTML('<p style="font-size:120%;">Load Data from repository</p>'), width = 12,
@@ -196,505 +115,67 @@ body <- dashboardBody(
     ),
     
     # RT (RunTime): Data Summary -----------------
-    tabItem(tabName = 'ERT_data', 
+    tabItem(
+      tabName = 'ERT_data', 
       fluidRow(
-        column(width = 12,
-               #TODO: better naming scheme
-               box(title = HTML('<p style="font-size:120%;">Overview of runtime values</p>'), width = 12,
-                   solidHeader = T, status = "primary", collapsible = T,
-                   sidebarPanel(
-                     width = 3,
-                     HTML('<p align="justify">Select which algorithms to show.</p>'),
-                     
-                     # TODO: find better naming scheme for 'fstart, fstop, singleF'
-                     selectInput('ALGID_INPUT_SUMMARY', 'Algorithms', choices = NULL, selected = NULL),
-                     downloadButton("downloadData_summary", "Save this table as csv")
-                     ),
-                   
-                   mainPanel(
-                     width = 9,
-                     tableOutput('table_FV_summary_condensed')
-                   )
-                 ),
-               
-               box(title = HTML('<p style="font-size:120%;">Runtime Statistics at Chosen Target Values</p>'), width = 12,
-                   solidHeader = T, status = "primary", collapsible = T, collapsed = T,
-                   sidebarPanel(
-                     width = 3,
-                     HTML('<p align="justify">Set the range and the granularity of the results.
-                          The table will show fixed-target runtimes for evenly spaced target values.</p>'),
-                     
-                     # TODO: find better naming scheme for 'fstart, fstop, singleF'
-                     textInput('fstart', label = F_MIN_LABEL, value = ''),
-                     textInput('fstop', label = F_MAX_LABEL, value = ''),
-                     textInput('fstep', label = F_STEP_LABEL, value = ''),
-                     checkboxInput('singleF', label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
-                                                           Once toggled, only \\(f_{\\text{min}}\\) is 
-                                                           used to generate the table on the right.</p>'), value = FALSE),
-                     selectInput('ALGID_INPUT', 'Algorithms', choices = NULL, selected = NULL),
-                     downloadButton("downloadData", "Save this table as csv")
-                   ),
-                   
-                   mainPanel(
-                     width = 9,
-                     HTML(paste0('<div style="font-size:120%;">', includeMarkdown('RMD/RT_SUMMARY_TABLE.Rmd'),'</div>')),
-                     tableOutput('table_RT_summary')
-                   )
-               ),
-               
-               box(title = HTML('<p style="font-size:120%;">Original Runtime Samples</p>'), width = 12,
-                   solidHeader = TRUE, status = "primary", collapsible = TRUE, collapsed = T,
-                   sidebarPanel(
-                     width = 3,
-                     HTML('<p align="justify">Set the range and the granularity of the results.
-                          The table will show fixed-target runtimes for evenly spaced target values.</p>'),
-                     
-                     textInput('F_MIN_SAMPLE', label = F_MIN_LABEL, value = ''),
-                     textInput('F_MAX_SAMPLE', label = F_MAX_LABEL, value = ''),
-                     textInput('F_STEP_SAMPLE', label = F_STEP_LABEL, value = ''),
-                     checkboxInput('F_SAMPLE_SINGLE', 
-                                    label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
-                                                  Once toggled, only \\(f_{\\text{min}}\\) is 
-                                                  used to generate the table on the right.</p>'), value = FALSE),
-                     
-                     # TODO: do we need this log scaling?
-                     # checkboxInput('F_LOGSPACE_DATA_SUMMARY',
-                     #               label = HTML('Evenly space target values in \\(log_{10}\\) space')),
-                     selectInput('ALGID_RAW_INPUT', 'Algorithms', 
-                                 choices = NULL, selected = NULL),
-                     
-                     selectInput('RT_download_format', 'Format of the csv', 
-                                 choices = c('long', 'wide'), selected = 'wide'),
-                     downloadButton("download_runtime", "Save the aligned runtime samples as csv")
-                     ),
-                   
-                   mainPanel(
-                     width = 9,
-                     HTML('<p style="font-size:120%;">This table shows for each selected algorithm \\(A\\), 
-                          each selected target value \\(f(x)\\), and each run \\(r\\) 
-                          the number \\(T(A,f(x),r)\\) of evaluations performed by the 
-                          algorithm until it evaluated for the first time a solution of 
-                          quality at least \\(f(x)\\).</p>'),
-                     dataTableOutput('table_RT_sample')
-                    )
-               )
-          )
+        column(
+          width = 12,
+          rt_overview_box(),
+          rt_stats_box(),
+          rt_sample_box()
+        )
       )
     ),
     
     # RT: Expected Convergence Curve ---------------------------------------------
-    tabItem(tabName = 'ERT_convergence', 
-            fluidRow(
-              column(width = 12,
-                     box(title = HTML('<p style="font-size:120%;">Expected Runtime 
-                                      (per function)</p>'), 
-                         width = 12,
-                         collapsible = TRUE, solidHeader = TRUE, status = "primary",
-                         div(style = "width: 90%;",
-                           sidebarPanel(
-                             width = 3,
-                             HTML('<p style="font-size:120%;">Range of the displayed target values</p>'),
-                             
-                             textInput('ERT_FSTART', 
-                                       label = F_MIN_LABEL, 
-                                       value = ''),
-                             textInput('ERT_FSTOP', 
-                                       label = F_MAX_LABEL, 
-                                       value = ''),
-                             
-                             checkboxInput('show.ERT', 
-                                           label = 'show/hide ERT',
-                                           value = T),
-                             
-                             checkboxInput('show.mean', 
-                                           label = 'show/hide mean',
-                                           value = F),
-                             
-                             checkboxInput('show.CI', 
-                                           label = 'show/hide mean +/- sd',
-                                           value = F),
-                             
-                             checkboxInput('show.median', 
-                                           label = 'show/hide median',
-                                           value = F),
-                             
-                             checkboxInput('semilogx', 
-                                           label = 'scale x axis log10',
-                                           value = T),
-                             
-                             checkboxInput('semilogy', 
-                                           label = 'scale y axis log10',
-                                           value = T),
-                             
-                             checkboxInput('show_all',
-                                           label = 'show/hide multiple runs',
-                                           value = F),
-                             conditionalPanel(condition = "input.show_all == true",
-                                              
-                                              fluidRow(column(
-                                                11,
-                                                offset = 1,
-                                                sliderInput('show.density',
-                                                            label = "Runs density(%)",
-                                                            min = 1, max = 100, value = 50, step = 1),
-                                                checkboxInput('show.best_of_all',
-                                                              label = 'show/hide best run',
-                                                              value = F),
-                                                checkboxInput('show.pareto_optima',
-                                                              label = 'show/hide pareto optimal front',
-                                                              value = F)
-                                              ))),
-                             
-                             selectInput('FIG_FORMAT_ERT_PER_FUN', label = 'select the figure format',
-                                         choices = supported_fig_format, selected = 'pdf'),
-                             
-                             downloadButton('FIG_DOWNLOAD_ERT_PER_FUN', label = 'download the figure')
-                             
-                             # checkboxInput('show.instance', 
-                             #               label = 'show each independent run',
-                             #               value = F)
-                           )
-                         ),
-                         
-                         mainPanel(width = 9,
-                                   column(width = 12, align = "center",
-                                          HTML_P('The <b><i>mean, median 
-                                                  and standard deviation</i></b> of the runtime samples 
-                                                  are depicted against the best objective values. 
-                                                  The displayed elements (mean, median, standard deviations) 
-                                                  can be switched on and off by clicking on the legend on the right. 
-                                                  A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-                                          plotlyOutput('ERT_PER_FUN', height = plotly_height, width = plotly_width2)
-                                          )
-                                   )
-                     )
-                     
-                     # box(title = HTML('<p style="font-size:120%;">Expected Runtime 
-                     #                  (across all functions)</p>'), 
-                     #     height = 800, width = 12,
-                     #     collapsible = TRUE, solidHeader = TRUE, status = 'primary')
-              )
-            )
+    tabItem(
+      tabName = 'ERT_convergence', 
+      fluidRow(
+        column(
+          width = 12,
+          ERT_box(collapsed = F),
+          ERT_agg_box(),
+          ERT_comparison_box()
+        )
+      )
     ),
     
     # RT: histograms, violin plots ------------------------------------------
-    tabItem(tabName = 'RT_PMF', 
-          fluidRow(
-            column(width = 12,     
-                   box(title = 'Histogram of Fixed-Target Runtimes', 
-                       width = 12, collapsible = TRUE, solidHeader = TRUE,  collapsed = T,
-                       status = "primary",
-                       sidebarPanel(
-                         width = 2,
-                         textInput('RT_PMF_HIST_FTARGET', label = HTML('Select the target value'), 
-                                   value = ''),
-                         
-                         HTML('Choose whether the histograms are <b>overlaid</b> in one plot 
-                              or <b>separated</b> in several subplots:'),
-                         selectInput('ERT_illu_mode', '', 
-                                     choices = c("overlay", "subplot"), 
-                                     selected = 'subplot'),
-                         
-                         selectInput('FIG_FORMAT_RT_HIST', label = 'select the figure format',
-                                     choices = supported_fig_format, selected = 'pdf'),
-                         
-                         downloadButton('FIG_DOWNLOAD_RT_HIST', label = 'download the figure')
-                         ),
-                       
-                       mainPanel(
-                         width = 10,
-                         column(width = 12, align = "center",
-                                HTML_P('This histogram counts how many runs needed between 
-                                    \\(t\\) and \\(t+1\\) function evaluations. The bins
-                                    \\([t,t+1)\\) are chosen automatically. The bin size is determined
-                                    by the so-called <b>Freedman–Diaconis rule</b>: \\(\\text{Bin size}=
-                                    2\\frac{Q_3 - Q_1}{\\sqrt[3]{n}}\\), where \\(Q_1, Q_3\\) are the \\(25\\%\\) 
-                                    and \\(75\\%\\) percentile of the runtime and \\(n\\) is the sample size.
-                                    The displayed algorithms can be selected by clicking on the legend on the right. 
-                                    A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-                                plotlyOutput('RT_HIST', height = plotly_height2, width = plotly_width2)
-                                )
-                       )
-                       )
-            ),
-            
-            column(width = 12,
-              box(title = 'Empirical Probability Mass Function of the Runtime', 
-                  width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
-                  sidebarLayout(
-                    sidebarPanel(
-                      width = 2,
-                      HTML('Select the target value for which the runtime distribution is shown'),
-                      
-                      textInput('RT_PMF_FTARGET', label = '', value = ''),
-                      checkboxInput('RT_SHOW_SAMPLE', label = 'show runtime for each run', value = T),
-                      checkboxInput('RT_PMF_LOGY', label = 'scale y axis log10', value = F),
-                      
-                      selectInput('FIG_FORMAT_RT_PMF', label = 'select the figure format',
-                                  choices = supported_fig_format, selected = 'pdf'),
-                      
-                      downloadButton('FIG_DOWNLOAD_RT_PMF', label = 'download the figure')
-                      
-                      # HTML('Kernel density estimation uses the following <b>kernel function</b>:'),
-                      # selectInput('RT_PMF_KER', '',
-                      #             choices = c("gaussian", "epanechnikov", "rectangular",
-                      #                         "triangular", "biweight", "cosine", "optcosine"),
-                      #             selected = 'gaussian')
-
-                    ),
-                    
-                    mainPanel(
-                      width = 10,
-                      column(width = 12, align = "center", 
-                             HTML('<p class="alert alert-warning" align="left" style="font-size:120%;"><b>Warning! </b>The 
-                                  <b>probability mass function</b> of the runtime is approximated by the 
-                                  treating the runtime as a <i>continuous</i> random variable and applying the <b>kernel estimation</b> (KDE):</p>'),
-                             HTML('<p align="left" style="font-size:120%;">
-                                  The plot shows the distribution of the first hitting 
-                                  times of the individual runs (dots), and an estimated 
-                                  distribution of the probability mass function. 
-                                  The displayed algorithms can be selected by clicking on 
-                                  the legend on the right. A <b>tooltip</b> and <b>toolbar</b> 
-                                  appear when hovering over the figure. This also includes the
-                                  option to download the plot as png file. A csv file with the runtime 
-                                  data can be downlowaded from the  
-                                  <a href="#shiny-tab-ERT_data", data-toggle="tab"> Data Summary tab</a>.'),
-                             plotlyOutput('RT_PMF', height = plotly_height, width = plotly_width2)
-                      )
-                    )
-                  )
-              )
-            )
-          )
+    tabItem(
+      tabName = 'RT_PMF', 
+      fluidRow(
+        column(
+          width = 12,     
+          rt_histogram_box(collapsed = F),
+          rt_pmf_box()
+        )
+      )
     ),
     
     # RT ECDF ------------------------------------------
-    tabItem(tabName = 'RT_ECDF', 
-            fluidRow(
-              column(width = 12,
-                     box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
-                                      Distribution: Single target</p>'), 
-                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
-                         sidebarLayout(
-                           sidebarPanel(
-                             width = 3,
-                             HTML('Select the target values for which EDCF curves are displayed'),
-                             textInput('RT_ECDF_FTARGET1', label = HTML('<p>\\(f_1\\)</p>'), 
-                                       value = ''),
-                             textInput('RT_ECDF_FTARGET2', label = HTML('<p>\\(f_2\\)</p>'), 
-                                       value = ''),
-                             textInput('RT_ECDF_FTARGET3', label = HTML('<p>\\(f_3\\)</p>'), 
-                                       value = ''),
-                             
-                             checkboxInput('RT_ECDF_semilogx', label = 'scale x axis log10', value = F)
-                           ), 
-                           
-                           mainPanel(width = 9,
-                                     column(width = 12, align = "center",
-                                            HTML_P('Each EDCF curve shows the proportion of the runs 
-                                                   that have found a solution of at least the required 
-                                                   target value within the budget given by the \\(x\\)-axis. 
-                                                   The displayed curves can be selected by clicking on the legend on the right. A <b>tooltip</b> 
-                                                   and <b>toolbar</b> appears when hovering over the figure. 
-                                                   This also includes the option to download the plot as png file.'),
-                                            plotlyOutput("RT_ECDF", height = plotly_height, width = plotly_width2)
-                                            )
-                                     )
-                         )
-                       )
-                   ),
-              column(width = 12,
-                     box(title = HTML('<p style="font-size:120%;">Aggregated Empirical Cumulative 
-                                      Distribution: Single function</p>'), 
-                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = T,
-                         sidebarPanel(
-                           width = 3,
-                           HTML('<p align="justify">Set the range and the granularity 
-                                of the quality targets taken into account in the ECDF curve. 
-                                The plot will show the ECDF curves for evenly spaced target values.</p>'),
-                           textInput('RT_fstart', label = F_MIN_LABEL, value = ''),
-                           textInput('RT_fstop', label = F_MAX_LABEL, value = ''),
-                           textInput('RT_fstep', label = F_STEP_LABEL, value = ''),
-                           checkboxInput('RT_ECDF_per_target',
-                                         label = 'show ECDFs for each target',
-                                         value = F),
-                           checkboxInput('RT_ECDF_AGGR_semilogx', 
-                                         label = 'scale x axis log10',
-                                         value = F),
-                           
-                           selectInput('FIG_FORMAT_RT_ECDF_AGGR', label = 'select the figure format',
-                                       choices = supported_fig_format, selected = 'pdf'),
-                           
-                           downloadButton('FIG_DOWNLOAD_RT_ECDF_AGGR', label = 'download the figure')
-                         ),
-                         
-                         mainPanel(width = 9,
-                                   column(width = 12, align = "center",
-                                          HTML_P('The evenly spaced target values are:'),
-                                          verbatimTextOutput('RT_GRID'),
-                                          HTML_P('The fraction of (run,target value)
-                                                 pairs \\((i,v)\\) satisfying that the best solution that the algorithm has 
-                                                 found in the \\(i\\)-th run within the given time budget \\(t\\) has quality at least
-                                                 \\(v\\) is plotted against the available budget \\(t\\). The displayed elements can be switched 
-                                                 on and off by clicking on the legend on the right. A <b>tooltip</b> 
-                                                 and <b>toolbar</b> appears when hovering over the figure.'),
-                                          plotlyOutput('RT_ECDF_AGGR', height = plotly_height, width = plotly_width2),
-                                          hr()
-                                          )
-                                   )
-                           
-                           # HTML('<p>The <b>Kolmogorov–Smirnov test</b> is used to investigate
-                           # how the ditribution of runtimes of one algorithm differs from the other:</p><br>'),
-                           # column(10, align = "center", verbatimTextOutput('ks'))
-                         )
-              ),
-              column(width = 12,
-                     box(title = HTML('<p style="font-size:120%;">Aggregated Empirical Cumulative 
-                                      Distribution: All functions</p>'), 
-                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = T,
-                         sidebarPanel(
-                           width = 3,
-
-                           # checkboxInput("Aggregate_dim","Aggregate dimensions", value = F),
-                           # checkboxInput("Aggregate_fun","Aggregate functions", value = T),
-                           
-                           HTML_P('Choose whether to upload a file containing the target-values for each (function, dimension)-pair
-                                  or use the automatically generated targets (see below). Please consider keeping the file format when
-                                  modifying the csv given below.'),
-                           tableOutput('RT_GRID_GENERATED'),
-                           downloadButton('TARGET_TABLE_EXAMPLE_DOWNLOAD', label = 'download this example'),
-                           
-                           hr(),
-                           br(),
-                           fileInput("CSV_Targets_upload", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>csv file</i> containing the targets</p>'),
-                                     multiple = FALSE, accept = c(
-                                       "text/csv",
-                                       "text/comma-separated-values,text/plain",
-                                       ".csv")),
-                           selectInput('FIG_FORMAT_RT_ECDF_MULT', label = 'select the figure format',
-                                       choices = supported_fig_format, selected = 'pdf'),
-                           
-                           downloadButton('FIG_DOWNLOAD_RT_ECDF_MULT', label = 'download the figure')
-                           
-                         ),
-                         
-                         mainPanel(width = 9,
-                                   column(width = 12, align = "center",
-                                          hr(),
-                                          HTML_P('The fraction of (run,target value, ...)
-                                                 pairs \\((i,v, ...)\\) satisfying that the best solution that the algorithm has 
-                                                 found in the \\(i\\)-th (run of function \\(f\\) in dimension \\(d\\)) within the given time budget \\(t\\) has quality at least
-                                                 \\(v\\) is plotted against the available budget \\(t\\). The displayed elements can be switched 
-                                                 on and off by clicking on the legend on the right. A <b>tooltip</b> 
-                                                 and <b>toolbar</b> appears when hovering over the figure. Aggregation over functions and dimension can 
-                                                 be switched on or off using the checkboxes on the left; when aggregation is off the selected function / dimension
-                                                 is chosen according the the value in the bottom-left selection-box.'),
-                                          plotlyOutput('RT_ECDF_MULT', height = plotly_height, width = plotly_width2),
-                                          hr()
-                                          )
-                                   )
-                         
-
-                         )
-                      ),
+    tabItem(
+      tabName = 'RT_ECDF', 
+      fluidRow(
+        column(
+          width = 12,
+          rt_ecdf_single_target_box(collapsed = F)          
+        ),
+        
+        column(
+          width = 12,
+          rt_ecdf_agg_targets_box()           
+        ),
+        
+        column(
+          width = 12,
+          rt_ecdf_agg_fct_box()
+        ),
               
-              column(width = 12,
-                     box(title = HTML('<p style="font-size:120%;">Area Under the ECDF</p>'),  
-                         width = 12, solidHeader = T, status = "primary", collapsible = T, collapsed = T,
-                         sidebarPanel(
-                           width = 3,
-                           HTML('<p align="justify">Set the range and the granularity of
-                                the evenly spaced quality targets taken into account in the plot.</p>'),
-                           textInput('RT_AUC_FSTART', label = F_MIN_LABEL, value = ''),
-                           textInput('RT_AUC_FSTOP', label = F_MAX_LABEL, value = ''),
-                           textInput('RT_AUC_FSTEP', label = F_STEP_LABEL, value = ''),
-                           
-                           selectInput('FIG_FORMAT_RT_AUC', label = 'select the figure format',
-                                       choices = supported_fig_format, selected = 'pdf'),
-                           downloadButton('FIG_DOWNLOAD_RT_AUC', label = 'download the figure')
-                         ),
-                         
-                         mainPanel(width = 9,
-                                   column(width = 12, align = "center",
-                                          HTML_P('The <b>area under the ECDF</b> is 
-                                                  caculated for the sequence of target values specified on the left. The displayed
-                                                  values are normalized against the maximal number of function evaluations for 
-                                                  each algorithm. Intuitively, the larger the area, the better the algorithm. 
-                                                  The displayed algorithms can be selected by clicking on the legend on the right. 
-                                                  A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.
-                                                  This also includes the option to download the plot as png file.'),
-                                          plotlyOutput("RT_AUC", height = plotly_height, width = plotly_width2)
-                                         )
-                                   )
-                     )
-              ),
-              
-              column(width = 12,
-                     box(title = HTML('<p style="font-size:120%;">Empirical Cumulative 
-                                      Distribution of the Runtime: Single Target</p>'), 
-                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
-                         sidebarLayout(
-                           sidebarPanel(
-                             width = 3,
-                             HTML('Select the target values for which EDCF curves are displayed'),
-                             textInput('RT_ECDF_FTARGET1', label = HTML('<p>\\(f_1\\)</p>'), 
-                                       value = ''),
-                             textInput('RT_ECDF_FTARGET2', label = HTML('<p>\\(f_2\\)</p>'), 
-                                       value = ''),
-                             textInput('RT_ECDF_FTARGET3', label = HTML('<p>\\(f_3\\)</p>'), 
-                                       value = ''),
-                             
-                             checkboxInput('RT_ECDF_semilogx', label = 'scale x axis log10', value = F)
-                           ), 
-                           
-                           mainPanel(width = 9,
-                                     column(width = 12, align = "center",
-                                            HTML_P('Each EDCF curve shows the proportion of the runs 
-                                                    that have found a solution of at least the required 
-                                                    target value within the budget given by the \\(x\\)-axis. 
-                                                    The displayed curves can be selected by clicking on the legend on the right. A <b>tooltip</b> 
-                                                    and <b>toolbar</b> appears when hovering over the figure. 
-                                                    This also includes the option to download the plot as png file.'),
-                                                    plotlyOutput("RT_ECDF", height = plotly_height, width = plotly_width2)
-                                            )
-                                    )
-                         )
-                     )
-              )
-              
-              # column(width = 12,
-              #        box(title = HTML('<p style="font-size:120%;">>Aggregated Empirical Cumulative 
-              #                         Distribution: Single target</p>'), 
-              #            width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
-              #            sidebarLayout(
-              #              sidebarPanel(
-              #                width = 3,
-              #                HTML('Select the target values for which EDCF curves are displayed'),
-              #                textInput('RT_ECDF_FTARGET1', label = HTML('<p>\\(f_1\\)</p>'), 
-              #                          value = ''),
-              #                textInput('RT_ECDF_FTARGET2', label = HTML('<p>\\(f_2\\)</p>'), 
-              #                          value = ''),
-              #                textInput('RT_ECDF_FTARGET3', label = HTML('<p>\\(f_3\\)</p>'), 
-              #                          value = ''),
-              #                
-              #                checkboxInput('RT_ECDF_semilogx', label = 'scale x axis log10', value = F)
-              #              ), 
-              #              
-              #              mainPanel(width = 9,
-              #                        column(width = 12, align = "center",
-              #                               HTML_P('Each EDCF curve shows the proportion of the runs 
-              #                                       that have found a solution of at least the required 
-              #                                       target value within the budget given by the \\(x\\)-axis. 
-              #                                       The displayed curves can be selected by clicking on the legend on the right. A <b>tooltip</b> 
-              #                                       and <b>toolbar</b> appears when hovering over the figure. 
-              #                                       This also includes the option to download the plot as png file.'),
-              #                                       plotlyOutput("RT_ECDF", height = plotly_height, width = plotly_width2)
-              #                               )
-              #                       )
-              #            )
-              #        )
-              # )
-            )
+        column(
+          width = 12,
+          rt_ecdf_auc_box()          
+        ) 
+      )
     ),
     
     # FCE: Data Summary -----------------

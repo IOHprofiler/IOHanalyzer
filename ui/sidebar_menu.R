@@ -1,5 +1,4 @@
-
-create_sidebarMenu <- function() {
+sidebar_menu <- function() {
   sidebarMenu(id = "tabs",
               menuItem("Upload Data", tabName = "upload", icon = icon('upload', lib = 'glyphicon'), 
                        selected = T),

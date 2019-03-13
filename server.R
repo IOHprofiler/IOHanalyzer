@@ -93,7 +93,6 @@ shinyServer(function(input, output, session) {
   # update maximization indication, trans_funeval according to src_format 
   observe({
     selected_format <<- input$DATA_SRC_FORMAT
-    browser()
     maximization <<- input$DATA_SRC_MINMAX
   })
   
@@ -148,11 +147,6 @@ shinyServer(function(input, output, session) {
   #   parseDirPath(volumes, input$directory)
   # })
   # 
-  
-  observe({
-    a <- input$DATA_SRC_FORMAT
-    browser()
-  })
   
   # the folder where the uploaded zip file is uncompressed
   selected_folders <- reactive({
@@ -774,15 +768,9 @@ shinyServer(function(input, output, session) {
 
   # The ECDF plots for the runtime ----------------
   output$RT_ECDF <- renderPlotly({
-    req(input$RT_ECDF_FTARGET1, input$RT_ECDF_FTARGET2, input$RT_ECDF_FTARGET3)
-    ftargets <- c(
-      format_FV(input$RT_ECDF_FTARGET1),
-      format_FV(input$RT_ECDF_FTARGET2),
-      format_FV(input$RT_ECDF_FTARGET3)) %>% 
-      as.numeric 
-    
+    req(input$RT_ECDF_FTARGET)
+    ftargets <- as.numeric(format_FV(input$RT_ECDF_FTARGET))
     plot_RT_ECDF.DataSetList(DATA(), ftargets, scale.xlog = input$RT_ECDF_semilogx)
-    
   })
   
   output$RT_GRID <- renderPrint({

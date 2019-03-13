@@ -14,10 +14,11 @@ suppressMessages(library(reshape2))
 suppressMessages(library(magrittr))
 suppressMessages(library(dplyr))
 suppressMessages(library(plotly))
+suppressMessages(library(IOHProfiler))
 
-for (f in list.files('pproc', pattern = '.R', full.names = T)) {
-  source(f)
-}
+# for (f in list.files('pproc', pattern = '.R', full.names = T)) {
+#   source(f)
+# }
 
 source('plot.R')
 source('repository.R')
@@ -99,6 +100,14 @@ shinyServer(function(input, output, session) {
 
   # Load correct options for repository
   observe({
+    if(!dir.exists(rdsdir)){
+      shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository, please create a folder
+                     called 'repository' in your home directory and make sure it contains the '2019gecco.rds'-file
+                     provided on the IOHProfiler github-page.")
+      shinyjs::disable("Repository.load")
+      return(NULL)
+    }
+
     if(input$Repository.source == "Official"){
       if(input$Repository.suite == IOHprofiler){
         if(is.null(repository)){

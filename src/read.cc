@@ -12,7 +12,7 @@ Rcpp::NumericMatrix make_mat(Rcpp::List input_list){
 
   unsigned int n = input_list.length();
 
-  if(n == 0) { 
+  if(n == 0) {
     Rcpp::stop("Must supply a list with more than 1 element.");
   }
 
@@ -25,7 +25,7 @@ Rcpp::NumericMatrix make_mat(Rcpp::List input_list){
     Rcpp::NumericVector row_val = input_list[i];
 
     if(elems != row_val.length()) {
-      Rcpp::stop("Length of row does not match matrix requirements"); 
+      Rcpp::stop("Length of row does not match matrix requirements");
     }
 
     result_mat(i, Rcpp::_) = row_val;
@@ -46,13 +46,13 @@ List c_read_dat(std::string dat, int NC, std::string leading) {
     while (std::getline(fp, line)) {
         if (line.find(leading) == 0) {
             if (one_run.size() != 0) {
-                
+
                 dataSets.push_back(make_mat(one_run));
             }
             one_run = Rcpp::List::create();
             continue;
         }
-           
+
         std::stringstream ss(line);
         for (i = 0; i < NC; ++i) {
             std::getline(ss, val, ' ');

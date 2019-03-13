@@ -206,7 +206,24 @@ summary.DataSetList <- function(object, ...) {
     t %>%
     as.data.frame
 }
+                                            
+#' Get Runtime Value condensed overview
+#'
+#' @param ds A DataSetList object
+#' @param algorithm Which algorithms in the DataSetList to consider.
+#' @param ... Arguments passed to other methods
+#'
+#' @return A data.table containing the algorithm ID, minimum and maximum used evaluations,
+#' number of runs and available budget for the DataSet
+#' @export
+#' @examples
+get_RT_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
+  if (algorithm != 'all')
+    ds <- subset(ds, algId == algorithm)
 
+  lapply(ds, function(ds) get_RT_overview(ds)) %>% rbindlist
+}
+                                            
 #' Get RunTime Summary
 #'
 #' @param ds A DataSetList object
@@ -255,6 +272,24 @@ get_RT_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
     colnames(res)[2] <- 'funcId'
     res
   }) %>% rbindlist(fill = T)
+}    
+         
+#' Get Function Value condensed overview
+#'
+#' @param ds A DataSetList object
+#' @param algorithm Which algorithms in the DataSetList to consider.
+#' @param ... Arguments passed to other methods
+#'
+#' @return A data.table containing the algorithm ID, best, worst and mean reached function
+#' values, the number of runs and available budget for the DataSet
+#' @export
+#'
+#' @examples
+get_FV_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
+  if (algorithm != 'all')
+    ds <- subset(ds, algId == algorithm)
+
+  lapply(ds, function(ds) get_FV_overview(ds)) %>% rbindlist
 }
 
 #' Get Function Value Summary
@@ -282,48 +317,29 @@ get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
   }) %>% rbindlist
 }
 
-#' Get Function Value condensed overview
+#' Get Funtion Value Samples
 #'
 #' @param ds A DataSetList object
+#' @param runtime A Numerical vector. Runtimes at which function values are reached
 #' @param algorithm Which algorithms in the DataSetList to consider.
 #' @param ... Arguments passed to other methods
 #'
-#' @return A data.table containing the algorithm ID, best, worst and mean reached function
-#' values, the number of runs and available budget for the DataSet
+#' @return A data.table containing the function value samples for each provided
+#' target runtime
 #' @export
 #'
 #' @examples
-get_FV_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
+get_FV_sample.DataSetList <- function(dsList, runtime, algorithm = 'all') {
   if (algorithm != 'all')
-    ds <- subset(ds, algId == algorithm)
-
-  lapply(ds, function(ds) get_FV_overview(ds)) %>% rbindlist
-
+    dsList <- subset(dsList, algId == algorithm)
+  
+  lapply(dsList, function(ds) {
+    res <- cbind(attr(ds, 'DIM'), attr(ds, 'funcId'), get_FV_sample(ds, runtime))
+    colnames(res)[1] <- 'DIM'
+    colnames(res)[2] <- 'funcId'
+    res
+  }) %>% rbindlist (fill=TRUE)
 }
-
-#' Get Runtime Value condensed overview
-#'
-#' @param ds A DataSetList object
-#' @param algorithm Which algorithms in the DataSetList to consider.
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the algorithm ID, minimum and maximum used evaluations,
-#' number of runs and available budget for the DataSet
-#' @export
-#' @examples
-get_RT_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
-  if (algorithm != 'all')
-    ds <- subset(ds, algId == algorithm)
-
-  lapply(ds, function(ds) get_RT_overview(ds)) %>% rbindlist
-}
-
-# get_FV_runs.DataSetList <- function(dsList, runtime, algorithm = 'all') {
-#   if (algorithm != 'all')
-#     dsList <- subset(dsList, algId == algorithm)
-
-#   lapply(dsList, function(ds) get_FV_runs(ds, runtime)) %>% rbindlist
-# }
 
 #' Get Funtion Value Samples
 #'

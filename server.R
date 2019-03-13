@@ -559,6 +559,7 @@ shinyServer(function(input, output, session) {
                               show.runs = input$show_all, show.optimal = input$show.best_of_all,
                               show.pareto = input$show.pareto_optima, show.ERT = input$show.ERT,
                               show.mean = input$show.mean, show.median = input$show.median,
+                              show.grad = input$show_grad, show.intensity = input$show.intensity,
                               scale.xlog = input$semilogx, scale.ylog = input$semilogy,
                               scale.reverse = (src_format == COCO))
   })
@@ -1044,6 +1045,7 @@ shinyServer(function(input, output, session) {
     rt_min <- input$FCE_RT_MIN %>% as.integer
     rt_max <- input$FCE_RT_MAX %>% as.integer
     plot_FV_line.DataSetList(DATA(), RTstart = rt_min, RTstop = rt_max, show.CI = input$show.CI.FCE,
+                             show.grad = input$FCE_show_grad, show.intensity = input$FCE_show.intensity,
                              show.density = input$FCE_show.density, show.pareto = input$FCE_show.pareto_optima,
                              show.runs = input$FCE_show_all, show.optimal = input$FCE_show.best_of_all,
                              show.mean = input$FCE_show.mean, show.median = input$FCE_show.median,

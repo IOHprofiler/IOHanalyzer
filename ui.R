@@ -202,6 +202,19 @@ body <- dashboardBody(
                                              label = 'scale y axis log10',
                                              value = T),
                                
+                               checkboxInput('FCE_show_grad',
+                                             label = 'show runs intensity',
+                                             value = F),
+                               conditionalPanel(condition = "input.FCE_show_grad == true",
+                                                
+                                                fluidRow(column(
+                                                  11,
+                                                  offset = 1,
+                                                  sliderInput('FCE_show.intensity',
+                                                              label = "Runs intensity(%)",
+                                                              min = -1, max = 1, value = 0, step = 0.1)
+                                                ))),
+                               
                                checkboxInput('FCE_show_all',
                                              label = 'show/hide multiple runs',
                                              value = F),

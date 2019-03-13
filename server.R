@@ -77,6 +77,7 @@ get_data_id <- function(dsList) {
   paste(get_funcId(dsList), get_DIM(dsList), sep = '-')
 }
 
+gecco2019data <- readRDS('data/2019gecco-ins11-1run.rds')
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
@@ -101,66 +102,20 @@ shinyServer(function(input, output, session) {
     sub_sampling <<- input$SUBSAMPLING  
   })
   
-  # Load correct options for repository
-  # observe({
-  #   if(input$REPOSITORY_SUITE == IOHprofiler & is.null(repository)){
-  #     file_location <- file.path(rdsdir, "2019gecco.rds")
-  #     repository <<- readRDS(file_location)
-  #   }
-  #   else{
-  #     shinyjs::disable("REPOSITORY_LOAD")
-  #     return(NULL)
-  #   }
-  #   algId <- c(get_AlgId(repository), 'all')
-  #   updateSelectInput(session, 'REPOSITORY_ALGID', choices = algId, selected = 'all')
-  #   dim <- c(get_DIM(repository), 'all')
-  #   updateSelectInput(session, 'REPOSITORY_DIM', choices = dim, selected = 'all')
-  #   func <- c(get_funcId(repository), 'all')
-  #   updateSelectInput(session, 'REPOSITORY_FUNCID', choices = func, selected = 'all')
-  #   shinyjs::enable("REPOSITORY_LOAD")
-  # })
-  # 
-  # observeEvent(input$REPOSITORY_LOAD, {
-  #   to_load = repository
-  #   if(input$REPOSITORY_FUNCID != 'all')
-  #     to_load <- subset(to_load, funcId==input$REPOSITORY_FUNCID)
-  #   if(input$REPOSITORY_DIM != 'all')
-  #     to_load <- subset(to_load, DIM==input$REPOSITORY_DIM)
-  #   if(input$REPOSITORY_ALGID != 'all')
-  #     to_load <- subset(to_load, algId==input$REPOSITORY_ALGID)
-  #   
-  #   DataList$data <- c(DataList$data, to_load)
-  # })
-  
-  
-  # IMPORTANT: this only works locally, keep it for the local version
-  # links to users file systems
-  # volumes <- getVolumes()
-  # shinyDirChoose(input, 'directory', roots = volumes, session = session)
-  
-  # browse data directory, upload data and process data -------
-  
-  # the directory selected by the user
-  # selected_folders <- reactive({
-  #   # a <- list(root = "Macintosh HD", path = list('', "Users", "wanghao", "(1+1)-Cholesky-CMA"))
-  #   # parseDirPath(volumes, a)
-  #   parseDirPath(volumes, input$directory)
-  # })
-  # 
-  
   # the folder where the uploaded zip file is uncompressed
   selected_folders <- reactive({
     if (!is.null(input$ZIP)) {
       datapath <- input$ZIP$datapath
       folders <- rep('', length(datapath))
-      filetype <- sub('[^\\.]*\\.', '', basename(datapath), perl = T)
-      
-      if (filetype == 'zip') 
-        unzip_fct <- unzip
-      else if (filetype %in% c('bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz'))
-        unzip_fct <- untar
       
       for (i in seq(datapath)) {
+        filetype <- sub('[^\\.]*\\.', '', basename(datapath[i]), perl = T)
+        
+        if (filetype == 'zip') 
+          unzip_fct <- unzip
+        else if (filetype %in% c('bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz'))
+          unzip_fct <- untar
+        
         if (filetype == 'zip')
           files <- unzip_fct(datapath[i], list = T)$Name
         else 
@@ -185,24 +140,6 @@ shinyServer(function(input, output, session) {
     } else
       return(NULL)
   })
-  
-  # TODO: this part might not be
-  # observe({
-  #   if (input$singleF) {
-  #     fstart <- input$fstart
-  #     # updateTextInput(session, 'fstart', value = format_FV(start))
-  #     updateTextInput(session, 'fstop', value = format_FV(fstart))
-  #     # updateTextInput(session, 'fstep', value = format_FV(step))
-  #   }
-  # })
-  # 
-  # # print the folderList
-  # output$upload_data_promt <- renderPrint({
-  #   folders <- folderList$data
-  #   for (i in seq_along(folders)) {
-  #     cat(sprintf('%d: %s\n', i, folders[[i]]))
-  #   }
-  # })
   
   # load, process the data folders and update DataSetList
   observeEvent(selected_folders(), {
@@ -318,11 +255,34 @@ shinyServer(function(input, output, session) {
     
     subset(DataList$data, DIM == dim, funcId == id)
   })
-  
 
   # TODO: give a different name for DATA and DATA_UNFILTERED
   DATA_UNFILTERED <- reactive({
     DataList$data
+  })
+  
+  MAX_ERTS_FUNC <- reactive({
+    dim <- input$Overall.Dim
+    data <- subset(DataList$data, DIM == dim)
+    max_ERTs(data, aggr_on = 'funcId', maximize = !(src_format == COCO))
+  })
+  
+  MAX_ERTS_DIM <- reactive({
+    func <- input$Overall.Funcid
+    data <- subset(DataList$data, funcId == func)
+    max_ERTs(data, aggr_on = 'DIM', maximize = !(src_format == COCO))
+  })
+  
+  MEAN_FVALS_FUNC <- reactive({
+    dim <- input$Overall.Dim
+    data <- subset(DataList$data, DIM == dim)
+    mean_FVs(data, aggr_on = 'funcId')
+  })
+  
+  MEAN_FVALS_DIM <- reactive({
+    func <- input$Overall.Funcid
+    data <- subset(DataList$data, funcId == func)
+    mean_FVs(data, aggr_on = 'DIM')
   })
   
   # TODO: make this urgely snippet look better...
@@ -489,22 +449,26 @@ shinyServer(function(input, output, session) {
   })
   
   # Data summary for Fixed-Target Runtime (ERT)  --------------
-  runtime_summary_condensed <- reactive({
+  runtime_data_overview <- reactive({
     data <- DATA()
     fall <- get_Funvals(data)
     get_FV_overview(data, algorithm = input$ALGID_INPUT_SUMMARY)
   })
   
-  output$table_FV_summary_condensed <- renderTable({
+  output$table_RT_overview <- renderTable({
     req(input$ALGID_INPUT_SUMMARY)
-    df <- runtime_summary_condensed()
+    df <- runtime_data_overview()
     
-    df$"Budget" %<>% as.integer
-    df$"Number of runs" %<>% as.integer
-    df$"Best reached value" <- format_FV(df$"Best reached value")
-    df$"Worst reached value" <- format_FV(df$"Worst reached value")
-    df$"Mean reached value" <- format_FV(df$"Mean reached value")
-    
+    df$Budget %<>% as.integer
+    df$runs %<>% as.integer
+    df$`runs reached` %<>% as.integer
+    df$fID %<>% as.integer
+    df$DIM %<>% as.integer
+    df$`Worst recorded f(x)` %<>% format_FV
+    df$`Worst reached f(x)` %<>% format_FV
+    df$`Best reached f(x)` %<>% format_FV
+    df$`mean reached f(x)` %<>% format_FV
+    df$`median reached f(x)` %<>% format_FV
     df
   })
   
@@ -533,37 +497,19 @@ shinyServer(function(input, output, session) {
     
     # TODO: verify this
     # we have to remove this part from the dependency of this reactive expression
-    isolate({
-      data <- DATA()
-      fall <- get_Funvals(data)
-    })
+    # isolate({
+    data <- DATA()
+    fall <- get_Funvals(data)
+    # })
     
     if (input$F_SAMPLE_SINGLE)
       fstop <- fstart
     
     fseq <- seq_FV(fall, fstart, fstop, fstep)
     req(fseq)
-    # res <- list()
-    # n_runs_max <- sapply(data, function(ds) length(attr(ds, 'instance'))) %>% max
     
     get_RT_sample(data, ftarget = fseq, algorithm = input$ALGID_RAW_INPUT, 
                   output = input$RT_download_format)
-    
-    # for (i in seq_along(data)) {
-    #   ds <- data[[i]]
-    #   algId <- attr(ds, 'algId')
-    #   if (input$ALGID_RAW_INPUT != 'all' && algId != input$ALGID_RAW_INPUT)
-    #     next
-    #   
-    #   rt <- get_RT_sample(ds, fseq, output = input$RT_download_format)
-    #   if (input$RT_download_format == 'wide') {
-    #     n <- ncol(rt) - 2
-    #     if (n < n_runs_max) 
-    #       rt %<>% cbind(., matrix(NA, nrow(.), n_runs_max - n))
-    #   }
-    #   res[[i]] <- rt
-    # }
-    # do.call(rbind, res) 
   })
   
   output$download_runtime <- downloadHandler(
@@ -608,15 +554,112 @@ shinyServer(function(input, output, session) {
     fstart <- input$ERT_FSTART %>% as.numeric
     fstop <- input$ERT_FSTOP %>% as.numeric
     
-    plot_RT_line.DataSetList(DATA(),Fstart = fstart ,Fstop = fstop,
+    plot_RT_line.DataSetList(DATA(), Fstart = fstart ,Fstop = fstop,
                               show.CI = input$show.CI, show.density = input$show.density,
                               show.runs = input$show_all, show.optimal = input$show.best_of_all,
                               show.pareto = input$show.pareto_optima, show.ERT = input$show.ERT,
                               show.mean = input$show.mean, show.median = input$show.median,
                               scale.xlog = input$semilogx, scale.ylog = input$semilogy,
                               scale.reverse = (src_format == COCO))
-
   })
+  
+  output$ERTPlot.Multi.Plot <- renderPlotly(
+    render_ERTPlot_multi_plot()
+  )
+  
+  render_ERTPlot_multi_plot <- reactive({
+    req(input$ERTPlot.Multi.PlotButton)
+    data <- DATA_UNFILTERED()
+    data <- subset(data, algId %in% input$ERTPlot.Multi.Algs)
+    
+    if (length(data) == 0) return(NULL)
+    if (input$ERTPlot.Multi.Aggregator == 'Functions') 
+      data <- subset(data, DIM == input$Overall.Dim)
+    else 
+      data <- subset(data, funcId == input$Overall.Funcid)
+    
+    plot_ERT_MULTI(data, plot_mode = input$ERTPlot.Multi.Mode,
+                   scale.xlog = input$ERTPlot.Multi.Logx, scale.ylog = input$ERTPlot.Multi.Logy,
+                   scale.reverse = (src_format == COCO),
+                   aggr_on = ifelse(input$ERTPlot.Multi.Aggregator == 'Functions', 'funcId', 'DIM'))
+  })
+  
+  output$ERTPlot.Multi.Download <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_ERT_PER_FUN_MULTI)
+    },
+    content = function(file) {
+      save_plotly(render_ERTPlot_multi_plot(), file,
+                  format = input$ERTPlot.Multi.Format,
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$ERTPlot.Multi.Format)
+  )
+  
+  output$ERTPlot.Aggr.Plot <- renderPlotly(
+    render_ERTPlot_aggr_plot()
+  )
+  
+  get_max_targets <- function(data, aggr_on, maximize){
+    targets <- c()
+    aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
+    
+    for (j in seq_along(aggr_attr)) {
+      dsList_filetered <- if (aggr_on == 'funcId') subset(data,funcId == aggr_attr[[j]])
+      else subset(data, DIM == aggr_attr[[j]])
+      
+      Fall <- get_Funvals(dsList_filetered)
+      Fval <- ifelse(maximize, max(Fall), min(Fall))
+      targets <- c(targets, Fval)
+    }
+    targets
+  }
+  
+  render_ERTPlot_aggr_plot <- reactive({
+    #TODO: figure out how to avoid plotting again when default targets are written to input
+    data <- DATA_UNFILTERED()
+    if (length(data) == 0) return(NULL)
+    if (input$ERTPlot.Aggr.Aggregator == 'Functions') {
+      data <- subset(data, DIM == input$Overall.Dim)
+      erts <- MAX_ERTS_FUNC()
+    }
+    else{
+      data <- subset(data, funcId == input$Overall.Funcid)
+      erts <- MAX_ERTS_DIM()
+    }
+    aggr_on = ifelse(input$ERTPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
+    aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
+    update_targets <- F
+    if (input$ERTPlot.Aggr.Targets == "") {
+      update_targets <- T
+    } else {
+      targets <- as.numeric(unlist(strsplit(input$ERTPlot.Aggr.Targets,",")))
+      if (length(targets) != length(aggr_attr)) {
+        update_targets <- T
+      }
+    }
+    if (update_targets) {
+      targets <- get_max_targets(data, aggr_on, maximize = !(src_format == COCO))
+      updateTextInput(session, 'ERTPlot.Aggr.Targets', value = targets %>% toString)
+    }
+    plot_ERT_AGGR(data, plot_mode = input$ERTPlot.Aggr.Mode, targets = targets,
+                  scale.ylog = input$ERTPlot.Aggr.Logy,
+                  maximize = !(src_format == COCO), use_rank = input$ERTPlot.Aggr.Ranking,
+                  aggr_on = aggr_on, erts = erts)
+    
+  })
+  
+  output$ERTPlot.Aggr.Download <- downloadHandler(
+    filename = function() {
+      eval(FIG_NAME_ERT_AGGR)
+    },
+    content = function(file) {
+      save_plotly(render_ERTPlot_aggr_plot(), file,
+                  format = input$ERTPlot.Aggr.Format,
+                  width = fig_width2, height = fig_height)
+    },
+    contentType = paste0('image/', input$ERTPlot.Aggr.Format)
+  )
   
   # empirical p.m.f. of the runtime
   output$RT_PMF <- renderPlotly({
@@ -662,10 +705,8 @@ shinyServer(function(input, output, session) {
     req(input$RT_PMF_HIST_FTARGET)
     ftarget <- format_FV(input$RT_PMF_HIST_FTARGET) %>% as.numeric
     plot_mode <- input$ERT_illu_mode
-    
 
-    # TODO: remove 'DataSetList' in the future
-    plot_RT_HIST.DataSetList(DATA(), ftarget, plot_mode = plot_mode)
+    plot_RT_HIST(DATA(), ftarget, plot_mode = plot_mode)
   })
   
   output$RT_ECDF_MULT <- renderPlotly({
@@ -718,7 +759,6 @@ shinyServer(function(input, output, session) {
     contentType = paste0('image/', input$FIG_FORMAT_RT_ECDF_MULT)
   )
   
-
   RT_ECDF_MULTI_TABLE <- reactive({
     targets <- uploaded_RT_ECDF_targets()
     funcId <- names(targets)
@@ -849,21 +889,22 @@ shinyServer(function(input, output, session) {
 
   # TODO: rename 'FCE'...
   # Data summary for Fixed-Budget target (FCE)  --------------
-  FCE_runtime_summary_condensed <- reactive({
+  FV_data_overview <- reactive({
     data <- DATA()
     fall <- get_Funvals(data)
     get_RT_overview(data, algorithm = input$FCE_ALGID_INPUT_SUMMARY)
   })
   
-  output$table_RT_summary_condensed <- renderTable({
+  output$table_FV_overview <- renderTable({
     req(input$FCE_ALGID_INPUT_SUMMARY)
-    df <- FCE_runtime_summary_condensed()
+    df <- FV_data_overview()
     
-    df$"Number of runs" %<>% as.integer
-    df$"Budget" %<>% as.integer
-    df$"Minimum used evaluations" %<>% as.integer
-    df$"Maximum used evaluations" %<>% as.integer
-
+    df$Budget %<>% as.integer
+    df$runs %<>% as.integer
+    df$fID %<>% as.integer
+    df$DIM %<>% as.integer
+    df$`miminal runtime` %<>% format_RT
+    df$`maximal runtime` %<>% format_RT
     df
   })
   

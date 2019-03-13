@@ -104,11 +104,11 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
   }
   
   #Avoid generating too many samples
-  if(!is.null(by)){
-    nr_samples_generated <- (to-from)/by
-    if (nr_samples_generated > max_samples){
+  if (!is.null(by)) {
+    nr_samples_generated <- (to - from) / by
+    if (nr_samples_generated > max_samples) {
       by <- NULL
-      if(is.null(length.out))
+      if (is.null(length.out))
         length.out <- max_samples
     }
   }

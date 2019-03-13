@@ -14,6 +14,7 @@ f2 <- list(
   color = 'black'
 )
 
+# TODO: determine a good font type for plotly
 plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
   plot_ly() %>% 
     layout(title = title,
@@ -21,7 +22,7 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
            legend = list(x = 1.01, y = 0.9, orientation = 'v',
                          font = list(size = 21, family = 'Old Standard TT, serif')),
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
-           font = list(size = 25, family = 'sans-serif'),
+           font = list(size = 25, family = 'Old Standard TT, serif'),
            titlefont = list(size = 16, family = 'sans-serif'),
            xaxis = list(title = x.title,
                         gridcolor = 'rgb(255,255,255)',

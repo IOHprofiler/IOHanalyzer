@@ -67,51 +67,26 @@ body <- dashboardBody(
     tabItem(tabName = 'readme', includeMarkdown('README.md')),
     
     # data uploading functionalities -----------------
-    tabItem(tabName = 'upload',
-            fluidRow(
-              column(
-                width = 6, 
-                upload_box()
-              )
-              # column(width = 6,
-              #        box(title = HTML('<p style="font-size:120%;">Load Data from repository</p>'), width = 12,
-              #            solidHeader = T, status = "primary", collapsible = F, height = '620px',
-              #            sidebarPanel(
-              #              width = 12,
-              #              
-              #              selectInput('REPOSITORY_SUITE', label = HTML('<p align="left" style="font-size:120%;">Please choose the suite</p>'),
-              #                          choices = c("none",IOHprofiler, COCO), selected = "none", width = '50%'),
-              #              selectInput('REPOSITORY_FUNCID', label = HTML('<p align="left" style="font-size:120%;">Please choose the function</p>'),
-              #                          choices = NULL, selected = NULL, width = '50%'),
-              #              selectInput('REPOSITORY_DIM', label = HTML('<p align="left" style="font-size:120%;">Please choose the dimension</p>'),
-              #                          choices = NULL, selected = NULL, width = '50%'),
-              #              selectInput('REPOSITORY_ALGID', label = HTML('<p align="left" style="font-size:120%;">Please choose the algorithm</p>'),
-              #                          choices = NULL, selected = NULL, width = '50%'),
-              #              
-              #              actionButton('REPOSITORY_LOAD', 'Load data')
-              #            )
-              #        )
-              # )
-            ),
+    tabItem(
+      tabName = 'upload',
+      fluidRow(
+        column(
+          width = 6, 
+          upload_box(collapsible = F)
+        ),
+              
+        column(
+          width = 6,
+          upload_prompt_box(collapsible = F)
+        )
+      ),
             
-            fluidRow(
-              column(width = 12,
-                     box(title = HTML('<p style="font-size:120%;">List of Processed Data</p>'), width = 12,
-                         solidHeader = T, status = "primary", collapsible = T, 
-                         dataTableOutput('DATASETLIST_INFO')
-                     )
-              )
-            ),
-            fluidRow(
-              column(width = 12,
-                     box(title = HTML('<p style="font-size:120%;">Data Processing Prompt</p>'), width = 12,
-                         solidHeader = T, status = "primary", collapsible = F,
-                         verbatimTextOutput('process_data_promt'),
-                         tags$head(tags$style("#process_data_promt{color:black; font-size:12px; font-style:italic;
-                                                overflow-y:visible; max-height: 500px; background: ghostwhite;}"))
-                     )
-              )
-            )
+      fluidRow(
+        column(
+          width = 12,
+          data_list_box(collapsible = F)
+        )
+      )
     ),
     
     # RT (RunTime): Data Summary -----------------
@@ -120,8 +95,8 @@ body <- dashboardBody(
       fluidRow(
         column(
           width = 12,
-          rt_overview_box(),
-          rt_stats_box(),
+          rt_overview_box(collapsed = F),
+          rt_stats_box(collapsed = F),
           rt_sample_box()
         )
       )
@@ -133,9 +108,9 @@ body <- dashboardBody(
       fluidRow(
         column(
           width = 12,
-          ERT_box(collapsed = F),
-          ERT_agg_box(),
-          ERT_comparison_box()
+          ERT_box(collapsed = F)
+          # ERT_agg_box(),
+          # ERT_comparison_box()
         )
       )
     ),
@@ -158,183 +133,37 @@ body <- dashboardBody(
       fluidRow(
         column(
           width = 12,
-          rt_ecdf_single_target_box(collapsed = F)          
-        ),
-        
-        column(
-          width = 12,
-          rt_ecdf_agg_targets_box()           
-        ),
-        
-        column(
-          width = 12,
+          rt_ecdf_single_target_box(collapsed = F),
+          rt_ecdf_agg_targets_box(),
           rt_ecdf_agg_fct_box()
-        ),
-              
-        column(
-          width = 12,
-          rt_ecdf_auc_box()          
-        ) 
+          # rt_ecdf_auc_box()   
+        )
       )
     ),
     
     # FCE: Data Summary -----------------
-    tabItem(tabName = 'FCE_DATA', 
-            fluidRow(
-              column(width = 12,
-                     #TODO: better naming scheme
-                     box(title = HTML('<p style="font-size:120%;">Overview of runtime values</p>'), width = 12,
-                         solidHeader = T, status = "primary", collapsible = T,
-                         sidebarPanel(
-                           width = 3,
-                           HTML('<p align="justify">Select which algorithms to show.</p>'),
-                           
-                           # TODO: find better naming scheme for 'fstart, fstop, singleF'
-                           selectInput('FCE_ALGID_INPUT_SUMMARY', 'Algorithms', choices = NULL, selected = NULL),
-                           downloadButton("FCE_downloadData_summary", "Save this table as csv")
-                         ),
-                         
-                         mainPanel(
-                           width = 9,
-                           tableOutput('table_RT_summary_condensed')
-                         )
-                     ),
-                     box(title = HTML('<p style="font-size:120%;">Target Statistics at Chosen Budget Values</p>'), width = 12,
-                         solidHeader = T, status = "primary", collapsible = T, collapsed = T,
-                         sidebarPanel(
-                           width = 3,
-                           HTML(FCE_GRID_INPUT_TEXT),
-                           
-                           textInput('RT_MIN', label = RT_MIN_LABEL, value = ''),
-                           textInput('RT_MAX', label = RT_MAX_LABEL, value = ''),
-                           textInput('RT_STEP', label = RT_STEP_LABEL, value = ''),
-                           checkboxInput('RT_SINGLE', label = HTML('<p>\\(B_{\\text{min}} = B_{\\text{max}}\\)?
-                                                           Once toggled, only \\(B_{\\text{min}}\\) is 
-                                                           used to generate the table on the right.</p>'), value = FALSE),
-                           selectInput('FCE_ALGID_INPUT', 'Algorithms', choices = NULL, selected = NULL),
-                           downloadButton("FCE_SUMMARY_download", "Save this table as csv")
-                           ),
-                         
-                         mainPanel(
-                           width = 9,
-                           HTML(paste0('<div style="font-size:120%;">', 
-                                       includeMarkdown('RMD/TAR_SUMMARY_TABLE.Rmd'),
-                                       '</div>')),
-                           tableOutput('FCE_SUMMARY')
-                         )
-                     ),
-                     
-                     box(title = HTML('<p style="font-size:120%;">Original Target Samples</p>'), width = 12,
-                         solidHeader = TRUE, status = "primary", collapsible = T, collapsed = T,
-                         sidebarPanel(
-                           width = 3,
-                           HTML(FCE_GRID_INPUT_TEXT),
-                           
-                           textInput('RT_MIN_SAMPLE', label = RT_MIN_LABEL, value = ''),
-                           textInput('RT_MAX_SAMPLE', label = RT_MAX_LABEL, value = ''),
-                           textInput('RT_STEP_SAMPLE', label = RT_STEP_LABEL, value = ''),
-                           checkboxInput('RT_SINGLE_SAMPLE', 
-                                         label = HTML('<p>\\(B_{\\text{min}} = B_{\\text{max}}\\)?
-                                                       Once toggled, only \\(B_{\\text{min}}\\) is 
-                                                       used to generate the table on the right.</p>'), value = FALSE),
-                           selectInput('FCE_ALGID_RAW_INPUT', 'Algorithms', 
-                                       choices = NULL, selected = NULL),
-                           
-                           selectInput('download_format_FCE', 'Format of the csv', 
-                                       choices = c('long', 'wide'), selected = 'wide'),
-                           downloadButton("FCE_SAMPLE_download", "Save the aligned runtime samples as csv")
-                           ),
-                         
-                         mainPanel(
-                           width = 9,
-                           HTML("<div style='font-size:120%;'>This table shows for each selected algorithm \\(A\\), 
-                                each selected target value \\(f(x)\\), and each run \\(r\\) 
-                                the number \\(T(A,f(x),r)\\) of evaluations performed by the 
-                                algorithm until it evaluated for the first time a solution of 
-                                quality at least \\(f(x)\\).</div>"),
-                           br(),
-                           dataTableOutput('FCE_SAMPLE')
-                           )
-                    )
-                )
-            )
-        ),
+    tabItem(
+      tabName = 'FCE_DATA',
+      fluidRow(
+        column(
+          width = 12,
+          fv_overview_box(collapsed = F),
+          fv_stats_box(collapsed = F),
+          fv_sample_box(collapsed = F)
+        )
+      )
+    ),
     
     # FCE: historgrams, p.d.f. --------
-    tabItem(tabName = 'FCE_PDF', 
-            fluidRow(
-              column(width = 12,     
-                     box(title = 'Histogram of Fixed-Budget Targets', 
-                         width = 12, collapsible = TRUE, solidHeader = TRUE,  collapsed = T,
-                         status = "primary",
-                         sidebarPanel(
-                           width = 2,
-                           textInput('FCE_HIST_RUNTIME', label = HTML('Select the budget value'), 
-                                     value = ''),
-                           
-                           HTML('Choose whether the histograms are <b>overlaid</b> in one plot 
-                                or <b>separated</b> in several subplots:'),
-                           selectInput('FCE_illu_mode', '', 
-                                       choices = c("overlay", "subplot"), 
-                                       selected = 'subplot'),
-                           
-                           selectInput('FIG_FORMAT_FV_HIST', label = 'select the figure format',
-                                       choices = supported_fig_format, selected = 'pdf'),
-                           
-                           downloadButton('FIG_DOWNLOAD_FV_HIST', label = 'download the figure')
-                           
-                           ),
-                         
-                         mainPanel(
-                           width = 10,
-                           column(width = 12, align = "center",
-                                  HTML('<p align="left" "font-size:120%;">
-                                       This histogram counts the number of runs whose best-so-far function values within the 
-first \\(B\\) evaluations is between \\(v_i\\) and \\(v_{i+1}\\). The buckets \\([v_i,v_{i+1})\\) are chosen automatically 
-according to the so-called <b>Freedman–Diaconis rule</b>: \\(\\text{Bin size}= 2\\frac{Q_3 - Q_1}{\\sqrt[3]{n}}\\), 
-where \\(Q_1, Q_3\\) are the \\(25\\%\\) and \\(75\\%\\) percentile of the runtime and \\(n\\) is the sample size.
-                                       The displayed algorithms can be selected by clicking on the legend on the right. 
-                                       A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-                                  plotlyOutput('FCE_HIST', height = plotly_height2, width = plotly_width2)
-                           )
-                         )
-                     )
-              ),
-              
-              column(width = 12,
-                     box(title = 'Empirical Probability Density Function of Fixed-Budget Function Values', 
-                         width = 12, collapsible = TRUE, solidHeader = TRUE, status = "primary", collapsed = T,
-                         sidebarLayout(
-                           sidebarPanel(
-                             width = 2,
-                             HTML('Select the budget for which the distribution of best-so-far function values is shown'),
-                             
-                             textInput('FCE_PDF_RUNTIME', label = '', value = ''),
-                             checkboxInput('FCE_SHOW_SAMPLE', label = 'show runtime samples', value = T),
-                             checkboxInput('FCE_LOGY', label = 'scale y axis log10', value = T),
-                             
-                             selectInput('FIG_FORMAT_FV_PDF', label = 'select the figure format',
-                                         choices = supported_fig_format, selected = 'pdf'),
-                             
-                             downloadButton('FIG_DOWNLOAD_FV_PDF', label = 'download the figure')
-                           ),
-                           
-                           mainPanel(
-                             width = 10,
-                             column(width = 12, align = "center", 
-                                    HTML('<p align="left" style="font-size:120%;">
-                                         The plot shows, for the budget selected on the left, the distribution 
-of the best-so-far function values of the individual runs (dots), and an estimated distribution of the probability mass function. 
-The displayed algorithms can be selected by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b> 
-appear when hovering over the figure. A csv file with the runtime data can be downlowaded from the 
-                                         <a href="#shiny-tab-FCE_DATA", data-toggle="tab"> Data Summary tab</a>.'),
-                                    plotlyOutput('FCE_PDF', height = plotly_height, width = plotly_width2)
-                             )
-                          )
-                       )
-                     )
-                   )
-                  )
+    tabItem(
+      tabName = 'FCE_PDF', 
+      fluidRow(
+        column(
+          width = 12,
+          fv_histgram_box(collapsed = F),
+          fv_pdf_box(collapsed = F)      
+        )
+      )
     ),
     
     # FCE: Expected Convergence Curve ---------------------------------------------

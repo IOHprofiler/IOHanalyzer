@@ -1,6 +1,7 @@
-upload_box <- function() {
-  box(title = HTML('<p style="font-size:120%;">Upload Data</p>'), width = 12,
-      solidHeader = T, status = "primary", collapsible = F, height = '620px',
+upload_box <- function(width = 12, collapsible = T, collapsed = T) {
+  box(title = HTML('<p style="font-size:120%;">Upload Data</p>'), 
+      width = width, solidHeader = T, status = "primary", collapsible = collapsible, 
+      collapsed = collapsed, height = '620px',
       sidebarPanel(
         width = 12,
         selectInput('DATA_SRC_FORMAT', label = HTML('<p align="left" style="font-size:120%;">Please choose the format of your data sets</p>'),
@@ -23,6 +24,24 @@ upload_box <- function() {
         HTML('<p align="left" style="font-size:120%;"><b>Remove all data you uploaded</b></p>'),
         actionButton('RM_DATA', 'Clear data')
       )
+  )
+}
+
+upload_prompt_box <- function(width = 12, collapsible = T, collapsed = T) {
+  box(title = HTML('<p style="font-size:120%;">Data Processing Prompt</p>'), 
+      width = width, height = '620px', solidHeader = T, status = "primary",
+      collapsible = collapsible, collapsed = collapsed,
+      verbatimTextOutput('process_data_promt'),
+      tags$head(tags$style("#process_data_promt{color:black; font-size:12px; font-style:italic;
+                           overflow-y:visible; max-height: 500px; background: ghostwhite;}"))
+      )
+}
+
+data_list_box <- function(width = 12, collapsible = T, collapsed = T) {
+  box(title = HTML('<p style="font-size:120%;">List of Processed Data</p>'),
+      width = width, solidHeader = T, status = "primary", 
+      collapsible = collapsible, collapsed = collapsed,
+      dataTableOutput('DATASETLIST_INFO')
   )
 }
 

@@ -532,7 +532,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
       
-      if (show.CI){
+      if (show.CI) {
         p %<>% 
           add_trace(data = ds_FCE, x = ~runtime, y = ~upper, type = 'scatter', mode = 'lines',
                     line = list(color = rgba_str, width = 0), legendgroup = legend,
@@ -555,7 +555,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
                          marker = list(color = rgb_str), legendgroup = legend,
                          line = list(color = rgb_str, dash = 'dash'))
       
-      if (show.runs||show.grad) {
+      if (show.runs || show.grad) {
         fce_runs <- get_FV_sample(dsList, RTseq)
         
         fce_runs_ERT <- fce_runs[algId == attr(dsList[[i]], 'algId') &
@@ -570,15 +570,14 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
         all_names <- names_to_show
         names_to_show <- head(names_to_show, counter)
         best_parts <- NA
-        
         mentioned <- FALSE
         
-        if (show.grad){
+        if (show.grad) {
           sorted_fce_runs_ERT <- apply((fce_runs_ERT[, -c('algId', 'runtime', 'funcId', 'DIM')]), 1, function(x){sort(x,decreasing = FALSE)})
           counter = 0
           names_amount = length(all_names)
           
-          for (counter in c(1:length(all_names))){
+          for (counter in c(1:length(all_names))) {
             fill_density <- fill_density + grad_functions$fixed_edges(counter,names_amount,show.intensity)
             rgba_str_m  <- generate_rbga(col2rgb(colors[i]),fill_density)
             p %<>% add_trace(x = fce_runs_ERT[['runtime']], y = sorted_fce_runs_ERT[counter,],
@@ -600,56 +599,55 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
           )
         }
         
-        if (show.runs){
+        if (show.runs) {
+          for (run_v in names_to_show) {
+            p %<>% add_trace(
+              data = fce_runs_ERT,
+              x = ~ runtime,
+              y = fce_runs_ERT[[run_v]],
+              type = 'scatter',
+              mode = 'lines',
+              line = list(color = rgb_str, width = 0.5),
+              text = paste(run_v),
+              hoverinfo = 'none',
+              name = paste("runs of ", algId)
+            )
+            best_parts <-
+              insert_best_parts(best_parts, fce_runs_ERT[[run_v]], !attr(dsList[[i]],"maximization"))
+          }
           
-        for (run_v in names_to_show) {
-          p %<>% add_trace(
-            data = fce_runs_ERT,
-            x = ~ runtime,
-            y = fce_runs_ERT[[run_v]],
-            type = 'scatter',
-            mode = 'lines',
-            line = list(color = rgb_str, width = 0.5),
-            text = paste(run_v),
-            hoverinfo = 'none',
-            name = paste("runs of ", algId)
-          )
-          best_parts <-
-            insert_best_parts(best_parts, fce_runs_ERT[[run_v]], !attr(dsList[[i]],"maximization"))
-        }
-        
-        if (show.optimal) {
-          mentioned <- FALSE
-          check_value <- tail(best_parts, 1)
-          for (run_v in names_to_show)
-            if (check_value == tail(fce_runs_ERT[[run_v]], 1)) {
-              p %<>% add_trace(
-                data = fce_runs_ERT,
-                x = ~ runtime,
-                y = fce_runs_ERT[[run_v]],
-                type = 'scatter',
-                mode = 'lines',
-                line = list(color = rgb_str, width = 0.5 *
-                              3),
-                showlegend = !mentioned,
-                name = paste("best.", algId)
-              )
-              mentioned = TRUE
-            }
-        }
-        
-        if (show.pareto) {
-          p %<>% add_trace(
-            x = fce_runs_ERT[['runtime']],
-            y = best_parts,
-            type = 'scatter',
-            mode = 'lines',
-            line = list(color = rgb_str, width = 0.5 *
-                          5, dash = 'dot'),
-            showlegend = T,
-            name = paste("pareto_optima.", algId)
-          )
-        }
+          if (show.optimal) {
+            mentioned <- FALSE
+            check_value <- tail(best_parts, 1)
+            for (run_v in names_to_show)
+              if (check_value == tail(fce_runs_ERT[[run_v]], 1)) {
+                p %<>% add_trace(
+                  data = fce_runs_ERT,
+                  x = ~ runtime,
+                  y = fce_runs_ERT[[run_v]],
+                  type = 'scatter',
+                  mode = 'lines',
+                  line = list(color = rgb_str, width = 0.5 *
+                                3),
+                  showlegend = !mentioned,
+                  name = paste("best.", algId)
+                )
+                mentioned = TRUE
+              }
+          }
+          
+          if (show.pareto) {
+            p %<>% add_trace(
+              x = fce_runs_ERT[['runtime']],
+              y = best_parts,
+              type = 'scatter',
+              mode = 'lines',
+              line = list(color = rgb_str, width = 0.5 *
+                            5, dash = 'dot'),
+              showlegend = T,
+              name = paste("pareto_optima.", algId)
+            )
+          }
         }
       }
     }
@@ -660,7 +658,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
     if (scale.reverse)
       p %<>% layout(xaxis = list(autorange = "reversed"))
   }
-  else if (backend == 'ggplot2'){
+  else if (backend == 'ggplot2') {
     fce[, 'group' := paste(algId, funcId, DIM, sep = '-')]
     p <- ggplot(data = fce, aes(group = 'group', colour = 'group'))
     

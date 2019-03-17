@@ -132,18 +132,18 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
 c.DataSetList <- function(...) {
   # TODO: maybe remove duplicated dataset in the further
   # remove the empty list first
-  dsl <- list(...)
-  dsl <- dsl[sapply(dsl, length) != 0]
+  dsList <- list(...)
+  dsList <- dsList[sapply(dsList, length) != 0]
 
-  if (length(dsl) == 0)
+  if (length(dsList) == 0)
     return()
 
-  object <- unlist(dsl, recursive = F)
-  if(!any((class(object)) == 'DataSetList'))
+  object <- unlist(dsList, recursive = F)
+  if (!any((class(object)) == 'DataSetList'))
     class(object) %<>% c('DataSetList')
 
   for (attr_str in c('DIM', 'funcId', 'algId')) {
-    attr(object, attr_str) <- unlist(lapply(dsl, function(x) attr(x, attr_str)))
+    attr(object, attr_str) <- unlist(lapply(dsList, function(x) attr(x, attr_str)))
   }
   object
 }
@@ -196,13 +196,14 @@ print.DataSetList <- function(x, ...) {
 #'
 #' @examples
 summary.DataSetList <- function(object, ...) {
-  sapply(object, function(d) {
-    list(funcId = attr(d, 'funcId'),
-         DIM = attr(d, 'DIM'),
-         algId = attr(d, 'algId'),
-         datafile = attr(d, 'datafile'),
-         comment = attr(d, 'comment'))
-  }) %>%
+  sapply(object, 
+         function(d) {
+           list(funcId = attr(d, 'funcId'),
+                DIM = attr(d, 'DIM'),
+                algId = attr(d, 'algId'),
+                datafile = attr(d, 'datafile'),
+                comment = attr(d, 'comment'))
+         }) %>%
     t %>%
     as.data.frame
 }
@@ -247,8 +248,6 @@ get_RT_summary.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
     res
   }) %>% rbindlist
 }
-
-#TODO: Possibly get rid of ...-parameters?
 
 #' Get RunTime Sample
 #'
@@ -338,7 +337,7 @@ get_FV_sample.DataSetList <- function(dsList, runtime, algorithm = 'all') {
     colnames(res)[1] <- 'DIM'
     colnames(res)[2] <- 'funcId'
     res
-  }) %>% rbindlist (fill=TRUE)
+  }) %>% rbindlist(fill = TRUE)
 }
 
 #' Get Funtion Value Samples
@@ -522,20 +521,20 @@ max_ERTs <- function(dsList, aggr_on = 'funcId', targets = NULL, maximize = T) U
 max_ERTs.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, maximize = T) {
   N <- length(get_AlgId(dsList))
 
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
-  if(!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  if (!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
 
-  second_aggr <- if(aggr_on == 'funcId') get_DIM(dsList) else get_funcId(dsList)
-  if(length(second_aggr) >1 ) return(NULL)
+  second_aggr <- if (aggr_on == 'funcId') get_DIM(dsList) else get_funcId(dsList)
+  if (length(second_aggr) > 1 ) return(NULL)
 
   erts <- seq(0, 0, length.out = length(get_AlgId(dsList)))
   names(erts) <- get_AlgId(dsList)
 
   for (j in seq_along(aggr_attr)) {
-    dsList_filetered <- if(aggr_on == 'funcId') subset(dsList, funcId==aggr_attr[[j]])
-    else subset(dsList, DIM==aggr_attr[[j]])
+    dsList_filetered <- if (aggr_on == 'funcId') subset(dsList, funcId == aggr_attr[[j]])
+    else subset(dsList, DIM == aggr_attr[[j]])
 
-    if(is.null(targets)){
+    if (is.null(targets)) {
       Fall <- get_Funvals(dsList_filetered)
       Fval <- ifelse(maximize, max(Fall), min(Fall))
     }
@@ -571,25 +570,25 @@ mean_FVs <- function(dsList, aggr_on = 'funcId', runtimes = NULL) UseMethod("mea
 mean_FVs.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NULL) {
   N <- length(get_AlgId(dsList))
 
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
-  if(!is.null(runtimes) && length(runtimes) != length(aggr_attr)) targets <- NULL
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  if (!is.null(runtimes) && length(runtimes) != length(aggr_attr)) targets <- NULL
 
-  second_aggr <- if(aggr_on == 'funcId') get_DIM(dsList) else get_funcId(dsList)
-  if(length(second_aggr) >1 ) return(NULL)
+  second_aggr <- if (aggr_on == 'funcId') get_DIM(dsList) else get_funcId(dsList)
+  if (length(second_aggr) > 1 ) return(NULL)
 
   erts <- seq(0, 0, length.out = length(get_AlgId(dsList)))
   names(erts) <- get_AlgId(dsList)
 
   for (j in seq_along(aggr_attr)) {
-    dsList_filetered <- if(aggr_on == 'funcId') subset(dsList, funcId==aggr_attr[[j]])
-    else subset(dsList, DIM==aggr_attr[[j]])
+    dsList_filetered <- if (aggr_on == 'funcId') subset(dsList, funcId == aggr_attr[[j]])
+    else subset(dsList, DIM == aggr_attr[[j]])
 
-    if(is.null(runtimes)){
+    if (is.null(runtimes)) {
       RTall <- get_Runtimes(dsList_filetered)
       RTval <- max(RTall)
-    }
-    else
+    } else
       RTval <- runtimes[[j]]
+    
     summary <- get_FV_summary(dsList_filetered, runtime = RTval)
     ert <- summary$mean
     names(ert) <- summary$algId

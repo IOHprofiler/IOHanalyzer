@@ -643,6 +643,7 @@ shinyServer(function(input, output, session) {
       targets <- get_max_targets(data, aggr_on, maximize = !(src_format == COCO))
       updateTextInput(session, 'ERTPlot.Aggr.Targets', value = targets %>% toString)
     }
+    
     plot_ERT_AGGR(data, plot_mode = input$ERTPlot.Aggr.Mode, targets = targets,
                   scale.ylog = input$ERTPlot.Aggr.Logy,
                   maximize = !(src_format == COCO), use_rank = input$ERTPlot.Aggr.Ranking,
@@ -1101,13 +1102,9 @@ shinyServer(function(input, output, session) {
   
   # The ECDF plots for the target value ----------------
   output$FCE_ECDF_PER_TARGET <- renderPlotly({
-    req(input$FCE_ECDF_RT1, input$FCE_ECDF_RT2, input$FCE_ECDF_RT3)
-    runtimes <- c(
-      as.integer(input$FCE_ECDF_RT1),
-      as.integer(input$FCE_ECDF_RT2),
-      as.integer(input$FCE_ECDF_RT3))
-    
-    plot_FCE_ECDF_PER_TARGET.DataSetList(DATA(),runtimes, scale.xlog = input$FCE_ECDF_semilogx)
+    req(input$FCE_ECDF_RT)
+    runtimes <- as.integer(input$FCE_ECDF_RT)
+    plot_FCE_ECDF_PER_TARGET.DataSetList(DATA(), runtimes, scale.xlog = input$FCE_ECDF_semilogx)
   })
   
   output$FCE_RT_GRID <- renderPrint({
@@ -1131,7 +1128,7 @@ shinyServer(function(input, output, session) {
     rt_max <- input$FCE_ECDF_RT_MAX %>% as.integer
     rt_step <- input$FCE_ECDF_RT_STEP %>% as.integer
     
-    plot_FV_ECDF_AGGR.DataSetList(DATA(),rt_min = rt_min, 
+    plot_FV_ECDF_AGGR.DataSetList(DATA(), rt_min = rt_min, 
                                   rt_max = rt_max, rt_step = rt_step, 
                                   scale.xlog = input$FCE_ECDF_AGGR_semilogx,
                                   show.per_target = input$FCE_ECDF_per_target)

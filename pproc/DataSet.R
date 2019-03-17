@@ -231,6 +231,12 @@ summary.DataSet <- function(object, ...) {
   cat(paste('Attributes:', paste0(names(ds_attr), collapse = ', ')))
 }
 
+
+# TOOD: merge two data set
+merge <- function() {
+  
+}
+
 # TODO: merge this function with the onese in plotDataSetList.R
 # plot_ERT <- function(ds, backend = 'ggplot2') {
 #   p <- plot_ly_default(x.title = "best-so-far f(x)-value",

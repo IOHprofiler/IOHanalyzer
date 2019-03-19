@@ -119,6 +119,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
   attr(object, 'DIM') <- DIM
   attr(object, 'funcId') <- funcId
   attr(object, 'algId') <- algId
+  object
   # arrange(object)
 }
 
@@ -165,6 +166,7 @@ c.DataSetList <- function(...) {
   for (attr_str in c('DIM', 'funcId', 'algId')) {
     attr(object, attr_str) <- unlist(lapply(dsList, function(x) attr(x, attr_str)))
   }
+  object
   # arrange(object)
 }
 

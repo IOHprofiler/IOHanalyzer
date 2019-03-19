@@ -512,6 +512,9 @@ shinyServer(function(input, output, session) {
       fstop <- format_FV(input$F_MAX_SAMPLE) %>% as.numeric
       fstep <- format_FV(input$F_STEP_SAMPLE) %>% as.numeric
       
+      data <- DATA()
+      fall <- get_Funvals(data)
+      
       req(fstart <= fstop, fstep <= fstop - fstart)
       fseq <- seq_FV(fall, fstart, fstop, fstep)
     }
@@ -519,8 +522,7 @@ shinyServer(function(input, output, session) {
     # TODO: verify this
     # we have to remove this part from the dependency of this reactive expression
     # isolate({
-    data <- DATA()
-    fall <- get_Funvals(data)
+    
     # })
     
     req(fseq)

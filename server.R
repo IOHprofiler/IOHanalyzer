@@ -77,7 +77,7 @@ get_data_id <- function(dsList) {
   paste(get_funcId(dsList), get_DIM(dsList), sep = '-')
 }
 
-gecco2019data <- readRDS('data/2019gecco-ins11-1run.rds')
+# gecco2019data <- readRDS('data/2019gecco-ins11-1run.rds')
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {

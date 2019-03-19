@@ -53,7 +53,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
     return(structure(list(), class = c('DataSetList', 'list')))
 
   path <- trimws(path)
-  indexFiles <- file.path(path, dir(path, pattern = '.info'))  # scan all .info files
+  indexFiles <- scan_IndexFile(path)
 
   if (is.null(print_fun))
     print_fun <- cat
@@ -71,7 +71,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
       print_fun(paste('Processing', file, '...\n'))
       print_fun(sprintf('   algorithm %s...\n', indexInfo[[1]]$algId))
     }
-
+ 
     for (info in indexInfo) {
       if (verbose) {
         print_fun(sprintf('      %d instances on f%d %dD...\n',
@@ -119,7 +119,27 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
   attr(object, 'DIM') <- DIM
   attr(object, 'funcId') <- funcId
   attr(object, 'algId') <- algId
-  object
+  arrange(object)
+}
+
+arrange <- function(dslist) UseMethod("setorder", dslist)
+
+arrange.DataSetList <- function(dsList) {
+  algId <- attr(dsList, 'algId')
+  funcId <- attr(dsList, 'funcId') 
+  DIM <- attr(dsList, 'DIM') 
+  
+  dt <- data.table(idx = seq_along(dsList), algId = algId, 
+                   funcId = as.numeric(funcId), DIM = DIM)
+  
+  setorder(dt, algId, funcId, DIM)
+  idx <- dt$idx
+  
+  dsList <- dsList[idx]
+  attr(dsList, 'DIM') <- DIM[idx]
+  attr(dsList, 'funcId')  <- funcId[idx]
+  attr(dsList, 'algId') <- algId[idx]
+  invisible(dsList)
 }
 
 #' S3 concatenation function for DataSetList
@@ -145,7 +165,7 @@ c.DataSetList <- function(...) {
   for (attr_str in c('DIM', 'funcId', 'algId')) {
     attr(object, attr_str) <- unlist(lapply(dsList, function(x) attr(x, attr_str)))
   }
-  object
+  arrange(object)
 }
 
 #' S3 extraction function for DataSetList

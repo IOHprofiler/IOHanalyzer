@@ -31,9 +31,19 @@ upload_prompt_box <- function(width = 12, collapsible = T, collapsed = T) {
   box(title = HTML('<p style="font-size:120%;">Data Processing Prompt</p>'), 
       width = width, height = '620px', solidHeader = T, status = "primary",
       collapsible = collapsible, collapsed = collapsed,
+      
       verbatimTextOutput('process_data_promt'),
-      tags$head(tags$style("#process_data_promt{color:black; font-size:12px; font-style:italic;
-                           overflow-y:visible; max-height: 500px; background: ghostwhite;}"))
+      # modifying CSS for 'process_data_promt'
+      tags$head(tags$style("#process_data_promt{
+                           color:black; font-size:12px; font-style:italic;
+                           max-height: 500px;
+                           overflow-y:visible; overflow-x: auto; 
+                           white-space: pre-wrap;
+                           white-space: -moz-pre-wrap;
+                           white-space: -pre-wrap;
+                           white-space: -o-pre-wrap; 
+                           word-wrap: normal; 
+                           background: ghostwhite;}"))
       )
 }
 

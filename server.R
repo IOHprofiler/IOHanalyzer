@@ -21,7 +21,7 @@ for (f in list.files('pproc', pattern = '.R', full.names = T)) {
 
 source('plot.R')
 
-options(width = 80)
+options(width = 30)
 options(shiny.maxRequestSize = 200 * 1024 ^ 2)   # maximal number of requests, this is too many...
 
 symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
@@ -154,7 +154,7 @@ shinyServer(function(input, output, session) {
     req(length(folder_new) != 0)
     
     for (folder in folder_new) {
-      indexFiles <- scan_indexFile(folder)
+      indexFiles <- scan_IndexFile(folder)
       if (length(indexFiles) == 0) 
         shinyjs::html("process_data_promt", 
                       paste0('<p style="color:red;">No index file (.info) is found in folder ', 
@@ -186,10 +186,24 @@ shinyServer(function(input, output, session) {
           minmax <- ifelse((maximization == "MAXIMIZE"), TRUE, FALSE)
         }
         print_fun <- function(s) shinyjs::html("process_data_promt", s, add = TRUE)
-        DataList$data <- c(DataList$data, read_dir(folder, print_fun = print_fun,
-                                                   maximization = minmax,
-                                                   format = format,
-                                                   subsampling = sub_sampling))
+        
+        # read the data set handles potential errors
+        new_data <- tryCatch(
+          read_dir(folder, print_fun = print_fun,
+                   maximization = minmax,
+                   format = format,
+                   subsampling = sub_sampling),
+          error = function(e) {
+            shinyjs::html("process_data_promt",
+                          paste('<p style="color:red;">The following error happened when processing the data set:</p>'), add = TRUE)
+            shinyjs::html("process_data_promt",
+                          paste('<p style="color:red;">', e, '</p>'),
+                          add = TRUE)
+            DataSetList()
+          }
+        )
+        
+        DataList$data <- c(DataList$data, new_data)
         src_format <<- format
         shinyjs::html("upload_data_promt", 
                       sprintf('%d: %s\n', length(folderList$data), folder), add = TRUE)

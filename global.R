@@ -21,6 +21,7 @@ plotly_width2 <- paste0(fig_width2, "px")
 
 IOHprofiler <- 'IOHprofiler'
 COCO <- 'COCO'
+BIBOJ_COCO <- 'BIBOJ_COCO'
 TWO_COL <- 'TWO_COL'
 AUTOMATIC <- 'AUTOMATIC'
 probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.

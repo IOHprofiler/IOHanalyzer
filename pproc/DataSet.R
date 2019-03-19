@@ -63,14 +63,13 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
       # priority for the runtime alignment: *.cdat > *.tdat > *.dat
       cdatFile <- ifelse(file.exists(cdatFile), cdatFile, tdatFile)
       cdatFile <- ifelse(file.exists(cdatFile), cdatFile, datFile)
-    } else if (format == COCO) {
+    } else if (format %in% c(COCO, BIBOJ_COCO)) {
       datFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
       tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
     } else if (format == TWO_COL) {
       datFile <-  file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
     }
-
-
+    
     # TODO: whether to keep the raw data set list?
     if (format == IOHprofiler) {
       dat <- read_dat(datFile, subsampling)         # read the dat file
@@ -78,6 +77,9 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     } else if (format == COCO) {
       dat <- read_COCO_dat(datFile, subsampling)    # read the dat file
       cdat <- read_COCO_dat(tdatFile, subsampling)   # read the tdat file
+    } else if (format == BIBOJ_COCO) {
+      dat <- read_BIOBJ_COCO_dat(datFile, subsampling)    # read the dat file
+      cdat <- read_BIOBJ_COCO_dat(tdatFile, subsampling)   # read the tdat file
     } else if (format == TWO_COL) {
       dat <- read_dat(datFile, subsampling)
     }

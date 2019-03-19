@@ -119,7 +119,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
   attr(object, 'DIM') <- DIM
   attr(object, 'funcId') <- funcId
   attr(object, 'algId') <- algId
-  arrange(object)
+  # arrange(object)
 }
 
 arrange <- function(dslist) UseMethod("setorder", dslist)
@@ -165,7 +165,7 @@ c.DataSetList <- function(...) {
   for (attr_str in c('DIM', 'funcId', 'algId')) {
     attr(object, attr_str) <- unlist(lapply(dsList, function(x) attr(x, attr_str)))
   }
-  arrange(object)
+  # arrange(object)
 }
 
 #' S3 extraction function for DataSetList

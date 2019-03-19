@@ -501,13 +501,20 @@ shinyServer(function(input, output, session) {
   )
   
   get_RT <- reactive({
-    req(input$fstart, input$fstop, input$fstep)
-    
-    fstart <- format_FV(input$F_MIN_SAMPLE) %>% as.numeric
-    fstop <- format_FV(input$F_MAX_SAMPLE) %>% as.numeric
-    fstep <- format_FV(input$F_STEP_SAMPLE) %>% as.numeric
-    
-    req(fstart <= fstop, fstep <= fstop - fstart)
+    if (input$F_SAMPLE_SINGLE) {
+      req(input$fstart)
+      fstart <- format_FV(input$F_MIN_SAMPLE) %>% as.numeric
+      fseq <- fstart
+    } else {
+      req(input$fstart, input$fstop, input$fstep)
+      
+      fstart <- format_FV(input$F_MIN_SAMPLE) %>% as.numeric
+      fstop <- format_FV(input$F_MAX_SAMPLE) %>% as.numeric
+      fstep <- format_FV(input$F_STEP_SAMPLE) %>% as.numeric
+      
+      req(fstart <= fstop, fstep <= fstop - fstart)
+      fseq <- seq_FV(fall, fstart, fstop, fstep)
+    }
     
     # TODO: verify this
     # we have to remove this part from the dependency of this reactive expression
@@ -516,12 +523,7 @@ shinyServer(function(input, output, session) {
     fall <- get_Funvals(data)
     # })
     
-    if (input$F_SAMPLE_SINGLE)
-      fstop <- fstart
-    
-    fseq <- seq_FV(fall, fstart, fstop, fstep)
     req(fseq)
-    
     get_RT_sample(data, ftarget = fseq, algorithm = input$ALGID_RAW_INPUT, 
                   output = input$RT_download_format)
   })

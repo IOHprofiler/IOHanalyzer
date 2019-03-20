@@ -33,8 +33,11 @@ C_quantile <- function(x, pct = probs) quantile(x, pct, names = F, na.rm = T)
 
 IOHprofiler <- 'IOHprofiler'
 COCO <- 'COCO'
+BIBOJ_COCO <- 'BIBOJ_COCO'
 TWO_COL <- 'TWO_COL'
 AUTOMATIC <- 'AUTOMATIC'
+
+max_samples <- 100
 
 #' Estimator 'SP' for the Expected Running Time (ERT)
 #'

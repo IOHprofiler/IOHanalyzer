@@ -5,8 +5,9 @@
 \title{Plot lineplot of the expected function values of a DataSetList}
 \usage{
 \method{plot_FV_line}{DataSetList}(dsList, RTstart = NULL,
-  RTstop = NULL, show.mean = T, show.median = F, show.runs = F,
-  show.density = 50, show.pareto = F, show.optimal = F,
+  RTstop = NULL, show.CI = T, show.mean = F, show.median = F,
+  show.runs = F, show.density = 50, show.grad = F,
+  show.intensity = 0, show.pareto = F, show.optimal = F,
   backend = "plotly", scale.xlog = F, scale.ylog = F,
   scale.reverse = F, ...)
 }
@@ -17,6 +18,8 @@
 
 \item{RTstop}{The final runtime value.}
 
+\item{show.CI}{Whether or not to show the standard deviations}
+
 \item{show.mean}{Whether or not to show the mean runtimes}
 
 \item{show.median}{Whether or not to show the median runtimes}
@@ -24,6 +27,10 @@
 \item{show.runs}{Whether or not to show the individual runs}
 
 \item{show.density}{Percentage of individual runs to show when show.runs is true}
+
+\item{show.grad}{Whether or not to show the run intensity}
+
+\item{show.intensity}{Intensity to use when using show.grad}
 
 \item{show.pareto}{Whether or not to show the pareto-optimal run}
 

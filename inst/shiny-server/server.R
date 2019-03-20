@@ -127,6 +127,9 @@ shinyServer(function(input, output, session) {
       #TODO: change how the selectinputs are updated based on previously selected values
       if(!open_connection() | (input$Repository.suite != IOHprofiler & input$Repository.suite != COCO)){
         shinyjs::disable("Repository.load")
+        shinyjs::alert("Loading data from the user-uploaded repository is currently not supported on
+                       this version of the IOHprofiler. Please use the web-version at iohprofiler.liacs.nl
+                       instead when user-uploaded data is required.")
         return(NULL)
       }
       algId <- c(get_available_algs(input$Repository.suite), 'all')
@@ -179,13 +182,35 @@ shinyServer(function(input, output, session) {
   selected_folders <- reactive({
     if (!is.null(input$Upload.zip)) {
       datapath <- input$Upload.zip$datapath
-      filename <- input$Upload.zip$name
       folders <- rep('', length(datapath))
 
       for (i in seq(datapath)) {
-        unzip(datapath[i], list = FALSE, exdir = exdir)
-        name <- strsplit(filename[i], '\\.')[[1]][1]
-        folders[i] <- file.path(exdir, name)
+        filetype <- sub('[^\\.]*\\.', '', basename(datapath[i]), perl = T)
+
+        if (filetype == 'zip')
+          unzip_fct <- unzip
+        else if (filetype %in% c('bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz'))
+          unzip_fct <- untar
+
+        if (filetype == 'zip')
+          files <- unzip_fct(datapath[i], list = T)$Name
+        else
+          files <- unzip_fct(datapath[i], list = T)
+
+        idx <- grep('*.info', files)[1]
+        info <- files[idx]
+
+        if (is.null(info)) return(NULL)
+        if (basename(info) == info) {
+          folder <- Sys.time()  # generate a folder name here
+          .exdir <- file.path(exdir, folder)
+          unzip_fct(datapath[i], list = FALSE, exdir = .exdir)
+          folders[i] <- .exdir
+        } else {
+          folder <- dirname(info)
+          unzip_fct(datapath[i], list = FALSE, exdir = exdir)
+          folders[i] <- file.path(exdir, folder)
+        }
       }
       return(folders)
     } else
@@ -223,7 +248,7 @@ shinyServer(function(input, output, session) {
     req(length(folder_new) != 0)
 
     for (folder in folder_new) {
-      indexFiles <- scan_indexFile(folder)
+      indexFiles <- scan_IndexFile(folder)
       if (length(indexFiles) == 0)
         shinyjs::html("process_data_promt",
                       paste0('<p style="color:red;">No index file (.info) is found in folder ',
@@ -255,15 +280,24 @@ shinyServer(function(input, output, session) {
           minmax <- ifelse((maximization == "MAXIMIZE"), TRUE, FALSE)
         }
         print_fun <- function(s) shinyjs::html("process_data_promt", s, add = TRUE)
-        new_dataList <- DataSetList(folder, print_fun = print_fun,
-                                 maximization = minmax,
-                                 format = format,
-                                 subsampling = sub_sampling)
-        if(input$Upload.add_repository) {
-          if(open_connection())
-            upload_dataSetList(new_dataList)
-        }
-        DataList$data <- c(DataList$data, new_dataList)
+
+        # read the data set handles potential errors
+        new_data <- tryCatch(
+          DataSetList(folder, print_fun = print_fun,
+                   maximization = minmax,
+                   format = format,
+                   subsampling = sub_sampling),
+          error = function(e) {
+            shinyjs::html("process_data_promt",
+                          paste('<p style="color:red;">The following error happened when processing the data set:</p>'), add = TRUE)
+            shinyjs::html("process_data_promt",
+                          paste('<p style="color:red;">', e, '</p>'),
+                          add = TRUE)
+            DataSetList()
+          }
+        )
+
+        DataList$data <- c(DataList$data, new_data)
         src_format <<- format
         shinyjs::html("upload_data_promt",
                       sprintf('%d: %s\n', length(folderList$data), folder), add = TRUE)
@@ -422,9 +456,7 @@ shinyServer(function(input, output, session) {
     setTextInput(session, 'ERTPlot.Aggr.Targets', name, alternative = "")
     setTextInput(session, 'FCEPlot.Aggr.Targets', name, alternative = "")
 
-    setTextInput(session, 'RTECDF.Single.Target1', name, alternative = format_FV(q[1]))
-    setTextInput(session, 'RTECDF.Single.Target2', name, alternative = format_FV(q[2]))
-    setTextInput(session, 'RTECDF.Single.Target3', name, alternative = format_FV(q[3]))
+    setTextInput(session, 'RTECDF.Single.Target', name, alternative = format_FV(q[2]))
 
     setTextInput(session, 'RTECDF.AUC.Min', name, alternative = format_FV(start))
     setTextInput(session, 'RTECDF.AUC.Max', name, alternative = format_FV(stop))
@@ -485,9 +517,8 @@ shinyServer(function(input, output, session) {
     setTextInput(session, 'FCEECDF.AUC.Max', name, alternative = max(v))
     setTextInput(session, 'FCEECDF.AUC.Step', name, alternative = step)
 
-    setTextInput(session, 'FCEECDF.Single.Target1', name, alternative = q[1])
-    setTextInput(session, 'FCEECDF.Single.Target2', name, alternative = q[2])
-    setTextInput(session, 'FCEECDF.Single.Target3', name, alternative = q[3])
+    #TODO: remove q and replace by single number
+    setTextInput(session, 'FCEECDF.Single.Target', name, alternative = q[2])
   })
 
   # Data summary for Fixed-Target Runtime (ERT)  --------------
@@ -534,16 +565,18 @@ shinyServer(function(input, output, session) {
     get_FV_overview(data, algorithm = input$RTSummary.Overview.Algid)
   })
 
-  output$table_FV_summary_condensed <- renderTable({
+  output$table_RT_overview <- renderTable({
     req(input$RTSummary.Overview.Algid)
     df <- runtime_summary_condensed()
 
     df$"Budget" %<>% as.integer
-    df$"Number of runs" %<>% as.integer
-    df$"Best reached value" <- format_FV(df$"Best reached value")
-    df$"Worst reached value" <- format_FV(df$"Worst reached value")
-    df$"Mean reached value" <- format_FV(df$"Mean reached value")
-
+    df$"runs" %<>% as.integer
+    df$"runs reached" %<>% as.integer
+    df$"Worst recorded f(x)" <- format_FV(df$"Worst recorded f(x)")
+    df$"Worst reached f(x)" <- format_FV(df$"Worst reached f(x)")
+    df$"mean reached f(x)" <- format_FV(df$"mean reached f(x)")
+    df$"median reached f(x)" <- format_FV(df$"median reached f(x)")
+    df$"Best reached f(x)" <- format_FV(df$"Best reached f(x)")
     df
   })
 
@@ -648,12 +681,13 @@ shinyServer(function(input, output, session) {
     fstop <- input$ERTPlot.Max %>% as.numeric
 
     plot_RT_line(DATA(),Fstart = fstart ,Fstop = fstop,
-                             show.CI = input$ERTPlot.show.CI, show.density = input$ERTPlot.show.density,
-                             show.runs = input$ERTPlot.show_all, show.optimal = input$ERTPlot.show.best_of_all,
-                             show.pareto = input$ERTPlot.show.pareto_optima, show.ERT = input$ERTPlot.show.ERT,
-                             show.mean = input$ERTPlot.show.mean, show.median = input$ERTPlot.show.median,
-                             scale.xlog = input$ERTPlot.semilogx, scale.ylog = input$ERTPlot.semilogy,
-                             scale.reverse = (src_format == COCO))
+                 show.CI = input$ERTPlot.show.CI, show.density = input$ERTPlot.show.density,
+                 show.runs = input$ERTPlot.show_all, show.optimal = input$ERTPlot.show.best_of_all,
+                 show.pareto = input$ERTPlot.show.pareto_optima, show.ERT = input$ERTPlot.show.ERT,
+                 show.mean = input$ERTPlot.show.mean, show.median = input$ERTPlot.show.median,
+                 scale.xlog = input$ERTPlot.semilogx, scale.ylog = input$ERTPlot.semilogy,
+                 show.grad = input$ERTPlot.show.grad, show.intensity = input$ERTPlot.show.intensity,
+                 scale.reverse = (src_format == COCO))
 
   })
 
@@ -671,9 +705,9 @@ shinyServer(function(input, output, session) {
     if(input$ERTPlot.Multi.Aggregator == 'Functions') data <- subset(data, DIM==input$Overall.Dim)
     else data <- subset(data, funcId==input$Overall.Funcid)
     plot_ERT_MULTI(data, plot_mode = input$ERTPlot.Multi.Mode,
-                               scale.xlog = input$ERTPlot.Multi.Logx, scale.ylog = input$ERTPlot.Multi.Logy,
-                               scale.reverse = (src_format == COCO),
-                               aggr_on = ifelse(input$ERTPlot.Multi.Aggregator == 'Functions', 'funcId', 'DIM'))
+                   scale.xlog = input$ERTPlot.Multi.Logx, scale.ylog = input$ERTPlot.Multi.Logy,
+                   scale.reverse = (src_format == COCO),
+                   aggr_on = ifelse(input$ERTPlot.Multi.Aggregator == 'Functions', 'funcId', 'DIM'))
 
   })
 
@@ -737,9 +771,9 @@ shinyServer(function(input, output, session) {
       updateTextInput(session, 'ERTPlot.Aggr.Targets', value = targets %>% toString)
     }
     plot_ERT_AGGR(data, plot_mode = input$ERTPlot.Aggr.Mode, targets = targets,
-                              scale.ylog = input$ERTPlot.Aggr.Logy,
-                              maximize = !(src_format == COCO), use_rank = input$ERTPlot.Aggr.Ranking,
-                              aggr_on = aggr_on, erts = erts)
+                  scale.ylog = input$ERTPlot.Aggr.Logy,
+                  maximize = !(src_format == COCO), use_rank = input$ERTPlot.Aggr.Ranking,
+                  aggr_on = aggr_on, erts = erts)
 
   })
 
@@ -775,7 +809,7 @@ shinyServer(function(input, output, session) {
   render_RT_PMF <- reactive({
     ftarget <- input$RTPMF.Bar.Target %>% as.numeric
     plot_RT_PMF(DATA(), ftarget, show.sample = input$RTPMF.Bar.Sample,
-                            scale.ylog = input$RTPMF.Bar.Logy)
+                scale.ylog = input$RTPMF.Bar.Logy)
   })
 
   # historgram of the running time
@@ -879,12 +913,8 @@ shinyServer(function(input, output, session) {
 
   # The ECDF plots for the runtime ----------------
   output$RT_ECDF <- renderPlotly({
-    req(input$RTECDF.Single.Target1, input$RTECDF.Single.Target2, input$RTECDF.Single.Target3)
-    ftargets <- c(
-      format_FV(input$RTECDF.Single.Target1),
-      format_FV(input$RTECDF.Single.Target2),
-      format_FV(input$RTECDF.Single.Target3)) %>%
-      as.numeric
+    req(input$RTECDF.Single.Target)
+    ftargets <- as.numeric(format_FV(input$RTECDF.Single.Target))
 
     plot_RT_ECDF(DATA(), ftargets, scale.xlog = input$RTECDF.Single.Logx)
 
@@ -972,14 +1002,14 @@ shinyServer(function(input, output, session) {
     get_RT_overview(data, algorithm = input$FCESummary.Overview.Algid)
   })
 
-  output$table_RT_summary_condensed <- renderTable({
+  output$table_FV_overview <- renderTable({
     req(input$FCESummary.Overview.Algid)
     df <- FCE_runtime_summary_condensed()
 
-    df$"Number of runs" %<>% as.integer
+    df$"runs" %<>% as.integer
     df$"Budget" %<>% as.integer
-    df$"Minimum used evaluations" %<>% as.integer
-    df$"Maximum used evaluations" %<>% as.integer
+    df$"miminal runtime" %<>% as.integer
+    df$"maximal runtime" %<>% as.integer
 
     df
   })
@@ -1119,11 +1149,12 @@ shinyServer(function(input, output, session) {
   render_FV_PER_FUN <- reactive({
     rt_min <- input$FCEPlot.Min %>% as.integer
     rt_max <- input$FCEPlot.Max %>% as.integer
-    plot_FV_line(DATA(), RTstart = rt_min, RTstop = rt_max,
-                             show.density = input$FCEPlot.show.density, show.pareto = input$FCEPlot.show.pareto_optima,
-                             show.runs = input$FCEPlot.show.all, show.optimal = input$FCEPlot.show.best_of_all,
-                             show.mean = input$FCEPlot.show.mean, show.median = input$FCEPlot.show.median,
-                             scale.xlog = input$FCEPlot.semilogx, scale.ylog = input$FCEPlot.semilogy)
+    plot_FV_line(DATA(), RTstart = rt_min, RTstop = rt_max, show.CI = input$FCEPlot.show.CI,
+                 show.grad = input$FCEPlot.show.grad, show.intensity = input$FCEPlot.show.intensity,
+                 show.density = input$FCEPlot.show.density, show.pareto = input$FCEPlot.show.pareto_optima,
+                 show.runs = input$FCEPlot.show.all, show.optimal = input$FCEPlot.show.best_of_all,
+                 show.mean = input$FCEPlot.show.mean, show.median = input$FCEPlot.show.median,
+                 scale.xlog = input$FCEPlot.semilogx, scale.ylog = input$FCEPlot.semilogy)
   })
 
 
@@ -1141,8 +1172,8 @@ shinyServer(function(input, output, session) {
     if(input$FCEPlot.Multi.Aggregator == 'Functions') data <- subset(data, DIM==input$Overall.Dim)
     else data <- subset(data, funcId==input$Overall.Funcid)
     plot_FCE_MULTI(data, plot_mode = input$FCEPlot.Multi.Mode,
-                               scale.xlog = input$FCEPlot.Multi.Logx, scale.ylog = input$FCEPlot.Multi.Logy,
-                               aggr_on = ifelse(input$FCEPlot.Multi.Aggregator == 'Functions', 'funcId', 'DIM'))
+                   scale.xlog = input$FCEPlot.Multi.Logx, scale.ylog = input$FCEPlot.Multi.Logy,
+                   aggr_on = ifelse(input$FCEPlot.Multi.Aggregator == 'Functions', 'funcId', 'DIM'))
 
   })
 
@@ -1206,9 +1237,9 @@ shinyServer(function(input, output, session) {
       updateTextInput(session, 'FCEPlot.Aggr.Targets', value = runtimes %>% toString)
     }
     plot_FCE_AGGR(data, plot_mode = input$FCEPlot.Aggr.Mode, runtimes = runtimes,
-                              scale.ylog = input$FCEPlot.Aggr.Logy,
-                              use_rank = input$FCEPlot.Aggr.Ranking,
-                              aggr_on = aggr_on, fvs = fvs)
+                  scale.ylog = input$FCEPlot.Aggr.Logy,
+                  use_rank = input$FCEPlot.Aggr.Ranking,
+                  aggr_on = aggr_on, fvs = fvs)
 
   })
 
@@ -1230,7 +1261,7 @@ shinyServer(function(input, output, session) {
     req(input$FCEPDF.Bar.Runtime)
     runtime <- input$FCEPDF.Bar.Runtime %>% as.integer
     plot_FV_PDF(DATA(), runtime, show.sample = input$FCEPDF.Bar.Samples,
-                            scale.ylog = input$FCEPDF.Bar.Logy )
+                scale.ylog = input$FCEPDF.Bar.Logy )
   })
 
   output$FCEPDF.Bar.Download <- downloadHandler(
@@ -1274,12 +1305,8 @@ shinyServer(function(input, output, session) {
 
   # The ECDF plots for the target value ----------------
   output$FCE_ECDF_PER_TARGET <- renderPlotly({
-    req(input$FCEECDF.Single.Target1, input$FCEECDF.Single.Target2, input$FCEECDF.Single.Target3)
-    runtimes <- c(
-      as.integer(input$FCEECDF.Single.Target1),
-      as.integer(input$FCEECDF.Single.Target2),
-      as.integer(input$FCEECDF.Single.Target3))
-
+    req(input$FCEECDF.Single.Target)
+    runtimes <- as.integer(input$FCEECDF.Single.Target)
     plot_FCE_ECDF_PER_TARGET(DATA(),runtimes, scale.xlog = input$FCEECDF.Single.Logx)
   })
 
@@ -1305,9 +1332,9 @@ shinyServer(function(input, output, session) {
     rt_step <- input$FCEECDF.Mult.Step %>% as.integer
 
     plot_FV_ECDF_AGGR(DATA(),rt_min = rt_min,
-                                  rt_max = rt_max, rt_step = rt_step,
-                                  scale.xlog = input$FCEECDF.Mult.Logx,
-                                  show.per_target = input$FCEECDF.Mult.Targets)
+                      rt_max = rt_max, rt_step = rt_step,
+                      scale.xlog = input$FCEECDF.Mult.Logx,
+                      show.per_target = input$FCEECDF.Mult.Targets)
   })
 
   output$FCEECDF.Mult.Download <- downloadHandler(
@@ -1334,7 +1361,7 @@ shinyServer(function(input, output, session) {
     rt_max <- input$FCEECDF.AUC.Max %>% as.integer
     rt_step <- input$FCEECDF.AUC.Step %>% as.integer
     plot_FV_AUC(DATA(), rt_min = rt_min,
-                            rt_max = rt_max, rt_step = rt_step)
+                rt_max = rt_max, rt_step = rt_step)
 
   })
 
@@ -1362,10 +1389,10 @@ shinyServer(function(input, output, session) {
     f_max <- format_FV(input$PAR.Plot.Max) %>% as.numeric
 
     plot_PAR_Line(DATA(),f_min,f_max,algids = input$PAR.Plot.Algid,
-                              show.mean = (input$PAR.Plot.show.mean == 'mean'),
-                              show.median = (input$PAR.Plot.show.mean == 'median'),
-                              scale.xlog = input$PAR.Plot.Logx,
-                              scale.ylog = input$PAR.Plot.Logy)
+                  show.mean = (input$PAR.Plot.show.mean == 'mean'),
+                  show.median = (input$PAR.Plot.show.mean == 'median'),
+                  scale.xlog = input$PAR.Plot.Logx,
+                  scale.ylog = input$PAR.Plot.Logy)
   })
 
   output$PAR.Plot.Download <- downloadHandler(

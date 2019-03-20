@@ -42,9 +42,9 @@ limit.data <- function(df, n) {
 #' @export
 #'
 #' @examples
-scan_indexFile <- function(folder) {
+scan_IndexFile <- function(folder) {
   folder <- trimws(folder)
-  file.path(folder, dir(folder, pattern = '.info'))
+  file.path(folder, list.files(folder, pattern = '.info', recursive = T))
 }
 
 
@@ -56,6 +56,21 @@ scan_indexFile <- function(folder) {
 #'
 #' @examples
 read_IndexFile <- function(fname) {
+  tryCatch(read_IndexFile_IOH(fname),
+           warning = function(e) read_IndexFile_BIOBJ_COCO(fname),
+           error = function(e) read_IndexFile_BIOBJ_COCO(fname),
+           finally = function(e) stop(paste0('Error in reading .info files ', e)))
+}
+
+
+#' Read IOHprofiler-based .info files and extract information
+#'
+#' @param fname The path to the .info file
+#' @return The data contained in the .info file
+#' @export
+#'
+#' @examples
+read_IndexFile_IOH <- function(fname) {
   f <- file(fname, 'r')
   path <- dirname(fname)
   data <- list()
@@ -70,10 +85,16 @@ read_IndexFile <- function(fname) {
     # TODO: make this quote symbol ' or " as the configurable parameter
     # or simply fix it
     name_value <- read.csv(text = lines[1], header = F, quote = "'") %>%
-      as.list %>% unlist %>% as.vector
-    header <- name_value %>% trimws %>%
-    {regmatches(., regexpr("=", .), invert = T)} %>%  # match the first appearance of '='
-      unlist %>% trimws %>%
+      as.list %>%
+      unlist %>%
+      as.vector
+
+    header <- name_value %>%
+      trimws %>% {
+        regmatches(., regexpr("=", .), invert = T) # match the first appearance of '='
+      } %>%
+      unlist %>%
+      trimws %>%
       matrix(nrow = 2) %>% {
         ans <- as.list(.[2, ])
         names(ans) <- .[1, ]
@@ -99,7 +120,9 @@ read_IndexFile <- function(fname) {
       info <- strsplit(res[2, ], '\\|') %>% unlist %>% matrix(nrow = 2)
     }
 
+    record[1] <-  gsub("\\\\", "/", record[1])
     datafile <- file.path(path, record[1])
+
     # TODO: check the name of the attributes and fix them!
     data[[i]] <- c(
       header,
@@ -109,6 +132,91 @@ read_IndexFile <- function(fname) {
         instance = as.numeric(res[1, ]),
         maxRT = as.numeric(info[1, ]),
         finalFV = as.numeric(info[2, ])
+      )
+    )
+    i <- i + 1
+  }
+  close(f)
+  data
+}
+
+#' Read Biobjective COCO-based .info files and extract information
+#'
+#' @param fname The path to the .info file
+#' @return The data contained in the .info file
+#' @export
+#'
+#' @examples
+read_IndexFile_BIOBJ_COCO <- function(fname) {
+  f <- file(fname, 'r')
+  path <- dirname(fname)
+  data <- list()
+  i <- 1
+
+  lines <- suppressWarnings(readLines(f, n = 2))  # read header and comments
+  comment <- lines[2]
+  name_value <- read.csv(text = lines[1], header = F, quote = "'") %>%
+    as.list %>% unlist %>% as.vector
+
+  header <- name_value %>%
+    trimws %>% {
+      regmatches(., regexpr("=", .), invert = T) # match the first appearance of '='
+    } %>%
+    unlist %>%
+    trimws %>%
+    matrix(nrow = 2) %>% {
+      ans <- as.list(.[2, ])
+      names(ans) <- .[1, ]
+      for (name in .[1, ]) {
+        value <- ans[[name]]
+        ans[[name]] <- gsub("'", '', value)
+        value <- suppressWarnings(as.numeric(value)) # convert quoted numeric values to numeric
+        if (!is.na(value))
+          ans[[name]] <- value
+      }
+      ans
+    }
+
+  names(header) <- gsub('algorithm', 'algId', names(header))
+
+  while (TRUE) {
+    # TODO: remove suppressWarnings later
+    lines <- suppressWarnings(readLines(f, n = 1))
+    if (length(lines) == 0)
+      break
+
+    record <- strsplit(lines[1], ',')[[1]] %>% trimws
+
+    # TODO: this must also be removed...
+    if (record[4] == "") {
+      warning(sprintf('File %s is incomplete!', fname))
+      res <- NULL
+      info <- NULL
+    } else {
+      res <- strsplit(record[-c(1, 2, 3)], ':') %>% unlist %>% matrix(nrow = 2)
+      info <- strsplit(res[2, ], '\\|') %>% unlist %>% as.numeric %>% matrix(nrow = 2)
+    }
+
+    record[3] <-  gsub("\\\\", "/", record[3])
+    if ('folder' %in% names(header))
+      datafile <- file.path(path, header$folder, record[3])
+    else
+      datafile <- file.path(path, record[3])
+
+    funcId <- strsplit(record[1], '=')[[1]][2] %>% trimws %>% as.numeric
+    DIM <- strsplit(record[2], '=')[[1]][2] %>% trimws %>% as.numeric
+
+    # TODO: check the name of the attributes and fix them!
+    data[[i]] <- c(
+      header,
+      list(
+        comment = comment,
+        funcId = funcId,
+        DIM = DIM,
+        datafile = datafile,
+        instance = as.numeric(res[1, ]),
+        maxRT = info[1, ],
+        finalFV = info[2, ]
       )
     )
     i <- i + 1
@@ -127,27 +235,33 @@ read_IndexFile <- function(fname) {
 #'
 #' @examples
 check_format <- function(path) {
-  index_files <- scan_indexFile(path)
+  index_files <- scan_IndexFile(path)
   info <- lapply(index_files, read_IndexFile) %>% unlist(recursive = F)
-  datafile <- sapply(info, . %>% `$`(datafile))
+  datafile <- sapply(info, function(item) item$datafile)
 
   format <- lapply(datafile, function(file) {
     first_line <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
-    if (startsWith(first_line, '%'))
+    if (startsWith(first_line, '% function'))
       COCO
     else if (startsWith(first_line, '\"function'))
       IOHprofiler
-  }) %>% unlist
+    else if (first_line == '%')  # Bi-objective COCO format...
+      BIBOJ_COCO
+  }) %>%
+    unlist %>%
+    unique
 
-  res <- data.frame(datafile = datafile, format = format)
-
-  if (length(levels(res$format)) > 1) {
-    warning(paste(path, 'contains multiple data formats. This is not allowed for data processing.
-                  Please check the returned dataframe for more information.'))
-    res
+  if (length(format) > 1) {
+    stop(
+      paste(
+        path,
+        'contains multiple data formats. This is not allowed for data processing.
+        Please check the returned dataframe for more information.'
+      )
+      )
   } else
-    levels(res$format)[1]
-}
+    format
+  }
 
 #' Read IOHProfiler *.dat files
 #'
@@ -202,30 +316,57 @@ read_dat <- function(fname, subsampling = FALSE) {
 #'
 #' @examples
 read_COCO_dat <- function(fname, subsampling = FALSE) {
-  # read the file as a character vector (one string per row)
-  # X <- fread(fname, header = FALSE, sep = '\n', colClasses = 'character') %>%
-  #   apply(1, as.character)
-  #
-  # idx <- which(startsWith(X, '%'))
-  # df <- paste(X[-idx], collapse = '\n') %>%
-  #   fread(header = FALSE, sep = ' ', colClasses = 'numeric')
-  #
-  # idx %<>% c(length(X) + 1) %>% `-`(seq(0, length(idx)))
-  #
-  # lapply(seq(length(idx) - 1),
-  #        function(i) {
-  #          i1 <- idx[i]
-  #          i2 <- idx[i + 1] - 1
-  #          ans <-  df[i1:i2, ] %>% as.matrix
-  #
-  #          # TODO: determine the number of records automatically, the same here
-  #          if (subsampling)
-  #            ans %<>% limit.data(n = 500)
-  #          else
-  #            ans
-  #        })
-  # NOTE: the C implementation is only faster for small data set
   c_read_dat(path.expand(fname), 7, '%')
+}
+
+read_COCO_dat2 <- function(fname, subsampling = FALSE) {
+  select <- seq(5)
+  # read the file as a character vector (one string per row)
+  X <- fread(fname, header = FALSE, sep = '\n', colClasses = 'character')[[1]]
+  idx <- which(startsWith(X, '%'))
+  X <- gsub('\\s+|\\t', ' ', X, perl = T)
+
+  header <- gsub(' \\| ', '|', X[1], perl = T) %>%
+    gsub('\\.\\.\\.|% ', '', ., perl = T) %>% {
+      strsplit(., split = '\\|')[[1]][select]
+    }
+
+  df <- fread(text = X[-idx], header = F, sep = ' ', select = select, fill = T)
+  idx <- c((idx + 1) - seq_along(idx), nrow(df))
+
+  lapply(seq(length(idx) - 1), function(i) {
+    i1 <- idx[i]
+    i2 <- idx[i + 1] - 1
+    as.matrix(df[i1:i2, ])
+  })
+}
+
+read_BIOBJ_COCO_dat <- function(fname, subsampling = FALSE) {
+  if (endsWith(fname, '.dat'))
+    select <- seq(3)
+  else if (endsWith(fname, '.tdat'))
+    select <- seq(2)
+
+  # read the file as a character vector (one string per row)
+  X <- fread(fname, header = FALSE, sep = '\n', colClasses = 'character')[[1]]
+  idx <- which(startsWith(X, '%'))
+  X <- gsub('\\s+|\\t', ' ', X, perl = T)
+
+  header <- gsub(' \\| ', '|', X[4], perl = T) %>%
+    gsub('\\.\\.\\.|% ', '', ., perl = T) %>% {
+      strsplit(., split = '\\|')[[1]][select]
+    }
+
+  df <- fread(text = X[-idx], header = F, sep = ' ', select = select, fill = T)
+
+  idx <- which(startsWith(X, '% function'))
+  idx <- c((idx + 1) - seq_along(idx) * 4, nrow(df))
+
+  lapply(seq(length(idx) - 1), function(i) {
+    i1 <- idx[i]
+    i2 <- idx[i + 1] - 1
+    as.matrix(df[i1:i2, ])
+  })
 }
 
 # TODO: double check the index of the target column
@@ -242,20 +383,26 @@ n_data_column <- 5
 #'
 #' @examples
 align_runtime <- function(data, format = IOHprofiler) {
-
   if (format == IOHprofiler) {
     maximization <- TRUE
     idxTarget <- 3
   } else if (format == COCO) {
     maximization <- FALSE
     idxTarget <- 3
-  } else if (format == TWO_COL){
+  } else if (format == BIBOJ_COCO) {
+    maximization <- FALSE
+    n_data_column <- 3
+    idxTarget <- 2
+  } else if (format == TWO_COL) {
     maximization <- TRUE
+    n_data_column <- 2
     idxTarget <- 2
   }
 
   FV <- lapply(data, function(x) x[, idxTarget]) %>%
-    unlist %>% unique %>% sort(decreasing = !maximization)
+    unlist %>%
+    unique %>%
+    sort(decreasing = !maximization)
 
   n_rows <- sapply(data, nrow)
   n_column <- sapply(data, ncol) %>% unique
@@ -264,7 +411,7 @@ align_runtime <- function(data, format = IOHprofiler) {
     n_param <- 0
     idxValue <- idxEvals
     param_names <- NULL
-  } else if (format == IOHprofiler){
+  } else if (format == IOHprofiler) {
     n_param <- n_column - n_data_column
     if (n_param > 0) {
       param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
@@ -273,198 +420,15 @@ align_runtime <- function(data, format = IOHprofiler) {
       param_names <- NULL
       idxValue <- idxEvals
     }
-  } else{
+  } else {
     param_names <- NULL
     idxValue <- idxEvals
   }
 
-  c_align_runtime(data, FV, idxValue - 1, maximization, idxTarget-1) %>% set_names(c('RT', param_names))
+  c_align_runtime(data, FV, idxValue - 1, maximization, idxTarget - 1) %>%
+    set_names(c('RT', param_names))
 }
 
-# TODO: deprecated! this function should be also removed...
-# align all instances at a given target/precision
-align_by_target <- function(data, targets = 'full', nrow = 100, maximization = TRUE,
-                            format = IOHprofiler) {
-
-  if (format == IOHprofiler) {
-    maximization <- TRUE
-    idxTarget <- 5
-  } else if (format == COCO) {
-    maximization <- FALSE
-    idxTarget <- 3
-  }
-
-  N <- length(data)
-  data <- lapply(data, as.matrix)   # TODO: matrices are faster for indexing?
-  next_lines <- lapply(data, function(x) x[1, ]) %>% unlist %>%
-    matrix(nrow = N, byrow = T)
-
-  n_rows <- sapply(data, nrow)
-  n_column <- sapply(data, . %>% ncol) %>% unique
-
-  if (format == COCO)
-    n_param <- 0
-  else
-    n_param <- n_column - n_data_column
-
-  if (length(n_column) > 1)
-    stop('inconsistent number of columns in each run!')
-
-  func <- ifelse(maximization, min, max)
-  op <- ifelse(maximization, `>=`, `<=`)
-  inc <- ifelse(maximization, function(x) x + 1, function(x) x - 1)
-
-  if (is.numeric(targets)) {  # given target values to be aligned
-    Fvalues <- sort(targets)
-  } else {
-    if (targets == 'auto') {  # automatically detemined alignment values
-      Fstart <- func(next_lines[, idxTarget], na.rm = T)
-
-      if (!maximization) {
-        step <- 5.
-        idxCurrentF <- ceiling(log10(Fstart) * step)
-        t <- 10. ^ (idxCurrentF / step)
-      } else {
-        # similar to the alignment in bbob
-        # produce roughly 50 data records by default
-        Fend <- sapply(data, function(x) rev(x[, idxTarget])[1]) %>% max(na.rm = T)
-        if (Fstart == 0)
-          Fstart <- Fstart + 1
-
-        tmp <- seq(log10(Fstart), log10(Fend), length.out = nrow)
-        step <- tmp[2] - tmp[1]
-        idxCurrentF <- log10(Fstart)
-        t <- Fstart
-      }
-      nrow_max <- lapply(data, function(x) unique(x[, idxTarget])) %>%
-        unlist %>% unique %>% length
-      res <- matrix(NA, nrow = nrow_max, ncol = N)
-      Fvalues <- rep(NA, nrow_max)
-
-    } else if (targets == 'full') {
-      # align at every observed fitness value
-      # this should give roughly the same time complexity
-      # as we have to iterate the whole data set
-      Fvalues <- lapply(data, function(x) unique(x[, idxTarget])) %>%
-        unlist %>% unique %>% sort
-
-      if (!maximization)
-        Fvalues <- rev(Fvalues)
-    }
-  }
-
-  index <- rep(1, N)  # 'iterator'
-  res <- matrix(NA, length(Fvalues), N)
-  curr_eval <- rep(NA, N)
-
-  if (n_param > 0) { # the aligned parameters
-    param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
-    param <- lapply(seq(n_param), . %>% {matrix(NA, nrow = length(Fvalues), ncol = N)}) %>%
-      set_names(param_names)
-  }
-
-  if (targets == 'auto') {
-    curr_fvalues <- rep(NA, N)
-    i <- 1
-
-    while (all(index < n_rows)) {
-      curr_eval[1:N] <- NA
-      curr_fvalues[1:N] <- NA
-
-      for (k in seq_along(data)) {
-        d <- data[[k]]
-        iter <- index[k]
-
-        while (TRUE) {
-          # hitting the target
-          # TODO: solve this issue!
-          if (`op`(next_lines[k, idxTarget], t)) {
-            curr_eval[k] <- next_lines[k, idxEvals]
-            curr_fvalues[k] <- next_lines[k, idxTarget]
-            break
-          }
-
-          if (iter < nrow(d)) {
-            iter <- iter + 1
-            next_lines[k, ] <- d[iter, ]
-          } else {
-            break
-          }
-        }
-        index[k] <- iter
-      }
-
-      i <- i + 1
-      res[i, ] <- curr_eval
-
-      if (n_param > 0) {
-        for (k in seq(n_param)) {
-          param[[k]][i, ] <- next_lines[, k + n_data_column]
-        }
-      }
-
-      # if the all the iterations are completed
-      # if (all(index == n_rows))
-      #   break
-
-      # setup the new target value
-      if (!maximization) {
-        idxCurrentF_new <- ceiling(log10(func(curr_fvalues, na.rm = T)) * step)
-        # if (maximization)
-        # idxCurrentF <- max(idxCurrentF_new, idxCurrentF)
-        # else
-        idxCurrentF <- min(idxCurrentF_new, idxCurrentF)
-        Fvalues[i] <-  10. ^ (idxCurrentF / step)
-        idxCurrentF <- inc(idxCurrentF)
-        t <- 10. ^ (idxCurrentF / step)
-      } else {
-        # make sure the new target value is bigger than the next iterate
-        Fvalues[i] <- t
-        idxCurrentF <- idxCurrentF + step
-        t <- 10. ^ idxCurrentF
-      }
-    }
-  } else {
-    t <- Fvalues[1]
-    i <- 1
-
-    while (is.finite(t)) {
-      curr_eval[1:N] <- NA
-
-      # Rcpp implementation
-      curr_eval[] <- align_by_target_inner_loop(t, idxEvals - 1, idxTarget - 1,
-                                                data, index - 1, next_lines, curr_eval,
-                                                maximization)
-
-      res[i, ] <- curr_eval[1:N]
-      if (n_param > 0) {
-        for (k in seq(n_param)) {
-          param[[k]][i, ] <- next_lines[, k + n_data_column]
-        }
-      }
-
-      if (i == length(Fvalues))
-        break
-
-      i <- i + 1
-      t <- Fvalues[i]
-    }
-  }
-
-  # the return values
-  res <- res[1:i, ]
-  Fvalues <- Fvalues[1:i]
-  rownames(res) <- Fvalues
-
-  if (n_param > 0) {
-    for (k in seq(n_param)) {
-      param[[k]] <- param[[k]][1:i, ] %>%
-        set_rownames(Fvalues)
-    }
-    c(list(RT = res), param)
-  } else
-    list(RT = res)
-}
 
 check_contiguous <- function(data) {
   sapply(data,
@@ -505,6 +469,7 @@ align_non_contiguous <- function(data, idx, rownames) {
     set_rownames(rownames)
 }
 
+
 #' Align data by function values
 #' @param data The data to align
 #' @param format Whether the data is form IOHprofiler or COCO.
@@ -526,7 +491,12 @@ align_function_value <- function(data, include_param = TRUE, format = IOHprofile
     maximization <- TRUE
     idxTarget <- 3
     n_param <- n_column - n_data_column
-  } else if (format == TWO_COL){
+  } else if (format == BIBOJ_COCO) {  # new bi-objective COCO format
+    maximization <- FALSE
+    idxTarget <- 2
+    n_data_column <- 2
+    n_param <- 0                      # no parameter is allowed in this case
+  } else if (format == TWO_COL) {
     maximization <- TRUE
     idxTarget <- 2
     n_param <- 0

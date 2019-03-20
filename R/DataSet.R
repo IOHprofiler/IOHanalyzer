@@ -63,7 +63,7 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
       # priority for the runtime alignment: *.cdat > *.tdat > *.dat
       cdatFile <- ifelse(file.exists(cdatFile), cdatFile, tdatFile)
       cdatFile <- ifelse(file.exists(cdatFile), cdatFile, datFile)
-    } else if (format == COCO) {
+    } else if (format %in% c(COCO, BIBOJ_COCO)) {
       datFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
       tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
     } else if (format == TWO_COL) {
@@ -78,6 +78,9 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     } else if (format == COCO) {
       dat <- read_COCO_dat(datFile, subsampling)    # read the dat file
       cdat <- read_COCO_dat(tdatFile, subsampling)   # read the tdat file
+    } else if (format == BIBOJ_COCO) {
+      dat <- read_BIOBJ_COCO_dat(datFile, subsampling)    # read the dat file
+      cdat <- read_BIOBJ_COCO_dat(tdatFile, subsampling)   # read the tdat file
     } else if (format == TWO_COL) {
       dat <- read_dat(datFile, subsampling)
     }
@@ -454,26 +457,32 @@ get_RT_overview <- function(ds, ...) UseMethod("get_RT_overview", ds)
 #' @examples
 get_FV_overview.DataSet <- function(ds, ...) {
   data <- ds$FV
-  algId <- attr(ds, 'algId')
-  maximization <- attr(ds, 'maximization')
-  op_inv <- ifelse(maximization,min,max)
-  op <- ifelse(maximization,max,min)
-
-  maxs <- apply(data,2,op)
-
-  max_val <- op(maxs)
-  min_val <- op_inv(maxs)
-  mean_max <- mean(maxs)
-
   runs <- ncol(data)
-  budget <- max(attr(ds,'maxRT'))
+  last_row <- data[nrow(data), ]
+  budget <- max(attr(ds, 'maxRT'))
+  maximization <- attr(ds, 'maximization')
 
-  c(max_val,min_val,mean_max,runs,budget) %>%
-    t %>%
-    as.data.table %>%
-    cbind(algId,.) %>%
-    set_colnames(c("Algorithm ID","Best reached value","Worst reached value",
-                   "Mean reached value","Number of runs","Budget"))
+  op <- ifelse(maximization, max, min)
+  op_inv <- ifelse(maximization, min, max)
+
+  best_fv <- op(last_row, na.rm = T)
+  worst_recorded_fv <- op_inv(data, na.rm = T)
+  worst_fv <- op_inv(last_row, na.rm = T)
+  mean_fv <- mean(last_row, na.rm = T)
+  median_fv <- median(last_row, na.rm = T)
+  runs_reached <- sum(last_row == best_fv)
+
+  data.table(Algorithm = attr(ds, 'algId'),
+             DIM = attr(ds, 'DIM'),
+             fID = attr(ds, 'funcId'),
+             `Worst recorded f(x)` = worst_recorded_fv,
+             `Worst reached f(x)` = worst_fv,
+             `Best reached f(x)` = best_fv,
+             `mean reached f(x)` = mean_fv,
+             `median reached f(x)` = median_fv,
+             runs = runs,
+             `runs reached` = runs_reached,
+             Budget = budget)
 }
 
 #' Get Runtime Value condensed overview
@@ -488,20 +497,19 @@ get_FV_overview.DataSet <- function(ds, ...) {
 #' @examples
 get_RT_overview.DataSet <- function(ds, ...) {
   data <- ds$RT
-  algId <- attr(ds, 'algId')
-
-  max_val <- max(data,na.rm = T)
-  min_val <- min(data,na.rm = T)
-
   runs <- ncol(data)
-  budget <- max(attr(ds,'maxRT'))
+  budget <- max(attr(ds, 'maxRT'))
 
-  c(min_val, max_val, runs, budget) %>%
-    t %>%
-    as.data.table %>%
-    cbind(algId,.) %>%
-    set_colnames(c('Algorithm ID', 'Minimum used evaluations',
-                   'Maximum used evaluations', 'Number of runs', 'Budget'))
+  min_rt <- min(data, na.rm = T)
+  max_rt <- max(data, na.rm = T)
+
+  data.table(Algorithm = attr(ds, 'algId'),
+             DIM = attr(ds, 'DIM'),
+             fID = attr(ds, 'funcId'),
+             `miminal runtime` = min_rt,
+             `maximal runtime` = max_rt,
+             'runs' = runs,
+             Budget = budget)
 }
 
 #' Get RunTime Summary
@@ -609,36 +617,6 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide', ...) {
   res
 }
 
-# #' Get Function Value Runs
-# #'
-# #' @param ds A DataSet object
-# #' @param runtime A Numerical vector. Runtimes at which function values are reached
-# #'
-# #' @return
-# #' @export
-# #'
-# #' @examples
-# get_FV_runs.DataSet <- function(ds, runtime) {
-#   data <- ds$FV
-
-#   NC <- ncol(data)
-#   NR <- nrow(data)
-#   algId <- attr(ds, 'algId')
-#   maximization <- attr(ds, 'maximization')
-
-#   runtime <- c(runtime) %>% unique %>% as.numeric %>% sort
-#   RT <- rownames(data) %>% as.numeric
-#   idx <- seq_along(RT)
-
-#   matched <- sapply(runtime, function(r) {
-#     res <- idx[RT >= r][1]
-#     ifelse(is.na(res), NR, res)
-#   })
-
-#   data <- data[matched, , drop = FALSE]
-
-#   cbind(algId=algId, runtime=runtime, as.data.table(data))
-# }
 
 #' Get Function Value Summary
 #'
@@ -719,7 +697,14 @@ get_FV_sample.DataSet <- function(ds, runtime, output = 'wide', ...) {
   res
 }
 
-# TODO: perhaps this function can be removed...
+#' Get the parameter names of the algorithm
+#'
+#' @param ds A DataSet or DataSetList object
+#'
+#' @return a character list of paramter names, if recorded in the data set
+#' @export
+#'
+#' @examples
 get_PAR_name.DataSet <- function(ds) {
   name <- names(ds)
   name[!(name %in% c('RT', 'RT.summary', 'FV'))]

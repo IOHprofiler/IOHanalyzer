@@ -53,7 +53,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
     return(structure(list(), class = c('DataSetList', 'list')))
 
   path <- trimws(path)
-  indexFiles <- file.path(path, dir(path, pattern = '.info'))  # scan all .info files
+  indexFiles <- scan_IndexFile(path)
 
   if (is.null(print_fun))
     print_fun <- cat
@@ -493,7 +493,7 @@ subset.DataSetList <- function(x, ...) {
 #' @export
 max_ERTs <- function(dsList, aggr_on = 'funcId', targets = NULL, maximize = T) UseMethod("max_ERTs", dsList)
 
-#TODO: rename this function?
+#TODO: rename this function!
 #' S3 generic function to get the ERT-values for all DataSets in a DataSetList at certain targets
 #'
 #' @param dsList The DataSetLsit

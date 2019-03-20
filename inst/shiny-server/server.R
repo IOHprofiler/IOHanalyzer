@@ -57,7 +57,7 @@ setTextInput <- function(session, id, name, alternative) {
 
 #TODO: this function could be made more clear
 set_format <- function(format){
-  format_FV <<- ifelse((format == COCO),
+  format_FV <<- ifelse((format == COCO || format == BIBOJ_COCO),
                        function(v) format(v, format = "e", digits = 5, nsmall = 2),
                        function(v) format(v, digits = 2, nsmall = 2))
 }
@@ -277,7 +277,7 @@ shinyServer(function(input, output, session) {
         }
 
         if (maximization == AUTOMATIC) {
-          minmax <- ifelse((found_format == COCO), FALSE, TRUE)
+          minmax <- ifelse((found_format == COCO || found_format == BIBOJ_COCO), FALSE, TRUE)
         }
         else{
           minmax <- ifelse((maximization == "MAXIMIZE"), TRUE, FALSE)
@@ -378,13 +378,13 @@ shinyServer(function(input, output, session) {
   MAX_ERTS_FUNC <- reactive({
     dim <- input$Overall.Dim
     data <- subset(DataList$data, DIM == dim)
-    max_ERTs(data, aggr_on = 'funcId', maximize = !(src_format == COCO))
+    max_ERTs(data, aggr_on = 'funcId', maximize = !(src_format == COCO || src_format == BIBOJ_COCO))
   })
 
   MAX_ERTS_DIM <- reactive({
     func <- input$Overall.Funcid
     data <- subset(DataList$data, funcId == func)
-    max_ERTs(data, aggr_on = 'DIM', maximize = !(src_format == COCO))
+    max_ERTs(data, aggr_on = 'DIM', maximize = !(src_format == COCO || src_format == BIBOJ_COCO))
   })
 
   MEAN_FVALS_FUNC <- reactive({
@@ -690,7 +690,7 @@ shinyServer(function(input, output, session) {
                  show.mean = input$ERTPlot.show.mean, show.median = input$ERTPlot.show.median,
                  scale.xlog = input$ERTPlot.semilogx, scale.ylog = input$ERTPlot.semilogy,
                  show.grad = input$ERTPlot.show.grad, show.intensity = input$ERTPlot.show.intensity,
-                 scale.reverse = (src_format == COCO))
+                 scale.reverse = (src_format == COCO || src_format == BIBOJ_COCO))
 
   })
 
@@ -709,7 +709,7 @@ shinyServer(function(input, output, session) {
     else data <- subset(data, funcId==input$Overall.Funcid)
     plot_ERT_MULTI(data, plot_mode = input$ERTPlot.Multi.Mode,
                    scale.xlog = input$ERTPlot.Multi.Logx, scale.ylog = input$ERTPlot.Multi.Logy,
-                   scale.reverse = (src_format == COCO),
+                   scale.reverse = (src_format == COCO || src_format == BIBOJ_COCO),
                    aggr_on = ifelse(input$ERTPlot.Multi.Aggregator == 'Functions', 'funcId', 'DIM'))
 
   })
@@ -770,12 +770,12 @@ shinyServer(function(input, output, session) {
       }
     }
     if(update_targets){
-      targets <- get_max_targets(data, aggr_on, maximize = !(src_format == COCO))
+      targets <- get_max_targets(data, aggr_on, maximize = !(src_format == COCO || src_format == BIBOJ_COCO))
       updateTextInput(session, 'ERTPlot.Aggr.Targets', value = targets %>% toString)
     }
     plot_ERT_AGGR(data, plot_mode = input$ERTPlot.Aggr.Mode, targets = targets,
                   scale.ylog = input$ERTPlot.Aggr.Logy,
-                  maximize = !(src_format == COCO), use_rank = input$ERTPlot.Aggr.Ranking,
+                  maximize = !(src_format == COCO || src_format == BIBOJ_COCO), use_rank = input$ERTPlot.Aggr.Ranking,
                   aggr_on = aggr_on, erts = erts)
 
   })

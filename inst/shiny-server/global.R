@@ -28,6 +28,8 @@ IOHprofiler <- 'IOHprofiler'
 COCO <- 'COCO'
 TWO_COL <- 'TWO_COL'
 AUTOMATIC <- 'AUTOMATIC'
+BIBOJ_COCO <- 'BIBOJ_COCO'
+
 
 # download file names: csv, image ---------------------
 RT_csv_name <- parse(text = "paste0('RT-', paste(Sys.Date(), input$Overall.Dim,

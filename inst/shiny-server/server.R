@@ -104,7 +104,7 @@ shinyServer(function(input, output, session) {
       shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository, please create a folder
                      called 'repository' in your home directory and make sure it contains the '2019gecco.rds'-file
                      provided on the IOHProfiler github-page.")
-      shinyjs::disable("Repository.load")
+      shinyjs::disable('Repository.load')
       return(NULL)
     }
 
@@ -116,7 +116,7 @@ shinyServer(function(input, output, session) {
         }
       }
       else{
-        shinyjs::disable("Repository.load")
+        shinyjs::disable('Repository.load')
         return(NULL)
       }
       algId <- c(get_AlgId(repository), 'all')
@@ -124,12 +124,15 @@ shinyServer(function(input, output, session) {
       func <- c(get_funcId(repository), 'all')
     }
     else{
-      #TODO: change how the selectinputs are updated based on previously selected values
-      if(!open_connection() | (input$Repository.suite != IOHprofiler & input$Repository.suite != COCO)){
-        shinyjs::disable("Repository.load")
+      if(!open_connection()){
         shinyjs::alert("Loading data from the user-uploaded repository is currently not supported on
                        this version of the IOHprofiler. Please use the web-version at iohprofiler.liacs.nl
                        instead when user-uploaded data is required.")
+      }
+      #TODO: change how the selectinputs are updated based on previously selected values
+      if(!open_connection() | (input$Repository.suite != IOHprofiler & input$Repository.suite != COCO)){
+        shinyjs::disable('Repository.load')
+
         return(NULL)
       }
       algId <- c(get_available_algs(input$Repository.suite), 'all')
@@ -139,7 +142,7 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, 'Repository.algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'Repository.dim', choices = dim, selected = 'all')
     updateSelectInput(session, 'Repository.funcid', choices = func, selected = 'all')
-    shinyjs::enable("Repository.load")
+    shinyjs::enable('Repository.load')
 
   })
 

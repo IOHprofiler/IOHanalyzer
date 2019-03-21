@@ -1,13 +1,10 @@
 *.csv
-*.o
-*.so
-*.h
-*.dll
+**.o
+**.so
+**.dll
 *.log
-*.pyc
 *.RData
 *.Rhistory
-*.ipynb
 *.bk
 *.pdf
 *.html
@@ -16,7 +13,6 @@
 !/.gitignore
 __pycache__
 rawdata/
-data/
 test/
 rsconnect/
 tmp/

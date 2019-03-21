@@ -30,6 +30,19 @@ TWO_COL <- 'TWO_COL'
 AUTOMATIC <- 'AUTOMATIC'
 BIBOJ_COCO <- 'BIBOJ_COCO'
 
+# directory where rds-data is stored
+get_repo_location <- function(official) {
+  if (official) {
+    user_repo <- file.path(Sys.getenv('HOME'), 'repository')
+    installed_repo <- file.path(find.package('IOHProfiler'), 'data')
+    if (file.exists(user_repo)) return(user_repo) else return(installed_repo)
+  }
+  else {
+    user_repo <- file.path(Sys.getenv('HOME'), 'repository_unofficial')
+    return(user_repo)
+  }
+}
+
 
 # download file names: csv, image ---------------------
 RT_csv_name <- parse(text = "paste0('RT-', paste(Sys.Date(), input$Overall.Dim,

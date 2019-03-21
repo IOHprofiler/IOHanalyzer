@@ -43,18 +43,8 @@ format_RT <- function(v) as.integer(v)
 # directory where data are extracted from the zip file
 exdir <- file.path(Sys.getenv('HOME'), 'data')
 
-# directory where rds-data is stored
-get_repo_location <- function() {
-  user_repo <- file.path(Sys.getenv('HOME'), 'repository')
-  installed_repo <- file.path(find.package('IOHProfiler'), 'data')
-  
-  if (file.exists(user_repo)) user_repo else installed_repo
-}
-
-# rdsdir <- file.path(Sys.getenv('HOME'), 'repository')
-rdsdir <- get_repo_location()
-
 repository <- NULL
+current_repo <- NULL
 
 setTextInput <- function(session, id, name, alternative) {
   v <- REG[[id]]
@@ -107,9 +97,17 @@ shinyServer(function(input, output, session) {
     sub_sampling <<- input$Upload.subsampling
   })
 
+  observe({
+    repo_dir = get_repo_location(T)
+    if (dir.exists(repo_dir)){
+      filenames = list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
+      updateSelectInput(session, 'Repository.Setname', choices = filenames, selected = NULL)
+    }
+  })
+
   # Load correct options for repository
   observe({
-    if (!dir.exists(rdsdir)) {
+    if (!dir.exists(get_repo_location(T))) {
       shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository, please create a folder
                      called 'repository' in your home directory and make sure it contains the '2019gecco.rds'-file
                      provided on the IOHProfiler github-page.")
@@ -119,8 +117,13 @@ shinyServer(function(input, output, session) {
 
     if (input$Repository.source == "Official") {
       if (input$Repository.suite == IOHprofiler) {
-        if (is.null(repository)) {
-          file_location <- file.path(rdsdir, "2019gecco.rds")
+        if (is.null(input$Repository.Setname)){
+          return(NULL)
+        }
+        if (is.null(repository) || current_repo != input$Repository.Setname) {
+          current_repo <<- input$Repository.Setname
+          file_name <- paste0(input$Repository.Setname,".rds")
+          file_location <- file.path(get_repo_location(T), file_name)
           repository <<- readRDS(file_location)
         }
       } else {
@@ -131,15 +134,14 @@ shinyServer(function(input, output, session) {
       dim <- c(get_DIM(repository), 'all')
       func <- c(get_funcId(repository), 'all')
     } else {
-      if (!open_connection()) {
+      if (!open_connection() || !dir.exists(get_repo_location(F))) {
         shinyjs::alert("Loading data from the user-uploaded repository is currently not supported on
                        this version of the IOHprofiler. Please use the web-version at iohprofiler.liacs.nl
                        instead when user-uploaded data is required.")
       }
       #TODO: change how the selectinputs are updated based on previously selected values
-      if (!open_connection() | (input$Repository.suite != IOHprofiler & input$Repository.suite != COCO)) {
+      if (!open_connection() || (input$Repository.suite != IOHprofiler & input$Repository.suite != COCO)) {
         shinyjs::disable('Repository.load')
-
         return(NULL)
       }
       algId <- c(get_available_algs(input$Repository.suite), 'all')
@@ -150,7 +152,6 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, 'Repository.dim', choices = dim, selected = 'all')
     updateSelectInput(session, 'Repository.funcid', choices = func, selected = 'all')
     shinyjs::enable('Repository.load')
-
   })
 
   observeEvent(input$Repository.load, {

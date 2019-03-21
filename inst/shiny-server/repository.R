@@ -12,7 +12,7 @@ suppressMessages(library(dplyr))
 con <- NULL
 
 #Location where rds-files are stored
-rds_location <- file.path(Sys.getenv('HOME'), 'repository')
+rds_location <- get_repo_location(F)
 
 #TODO: cleaner solution?
 prodecure_upload <- "CALL `iohprofiler`.`insert_item`("
@@ -42,10 +42,10 @@ upload_dataSetList <- function(dsList){
   if(length(dsList) == 0){
     return(0)
   }
-  
+
   filename <- basename(tempfile(pattern = "rds_file", tmpdir = rds_location))
     saveRDS(dsList, file = file.path(rds_location, paste0(filename, ".rds")))
-  
+
   succes <- 0
   for (ds in dsList){
     succes <- succes + upload_dataSet(ds, filename)
@@ -58,7 +58,7 @@ upload_dataSet <- function(ds, filename){
   funcid <- attr(ds, 'funcId')
   dim <- attr(ds, 'DIM')
   suite <- attr(ds, 'src')
-  statement <- paste0(prodecure_upload,  funcid, ",'", suite, "',", dim,",'", 
+  statement <- paste0(prodecure_upload,  funcid, ",'", suite, "',", dim,",'",
                       algid, "','" , filename , "');")
   return(dbExecute(con, statement))
 }
@@ -72,12 +72,12 @@ verify_upload_dataSet <- function(ds){
 }
 
 get_repository_filename <- function(suiteIn, algidIn = "all", funcIn = "all", dimIn = "all"){
-  ans <- tbl(con,"repository_index") %>% 
-    filter((dim == dimIn || dimIn == 'all') 
+  ans <- tbl(con,"repository_index") %>%
+    filter((dim == dimIn || dimIn == 'all')
            && (func == funcIn || funcIn =='all')
            && (algid == algidIn || algidIn == 'all')
            && suite == suiteIn ) %>%
-    select(filename) %>% 
+    select(filename) %>%
     collect()%>%
     .[["filename"]] %>%
     unique
@@ -102,11 +102,11 @@ load_from_repository <- function(suite, algid = "all", funcid = "all", dim = "al
 }
 
 get_available_funcs <- function(suiteIn, algidIn = "all", dimIn = "all" ){
-  ans <- tbl(con,"repository_index") %>% 
-    filter((dim == dimIn || dimIn == 'all') 
+  ans <- tbl(con,"repository_index") %>%
+    filter((dim == dimIn || dimIn == 'all')
            && (algid == algidIn || algidIn == 'all')
            && suite == suiteIn ) %>%
-    select(func) %>% 
+    select(func) %>%
     collect()%>%
     .[["func"]] %>%
     unique
@@ -114,11 +114,11 @@ get_available_funcs <- function(suiteIn, algidIn = "all", dimIn = "all" ){
 }
 
 get_available_dims <- function(suiteIn, funcIn = "all", algidIn = "all" ){
-  ans <- tbl(con,"repository_index") %>% 
+  ans <- tbl(con,"repository_index") %>%
     filter((func == funcIn || funcIn =='all')
            && (algid == algidIn || algidIn == 'all')
            && suite == suiteIn ) %>%
-    select(dim) %>% 
+    select(dim) %>%
     collect()%>%
     .[["dim"]] %>%
     unique
@@ -126,11 +126,11 @@ get_available_dims <- function(suiteIn, funcIn = "all", algidIn = "all" ){
 }
 
 get_available_algs <- function(suiteIn, funcIn = "all", dimIn = "all" ){
-  ans <- tbl(con,"repository_index") %>% 
-    filter((dim == dimIn || dimIn == 'all') 
+  ans <- tbl(con,"repository_index") %>%
+    filter((dim == dimIn || dimIn == 'all')
            && (func == funcIn || funcIn =='all')
            && suite == suiteIn ) %>%
-    select(algid) %>% 
+    select(algid) %>%
     collect() %>%
     .[["algid"]] %>%
     unique

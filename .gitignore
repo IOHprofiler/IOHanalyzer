@@ -1,4 +1,8 @@
 *.csv
+*.o
+*.so
+*.h
+*.dll
 *.log
 *.pyc
 *.RData

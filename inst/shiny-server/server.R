@@ -44,7 +44,16 @@ format_RT <- function(v) as.integer(v)
 exdir <- file.path(Sys.getenv('HOME'), 'data')
 
 # directory where rds-data is stored
-rdsdir <- file.path(Sys.getenv('HOME'), 'repository')
+get_repo_location <- function() {
+  user_repo <- file.path(Sys.getenv('HOME'), 'repository')
+  installed_repo <- file.path(find.package('IOHProfiler'), 'data')
+  
+  if (file.exists(user_repo)) user_repo else installed_repo
+}
+
+# rdsdir <- file.path(Sys.getenv('HOME'), 'repository')
+rdsdir <- get_repo_location()
+
 repository <- NULL
 
 setTextInput <- function(session, id, name, alternative) {
@@ -100,7 +109,7 @@ shinyServer(function(input, output, session) {
 
   # Load correct options for repository
   observe({
-    if(!dir.exists(rdsdir)){
+    if (!dir.exists(rdsdir)) {
       shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository, please create a folder
                      called 'repository' in your home directory and make sure it contains the '2019gecco.rds'-file
                      provided on the IOHProfiler github-page.")
@@ -108,29 +117,27 @@ shinyServer(function(input, output, session) {
       return(NULL)
     }
 
-    if(input$Repository.source == "Official"){
-      if(input$Repository.suite == IOHprofiler){
-        if(is.null(repository)){
+    if (input$Repository.source == "Official") {
+      if (input$Repository.suite == IOHprofiler) {
+        if (is.null(repository)) {
           file_location <- file.path(rdsdir, "2019gecco.rds")
           repository <<- readRDS(file_location)
         }
-      }
-      else{
+      } else {
         shinyjs::disable('Repository.load')
         return(NULL)
       }
       algId <- c(get_AlgId(repository), 'all')
       dim <- c(get_DIM(repository), 'all')
       func <- c(get_funcId(repository), 'all')
-    }
-    else{
-      if(!open_connection()){
+    } else {
+      if (!open_connection()) {
         shinyjs::alert("Loading data from the user-uploaded repository is currently not supported on
                        this version of the IOHprofiler. Please use the web-version at iohprofiler.liacs.nl
                        instead when user-uploaded data is required.")
       }
       #TODO: change how the selectinputs are updated based on previously selected values
-      if(!open_connection() | (input$Repository.suite != IOHprofiler & input$Repository.suite != COCO)){
+      if (!open_connection() | (input$Repository.suite != IOHprofiler & input$Repository.suite != COCO)) {
         shinyjs::disable('Repository.load')
 
         return(NULL)
@@ -163,9 +170,6 @@ shinyServer(function(input, output, session) {
     }
     DataList$data <- c(DataList$data, to_load)
   })
-
-
-
 
   # IMPORTANT: this only works locally, keep it for the local version
   # links to users file systems

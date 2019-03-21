@@ -1,0 +1,45 @@
+Package: IOHProfiler
+Type: Package
+Title: Analizer Part of the IOHProfiler
+Version: 0.0.0.9000
+Author: Hao Wang [cre], Diederick Vermetten [aut], Carola Doerr [aut], Furong Ye [aut], Sander van Rijn [aut], Thomas Back [aut]
+Maintainer: Hao Wang <h.wang@liacs.leidenuniv.nl>
+Authors@R: c(
+    person("Hao", "Wang", email = "h.wang@liacs.leidenuniv.nl", role = "cre"),
+    person("Diederick", "Vermetten", email="d.vermetten@gmail.com", role = "aut"),
+    person("Carola", "Doerr", email = "Carola.Doerr@mpi-inf.mpg.de", role = "aut"),
+    person("Furong", "Ye", email="f.ye@liacs.leidenuniv.nl", role = "aut"),
+    person("Sander", "van Rijn", email="s.j.van.rijn@liacs.leidenuniv.nl", role = "aut"),
+    person("Thomas", "Back", email="t.h.w.baeck@liacs.leidenuniv.nl", role = "aut"))
+Description: This is the post-processing tool of the project 
+    Iterative Optimization Heuristics Profiler (IOHprofiler). 
+    This tool provides a web-based interface to analyze and visualize 
+    the benchmark data, collected from previous experiments. 
+    Importantly, we do support the widely used COCO data format 
+    (aka. Black-Box Optimization Benchmarking).
+License: BSD_3_clause + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: 
+  Rcpp,
+  magrittr,
+  dplyr,
+  reshape2,
+  data.table,
+  ggplot2,
+  colorspace,
+  plotly,
+  colorRamps,
+  RColorBrewer,
+  shiny,
+  shinyjs,
+  shinydashboard,
+  markdown,
+  DBI,
+  dbplyr
+LinkingTo: Rcpp
+SystemRequirements: C++11
+RoxygenNote: 6.1.1
+Suggests: 
+    testthat
+Depends: R (>= 2.10)

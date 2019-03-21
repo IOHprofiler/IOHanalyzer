@@ -28,7 +28,7 @@ library('devtools')
 Error messages will be shown in your R console if there is any installation issue.
 Now, the IOHProfiler package can be installed using the following command:
 ```r
-install_github('IOHProfiler/Analyzer@InDevelopment')
+install_github('IOHProfiler/IOHAnalyzer')
 ```
 
 This will install the package and all required dependencies. The GUI can be acessed using the command:

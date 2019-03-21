@@ -117,7 +117,7 @@ shinyServer(function(input, output, session) {
 
     if (input$Repository.source == "Official") {
       if (input$Repository.suite == IOHprofiler) {
-        if (is.null(input$Repository.Setname)){
+        if (is.null(input$Repository.Setname) || input$Repository.Setname == ""){
           return(NULL)
         }
         if (is.null(repository) || current_repo != input$Repository.Setname) {

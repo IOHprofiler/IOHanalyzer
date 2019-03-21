@@ -13,10 +13,9 @@ suppressMessages(library(magrittr))
 suppressMessages(library(reshape2))
 suppressMessages(library(data.table))
 
-source('pproc/readFiles.R')
-source('pproc/stats.R')
-source('global.R')
-source('plot.R')
+source('R/readFiles.R')
+source('R/stats.R')
+
 
 #' Constructor of S3 class 'DataSet'
 #'
@@ -420,10 +419,6 @@ get_RT_sample <- function(ds, ...) UseMethod("get_RT_sample", ds)
 #'
 #' @examples
 get_RT_summary <- function(ds, ...) UseMethod("get_RT_summary", ds)
-<<<<<<< HEAD:pproc/DataSet.R
-
-=======
->>>>>>> origin/InDevelopment:R/DataSet.R
 #' Get Funtion Value Samples
 #'
 #' @param ds A DataSet or DataSetList object

@@ -13,6 +13,7 @@ This tool is mainly built on R package [Shiny](https://shiny.rstudio.com/), [plo
 The details on the experimentation and post-processing tool can be found on [arXiv.org](https://arxiv.org/abs/1810.05281).
 
 ## <a name="package"></a> Using IOHprofiler as a R-package
+
 To install the IOHProfiler R-package, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/).
 
 After R environment is correctly installed on you machine, 'devtools' package is needed to install the sorftware. Please start up the __R console__, which can be done (in case you're not familiar with R) by either executing command `R` in your system terminal or open the R application. Once it is done, please copy-paste and execute the following command into the R console
@@ -28,7 +29,7 @@ library('devtools')
 Error messages will be shown in your R console if there is any installation issue.
 Now, the IOHProfiler package can be installed using the following command:
 ```r
-devtools::install_github('IOHProfiler/Analyzer@InDevelopment')
+install_github('IOHProfiler/IOHAnalyzer')
 ```
 
 This will install the package and all required dependencies. The GUI can be acessed using the command:
@@ -36,8 +37,8 @@ This will install the package and all required dependencies. The GUI can be aces
 runServer()
 ```
 
-
 ## <a name="install"></a>Installation
+
 Alternatively, you can clone the source-code directely.
 This software is mainly written in __R__. To run it directly from the source code, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/).
 

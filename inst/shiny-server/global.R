@@ -2,25 +2,14 @@
 #
 # Author: Hao Wang
 # Email: wangronin@gmail.com
-<<<<<<< HEAD
-
-suppressMessages(library(IOHAnalyzer))
-=======
 suppressMessages(library(IOHanalyzer))
->>>>>>> InDevelopment
 suppressMessages(library(shiny))
 suppressMessages(library(shinyjs))
 suppressMessages(library(reshape2))
 suppressMessages(library(magrittr))
 suppressMessages(library(dplyr))
 suppressMessages(library(plotly))
-<<<<<<< HEAD
-suppressMessages(library(shinyjs))
 suppressMessages(library(shinydashboard))
-suppressMessages(library(plotly))
-=======
-suppressMessages(library(shinydashboard))
->>>>>>> InDevelopment
 
 options(datatable.print.nrows = 20)
 options(width = 120)

@@ -4,18 +4,6 @@
 #
 # Author: Hao Wang
 # Email: wangronin@gmail.com
-<<<<<<< HEAD
-=======
-#
-# TODO:
-#   * add 'shiny::req' to all the functions when the input might be insufficient
-#   * rename most of the control widgets in a uniform and understandable scheme
-
-
-# for (f in list.files('pproc', pattern = '.R', full.names = T)) {
-#   source(f)
-# }
->>>>>>> InDevelopment
 
 source('plot.R')
 source('repository.R')
@@ -39,20 +27,6 @@ format_RT <- function(v) as.integer(v)
 # directory where data are extracted from the zip file
 exdir <- file.path(Sys.getenv('HOME'), 'data')
 
-<<<<<<< HEAD
-# directory where rds-data is stored
-get_repo_location <- function(user = F) {
-  user_repo <- file.path(Sys.getenv('HOME'), 'repository')
-  installed_repo <- file.path(find.package('IOHProfiler'), 'data')
-  
-  if (file.exists(user_repo)) user_repo else installed_repo
-}
-
-# rdsdir <- file.path(Sys.getenv('HOME'), 'repository')
-rdsdir <- get_repo_location()
-
-=======
->>>>>>> InDevelopment
 repository <- NULL
 current_repo <- NULL
 

@@ -62,9 +62,8 @@ body <- dashboardBody(
   # tabitems ----------------------
   tabItems(
     tabItem(tabName = 'about', includeMarkdown('RMD/about.Rmd')),
-    #Disabled since the readme is not included in the compiled R package
-    #TODO: fix this
-    # tabItem(tabName = 'readme', includeMarkdown(file.path(find.package('IOHanalyzer'), 'README.md'))),
+
+    tabItem(tabName = 'readme', includeMarkdown('RMD/README.md')),
 
     # data uploading functionalities -----------------
     tabItem(tabName = 'upload',

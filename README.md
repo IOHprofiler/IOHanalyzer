@@ -284,7 +284,6 @@ The development team is:
 * [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
 * [Sander van Rijn](https://www.universiteitleiden.nl/en/staffmembers/sander-van-rijn#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
 * [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
-* Diederick Vermetten, <i>Leiden Institute of Advanced Computer Science</i>.
 
 When using IOHprofiler and parts thereof, please kindly cite this work as
 

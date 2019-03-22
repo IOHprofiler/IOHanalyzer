@@ -65,7 +65,12 @@ repository_box<- function(width = 12, collapsible = F, collapsed = T){
         radioButtons('Repository.source',label = "select the source to be used", choices = c("Official", "User-uploaded"),selected = "Official"),
 
         selectInput('Repository.suite', label = HTML('<p align="left" style="font-size:120%;">Please choose the suite</p>'),
-                    choices = c("none",IOHprofiler, COCO), selected = "none", width = '50%'),
+                    choices = c(IOHprofiler, COCO), selected = IOHprofiler, width = '50%'),
+        conditionalPanel(condition = 'input["Repository.source"] == "Official"',
+                         selectInput('Repository.Setname', label = "Select the dataset",
+                                     choices = NULL, selected = NULL, width = '50%')
+                         ),
+
         selectInput('Repository.funcid', label = HTML('<p align="left" style="font-size:120%;">Please choose the function</p>'),
                     choices = NULL, selected = NULL, width = '50%'),
         selectInput('Repository.dim', label = HTML('<p align="left" style="font-size:120%;">Please choose the dimension</p>'),

@@ -2,17 +2,25 @@
 #
 # Author: Hao Wang
 # Email: wangronin@gmail.com
+<<<<<<< HEAD
 
 suppressMessages(library(IOHAnalyzer))
+=======
+suppressMessages(library(IOHanalyzer))
+>>>>>>> InDevelopment
 suppressMessages(library(shiny))
 suppressMessages(library(shinyjs))
 suppressMessages(library(reshape2))
 suppressMessages(library(magrittr))
 suppressMessages(library(dplyr))
 suppressMessages(library(plotly))
+<<<<<<< HEAD
 suppressMessages(library(shinyjs))
 suppressMessages(library(shinydashboard))
 suppressMessages(library(plotly))
+=======
+suppressMessages(library(shinydashboard))
+>>>>>>> InDevelopment
 
 options(datatable.print.nrows = 20)
 options(width = 120)
@@ -39,6 +47,19 @@ COCO <- 'COCO'
 TWO_COL <- 'TWO_COL'
 AUTOMATIC <- 'AUTOMATIC'
 BIBOJ_COCO <- 'BIBOJ_COCO'
+
+# directory where rds-data is stored
+get_repo_location <- function(official) {
+  if (official) {
+    user_repo <- file.path(Sys.getenv('HOME'), 'repository')
+    installed_repo <- file.path(find.package('IOHanalyzer'), 'data')
+    if (file.exists(user_repo)) return(user_repo) else return(installed_repo)
+  }
+  else {
+    user_repo <- file.path(Sys.getenv('HOME'), 'repository_unofficial')
+    return(user_repo)
+  }
+}
 
 
 # download file names: csv, image ---------------------

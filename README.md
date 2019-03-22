@@ -4,9 +4,8 @@
 
 This tool is mainly built on R package [Shiny](https://shiny.rstudio.com/), [plotly](https://plot.ly/) and [Rcpp](http://www.rcpp.org/). To use this tool, three options are available:
 
-1. Install the package directely from github using devtools (see #package)
+1. Install the package directely from github using devtools (see [R-package](#package))
 2. A [web-based service](#server) that you can use right away.
-3. Local installation and execution of the source-code (see [installation instructions](#install))
 
 ## Documentation
 
@@ -37,6 +36,7 @@ This will install the package and all required dependencies. The GUI can be aces
 runServer()
 ```
 
+<<<<<<< HEAD
 ## <a name="install"></a>Installation
 
 Alternatively, you can clone the source-code directely.
@@ -71,6 +71,8 @@ To start the post-processing tool, please execute the following commands in the 
 > shiny::runApp('/path/to/the/clone/folder')
 ```
 
+=======
+>>>>>>> InDevelopment
 ## <a name="server"></a> Online Service
 
 Alternatively, we have built a server to put this tool online, which is currently hosted in [Leiden Institute of Advanced Computer Science](https://liacs.leidenuniv.nl/), Leiden University. The server can be accessed via [http://iohprofiler.liacs.nl](http://iohprofiler.liacs.nl).
@@ -235,20 +237,6 @@ For more information on these functions, use the command:
 ?plot_RT_line.DataSetList
 ```
 
-
-## :construction: TODO
-
-The technical tasks to do are listed as follows:
-
-* [ ] implement fast row-wise quantile function as apply is a bit slow (maybe not worthwhile)
-* [ ] add version number
-* [ ] perhaps add stochastic process modelling / analysis on the performance data (e.g., to test if it is a martingale)
-* [ ] convert data processing code into a package (make the data analysis part as a separate R package)
-* [ ] add more stastistical tests
-* [x] implement the standard R `summary` method for `DataSet` and `DataSetList` classes
-* [x] add `ggplot2` based static plotting procedures for the programming interface
-* [ ] to determine the data source to align the data set using runtimes
-
 ## Contact
 
 If you have any questions, comments, suggestions or pull requests, please don't hesitate contacting us <IOHprofiler@liacs.leidenuniv.nl>!
@@ -263,7 +251,6 @@ The development team is:
 * [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
 * [Sander van Rijn](https://www.universiteitleiden.nl/en/staffmembers/sander-van-rijn#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
 * [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
-* Diederick Vermetten, <i>Leiden Institute of Advanced Computer Science</i>.
 
 When using IOHprofiler and parts thereof, please kindly cite this work as
 

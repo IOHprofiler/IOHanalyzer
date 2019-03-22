@@ -14,7 +14,7 @@
 #' @importFrom ggplot2 scale_x_continuous scale_x_log10
 #' @importFrom shiny req
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib IOHProfiler
+#' @useDynLib IOHanalyzer
 NULL
 #Ugly hack, but appears to be required to appease CRAN
 utils::globalVariables(c(".","algId","run","ERT","RT","max_samples",

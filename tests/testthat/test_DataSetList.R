@@ -6,7 +6,7 @@ test_that("Can DataSetLists be loaded?",{
 })
 
 test_that("Validate reading of files",{
-  path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHProfiler")
+  path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
   expect_equal(check_format(path), "IOHprofiler")
   #TODO: remove warnings occuring when loading datasetlist before enabling these tests
   # dsl1 <- DataSetList(path)

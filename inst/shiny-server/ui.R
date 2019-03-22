@@ -61,7 +61,8 @@ body <- dashboardBody(
   # tabitems ----------------------
   tabItems(
     tabItem(tabName = 'about', includeMarkdown('RMD/about.Rmd')),
-    tabItem(tabName = 'readme', includeMarkdown('README.md')),
+
+    tabItem(tabName = 'readme', includeMarkdown('RMD/README.md')),
 
     # data uploading functionalities -----------------
     tabItem(tabName = 'upload',

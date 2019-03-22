@@ -2,68 +2,37 @@
 
 [This is](https://github.com/IOHprofiler/Post-Processing) the post-processing tool of the project __Iterative Optimization Heuristics Profiler__ (IOHprofiler). This tool provides a web-based interface to analyze and visualization the benchmark data, collected from previous experiments. Importantly, we __do support__ the widely used [COCO](https://github.com/numbbo/coco) data format (aka. Black-Box Optimization Benchmarking).
 
-This tool is mainly built on R package [Shiny](https://shiny.rstudio.com/), [plotly](https://plot.ly/) and [Rcpp](http://www.rcpp.org/). To use this tool, two options are available:
+This tool is mainly built on R package [Shiny](https://shiny.rstudio.com/), [plotly](https://plot.ly/) and [Rcpp](http://www.rcpp.org/). To use this tool, three options are available:
 
-1. local installation and execution (see [installation instructions](#install)) and
-2. a [web-based service](#server) that you can use right away.
+1. Install the package directely from github using devtools (see [R-package](#package))
+2. A [web-based service](#server) that you can use right away.
 
 ## Documentation
 
 The details on the experimentation and post-processing tool can be found on [arXiv.org](https://arxiv.org/abs/1810.05281).
 
-## <a name="install"></a>Installation
+## <a name="package"></a> Using IOHprofiler as a R-package
+To install the IOHProfiler R-package, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/).
 
-This software is mainly written in __R__. To run it directly from the source code, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/).
-
-After R environment is correctly installed on you machine, several R packages are needed to execute the sorftware. Please start up the __R console__, which can be done (in case you're not familiar with R) by either executing command `R` in your system terminal or open the R application. Once it is done, please copy-paste and execute the following commands into the R console to install all depedencies.
-
+After R environment is correctly installed on you machine, 'devtools' package is needed to install the sorftware. Please start up the __R console__, which can be done (in case you're not familiar with R) by either executing command `R` in your system terminal or open the R application. Once it is done, please copy-paste and execute the following command into the R console
 ```r
-install.packages(c('shiny', 'shinyjs', 'shinydashboard', 'magrittr', 'dplyr', 'reshape2', 'data.table', 'markdown', 'Rcpp', 'plotly','colorRamps'))
+install.packages('devtools')
 ```
 
-
-
-Note that it is important to check if aforementioned packages are correctly installed. The easiest method is to test if those packasges can be loaded:
-
+Then load the package by using the command:
 ```r
-library(shiny)
-library(shinyjs)
-library(shinydashboard)
-library(magrittr)
-library(dplyr)
-library(reshape2)
-library(data.table)
-library(markdown)
-library(Rcpp)
-library(plotly)
-library(colorRamps)
+library('devtools')
 ```
 
 Error messages will be shown in your R console if there is any installation issue.
-
-To use the repository, the following additional packages are required
+Now, the IOHProfiler package can be installed using the following command:
 ```r
-install.packages(c('DBI','RMariaDB'))
+install_github('IOHProfiler/IOHAnalyzer')
 ```
 
-To allow for downloading of plots, orca[https://github.com/plotly/orca] and inkscape[https://inkscape.org/release/inkscape-0.92.4/] are needed.
-
-Then, please clone (or downlaod) this repository into your own system. To clone the repository, please execute the following command in your __system console__ (terminal):
-
-```Shell
-> git clone git@github.com:IOHprofiler/Post-Processing.git
-```
-
-```Shell
-> git clone https://github.com/IOHprofiler/Post-Processing.git
-```
-
-To download, please click the green download button on this page.
-
-To start the post-processing tool, please execute the following commands in the __R console__:
-
+This will install the package and all required dependencies. The GUI can be acessed using the command:
 ```r
-> shiny::runApp('/path/to/the/clone/folder')
+runServer()
 ```
 
 ## <a name="server"></a> Online Service
@@ -223,35 +192,12 @@ Or output a wide format...
 1:     38     48     31     14     41     50     67     21     43     52     22     26     33     25
 ```
 
-* It is also possible to generate some diagnostic plots (using `ggplot2`):
+* It is also possible to generate some diagnostic plots (using `ggplot2` or `plotly`) using the provided plotting functions. The functions currently available are: plot_RT_line, plot_FV_line, plot_ERT_AGGR, plot_ERT_MULTI, plot_FCE_ECDF_PER_TARGET, plot_FCE_MULTI, plot_FCE_AGGR, plot_FV_AUC, plot_FV_ECDF_AGGR, plot_FV_HIST, plot_FV_PDF, plot_PAR_line, plot_RT_AUC, plot_RT_ECDF, plot_RT_ECDF_AGGR, plot_RT_ECDF_MULTI, plot_RT_HIST, plot_RT_PMF.
 
-```bash
-> ds <- read_dir('~/Dropbox/data/LO_adap_lambda/')
-> plot(ds[[1]])
+For more information on these functions, use the command:
+```r
+?plot_RT_line.DataSetList
 ```
-
-<div class="row">
-  <div class="column">
-    <img src="img/RT.png" style="float: left; width: 45%; margin-right: 1%; margin-bottom: 0.5em;">
-  </div>
-  <div class="column">
-    <img src="img/FV.png" style="float: left; width: 45%; margin-right: 1%; margin-bottom: 0.5em;">
-  </div>
-</div>
-
-
-## :construction: TODO
-
-The technical tasks to do are listed as follows:
-
-* [ ] implement fast row-wise quantile function as apply is a bit slow (maybe not worthwhile)
-* [ ] add version number
-* [ ] perhaps add stochastic process modelling / analysis on the performance data (e.g., to test if it is a martingale)
-* [ ] convert data processing code into a package (make the data analysis part as a separate R package)
-* [ ] add more stastistical tests
-* [x] implement the standard R `summary` method for `DataSet` and `DataSetList` classes
-* [x] add `ggplot2` based static plotting procedures for the programming interface
-* [ ] to determine the data source to align the data set using runtimes
 
 ## Contact
 
@@ -262,10 +208,11 @@ If you have any questions, comments, suggestions or pull requests, please don't 
 The development team is:
 
 * [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
+* Diederick Vermetten, <i>Leiden Institute of Advanced Computer Science</i>,
 * [Carola Doerr](http://www-desir.lip6.fr/~doerr/), <i>CNRS and Sorbonne University</i>, 
 * [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
 * [Sander van Rijn](https://www.universiteitleiden.nl/en/staffmembers/sander-van-rijn#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
-* [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back#tab-1), <i>Leiden Institute of Advanced Computer Science</i>.
+* [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
 
 When using IOHprofiler and parts thereof, please kindly cite this work as
 

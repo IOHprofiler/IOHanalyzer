@@ -80,3 +80,86 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
     )
   )
 }
+
+fv_agg_box <- function(width = 12, collapsible = T, collapsed = T) {
+  box(title = HTML('<p style="font-size:120%;">Expected Function value (aggregated)</p>'),
+      width = width, collapsible = collapsible, solidHeader = T,
+      status = "primary", collapsed = collapsed,
+      sidebarLayout(
+        sidebarPanel(
+          width = 3,
+
+          selectInput('FCEPlot.Multi.Algs', label = 'Select the algs to show',
+                      multiple = T, selected = NULL, choices = NULL),
+
+          checkboxInput('FCEPlot.Multi.Logx',
+                        label = 'scale x axis log10',
+                        value = T),
+
+          checkboxInput('FCEPlot.Multi.Logy',
+                        label = 'scale y axis log10',
+                        value = T),
+
+          selectInput('FCEPlot.Multi.Mode', label = 'Select the plotting mode',
+                      choices = c('overlay','subplot'), selected = 'subplot'),
+
+          selectInput('FCEPlot.Multi.Aggregator', label = 'Create plot for all?',
+                      choices = c('Functions','Dimensions'), selected = 'Functions'),
+
+          actionButton('FCEPlot.Multi.PlotButton', label = 'Plot the figure'),
+
+          selectInput('FCEPlot.Multi.Format', label = 'Select the figure format',
+                      choices = supported_fig_format, selected = 'pdf'),
+
+          downloadButton('FCEPlot.Multi.Download', label = 'Download the figure')
+        ),
+
+        mainPanel(
+          width = 9,
+          column(
+            width = 12, align = "center",
+            plotlyOutput('FCEPlot.Multi.Plot', height = "1800px", width = plotly_width2)
+          )
+        )
+      )
+  )
+}
+
+fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
+  box(title = HTML('<p style="font-size:120%;">Expected Runtime comparisons</p>'),
+      width = width, collapsible = collapsible, solidHeader = TRUE,
+      status = "primary", collapsed = collapsed,
+      sidebarLayout(
+        sidebarPanel(
+          width = 3,
+          selectInput('FCEPlot.Aggr.Mode', label = 'Select the plotting mode',
+                      choices = c('radar','line'), selected = 'radar'),
+
+          selectInput('FCEPlot.Aggr.Aggregator', label = 'Create plot for all?',
+                      choices = c('Functions','Dimensions'), selected = 'Functions'),
+
+          checkboxInput('FCEPlot.Aggr.Ranking',
+                        label = 'Use ranking instead of ERT-values',
+                        value = T),
+
+          checkboxInput('FCEPlot.Aggr.Logy',
+                        label = 'scale y axis log10',
+                        value = F),
+
+          textInput('FCEPlot.Aggr.Targets', label = 'choose the runtimes (comma-separated)'),
+          selectInput('FCEPlot.Aggr.Format', label = 'Select the figure format',
+                      choices = supported_fig_format, selected = 'pdf'),
+
+          downloadButton('FCEPlot.Aggr.Download', label = 'Download the figure')
+        ),
+
+        mainPanel(
+          width = 9,
+          column(
+            width = 12, align = "center",
+            plotlyOutput('FCEPlot.Aggr.Plot', height = plotly_height, width = plotly_width2)
+          )
+        )
+      )
+  )
+}

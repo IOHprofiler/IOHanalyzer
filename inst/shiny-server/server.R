@@ -1179,7 +1179,7 @@ shinyServer(function(input, output, session) {
 
   })
 
-  output$ERTPlot.Multi.Download <- downloadHandler(
+  output$FCEPlot.Multi.Download <- downloadHandler(
     filename = function() {
       eval(FIG_NAME_FV_PER_FUN_MULTI)
     },

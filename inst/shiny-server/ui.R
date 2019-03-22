@@ -152,7 +152,7 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                fv_per_fct_box(collapsed = F), #TODO: add multi and aggr plots
+                fv_per_fct_box(),
                 fv_agg_box(),
                 fv_comparison_box()
                )

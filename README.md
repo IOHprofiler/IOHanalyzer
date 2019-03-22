@@ -28,7 +28,7 @@ library('devtools')
 Error messages will be shown in your R console if there is any installation issue.
 Now, the IOHProfiler package can be installed using the following command:
 ```r
-install_github('IOHProfiler/Analyzer@InDevelopment')
+devtools::install_github('IOHProfiler/Analyzer@InDevelopment')
 ```
 
 This will install the package and all required dependencies. The GUI can be acessed using the command:
@@ -42,28 +42,6 @@ Alternatively, you can clone the source-code directely.
 This software is mainly written in __R__. To run it directly from the source code, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/).
 
 After R environment is correctly installed on you machine, several R packages are needed to execute the sorftware. Please start up the __R console__, which can be done (in case you're not familiar with R) by either executing command `R` in your system terminal or open the R application. Once it is done, please copy-paste and execute the following commands into the R console to install all depedencies.
-
-```r
-install.packages(c('shiny', 'shinyjs', 'shinydashboard', 'magrittr', 'dplyr', 'reshape2', 'data.table', 'markdown', 'Rcpp', 'plotly','colorRamps'))
-```
-
-
-
-Note that it is important to check if aforementioned packages are correctly installed. The easiest method is to test if those packasges can be loaded:
-
-```r
-library(shiny)
-library(shinyjs)
-library(shinydashboard)
-library(magrittr)
-library(dplyr)
-library(reshape2)
-library(data.table)
-library(markdown)
-library(Rcpp)
-library(plotly)
-library(colorRamps)
-```
 
 Error messages will be shown in your R console if there is any installation issue.
 

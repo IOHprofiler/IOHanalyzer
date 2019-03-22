@@ -2,7 +2,17 @@
 #
 # Author: Hao Wang
 # Email: wangronin@gmail.com
-library(magrittr)
+
+suppressMessages(library(IOHAnalyzer))
+suppressMessages(library(shiny))
+suppressMessages(library(shinyjs))
+suppressMessages(library(reshape2))
+suppressMessages(library(magrittr))
+suppressMessages(library(dplyr))
+suppressMessages(library(plotly))
+suppressMessages(library(shinyjs))
+suppressMessages(library(shinydashboard))
+suppressMessages(library(plotly))
 
 options(datatable.print.nrows = 20)
 options(width = 120)

@@ -5,9 +5,6 @@
 # Author: Hao Wang
 # Email: wangronin@gmail.com
 
-suppressMessages(library(shinyjs))
-suppressMessages(library(shinydashboard))
-suppressMessages(library(plotly))
 
 for (f in list.files('ui', pattern = '.R', full.names = T)) {
   source(f)

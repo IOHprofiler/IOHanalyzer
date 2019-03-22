@@ -9,6 +9,7 @@
 *.pdf
 *.html
 .*
+data/
 
 !/.gitignore
 __pycache__

@@ -4,21 +4,6 @@
 #
 # Author: Hao Wang
 # Email: wangronin@gmail.com
-#
-# TODO:
-#   * add 'shiny::req' to all the functions when the input might be insufficient
-#   * rename most of the control widgets in a uniform and understandable scheme
-suppressMessages(library(shiny))
-suppressMessages(library(shinyjs))
-suppressMessages(library(reshape2))
-suppressMessages(library(magrittr))
-suppressMessages(library(dplyr))
-suppressMessages(library(plotly))
-suppressMessages(library(IOHProfiler))
-
-# for (f in list.files('pproc', pattern = '.R', full.names = T)) {
-#   source(f)
-# }
 
 source('plot.R')
 source('repository.R')
@@ -35,7 +20,6 @@ src_format <- AUTOMATIC # TODO: this shoule be taken from the data set
 selected_format <- AUTOMATIC
 sub_sampling <- TRUE
 
-
 # Formatter for function values
 format_FV <- function(v) format(v, digits = 2, nsmall = 2)
 format_RT <- function(v) as.integer(v)
@@ -44,7 +28,7 @@ format_RT <- function(v) as.integer(v)
 exdir <- file.path(Sys.getenv('HOME'), 'data')
 
 # directory where rds-data is stored
-get_repo_location <- function() {
+get_repo_location <- function(user = F) {
   user_repo <- file.path(Sys.getenv('HOME'), 'repository')
   installed_repo <- file.path(find.package('IOHProfiler'), 'data')
   
@@ -154,17 +138,16 @@ shinyServer(function(input, output, session) {
   })
 
   observeEvent(input$Repository.load, {
-    if(input$Repository.source == "Official"){
+    if (input$Repository.source == "Official") {
       to_load = repository
-      if(input$Repository.funcid != 'all')
-        to_load <- subset(to_load, funcId==input$Repository.funcid)
-      if(input$Repository.dim != 'all')
-        to_load <- subset(to_load, DIM==input$Repository.dim)
-      if(input$Repository.algid != 'all')
-        to_load <- subset(to_load, algId==input$Repository.algid)
-    }
-    else{
-      if(open_connection())
+      if (input$Repository.funcid != 'all')
+        to_load <- subset(to_load, funcId == input$Repository.funcid)
+      if (input$Repository.dim != 'all')
+        to_load <- subset(to_load, DIM == input$Repository.dim)
+      if (input$Repository.algid != 'all')
+        to_load <- subset(to_load, algId == input$Repository.algid)
+    } else{
+      if (open_connection())
         to_load <- load_from_repository(input$Repository.suite, algid = input$Repository.algid,
                                         dim = input$Repository.dim, funcid = input$Repository.funcid)
     }
@@ -208,6 +191,7 @@ shinyServer(function(input, output, session) {
         info <- files[idx]
 
         if (is.null(info)) return(NULL)
+        
         if (basename(info) == info) {
           folder <- Sys.time()  # generate a folder name here
           .exdir <- file.path(exdir, folder)
@@ -736,11 +720,11 @@ shinyServer(function(input, output, session) {
 
   get_max_targets <- function(data, aggr_on, maximize){
     targets <- c()
-    aggr_attr <- if(aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
+    aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
 
     for (j in seq_along(aggr_attr)) {
-      dsList_filetered <- if(aggr_on == 'funcId') subset(data,funcId==aggr_attr[[j]])
-      else subset(data, DIM==aggr_attr[[j]])
+      dsList_filetered <- if (aggr_on == 'funcId') subset(data,funcId == aggr_attr[[j]])
+      else subset(data, DIM == aggr_attr[[j]])
 
       Fall <- get_Funvals(dsList_filetered)
       Fval <- ifelse(maximize, max(Fall), min(Fall))
@@ -752,34 +736,36 @@ shinyServer(function(input, output, session) {
   render_ERTPlot_aggr_plot <- reactive({
     #TODO: figure out how to avoid plotting again when default targets are written to input
     data <- DATA_UNFILTERED()
-    if(length(data) == 0) return(NULL)
-    if(input$ERTPlot.Aggr.Aggregator == 'Functions'){
-      data <- subset(data, DIM==input$Overall.Dim)
+    if (length(data) == 0) return(NULL)
+    if (input$ERTPlot.Aggr.Aggregator == 'Functions') {
+      data <- subset(data, DIM == input$Overall.Dim)
       erts <- MAX_ERTS_FUNC()
-    }
-    else{
-      data <- subset(data, funcId==input$Overall.Funcid)
+    } else {
+      data <- subset(data, funcId == input$Overall.Funcid)
       erts <- MAX_ERTS_DIM()
     }
     aggr_on = ifelse(input$ERTPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
-    aggr_attr <- if(aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
+    aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
     update_targets <- F
-    if(input$ERTPlot.Aggr.Targets == ""){
+    
+    if (input$ERTPlot.Aggr.Targets == "") {
       update_targets <- T
-    }
-    else{
+    } else {
       targets <- as.numeric(unlist(strsplit(input$ERTPlot.Aggr.Targets,",")))
-      if(length(targets) != length(aggr_attr)){
+      if (length(targets) != length(aggr_attr)) {
         update_targets <- T
       }
     }
-    if(update_targets){
+    
+    if (update_targets) {
       targets <- get_max_targets(data, aggr_on, maximize = !(src_format == COCO || src_format == BIBOJ_COCO))
       updateTextInput(session, 'ERTPlot.Aggr.Targets', value = targets %>% toString)
     }
+    
     plot_ERT_AGGR(data, plot_mode = input$ERTPlot.Aggr.Mode, targets = targets,
                   scale.ylog = input$ERTPlot.Aggr.Logy,
-                  maximize = !(src_format == COCO || src_format == BIBOJ_COCO), use_rank = input$ERTPlot.Aggr.Ranking,
+                  maximize = !(src_format == COCO || src_format == BIBOJ_COCO),
+                  use_rank = input$ERTPlot.Aggr.Ranking,
                   aggr_on = aggr_on, erts = erts)
 
   })
@@ -840,7 +826,6 @@ shinyServer(function(input, output, session) {
     req(input$RTPMF.Hist.Target)
     ftarget <- format_FV(input$RTPMF.Hist.Target) %>% as.numeric
     plot_mode <- input$RTPMF.Hist.Mode
-
 
     # TODO: remove 'DataSetList' in the future
     plot_RT_HIST(DATA(), ftarget, plot_mode = plot_mode)

@@ -495,29 +495,6 @@ get_RT_overview <- function(ds, ...) UseMethod("get_RT_overview", ds)
 
 #' Get Function Value condensed overview
 #'
-#' @param ds A DataSet or DataSetList object
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the algorithm ID, best, worst and mean reached function
-#' values, the number of runs and available budget for the DataSet
-#' @export
-#'
-#' @examples
-get_FV_overview <- function(ds, ...) UseMethod("get_FV_overview", ds)
-
-#' Get Runtime Value condensed overview
-#'
-#' @param ds A DataSet or DataSetList object
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the algorithm ID, minimum and maximum used evaluations,
-#' number of runs and available budget for the DataSet
-#' @export
-#' @examples
-get_RT_overview <- function(ds, ...) UseMethod("get_RT_overview", ds)
-
-#' Get Function Value condensed overview
-#'
 #' @param ds A DataSet object
 #' @param ... Arguments passed to other methods
 #'

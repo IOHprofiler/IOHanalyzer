@@ -1,4 +1,4 @@
 library(testthat)
-library(IOHProfiler)
+library(IOHanalyzer)
 
-test_check("IOHProfiler")
+test_check("IOHanalyzer")

@@ -2,7 +2,14 @@
 #
 # Author: Hao Wang
 # Email: wangronin@gmail.com
-library(magrittr)
+suppressMessages(library(IOHanalyzer))
+suppressMessages(library(shiny))
+suppressMessages(library(shinyjs))
+suppressMessages(library(reshape2))
+suppressMessages(library(magrittr))
+suppressMessages(library(dplyr))
+suppressMessages(library(plotly))
+suppressMessages(library(shinydashboard))
 
 options(datatable.print.nrows = 20)
 options(width = 120)
@@ -34,7 +41,7 @@ BIBOJ_COCO <- 'BIBOJ_COCO'
 get_repo_location <- function(official) {
   if (official) {
     user_repo <- file.path(Sys.getenv('HOME'), 'repository')
-    installed_repo <- file.path(find.package('IOHProfiler'), 'data')
+    installed_repo <- file.path(find.package('IOHanalyzer'), 'data')
     if (file.exists(user_repo)) return(user_repo) else return(installed_repo)
   }
   else {

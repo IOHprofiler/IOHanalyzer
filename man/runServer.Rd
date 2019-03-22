@@ -2,10 +2,10 @@
 % Please edit documentation in R/runServer.R
 \name{runServer}
 \alias{runServer}
-\title{Create a shiny-server GUI to interactively use the IOHProfiler}
+\title{Create a shiny-server GUI to interactively use the IOHanalyzer}
 \usage{
 runServer()
 }
 \description{
-Create a shiny-server GUI to interactively use the IOHProfiler
+Create a shiny-server GUI to interactively use the IOHanalyzer
 }

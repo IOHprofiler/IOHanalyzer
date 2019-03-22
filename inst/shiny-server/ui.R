@@ -5,9 +5,7 @@
 # Author: Hao Wang
 # Email: wangronin@gmail.com
 
-suppressMessages(library(shinyjs))
-suppressMessages(library(shinydashboard))
-suppressMessages(library(plotly))
+
 
 for (f in list.files('ui', pattern = '.R', full.names = T)) {
   source(f)
@@ -64,7 +62,7 @@ body <- dashboardBody(
   # tabitems ----------------------
   tabItems(
     tabItem(tabName = 'about', includeMarkdown('RMD/about.Rmd')),
-    tabItem(tabName = 'readme', includeMarkdown('README.md')),
+    tabItem(tabName = 'readme', includeMarkdown(file.path(find.package('IOHanalyzer'), 'README.md'))),
 
     # data uploading functionalities -----------------
     tabItem(tabName = 'upload',

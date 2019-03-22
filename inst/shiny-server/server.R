@@ -8,13 +8,7 @@
 # TODO:
 #   * add 'shiny::req' to all the functions when the input might be insufficient
 #   * rename most of the control widgets in a uniform and understandable scheme
-suppressMessages(library(shiny))
-suppressMessages(library(shinyjs))
-suppressMessages(library(reshape2))
-suppressMessages(library(magrittr))
-suppressMessages(library(dplyr))
-suppressMessages(library(plotly))
-suppressMessages(library(IOHProfiler))
+
 
 # for (f in list.files('pproc', pattern = '.R', full.names = T)) {
 #   source(f)

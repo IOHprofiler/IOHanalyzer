@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // align_by_target_inner_loop
 NumericVector align_by_target_inner_loop(double t, int idxEvals, int idxTarget, List data, NumericVector index, NumericMatrix next_lines, NumericVector curr_eval, bool maximization);
-RcppExport SEXP _IOHProfiler_align_by_target_inner_loop(SEXP tSEXP, SEXP idxEvalsSEXP, SEXP idxTargetSEXP, SEXP dataSEXP, SEXP indexSEXP, SEXP next_linesSEXP, SEXP curr_evalSEXP, SEXP maximizationSEXP) {
+RcppExport SEXP _IOHanalyzer_align_by_target_inner_loop(SEXP tSEXP, SEXP idxEvalsSEXP, SEXP idxTargetSEXP, SEXP dataSEXP, SEXP indexSEXP, SEXP next_linesSEXP, SEXP curr_evalSEXP, SEXP maximizationSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -25,7 +25,7 @@ END_RCPP
 }
 // c_impute
 NumericVector c_impute(NumericVector x, NumericVector y, NumericVector rowname);
-RcppExport SEXP _IOHProfiler_c_impute(SEXP xSEXP, SEXP ySEXP, SEXP rownameSEXP) {
+RcppExport SEXP _IOHanalyzer_c_impute(SEXP xSEXP, SEXP ySEXP, SEXP rownameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -38,7 +38,7 @@ END_RCPP
 }
 // c_impute_runtime
 NumericMatrix c_impute_runtime(NumericVector index, NumericMatrix value, NumericVector FV, bool maximization);
-RcppExport SEXP _IOHProfiler_c_impute_runtime(SEXP indexSEXP, SEXP valueSEXP, SEXP FVSEXP, SEXP maximizationSEXP) {
+RcppExport SEXP _IOHanalyzer_c_impute_runtime(SEXP indexSEXP, SEXP valueSEXP, SEXP FVSEXP, SEXP maximizationSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -52,7 +52,7 @@ END_RCPP
 }
 // c_align_runtime
 List c_align_runtime(List data, NumericVector FV, NumericVector idxValue, bool maximization, int idxTarget);
-RcppExport SEXP _IOHProfiler_c_align_runtime(SEXP dataSEXP, SEXP FVSEXP, SEXP idxValueSEXP, SEXP maximizationSEXP, SEXP idxTargetSEXP) {
+RcppExport SEXP _IOHanalyzer_c_align_runtime(SEXP dataSEXP, SEXP FVSEXP, SEXP idxValueSEXP, SEXP maximizationSEXP, SEXP idxTargetSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -67,7 +67,7 @@ END_RCPP
 }
 // c_read_dat
 List c_read_dat(std::string dat, int NC, std::string leading);
-RcppExport SEXP _IOHProfiler_c_read_dat(SEXP datSEXP, SEXP NCSEXP, SEXP leadingSEXP) {
+RcppExport SEXP _IOHanalyzer_c_read_dat(SEXP datSEXP, SEXP NCSEXP, SEXP leadingSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -80,15 +80,15 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_IOHProfiler_align_by_target_inner_loop", (DL_FUNC) &_IOHProfiler_align_by_target_inner_loop, 8},
-    {"_IOHProfiler_c_impute", (DL_FUNC) &_IOHProfiler_c_impute, 3},
-    {"_IOHProfiler_c_impute_runtime", (DL_FUNC) &_IOHProfiler_c_impute_runtime, 4},
-    {"_IOHProfiler_c_align_runtime", (DL_FUNC) &_IOHProfiler_c_align_runtime, 5},
-    {"_IOHProfiler_c_read_dat", (DL_FUNC) &_IOHProfiler_c_read_dat, 3},
+    {"_IOHanalyzer_align_by_target_inner_loop", (DL_FUNC) &_IOHanalyzer_align_by_target_inner_loop, 8},
+    {"_IOHanalyzer_c_impute", (DL_FUNC) &_IOHanalyzer_c_impute, 3},
+    {"_IOHanalyzer_c_impute_runtime", (DL_FUNC) &_IOHanalyzer_c_impute_runtime, 4},
+    {"_IOHanalyzer_c_align_runtime", (DL_FUNC) &_IOHanalyzer_c_align_runtime, 5},
+    {"_IOHanalyzer_c_read_dat", (DL_FUNC) &_IOHanalyzer_c_read_dat, 3},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_IOHProfiler(DllInfo *dll) {
+RcppExport void R_init_IOHanalyzer(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

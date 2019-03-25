@@ -269,7 +269,7 @@ summary.DataSet <- function(object, ...) {
 #            yaxis = list(type = ifelse(input$semilogy, 'log', 'linear')))
 #
 #   # minimization for COCO
-#   if (src_format == 'COCO')
+#   if (format == 'COCO')
 #     p %<>% layout(xaxis = list(autorange = "reversed"))
 #   p
 # }
@@ -311,7 +311,7 @@ summary.DataSet <- function(object, ...) {
 #            yaxis = list(type = ifelse(input$semilogy, 'log', 'linear')))
 #
 #   # minimization for COCO
-#   if (src_format == 'COCO')
+#   if (format == 'COCO')
 #     p %<>% layout(xaxis = list(autorange = "reversed"))
 #   p
 # }

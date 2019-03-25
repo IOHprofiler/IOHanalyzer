@@ -1,11 +1,10 @@
-ERT_agg_box <- function(width = 12, collapsible = T, collapsed = T) {
+ERT_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed = T) {
   box(title = HTML('<p style="font-size:120%;">Expected Runtime (aggregated)</p>'), 
       width = width, collapsible = collapsible, solidHeader = T, 
       status = "primary", collapsed = collapsed,
       sidebarLayout(
           sidebarPanel(
             width = 3,
-            
             selectInput('ERTPlot.Multi.Algs', label = 'Select the algs to show', 
                         multiple = T, selected = NULL, choices = NULL),
             
@@ -35,7 +34,7 @@ ERT_agg_box <- function(width = 12, collapsible = T, collapsed = T) {
         width = 9,
         column(
           width = 12, align = "center",
-          plotlyOutput.IOHanalyzer('ERTPlot.Multi.Plot')
+          plotlyOutput.IOHanalyzer('ERTPlot.Multi.Plot', aspect_ratio = 0.6)
         )
       )
     )

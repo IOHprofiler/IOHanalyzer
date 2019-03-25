@@ -288,6 +288,7 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                      show.median = F, backend = 'plotly',
                                      scale.xlog = F, scale.ylog = F,
                                      scale.reverse = F, ...) {
+
   Fall <- get_Funvals(dsList)
   if (is.null(Fstart)) Fstart <- min(Fall)
   if (is.null(Fstop)) Fstop <- max(Fall)
@@ -303,7 +304,7 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
 
   if (backend == 'plotly') {
-    p <- plotly_default(x.title = "best-so-far f(x)-value",
+    p <- plot_ly_default(x.title = "best-so-far f(x)-value",
                          y.title = "function evaluations")
 
     for (i in seq_along(dsList)) {
@@ -329,24 +330,21 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
                          name = paste0(legend, '.ERT'), mode = 'lines+markers',
                          marker = list(color = rgb_str), legendgroup = legend,
-                         showlegend = T,
                          line = list(color = rgb_str))
 
       if (show.mean)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~mean, type = 'scatter',
                          mode = 'lines+markers', name = paste0(algId, '.mean'),
                          marker = list(color = rgb_str), legendgroup = legend,
-                         showlegend = T,
                          line = list(color = rgb_str, dash = 'dash'))
 
       if (show.median)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~median, type = 'scatter',
                          name = paste0(legend, '.median'), mode = 'lines+markers',
                          marker = list(color = rgb_str), legendgroup = legend,
-                         showlegend = T,
                          line = list(color = rgb_str, dash = 'dot'))
 
-      if (show.runs || show.grad) {
+      if (show.runs||show.grad) {
         # TODO: Fix this for the case where algorithms do not have the same number of runs
         dr <- get_RT_sample(dsList, Fseq)
         dr_ERT <- dr[algId == attr(dsList[[i]], 'algId')&
@@ -523,7 +521,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
   fce[, `:=`(upper = mean + sd, lower = mean - sd)]
 
   if (backend == 'plotly') {
-    p <- plotly_default(y.title = "best-so-far f(x)-value", x.title = "runtime")
+    p <- plot_ly_default(y.title = "best-so-far f(x)-value", x.title = "runtime")
 
     for (i in seq_along(dsList)) {
       legend <- legends[i]
@@ -703,7 +701,7 @@ plot_RT_PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
   N <- length(dsList)
   colors <- color_palettes(N)
 
-  p <- plotly_default(x.title = "algorithms",
+  p <- plot_ly_default(x.title = "algorithms",
                        y.title = "runtime / function evaluations")
 
   for (i in seq_along(dsList)) {
@@ -756,10 +754,10 @@ plot_RT_HIST.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay', ...
     nrows <- ceiling(N / 3.) # keep to columns for the histograms
 
   if (plot_mode == 'overlay') {
-    p <- plotly_default(x.title = "function evaluations", y.title = "runs")
+    p <- plot_ly_default(x.title = "function evaluations", y.title = "runs")
   } else if (plot_mode == 'subplot') {
     p <- lapply(seq(N), function(x) {
-      plotly_default(x.title = "function evaluations", y.title = "runs")
+      plot_ly_default(x.title = "function evaluations", y.title = "runs")
     })
   }
 
@@ -797,7 +795,7 @@ plot_RT_HIST.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay', ...
   }
 
   if (plot_mode == 'subplot') {
-    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.1)
+    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.025)
   }
   p
 }
@@ -821,7 +819,7 @@ plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F, ...){
   N <- length(data)
   colors <- color_palettes(N)
 
-  p <- plotly_default(title = NULL,
+  p <- plot_ly_default(title = NULL,
                        x.title = "function evaluations",
                        y.title = "Proportion of runs")
 
@@ -894,7 +892,7 @@ plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
   RT.max <- sapply(dsList, function(ds) max(ds$RT, na.rm = T)) %>% max
   RT.min <- sapply(dsList, function(ds) min(ds$RT, na.rm = T)) %>% min
   x <- seq(RT.min, RT.max, length.out = 50)
-  p <- plotly_default(x.title = "function evaluations",
+  p <- plot_ly_default(x.title = "function evaluations",
                        y.title = "Proportion of (run, target) pairs")
 
   for (k in seq_along(dsList)) {
@@ -982,7 +980,7 @@ plot_RT_AUC.DataSetList <- function(dsList, fstart = NULL,
   colors <- color_palettes(N)
 
   RT.max <- sapply(dsList, function(ds) max(attr(ds, 'maxRT'))) %>% max
-  p <- plotly_default()
+  p <- plot_ly_default()
 
   for (k in seq_along(dsList)) {
     df <- dsList[[k]]
@@ -1049,7 +1047,7 @@ plot_FV_PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
   N <- length(dsList)
   colors <- color_palettes(N)
 
-  p <- plotly_default(x.title = "algorithms",
+  p <- plot_ly_default(x.title = "algorithms",
                        y.title = "Target value")
 
   for (i in seq_along(dsList)) {
@@ -1100,11 +1098,11 @@ plot_FV_HIST.DataSetList <- function(dsList, runtime, plot_mode='overlay', ...){
     nrows <- ceiling(n_algorithm / 3.) # keep to columns for the histograms
 
   if (plot_mode == 'overlay') {
-    p <- plotly_default(x.title = "target values", y.title = "runs")
+    p <- plot_ly_default(x.title = "target values", y.title = "runs")
 
   } else if (plot_mode == 'subplot') {
     p <- lapply(seq(n_algorithm), function(x) {
-      plotly_default(x.title = "target values", y.title = "runs")
+      plot_ly_default(x.title = "target values", y.title = "runs")
     })
   }
 
@@ -1142,7 +1140,7 @@ plot_FV_HIST.DataSetList <- function(dsList, runtime, plot_mode='overlay', ...){
   }
 
   if (plot_mode == 'subplot')
-    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.1)
+    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.02)
 
   p
 }
@@ -1168,7 +1166,7 @@ plot_FCE_ECDF_PER_TARGET.DataSetList <- function(dsList, runtimes, scale.xlog = 
   n_algorithm <- length(dsList)
   colors <- color_palettes(n_algorithm)
 
-  p <- plotly_default(title = NULL,
+  p <- plot_ly_default(title = NULL,
                        x.title = "target value",
                        y.title = "Proportion of runs")
 
@@ -1244,7 +1242,7 @@ plot_FV_ECDF_AGGR.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
   funevals.min <- sapply(dsList, function(ds) min(ds$FV, na.rm = T)) %>% min
 
   x <- seq(funevals.min, funevals.max, length.out = 40)
-  p <- plotly_default(x.title = "target value",
+  p <- plot_ly_default(x.title = "target value",
                        y.title = "Proportion of (run, budget) pairs")
 
   for (k in seq_along(dsList)) {
@@ -1316,7 +1314,7 @@ plot_FV_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
   colors <- color_palettes(n_algorithm)
 
   funevals.max <- sapply(dsList, function(ds) max(attr(ds, 'finalFV'))) %>% max
-  p <- plotly_default()
+  p <- plot_ly_default()
 
   for (k in seq_along(dsList)) {
     df <- dsList[[k]]
@@ -1408,7 +1406,7 @@ plot_PAR_Line.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
   # TODO: improve the efficiency of plotting here
   p <- lapply(seq(n_param),
               function(i) {
-                plotly_default(y.title = par_name[i]) %>%
+                plot_ly_default(y.title = par_name[i]) %>%
                   layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
                          yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
               })
@@ -1483,7 +1481,7 @@ plot_RT_ECDF_MULTI.DataSetList <- function(dsList, targets = NULL, ...){
     targets <- get_default_ECDF_targets(dsList)
 
   algId <- unique(attr(dsList, 'algId'))
-  p <- plotly_default(x.title = "function evaluations",
+  p <- plot_ly_default(x.title = "function evaluations",
                        y.title = "Proportion of (run, target, ...) pairs")
 
   rts <- get_Runtimes(dsList)
@@ -1537,25 +1535,33 @@ plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog
 
   aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
   M <- length(aggr_attr)
-  if (M <= 10)
-    nrows <- ceiling(M / 2.) # keep to columns for the histograms
-  else
-    nrows <- ceiling(M / 3.) # keep to columns for the histograms
+  
+  # keep to columns for the histograms
+  if (M <= 10) {
+    nrows <- ceiling(M / 2.) 
+    ncolumns <- 2
+  } else if (M <= 20) {
+    nrows <- ceiling(M / 3.) 
+    ncolumns <- 3
+  } else if (M <= 30) {
+    nrows <- ceiling(M / 4.) 
+    ncolumns <- 4
+  }
 
   if (plot_mode == 'overlay') {
-    p <- plotly_default(x.title = "function evaluations", y.title = "ERT")
+    p <- plot_ly_default(x.title = "function evaluations", y.title = "ERT")
   } else if (plot_mode == 'subplot') {
     p <- lapply(seq(M), function(x) {
-      plotly_default(x.title = "function evaluations", y.title = "ERT") %>%
-        add_annotations(text=paste0(ifelse(aggr_on=='funcId', "F ", "D "),aggr_attr[[x]]),
-                        showarrow=F, xanchor = 'center', yanchor = 'top',
-                        y = 1.15, yref = 'paper', x = 0.5, xref= 'paper')
+      plot_ly_default(x.title = "function evaluations", y.title = "ERT")
+        # add_annotations(text=paste0(ifelse(aggr_on=='funcId', "F ", "D "), aggr_attr[[x]]),
+        #                 showarrow=F, xanchor = 'center', yanchor = 'top',
+        #                 y = 1.15, yref = 'paper', x = 0.5, xref= 'paper')
     })
   }
 
   for (j in seq_along(aggr_attr)) {
-    dsList_filetered <- if(aggr_on == 'funcId') subset(dsList,funcId==aggr_attr[[j]])
-    else subset(dsList,DIM==aggr_attr[[j]])
+    if(aggr_on == 'funcId') dsList_filetered <- subset(dsList,funcId==aggr_attr[[j]])
+    else dsList_filetered <- subset(dsList,DIM==aggr_attr[[j]])
 
     Fall <- get_Funvals(dsList_filetered)
     Fstart <- min(Fall)
@@ -1566,7 +1572,6 @@ plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog
 
     dt <- get_RT_summary(dsList_filetered, ftarget = Fseq)
     dt[, `:=`(upper = mean + sd, lower = mean - sd)]
-
 
     for (i in seq_along(dsList_filetered)){
       df <- dsList_filetered[[i]]
@@ -1581,8 +1586,6 @@ plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog
       rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
 
-
-
       if (plot_mode == 'overlay') {
         p %<>%
           add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
@@ -1594,13 +1597,14 @@ plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog
           add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
                     mode = 'lines+markers',
                     marker = list(color = rgb_str),
-                    line = list(color = rgb_str),name = algId, showlegend=to_show_legend)
+                    line = list(color = rgb_str), name = algId, showlegend = to_show_legend)
       }
     }
   }
-
+  
   if (plot_mode == 'subplot') {
-    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.04)
+    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.03, 
+                 heights = rep(1 / nrows, nrows), widths = rep(1 / ncolumns, ncolumns))
   }
   p %<>%
     layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
@@ -1652,8 +1656,8 @@ plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL
 
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
 
-  p <- if(plot_mode == "radar")  plotly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
-  else plotly_default(title = plot_title)
+  p <- if(plot_mode == "radar")  plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
+  else plot_ly_default(title = plot_title)
 
   if (use_rank){
     ertranks <- seq(0, 0, length.out = length(get_AlgId(dsList)))
@@ -1788,8 +1792,8 @@ plot_FCE_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NUL
 
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
 
-  p <- if(plot_mode == "radar")  plotly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
-  else plotly_default(title = plot_title)
+  p <- if(plot_mode == "radar")  plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
+  else plot_ly_default(title = plot_title)
 
   if (use_rank){
     ertranks <- seq(0, 0, length.out = length(get_AlgId(dsList)))
@@ -1898,10 +1902,10 @@ plot_FCE_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog
     nrows <- ceiling(M / 3.) # keep to columns for the histograms
 
   if (plot_mode == 'overlay') {
-    p <- plotly_default(x.title = "function evaluations", y.title = "ERT")
+    p <- plot_ly_default(x.title = "function evaluations", y.title = "ERT")
   } else if (plot_mode == 'subplot') {
     p <- lapply(seq(M), function(x) {
-      plotly_default(x.title = "function evaluations", y.title = "ERT") %>%
+      plot_ly_default(x.title = "function evaluations", y.title = "ERT") %>%
         add_annotations(text=paste0(ifelse(aggr_on=='funcId', "F ", "D "),aggr_attr[[x]]),
                         showarrow=F, xanchor = 'center', yanchor = 'top',
                         y = 1.15, yref = 'paper', x = 0.5, xref= 'paper')

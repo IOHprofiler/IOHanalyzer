@@ -143,6 +143,7 @@ shinyServer(function(input, output, session) {
                                         funcid = input$Repository.funcid)
     }
     DataList$data <- c(DataList$data, to_load)
+    format <<- attr(to_load[[1]], 'src')
   })
 
   # IMPORTANT: this only works locally, keep it for the local version
@@ -610,7 +611,7 @@ shinyServer(function(input, output, session) {
     req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
     fstart <- input$ERTPlot.Min %>% as.numeric
     fstop <- input$ERTPlot.Max %>% as.numeric
-
+    
     plot_RT_line(DATA(), Fstart = fstart, Fstop = fstop,
                  show.CI = input$ERTPlot.show.CI, 
                  show.density = input$ERTPlot.show.density,
@@ -700,7 +701,7 @@ shinyServer(function(input, output, session) {
       update_targets <- T
     } else {
       targets <- as.numeric(unlist(strsplit(input$ERTPlot.Aggr.Targets,",")))
-      targets2 <- get_max_targets(data, aggr_on, maximize = !(src_format == COCO || src_format == BIBOJ_COCO))
+      targets2 <- get_max_targets(data, aggr_on, maximize = !(format == COCO || format == BIBOJ_COCO))
       if(targets == targets2)
         update_data <- F
       if(length(targets) != length(aggr_attr)){
@@ -715,7 +716,7 @@ shinyServer(function(input, output, session) {
     }
 
     if(update_data)
-      erts <- max_ERTs(data, aggr_on, targets, maximize = !(src_format == COCO || src_format == BIBOJ_COCO))
+      erts <- max_ERTs(data, aggr_on, targets, maximize = !(format == COCO || format == BIBOJ_COCO))
 
     plot_ERT_AGGR(data, plot_mode = input$ERTPlot.Aggr.Mode, targets = targets,
                   scale.ylog = input$ERTPlot.Aggr.Logy,

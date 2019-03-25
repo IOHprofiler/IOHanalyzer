@@ -14,7 +14,7 @@ f2 <- list(
 )
 
 # TODO: determine a good font type for plotly
-plotly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
+plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
   plot_ly() %>%
     layout(title = title,
            autosize = T, hovermode = 'compare',
@@ -93,33 +93,29 @@ gg_beanplot <- function(mapping, data, p = NULL, width = 3, fill = 'grey',
   p
 }
 
-Set1 <- function(n) sequential_hcl(n, h = c(360, 40), c. = c(100, NA, 90), l = c(28, 90),
+Set1 <- function(n) colorspace::sequential_hcl(n, h = c(360, 40), c. = c(100, NA, 90), l = c(28, 90),
                                    power = c(1, 1.1), gamma = NULL, fixup = TRUE,
                                    alpha = 1)#, palette = NULL, rev = FALSE)
 
-Set2 <- function(n) sequential_hcl(n, c(261, 26), c. = c(50, NA, 70), l = c(54, 77),
+Set2 <- function(n) colorspace::sequential_hcl(n, c(261, 26), c. = c(50, NA, 70), l = c(54, 77),
                                    power = c(0.5, NA), gamma = NULL,
                                    fixup = TRUE, alpha = 1)#, palette = NULL, rev = FALSE)
 
-Set3 <- function(n) sequential_hcl(n, c(-88, 59), c. = c(60, 75, 55), l = c(40, 90),
+Set3 <- function(n) colorspace::sequential_hcl(n, c(-88, 59), c. = c(60, 75, 55), l = c(40, 90),
                                    power = c(0.1, 1.2), gamma = NULL,
                                    fixup = TRUE, alpha = 1)#, palette = NULL, rev = FALSE)
 
 # TODO: incoporate more colors
 color_palettes <- function(ncolor) {
-  # require(colorspace)
-  # require(colorRamps)
-  # require(RColorBrewer)
-
   if (ncolor < 5) return(Set3(ncolor)) #Was set2, which gave NAFF as color?
 
   brewer <- function(n) {
-    colors <- brewer.pal(n, 'Spectral')
+    colors <- RColorBrewer::brewer.pal(n, 'Spectral')
     colors[colors == "#FFFFBF"] <- "#B2B285"
     colors
   }
 
-  color_fcts <- c(primary.colors, Set3)
+  color_fcts <- c(colorRamps::primary.colors, Set3)
 
   n <- min(11, ncolor)
   colors <- brewer(n)
@@ -129,7 +125,7 @@ color_palettes <- function(ncolor) {
   while (ncolor > 0) {
     n <- min(8, ncolor)
     if (i > length(color_fcts)) {
-      colors <- c(colors, primary.colors(ncolor))
+      colors <- c(colors, colorRamps::primary.colors(ncolor))
       break
     } else {
       colors <- c(colors, color_fcts[[i]](n))

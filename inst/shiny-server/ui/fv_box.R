@@ -118,7 +118,7 @@ fv_agg_box <- function(width = 12, collapsible = T, collapsed = T) {
           width = 9,
           column(
             width = 12, align = "center",
-            plotlyOutput('FCEPlot.Multi.Plot', height = "1800px", width = plotly_width2)
+            plotlyOutput.IOHanalyzer('FCEPlot.Multi.Plot')
           )
         )
       )
@@ -157,7 +157,7 @@ fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
           width = 9,
           column(
             width = 12, align = "center",
-            plotlyOutput('FCEPlot.Aggr.Plot', height = plotly_height, width = plotly_width2)
+            plotlyOutput.IOHanalyzer('FCEPlot.Aggr.Plot')
           )
         )
       )

@@ -18,7 +18,7 @@
 NULL
 #Ugly hack, but appears to be required to appease CRAN
 utils::globalVariables(c(".","algId","run","ERT","RT","max_samples",
-                         "DIM", "Fvalue", "lower", "upper", "target", "src_format",
+                         "DIM", "Fvalue", "lower", "upper", "target", "format",
                          "runtime", "parId", "instance", "input", "funcId"))
 
 probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.

@@ -101,7 +101,7 @@ body <- dashboardBody(
               column(
                 width = 12,
                 ERT_box(collapsed = F),
-                ERT_agg_box(),
+                ERT_agg_box(height = '800px'),
                 ERT_comparison_box()
               )
             )

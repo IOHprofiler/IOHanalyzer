@@ -36,7 +36,7 @@ par_expected_value_box <- function(width = 12, collapsible = T, collapsed = T) {
                       found with a fixed-budget of evaluations are depicted against the budget.
                The displayed elements can be switched on and off by clicking on the legend on the right.
                A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-        plotlyOutput('PAR_PER_FUN', height = plotly_height, width = plotly_width2)
+        plotlyOutput.IOHanalyzer('PAR_PER_FUN')
       )
     )
    )

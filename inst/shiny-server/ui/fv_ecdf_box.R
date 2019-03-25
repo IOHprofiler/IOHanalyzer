@@ -21,7 +21,7 @@ fv_ecdf_single_budget_box <- function(width = 12, collapsible = T, collapsed = T
                   value given by the x-axis. The displayed curves can be selected
                   by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b>
                   appears when hovering over the figure.</p>'),
-          plotlyOutput("FCE_ECDF_PER_TARGET", height = plotly_height, width = plotly_width2)
+          plotlyOutput.IOHanalyzer("FCE_ECDF_PER_TARGET")
         )
       )
     )
@@ -69,7 +69,7 @@ fv_ecdf_agg_budgets_box <- function(width = 12, collapsible = T, collapsed = T) 
                 against the target value \\(v\\). The displayed elements can be switched
                 on and off by clicking on the legend on the right. A <b>tooltip</b> and
                 <b>toolbar</b> appears when hovering over the figure.'),
-        plotlyOutput('FCE_ECDF_AGGR', height = plotly_height, width = plotly_width2)
+        plotlyOutput.IOHanalyzer('FCE_ECDF_AGGR')
       )
     )
   )
@@ -103,7 +103,7 @@ fv_ecdf_auc_box <- function(width = 12, collapsible = T, collapsed = T) {
                 each algorithm. Intuitively, the <b>smaller</b> the area, the <b>better</b> the algorithm.
                 The displayed algorithms can be selected by clicking on the legend on the right.
                 A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-        plotlyOutput("FCE_AUC", height = plotly_height, width = plotly_width2)
+        plotlyOutput.IOHanalyzer("FCE_AUC")
       )
     )
   )

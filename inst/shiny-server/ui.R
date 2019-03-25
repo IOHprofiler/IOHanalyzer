@@ -5,7 +5,6 @@
 # Author: Hao Wang
 # Email: wangronin@gmail.com
 
-
 for (f in list.files('ui', pattern = '.R', full.names = T)) {
   source(f)
 }
@@ -76,14 +75,12 @@ body <- dashboardBody(
             ),
 
             fluidRow(
-              column(width = 12,
-                     data_list_box(collapsible = T, collapsed = F)
+              column(width = 6,
+                     upload_prompt_box(collapsible = F)
+              ),
+              column(width = 6,
+                     data_list_box(collapsible = F)
               )
-            ),
-            fluidRow(
-              column(width = 12,
-                     upload_prompt_box(collapsible = T)
-                     )
             )
     ),
 
@@ -92,7 +89,7 @@ body <- dashboardBody(
       fluidRow(
         column(width = 12,
                rt_overview_box(collapsed = F),
-               rt_stats_box(),
+               rt_stats_box(collapsed = F),
                rt_sample_box()
           )
       )
@@ -103,7 +100,7 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                ERT_box(),
+                ERT_box(collapsed = F),
                 ERT_agg_box(),
                 ERT_comparison_box()
               )
@@ -126,7 +123,7 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                rt_ecdf_single_target_box(),
+                rt_ecdf_single_target_box(collapsed = F),
                 rt_ecdf_agg_targets_box(),
                 rt_ecdf_agg_fct_box(),
                 rt_ecdf_auc_box()
@@ -140,7 +137,7 @@ body <- dashboardBody(
               column(
                 width = 12,
                 fv_overview_box(collapsed = F),
-                fv_stats_box(),
+                fv_stats_box(collapsed = F),
                 fv_sample_box()
               )
             )

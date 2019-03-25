@@ -30,7 +30,7 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
         width = 9,
         column(
           width = 12, align = "center",
-          plotlyOutput('ERTPlot.Aggr.Plot', height = plotly_height, width = plotly_width2)
+          plotlyOutput.IOHanalyzer('ERTPlot.Aggr.Plot')
         )
       )
     )

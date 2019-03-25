@@ -91,7 +91,7 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
                  The displayed elements (mean, median, standard deviations)
                  can be switched on and off by clicking on the legend on the right.
                  A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-            plotlyOutput('ERT_PER_FUN', height = plotly_height, width = plotly_width2)
+            plotlyOutput.IOHanalyzer('ERT_PER_FUN')
           )
         )
       )

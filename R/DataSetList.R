@@ -21,7 +21,7 @@ read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
 }
 
 # TODO: find a better name for this function
-# TODO: implement this
+# TODO: implement this... maybe we don't need this function
 load_index <- function(file) {
 
 }
@@ -465,7 +465,7 @@ get_Runtimes <- function(data) {
 #'
 #' @param x The DataSetLsit
 #' @param ... The condition to filter on. Can be any expression which assigns True or False
-#' to a DataSet object, such as DIM==625 or funcId==2
+#' to a DataSet object, such as DIM == 625 or funcId == 2
 #'
 #' @return The filtered DataSetList
 #' @export

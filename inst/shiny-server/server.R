@@ -8,17 +8,8 @@
 source('plot.R')
 source('repository.R')
 
-options(width = 80)
-options(shiny.maxRequestSize = 200 * 1024 ^ 2)   # maximal number of requests, this is too many...
-
-symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
-             "triangle-up-open", "triangle-down-open")
-
-# TODO: put it as an option such that the user can select
-maximization <- "MAXIMIZE"
-src_format <- AUTOMATIC # TODO: this shoule be taken from the data set
-selected_format <- AUTOMATIC
-sub_sampling <- TRUE
+format <- NULL         # the unique format of the data set
+sub_sampling <- TRUE   # perform sub-sampling of the data set?
 
 # Formatter for function values
 format_FV <- function(v) format(v, digits = 2, nsmall = 2)
@@ -39,7 +30,7 @@ setTextInput <- function(session, id, name, alternative) {
 }
 
 #TODO: this function could be made more clear
-set_format <- function(format){
+set_format_func <- function(format){
   format_FV <<- ifelse((format == COCO || format == BIBOJ_COCO),
                        function(v) format(v, format = "e", digits = 5, nsmall = 2),
                        function(v) format(v, digits = 2, nsmall = 2))
@@ -70,33 +61,30 @@ shinyServer(function(input, output, session) {
   folderList <- reactiveValues(data = list())
   DataList <- reactiveValues(data = DataSetList())
 
-  # update maximization indication, trans_funeval according to src_format
-  observe({
-    selected_format <<- input$Upload.format
-    maximization <<- input$Upload.minmax
-  })
-
-  # should subsamping be turned on?
+  # set up the global variable
   observe({
     sub_sampling <<- input$Upload.subsampling
   })
 
+  # scan the repository, looking for .rds files
   observe({
-    repo_dir = get_repo_location(T)
-    if (dir.exists(repo_dir)){
+    repo_dir <- get_repo_location()
+    if (dir.exists(repo_dir)) {
       filenames = list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
       updateSelectInput(session, 'Repository.Setname', choices = filenames, selected = NULL)
     }
   })
 
   # Load correct options for repository
+  # TODO: this function needs improvements
+  # TODO: review the user repo part
   observe({
-    if (!dir.exists(get_repo_location(T))) {
-      shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository, please create a folder
-                     called 'repository' in your home directory and make sure it contains the '2019gecco.rds'-file
-                     provided on the IOHProfiler github-page.")
+    if (!dir.exists(get_repo_location())) {
+      shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository, 
+                      please create a folder called 'repository' in your home directory 
+                      and make sure it contains the '2019gecco.rds'-file 
+                      provided on the IOHProfiler github-page.")
       shinyjs::disable('Repository.load')
-      return(NULL)
     }
 
     if (input$Repository.source == "Official") {
@@ -147,10 +135,12 @@ shinyServer(function(input, output, session) {
         to_load <- subset(to_load, DIM == input$Repository.dim)
       if (input$Repository.algid != 'all')
         to_load <- subset(to_load, algId == input$Repository.algid)
-    } else{
+    } else {
       if (open_connection())
-        to_load <- load_from_repository(input$Repository.suite, algid = input$Repository.algid,
-                                        dim = input$Repository.dim, funcid = input$Repository.funcid)
+        to_load <- load_from_repository(input$Repository.suite, 
+                                        algid = input$Repository.algid,
+                                        dim = input$Repository.dim, 
+                                        funcid = input$Repository.funcid)
     }
     DataList$data <- c(DataList$data, to_load)
   })
@@ -204,32 +194,17 @@ shinyServer(function(input, output, session) {
           folders[i] <- file.path(exdir, folder)
         }
       }
-      return(folders)
+      folders
     } else
-      return(NULL)
+      NULL
   })
-
-  # TODO: this part might not be
-  # observe({
-  #   if (input$singleF) {
-  #     fstart <- input$fstart
-  #     # updateTextInput(session, 'fstart', value = format_FV(start))
-  #     updateTextInput(session, 'fstop', value = format_FV(fstart))
-  #     # updateTextInput(session, 'fstep', value = format_FV(step))
-  #   }
-  # })
-  #
-  # # print the folderList
-  # output$upload_data_promt <- renderPrint({
-  #   folders <- folderList$data
-  #   for (i in seq_along(folders)) {
-  #     cat(sprintf('%d: %s\n', i, folders[[i]]))
-  #   }
-  # })
 
   # load, process the data folders and update DataSetList
   observeEvent(selected_folders(), {
     folders <- selected_folders()
+    format_selected <- input$Upload.format
+    maximization <- input$Upload.minmax
+    
     req(length(folders) != 0)
 
     if (length(folderList$data) == 0)
@@ -238,61 +213,57 @@ shinyServer(function(input, output, session) {
       folder_new <- setdiff(folders, intersect(folderList$data, folders))
 
     req(length(folder_new) != 0)
+    format_detected <- lapply(folder_new, check_format) %>% unique
+    
+    if (length(format_detected) != 1) 
+      print_html(paste('<p style="color:red;">more than one format: <br>',
+                       format_detected,
+                       'is detected in the uploaded data set... skip the uploaded data'))
+    
+    else 
+      format <<- format_detected   # set the global data format
 
     for (folder in folder_new) {
       indexFiles <- scan_IndexFile(folder)
+      
       if (length(indexFiles) == 0)
-        shinyjs::html("process_data_promt",
-                      paste0('<p style="color:red;">No index file (.info) is found in folder ',
-                             folder, '... skip</p>'), add = TRUE)
+        print_html(paste('<p style="color:red;">format', format_selected, 
+                         'is selected, however', format_detected, 
+                         'is detected...<br>using the detected one...</p>'))
       else {
         folderList$data <- c(folderList$data, folder)
 
-        # check if the newly loaded data contradicts the selected format
-        found_format <- check_format(folder)
-
-        if (selected_format == AUTOMATIC) {
-          set_format(found_format)
-          format <- found_format
-        }
-        else if (found_format != selected_format && (selected_format != TWO_COL || found_format == COCO)) {
-          shinyjs::html("process_data_promt",
-                        paste0('<p style="color:red;">Format specified does not match format found (',
-                               found_format, ')... skip</p>'), add = TRUE)
-          break
-        }
-        else{
-          format <- selected_format
+        if (format_selected == AUTOMATIC) {
+          set_format_func(format)
+        } else if (format_detected != format) {
+          print_html(paste('<p style="color:red;">format', format_selected, 
+                           'is selected, however', format, 
+                           'is detected...<br>using the detected one...</p>'))
         }
 
-        if (maximization == AUTOMATIC) {
-          minmax <- ifelse((found_format == COCO || found_format == BIBOJ_COCO), FALSE, TRUE)
-        }
-        else{
-          minmax <- ifelse((maximization == "MAXIMIZE"), TRUE, FALSE)
-        }
-        print_fun <- function(s) shinyjs::html("process_data_promt", s, add = TRUE)
+        if (maximization == AUTOMATIC) 
+          maximization <- ifelse((format == COCO || format == BIBOJ_COCO), FALSE, TRUE)
+        else
+          maximization <- ifelse((maximization == "MAXIMIZE"), TRUE, FALSE)
 
-        # read the data set handles potential errors
+        # read the data set and handle potential errors
         new_data <- tryCatch(
-          DataSetList(folder, print_fun = print_fun,
-                   maximization = minmax,
+          DataSetList(folder, print_fun = print_html,
+                   maximization = maximization,
                    format = format,
                    subsampling = sub_sampling),
           error = function(e) {
-            shinyjs::html("process_data_promt",
-                          paste('<p style="color:red;">The following error happened when processing the data set:</p>'), add = TRUE)
-            shinyjs::html("process_data_promt",
-                          paste('<p style="color:red;">', e, '</p>'),
-                          add = TRUE)
+            print_html(paste('<p style="color:red;">The following error happened 
+                            when processing the data set:</p>'))
+            print_html(paste('<p style="color:red;">', e, '</p>'))
             DataSetList()
           }
         )
 
         DataList$data <- c(DataList$data, new_data)
-        src_format <<- format
         shinyjs::html("upload_data_promt",
-                      sprintf('%d: %s\n', length(folderList$data), folder), add = TRUE)
+                      sprintf('%d: %s\n', length(folderList$data), folder), 
+                      add = TRUE)
       }
     }
   })
@@ -302,13 +273,13 @@ shinyServer(function(input, output, session) {
     if (length(DataList$data) != 0) {
       DataList$data <- DataSetList() # must be a 'DataSetList'
       folderList$data <- list()
-      shinyjs::html("process_data_promt", '<p style="color:red;">all data are removed!</p>', add = FALSE)
-      shinyjs::html("upload_data_promt", "", add = FALSE)
+      print_html('<p style="color:red;">all data are removed!</p>')
+      print_html('', 'upload_data_promt')
     }
   })
 
   # show the detailed information on DataSetList
-  output$DATASETLIST_INFO <- renderDataTable({
+  output$data_info <- renderDataTable({
     datasets <- DataList$data
     if (length(datasets) != 0)
       summary(datasets)
@@ -322,14 +293,15 @@ shinyServer(function(input, output, session) {
     data <- DataList$data
     if (length(data) == 0)
       return()
-
-    dim <- get_DIM(data)
-    updateSelectInput(session, 'Overall.Dim', choices = dim, selected = dim[1])
-
-    funcID <- get_funcId(data)
-    updateSelectInput(session, 'Overall.Funcid', choices = funcID, selected = funcID[1])
-
+    
+    # TODO: create reactive values for them
     algId <- c(get_AlgId(data), 'all')
+    parId <- c(get_ParId(data), 'all')
+    funcID <- get_funcId(data)
+    dim <- get_DIM(data)
+    
+    updateSelectInput(session, 'Overall.Dim', choices = dim, selected = dim[1])
+    updateSelectInput(session, 'Overall.Funcid', choices = funcID, selected = funcID[1])
     updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'FCESummary.Overview.Algid', choices = algId, selected = 'all')
@@ -339,10 +311,8 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, 'FCESummary.Sample.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'PAR.Summary.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'PAR.Sample.Algid', choices = algId, selected = 'all')
-    updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = get_AlgId(data), selected = NULL )
-    updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = get_AlgId(data), selected = NULL )
-
-    parId <- c(get_ParId(data), 'all')
+    updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = get_AlgId(data), selected = NULL)
+    updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = get_AlgId(data), selected = NULL)
     updateSelectInput(session, 'PAR.Summary.Param', choices = parId, selected = 'all')
     updateSelectInput(session, 'PAR.Sample.Param', choices = parId, selected = 'all')
   })
@@ -352,12 +322,10 @@ shinyServer(function(input, output, session) {
     dim <- input$Overall.Dim
     id <- input$Overall.Funcid
 
-    if (length(DataList$data) == 0)
-      return(NULL)
+    if (length(DataList$data) == 0) return(NULL)
 
     subset(DataList$data, DIM == dim, funcId == id)
   })
-
 
   # TODO: give a different name for DATA and DATA_UNFILTERED
   DATA_UNFILTERED <- reactive({
@@ -367,13 +335,13 @@ shinyServer(function(input, output, session) {
   MAX_ERTS_FUNC <- reactive({
     dim <- input$Overall.Dim
     data <- subset(DataList$data, DIM == dim)
-    max_ERTs(data, aggr_on = 'funcId', maximize = !(src_format == COCO || src_format == BIBOJ_COCO))
+    max_ERTs(data, aggr_on = 'funcId', maximize = !(format == COCO || format == BIBOJ_COCO))
   })
 
   MAX_ERTS_DIM <- reactive({
     func <- input$Overall.Funcid
     data <- subset(DataList$data, funcId == func)
-    max_ERTs(data, aggr_on = 'DIM', maximize = !(src_format == COCO || src_format == BIBOJ_COCO))
+    max_ERTs(data, aggr_on = 'DIM', maximize = !(format == COCO || format == BIBOJ_COCO))
   })
 
   MEAN_FVALS_FUNC <- reactive({
@@ -406,6 +374,7 @@ shinyServer(function(input, output, session) {
   observe({
     data <- DATA()
     v <- get_Funvals(data)
+    name <- get_data_id(data)
     req(v)
 
     # choose proper scaling for the function value
@@ -417,50 +386,39 @@ shinyServer(function(input, output, session) {
     fseq <- seq_FV(v, length.out = length.out)
     start <- fseq[1]
     stop <- fseq[length.out]
+    # s <- ((stop - start) * 0.1 + start)
+    # e <- ((stop - start) * 0.9 + start)
 
     #TODO: Make more general
     if (abs(2 * fseq[3] - fseq[2] - fseq[4]) < 1e-12) #arbitrary precision
       step <- fseq[3] - fseq[2]
     else
       step <- log10(fseq[3]) - log10(fseq[2])
-
-    name <- get_data_id(data)
+    
     setTextInput(session, 'RTSummary.Statistics.Min', name, alternative = format_FV(start))
     setTextInput(session, 'RTSummary.Statistics.Max', name, alternative = format_FV(stop))
     setTextInput(session, 'RTSummary.Statistics.Step', name, alternative = format_FV(step))
-
     setTextInput(session, 'RTSummary.Sample.Min', name, alternative = format_FV(start))
     setTextInput(session, 'RTSummary.Sample.Max', name, alternative = format_FV(stop))
     setTextInput(session, 'RTSummary.Sample.Step', name, alternative = format_FV(step))
-
     setTextInput(session, 'RTECDF.Multi.Min', name, alternative = format_FV(start))
     setTextInput(session, 'RTECDF.Multi.Max', name, alternative = format_FV(stop))
     setTextInput(session, 'RTECDF.Multi.Step', name, alternative = format_FV(step))
-
     setTextInput(session, 'RTPMF.Bar.Target', name, alternative = format_FV(median(v)))
     setTextInput(session, 'RTPMF.Hist.Target', name, alternative = format_FV(median(v)))
-
-    # s <- ((stop - start) * 0.1 + start)
-    # e <- ((stop - start) * 0.9 + start)
     setTextInput(session, 'ERTPlot.Min', name, alternative = format_FV(start))
     setTextInput(session, 'ERTPlot.Max', name, alternative = format_FV(stop))
-
     setTextInput(session, 'ERTPlot.Aggr.Targets', name, alternative = "")
     setTextInput(session, 'FCEPlot.Aggr.Targets', name, alternative = "")
-
     setTextInput(session, 'RTECDF.Single.Target', name, alternative = format_FV(q[2]))
-
     setTextInput(session, 'RTECDF.AUC.Min', name, alternative = format_FV(start))
     setTextInput(session, 'RTECDF.AUC.Max', name, alternative = format_FV(stop))
     setTextInput(session, 'RTECDF.AUC.Step', name, alternative = format_FV(step))
-
     setTextInput(session, 'PAR.Plot.Min', name, alternative = format_FV(start))
     setTextInput(session, 'PAR.Plot.Max', name, alternative = format_FV(stop))
-
     setTextInput(session, 'PAR.Summary.Min', name, alternative = format_FV(start))
     setTextInput(session, 'PAR.Summary.Max', name, alternative = format_FV(stop))
     setTextInput(session, 'PAR.Summary.Step', name, alternative = format_FV(step))
-
     setTextInput(session, 'PAR.Sample.Min', name, alternative = format_FV(start))
     setTextInput(session, 'PAR.Sample.Max', name, alternative = format_FV(stop))
     setTextInput(session, 'PAR.Sample.Step', name, alternative = format_FV(step))
@@ -470,12 +428,14 @@ shinyServer(function(input, output, session) {
   observe({
     data <- DATA()
     v <- get_Runtimes(data)
+    name <- get_data_id(data)
+    # s <- ((max(v) - min(v)) * 0.05 + min(v)) %>% as.integer
+    # e <- ((max(v) - min(v)) * 0.95 + min(v)) %>% as.integer
 
-    if (length(v) == 0)
-      return()
+    if (length(v) == 0) return()
 
     # TODO: this part should be made generic!!!
-    v <- v  %>% as.integer
+    v <- as.integer(v)
     q <- quantile(v, probs = c(.25, .5, .75), names = F, type = 3)
 
     grid <- seq(min(v), max(v), length.out = 10) %>% as.integer
@@ -484,27 +444,19 @@ shinyServer(function(input, output, session) {
     start <- min(v)
     stop <- max(v)
 
-    name <- get_data_id(data)
     setTextInput(session, 'FCESummary.Statistics.Min', name, alternative = min(v))
     setTextInput(session, 'FCESummary.Statistics.Max', name, alternative = max(v))
     setTextInput(session, 'FCESummary.Statistics.Step', name, alternative = step)
-
     setTextInput(session, 'FCESummary.Sample.Min', name, alternative = min(v))
     setTextInput(session, 'FCESummary.Sample.Max', name, alternative = max(v))
     setTextInput(session, 'FCESummary.Sample.Step', name, alternative = step)
-
     setTextInput(session, 'FCEPDF.Hist.Runtime', name, alternative = median(v))
     setTextInput(session, 'FCEPDF.Bar.Runtime', name, alternative = median(v))
-
-    # s <- ((max(v) - min(v)) * 0.05 + min(v)) %>% as.integer
-    # e <- ((max(v) - min(v)) * 0.95 + min(v)) %>% as.integer
     setTextInput(session, 'FCEPlot.Min', name, alternative = start)
     setTextInput(session, 'FCEPlot.Max', name, alternative = stop)
-
     setTextInput(session, 'FCEECDF.Mult.Min', name, alternative = min(v))
     setTextInput(session, 'FCEECDF.Mult.Max', name, alternative = max(v))
     setTextInput(session, 'FCEECDF.Mult.Step', name, alternative = step)
-
     setTextInput(session, 'FCEECDF.AUC.Min', name, alternative = min(v))
     setTextInput(session, 'FCEECDF.AUC.Max', name, alternative = max(v))
     setTextInput(session, 'FCEECDF.AUC.Step', name, alternative = step)
@@ -515,15 +467,16 @@ shinyServer(function(input, output, session) {
 
   # Data summary for Fixed-Target Runtime (ERT)  --------------
   runtime_summary <- reactive({
-    req(input$RTSummary.Statistics.Min, input$RTSummary.Statistics.Max, input$RTSummary.Statistics.Step)
+    req(input$RTSummary.Statistics.Min, 
+        input$RTSummary.Statistics.Max, 
+        input$RTSummary.Statistics.Step)
 
     fstart <- format_FV(input$RTSummary.Statistics.Min) %>% as.numeric
     fstop <- format_FV(input$RTSummary.Statistics.Max) %>% as.numeric
     fstep <- format_FV(input$RTSummary.Statistics.Step) %>% as.numeric
-
-    req(fstart <= fstop, fstep <= fstop - fstart)
-
     data <- DATA()
+    
+    req(fstart <= fstop, fstep <= fstop - fstart, data)
     fall <- get_Funvals(data)
 
     if (input$RTSummary.Statistics.Single)
@@ -553,6 +506,7 @@ shinyServer(function(input, output, session) {
   # Data summary for Fixed-Target Runtime (ERT)  --------------
   runtime_summary_condensed <- reactive({
     data <- DATA()
+    req(data)
     fall <- get_Funvals(data)
     get_FV_overview(data, algorithm = input$RTSummary.Overview.Algid)
   })
@@ -574,7 +528,6 @@ shinyServer(function(input, output, session) {
 
   output$RTSummary.Statistics.Download <- downloadHandler(
     filename = {
-      data <- DATA()
       fstart <- format_FV(input$RTSummary.Statistics.Min)
       fstop <- format_FV(input$RTSummary.Statistics.Max)
       fstep <- format_FV(input$RTSummary.Statistics.Step)
@@ -587,53 +540,37 @@ shinyServer(function(input, output, session) {
   )
 
   get_RT <- reactive({
-    req(input$RTSummary.Sample.Min, input$RTSummary.Sample.Max, input$RTSummary.Sample.Step)
+    req(input$RTSummary.Sample.Min, 
+        input$RTSummary.Sample.Max, 
+        input$RTSummary.Sample.Step)
 
     fstart <- format_FV(input$RTSummary.Sample.Min) %>% as.numeric
     fstop <- format_FV(input$RTSummary.Sample.Max) %>% as.numeric
     fstep <- format_FV(input$RTSummary.Sample.Step) %>% as.numeric
+    data <- DATA()
 
-    req(fstart <= fstop, fstep <= fstop - fstart)
+    req(fstart <= fstop, fstep <= fstop - fstart, data)
+    fall <- get_Funvals(data)
 
     # TODO: verify this
     # we have to remove this part from the dependency of this reactive expression
-    isolate({
-      data <- DATA()
-      fall <- get_Funvals(data)
-    })
+    # isolate({
+    #   
+    #   
+    # })
 
     if (input$RTSummary.Sample.Single)
       fstop <- fstart
 
     fseq <- seq_FV(fall, fstart, fstop, fstep)
     req(fseq)
-    # res <- list()
-    # n_runs_max <- sapply(data, function(ds) length(attr(ds, 'instance'))) %>% max
 
     get_RT_sample(data, ftarget = fseq, algorithm = input$RTSummary.Sample.Algid,
                   output = input$RTSummary.Sample.DownloadFormat)
-
-    # for (i in seq_along(data)) {
-    #   ds <- data[[i]]
-    #   algId <- attr(ds, 'algId')
-    #   if (input$ALGID_RAW_INPUT != 'all' && algId != input$ALGID_RAW_INPUT)
-    #     next
-    #
-    #   rt <- get_RT_sample(ds, fseq, output = input$RT_download_format)
-    #   if (input$RT_download_format == 'wide') {
-    #     n <- ncol(rt) - 2
-    #     if (n < n_runs_max)
-    #       rt %<>% cbind(., matrix(NA, nrow(.), n_runs_max - n))
-    #   }
-    #   res[[i]] <- rt
-    # }
-    # do.call(rbind, res)
   })
 
   output$RTSummary.Sample.Download <- downloadHandler(
     filename = {
-      data <- DATA()
-      algId <- paste0(get_AlgId(data), collapse = ';')
       fstart <- input$RTSummary.Sample.Min %>% format_FV
       fstop <- input$RTSummary.Sample.Max %>% format_FV
       fstep <- input$RTSummary.Sample.Step %>% format_FV
@@ -648,12 +585,13 @@ shinyServer(function(input, output, session) {
   output$table_RT_sample <- renderDataTable({
     df <- get_RT()
     df[is.na(df)] <- 'NA'
-    df}, options = list(pageLength = 20, scrollX = T))
+    df
+  }, options = list(pageLength = 20, scrollX = T))
 
   # The expected runtime plot ---------------------
   # TODO: wrapp this as a separate function for DataSet class
   output$ERT_PER_FUN <- renderPlotly({
-    render_ERT_PER_FUN()
+    render_ert_per_fct()
   })
 
   output$ERTPlot.Download <- downloadHandler(
@@ -661,44 +599,52 @@ shinyServer(function(input, output, session) {
       eval(FIG_NAME_ERT_PER_FUN)
     },
     content = function(file) {
-      save_plotly(render_ERT_PER_FUN(), file,
+      save_plotly(render_ert_per_fct(), file,
                   format = input$ERTPlot.Format,
                   width = fig_width2, height = fig_height)
     },
     contentType = paste0('image/', input$ERTPlot.Format)
   )
 
-  render_ERT_PER_FUN <- reactive({
+  render_ert_per_fct <- reactive({
+    req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
     fstart <- input$ERTPlot.Min %>% as.numeric
     fstop <- input$ERTPlot.Max %>% as.numeric
 
-    plot_RT_line(DATA(),Fstart = fstart ,Fstop = fstop,
-                 show.CI = input$ERTPlot.show.CI, show.density = input$ERTPlot.show.density,
-                 show.runs = input$ERTPlot.show_all, show.optimal = input$ERTPlot.show.best_of_all,
-                 show.pareto = input$ERTPlot.show.pareto_optima, show.ERT = input$ERTPlot.show.ERT,
-                 show.mean = input$ERTPlot.show.mean, show.median = input$ERTPlot.show.median,
-                 scale.xlog = input$ERTPlot.semilogx, scale.ylog = input$ERTPlot.semilogy,
-                 show.grad = input$ERTPlot.show.grad, show.intensity = input$ERTPlot.show.intensity,
-                 scale.reverse = (src_format == COCO || src_format == BIBOJ_COCO))
-
+    plot_RT_line(DATA(), Fstart = fstart, Fstop = fstop,
+                 show.CI = input$ERTPlot.show.CI, 
+                 show.density = input$ERTPlot.show.density,
+                 show.runs = input$ERTPlot.show_all, 
+                 show.optimal = input$ERTPlot.show.best_of_all,
+                 show.pareto = input$ERTPlot.show.pareto_optima, 
+                 show.ERT = input$ERTPlot.show.ERT,
+                 show.mean = input$ERTPlot.show.mean, 
+                 show.median = input$ERTPlot.show.median,
+                 scale.xlog = input$ERTPlot.semilogx, 
+                 scale.ylog = input$ERTPlot.semilogy,
+                 show.grad = input$ERTPlot.show.grad, 
+                 show.intensity = input$ERTPlot.show.intensity,
+                 scale.reverse = (format == COCO || format == BIBOJ_COCO))
   })
 
   output$ERTPlot.Multi.Plot <- renderPlotly(
     render_ERTPlot_multi_plot()
   )
 
-
-
   render_ERTPlot_multi_plot <- reactive({
     req(input$ERTPlot.Multi.PlotButton)
     data <- DATA_UNFILTERED()
     data <- subset(data, algId %in% input$ERTPlot.Multi.Algs)
-    if(length(data) == 0) return(NULL)
-    if(input$ERTPlot.Multi.Aggregator == 'Functions') data <- subset(data, DIM==input$Overall.Dim)
-    else data <- subset(data, funcId==input$Overall.Funcid)
+    
+    if (length(data) == 0) return(NULL)
+    if (input$ERTPlot.Multi.Aggregator == 'Functions') 
+      data <- subset(data, DIM == input$Overall.Dim)
+    else 
+      data <- subset(data, funcId == input$Overall.Funcid)
+    
     plot_ERT_MULTI(data, plot_mode = input$ERTPlot.Multi.Mode,
                    scale.xlog = input$ERTPlot.Multi.Logx, scale.ylog = input$ERTPlot.Multi.Logy,
-                   scale.reverse = (src_format == COCO || src_format == BIBOJ_COCO),
+                   scale.reverse = (format == COCO || format == BIBOJ_COCO),
                    aggr_on = ifelse(input$ERTPlot.Multi.Aggregator == 'Functions', 'funcId', 'DIM'))
 
   })
@@ -759,16 +705,15 @@ shinyServer(function(input, output, session) {
     }
     
     if (update_targets) {
-      targets <- get_max_targets(data, aggr_on, maximize = !(src_format == COCO || src_format == BIBOJ_COCO))
+      targets <- get_max_targets(data, aggr_on, maximize = !(format == COCO || format == BIBOJ_COCO))
       updateTextInput(session, 'ERTPlot.Aggr.Targets', value = targets %>% toString)
     }
     
     plot_ERT_AGGR(data, plot_mode = input$ERTPlot.Aggr.Mode, targets = targets,
                   scale.ylog = input$ERTPlot.Aggr.Logy,
-                  maximize = !(src_format == COCO || src_format == BIBOJ_COCO),
+                  maximize = !(format == COCO || format == BIBOJ_COCO),
                   use_rank = input$ERTPlot.Aggr.Ranking,
                   aggr_on = aggr_on, erts = erts)
-
   })
 
   output$ERTPlot.Aggr.Download <- downloadHandler(
@@ -855,7 +800,6 @@ shinyServer(function(input, output, session) {
     },
     contentType = paste0('image/', input$RTECDF.Aggr.Format)
   )
-
 
   RT_ECDF_MULTI_TABLE <- reactive({
     targets <- uploaded_RT_ECDF_targets()

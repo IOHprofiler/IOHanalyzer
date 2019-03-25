@@ -694,12 +694,16 @@ shinyServer(function(input, output, session) {
     aggr_on = ifelse(input$ERTPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
     aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
     update_targets <- F
+    update_data <- T
     
-    if (input$ERTPlot.Aggr.Targets == "") {
+    if(input$ERTPlot.Aggr.Targets == ""){
       update_targets <- T
     } else {
       targets <- as.numeric(unlist(strsplit(input$ERTPlot.Aggr.Targets,",")))
-      if (length(targets) != length(aggr_attr)) {
+      targets2 <- get_max_targets(data, aggr_on, maximize = !(src_format == COCO || src_format == BIBOJ_COCO))
+      if(targets == targets2)
+        update_data <- F
+      if(length(targets) != length(aggr_attr)){
         update_targets <- T
       }
     }
@@ -707,8 +711,12 @@ shinyServer(function(input, output, session) {
     if (update_targets) {
       targets <- get_max_targets(data, aggr_on, maximize = !(format == COCO || format == BIBOJ_COCO))
       updateTextInput(session, 'ERTPlot.Aggr.Targets', value = targets %>% toString)
+      return(NULL)
     }
-    
+
+    if(update_data)
+      erts <- max_ERTs(data, aggr_on, targets, maximize = !(src_format == COCO || src_format == BIBOJ_COCO))
+
     plot_ERT_AGGR(data, plot_mode = input$ERTPlot.Aggr.Mode, targets = targets,
                   scale.ylog = input$ERTPlot.Aggr.Logy,
                   maximize = !(format == COCO || format == BIBOJ_COCO),
@@ -1114,7 +1122,7 @@ shinyServer(function(input, output, session) {
 
   })
 
-  output$ERTPlot.Multi.Download <- downloadHandler(
+  output$FCEPlot.Multi.Download <- downloadHandler(
     filename = function() {
       eval(FIG_NAME_FV_PER_FUN_MULTI)
     },
@@ -1160,11 +1168,15 @@ shinyServer(function(input, output, session) {
     aggr_on = ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
     aggr_attr <- if(aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
     update_targets <- F
+    update_data <- T
     if(input$FCEPlot.Aggr.Targets == ""){
       update_targets <- T
     }
     else{
       runtimes <- as.numeric(unlist(strsplit(input$FCEPlot.Aggr.Targets,",")))
+      runtimes2 <- get_max_runtimes(data, aggr_on)
+      if(runtimes == runtimes2)
+        update_data <- F
       if(length(runtimes) != length(aggr_attr)){
         update_targets <- T
       }
@@ -1172,7 +1184,10 @@ shinyServer(function(input, output, session) {
     if(update_targets){
       runtimes <- get_max_runtimes(data, aggr_on)
       updateTextInput(session, 'FCEPlot.Aggr.Targets', value = runtimes %>% toString)
+      return(NULL)
     }
+    if(update_data)
+      fvs <- mean_FVs(data, aggr_on, runtimes)
     plot_FCE_AGGR(data, plot_mode = input$FCEPlot.Aggr.Mode, runtimes = runtimes,
                   scale.ylog = input$FCEPlot.Aggr.Logy,
                   use_rank = input$FCEPlot.Aggr.Ranking,

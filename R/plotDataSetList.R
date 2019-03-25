@@ -220,7 +220,7 @@ plot_RT_ECDF_MULTI <- function(dsList,...) UseMethod("plot_RT_ECDF_MULTI", dsLis
 #' @export
 #'
 #' @examples
-plot_ERT_MULTI <- function(dsList,...) UseMethod("plot_ERT_MULTI", dsList)
+plot_RT_all_fcts <- function(dsList,...) UseMethod("plot_RT_all_fcts", dsList)
 #' Plot ERT-based comparison over multiple functions or dimensions
 #'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
@@ -662,8 +662,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
 
     if (scale.reverse)
       p %<>% layout(xaxis = list(autorange = "reversed"))
-  }
-  else if (backend == 'ggplot2') {
+  } else if (backend == 'ggplot2') {
     fce[, 'group' := paste(algId, funcId, DIM, sep = '-')]
     p <- ggplot(data = fce, aes(group = 'group', colour = 'group'))
 
@@ -1522,95 +1521,91 @@ plot_RT_ECDF_MULTI.DataSetList <- function(dsList, targets = NULL, ...){
 #' @export
 #'
 #' @examples
-plot_ERT_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog = F,
-                                       scale.ylog = F, scale.reverse = F,
-                                       aggr_on = 'funcId', ...){
-
-  N <- length(get_AlgId(dsList))
-  colors <- color_palettes(N)
-
-  in_legend <- integer(N)
-  names(in_legend) <- get_AlgId(dsList)
-  names(colors) <- get_AlgId(dsList)
-
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
-  M <- length(aggr_attr)
+plot_RT_all_fcts.DataSetList <- function(dsList, xscale = 'linear',
+                                         yscale = 'linear', 
+                                         scale.reverse = F,
+                                         backend = 'plotly') {
+  funcIds <- get_funcId(dsList)
+  n_fcts <- length(funcIds)
   
-  # keep to columns for the histograms
-  if (M <= 10) {
-    nrows <- ceiling(M / 2.) 
-    ncolumns <- 2
-  } else if (M <= 20) {
-    nrows <- ceiling(M / 3.) 
-    ncolumns <- 3
-  } else if (M <= 30) {
-    nrows <- ceiling(M / 4.) 
-    ncolumns <- 4
+  algIds <- get_algId(dsList)
+  n_algIds <- length(algIds)
+  
+  colors <- color_palettes(n_algIds)
+  names(colors) <- algIds
+  
+  # how many columns do we want...
+  if (n_fcts <= 10) {
+    n_rows <- ceiling(n_fcts / 2.) 
+    n_cols <- 2
+  } else if (n_fcts <= 20) {
+    n_rows <- ceiling(n_fcts / 3.) 
+    n_cols <- 3
+  } else if (n_fcts <= 30) {
+    n_rows <- ceiling(n_fcts / 4.) 
+    n_cols <- 4
   }
-
-  if (plot_mode == 'overlay') {
-    p <- plot_ly_default(x.title = "function evaluations", y.title = "ERT")
-  } else if (plot_mode == 'subplot') {
-    p <- lapply(seq(M), function(x) {
-      plot_ly_default(x.title = "function evaluations", y.title = "ERT")
-        # add_annotations(text=paste0(ifelse(aggr_on=='funcId', "F ", "D "), aggr_attr[[x]]),
-        #                 showarrow=F, xanchor = 'center', yanchor = 'top',
-        #                 y = 1.15, yref = 'paper', x = 0.5, xref= 'paper')
-    })
-  }
-
-  for (j in seq_along(aggr_attr)) {
-    if(aggr_on == 'funcId') dsList_filetered <- subset(dsList,funcId==aggr_attr[[j]])
-    else dsList_filetered <- subset(dsList,DIM==aggr_attr[[j]])
-
-    Fall <- get_Funvals(dsList_filetered)
+  
+  dt <- list()
+  for (i in seq(n_algIds)) {
+    data <- subset(dsList, algId == algIds[i])
+    
+    Fall <- get_Funvals(data)
     Fstart <- min(Fall)
     Fstop <- max(Fall)
-
-    Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
+    Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 30, scale = xscale)
+    
     if (length(Fseq) == 0) return(NULL)
-
-    dt <- get_RT_summary(dsList_filetered, ftarget = Fseq)
-    dt[, `:=`(upper = mean + sd, lower = mean - sd)]
-
-    for (i in seq_along(dsList_filetered)){
-      df <- dsList_filetered[[i]]
-      algId <- attr(df, 'algId')
-      to_show_legend <- (in_legend[[algId]] == 0)
-      in_legend[[algId]] <- 1
-      ds_ERT <- dt[algId == attr(df, 'algId') &
-                     funcId == attr(df, 'funcId') &
-                     DIM == attr(df, 'DIM')]
-
-      color <- colors[[algId]]
-      rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
-
-      if (plot_mode == 'overlay') {
-        p %<>%
-          add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
-                    mode = 'lines+markers',
-                    marker = list(color = rgb_str),
-                    line = list(color = rgb_str),name = algId, showlegend=to_show_legend)
-      } else if (plot_mode == 'subplot') {
-        p[[j]] %<>%
-          add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
-                    mode = 'lines+markers',
-                    marker = list(color = rgb_str),
-                    line = list(color = rgb_str), name = algId, showlegend = to_show_legend)
-      }
-    }
+    
+    dt[[i]] <- get_RT_summary(data, ftarget = Fseq)
   }
+  dt <- rbindlist(dt)
   
-  if (plot_mode == 'subplot') {
-    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.03, 
-                 heights = rep(1 / nrows, nrows), widths = rep(1 / ncolumns, ncolumns))
+  if (backend == 'ggplot2') {
+    dt[, funcId := paste0('F', funcId)]
+    
+    p <- ggplot(data = dt, aes(group = algId, colour = algId)) +
+      geom_line(aes(target, ERT), linetype = 'solid') + 
+      facet_wrap(~funcId, scales = 'free', nrow = n_rows, ncol = n_cols) + 
+      scale_color_manual(values = colors)
+    
+  } else if (backend == 'plotly') {
+    autorange <- ifelse(scale.reverse, 'reversed', T)
+    p <- lapply(
+      seq(n_fcts), 
+      function(x)
+        plot_ly_default(x.title = "", y.title = "ERT") %>% 
+          layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 4, autorange = autorange),
+                 yaxis = list(type = yscale, tickfont = f1, ticklen = 4))
+    )
+    
+    for (i in seq(n_fcts)) {
+      showlegend <- ifelse(i == 1, T, F)
+      dt_plot <- dt[funcId == funcIds[[i]]]
+      
+      # TODO: perhaps turn off the marker here
+      p[[i]] %<>% 
+        add_trace(
+          data = dt_plot, x = ~target, y = ~ERT, color = ~algId, 
+          legendgroup = ~algId, colors = colors,
+          type = 'scatter', mode = 'lines+markers', 
+          line = list(width = 1.5), marker = list(size = 3),
+          showlegend = showlegend
+        ) %>% 
+        layout(
+          annotations = list(
+            text = paste0('F', funcIds[[i]]), font = f1, align = "center",
+            xref = "paper", yref = "paper",
+            yanchor = "bottom", xanchor = "center",
+            x = 0.5, y = 1, showarrow = FALSE
+          )
+        )
+    }
+      
+    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.025,
+                 heights = rep(1 / n_rows, n_rows), 
+                 widths = rep(1 / n_cols, n_cols))
   }
-  p %<>%
-    layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
-           yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
-  if (scale.reverse)
-    p %<>% layout(xaxis = list(autorange = "reversed"))
   p
 }
 
@@ -1641,12 +1636,12 @@ plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL
   if (is.null(erts))
     return(NULL)
 
-  N <- length(get_AlgId(dsList))
+  N <- length(get_algId(dsList))
   colors <- color_palettes(N)
 
   in_legend <- integer(N)
-  names(in_legend) <- get_AlgId(dsList)
-  names(colors) <- get_AlgId(dsList)
+  names(in_legend) <- get_algId(dsList)
+  names(colors) <- get_algId(dsList)
 
   aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
   if(!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
@@ -1660,7 +1655,7 @@ plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL
   else plot_ly_default(title = plot_title)
 
   if (use_rank){
-    ertranks <- seq(0, 0, length.out = length(get_AlgId(dsList)))
+    ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))
     for (i in seq_along(aggr_attr)){
       ertranks <- rbind(ertranks, rank(erts[i, ]))
     }
@@ -1670,8 +1665,8 @@ plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL
     dataert <- erts
   }
 
-  for (i in seq_along(get_AlgId(dsList))){
-    algId <- get_AlgId(dsList)[[i]]
+  for (i in seq_along(get_algId(dsList))){
+    algId <- get_algId(dsList)[[i]]
     color <- colors[[algId]]
     data <- dataert[,i]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
@@ -1777,12 +1772,12 @@ plot_FCE_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NUL
   if (is.null(fvs))
     return(NULL)
 
-  N <- length(get_AlgId(dsList))
+  N <- length(get_algId(dsList))
   colors <- color_palettes(N)
 
   in_legend <- integer(N)
-  names(in_legend) <- get_AlgId(dsList)
-  names(colors) <- get_AlgId(dsList)
+  names(in_legend) <- get_algId(dsList)
+  names(colors) <- get_algId(dsList)
 
   aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
   if(!is.null(runtimes) && length(runtimes) != length(aggr_attr)) runtimes <- NULL
@@ -1796,7 +1791,7 @@ plot_FCE_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NUL
   else plot_ly_default(title = plot_title)
 
   if (use_rank){
-    ertranks <- seq(0, 0, length.out = length(get_AlgId(dsList)))
+    ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))
     fvs2 <- -fvs
     fvs2[is.na(fvs2)] <- Inf
     for (i in seq_along(aggr_attr)){
@@ -1808,8 +1803,8 @@ plot_FCE_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NUL
     dataert <- fvs
   }
 
-  for (i in seq_along(get_AlgId(dsList))){
-    algId <- get_AlgId(dsList)[[i]]
+  for (i in seq_along(get_algId(dsList))){
+    algId <- get_algId(dsList)[[i]]
     color <- colors[[algId]]
     data <- dataert[,i]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
@@ -1887,12 +1882,12 @@ plot_FCE_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NUL
 plot_FCE_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog = F,
                                        scale.ylog = F, aggr_on = 'funcId', ...){
 
-  N <- length(get_AlgId(dsList))
+  N <- length(get_algId(dsList))
   colors <- color_palettes(N)
 
   in_legend <- integer(N)
-  names(in_legend) <- get_AlgId(dsList)
-  names(colors) <- get_AlgId(dsList)
+  names(in_legend) <- get_algId(dsList)
+  names(colors) <- get_algId(dsList)
 
   aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
   M <- length(aggr_attr)

@@ -13,7 +13,7 @@ test_that("Validate reading of files",{
   #
   # expect_true(any(match(class(dsl1), "DataSetList")))
   # expect_equal(get_DIM(dsl1), 100)
-  # expect_equal(get_AlgId(dsl1), "ONE_PLUS_LAMDA_EA")
+  # expect_equal(get_algId(dsl1), "ONE_PLUS_LAMDA_EA")
   # expect_equal(get_funcId(dsl1), 1)
   #
   # ds1 <- dsl1[[1]]

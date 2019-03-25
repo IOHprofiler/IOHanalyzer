@@ -102,7 +102,7 @@ shinyServer(function(input, output, session) {
         shinyjs::disable('Repository.load')
         return(NULL)
       }
-      algId <- c(get_AlgId(repository), 'all')
+      algId <- c(get_algId(repository), 'all')
       dim <- c(get_DIM(repository), 'all')
       func <- c(get_funcId(repository), 'all')
     } else {
@@ -296,8 +296,8 @@ shinyServer(function(input, output, session) {
       return()
     
     # TODO: create reactive values for them
-    algId <- c(get_AlgId(data), 'all')
-    parId <- c(get_ParId(data), 'all')
+    algId <- c(get_algId(data), 'all')
+    parId <- c(get_parId(data), 'all')
     funcID <- get_funcId(data)
     dim <- get_DIM(data)
     
@@ -312,8 +312,8 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, 'FCESummary.Sample.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'PAR.Summary.Algid', choices = algId, selected = 'all')
     updateSelectInput(session, 'PAR.Sample.Algid', choices = algId, selected = 'all')
-    updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = get_AlgId(data), selected = NULL)
-    updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = get_AlgId(data), selected = NULL)
+    updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = get_algId(data), selected = NULL)
+    updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = get_algId(data), selected = NULL)
     updateSelectInput(session, 'PAR.Summary.Param', choices = parId, selected = 'all')
     updateSelectInput(session, 'PAR.Sample.Param', choices = parId, selected = 'all')
   })
@@ -553,13 +553,6 @@ shinyServer(function(input, output, session) {
     req(fstart <= fstop, fstep <= fstop - fstart, data)
     fall <- get_Funvals(data)
 
-    # TODO: verify this
-    # we have to remove this part from the dependency of this reactive expression
-    # isolate({
-    #   
-    #   
-    # })
-
     if (input$RTSummary.Sample.Single)
       fstop <- fstart
 
@@ -634,20 +627,15 @@ shinyServer(function(input, output, session) {
 
   render_ERTPlot_multi_plot <- reactive({
     req(input$ERTPlot.Multi.PlotButton)
-    data <- DATA_UNFILTERED()
-    data <- subset(data, algId %in% input$ERTPlot.Multi.Algs)
+    data <- subset(DATA_UNFILTERED(), 
+                   algId %in% input$ERTPlot.Multi.Algs, 
+                   DIM == input$Overall.Dim)
+    req(data)
     
-    if (length(data) == 0) return(NULL)
-    if (input$ERTPlot.Multi.Aggregator == 'Functions') 
-      data <- subset(data, DIM == input$Overall.Dim)
-    else 
-      data <- subset(data, funcId == input$Overall.Funcid)
-    
-    plot_ERT_MULTI(data, plot_mode = input$ERTPlot.Multi.Mode,
-                   scale.xlog = input$ERTPlot.Multi.Logx, scale.ylog = input$ERTPlot.Multi.Logy,
-                   scale.reverse = (format == COCO || format == BIBOJ_COCO),
-                   aggr_on = ifelse(input$ERTPlot.Multi.Aggregator == 'Functions', 'funcId', 'DIM'))
-
+    plot_RT_all_fcts(data, 
+                     xscale = ifelse(input$ERTPlot.Multi.Logx, 'log', 'linear'),
+                     yscale = ifelse(input$ERTPlot.Multi.Logy, 'log', 'linear'),
+                     scale.reverse = (format == COCO || format == BIBOJ_COCO))
   })
 
   output$ERTPlot.Multi.Download <- downloadHandler(
@@ -1003,7 +991,7 @@ shinyServer(function(input, output, session) {
   output$FCESummary.Statistics.Download <- downloadHandler(
     filename = {
       data <- DATA()
-      algId <- paste0(get_AlgId(data), collapse = ';')
+      algId <- paste0(get_algId(data), collapse = ';')
       rt_min <- input$FCESummary.Statistics.Min %>% as.integer %>% as.character
       rt_max <- input$FCESummary.Statistics.Max %>% as.integer %>% as.character
       rt_step <- input$FCESummary.Statistics.Step %>% as.integer %>% as.character
@@ -1058,7 +1046,7 @@ shinyServer(function(input, output, session) {
   output$FCESummary.Sample.Download <- downloadHandler(
     filename = {
       data <- DATA()
-      algId <- paste0(get_AlgId(data), collapse = ';')
+      algId <- paste0(get_algId(data), collapse = ';')
       rt_min <- input$FCESummary.Statistics.Min %>% as.integer %>% as.character
       rt_max <- input$RT_MAX %>% as.integer %>% as.character
       rt_step <- input$RT_STEP %>% as.integer %>% as.character

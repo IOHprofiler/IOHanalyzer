@@ -6,6 +6,14 @@
 suppressMessages(library(plotly))
 suppressMessages(library(ggplot2))
 
+# font No. 1...
+f1 <- list(
+  family = 'Old Standard TT, serif',
+  size = 8,
+  color = 'black'
+)
+
+
 # font No. 2...
 f2 <- list(
   family = 'Old Standard TT, serif',

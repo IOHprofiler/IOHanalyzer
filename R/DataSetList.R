@@ -412,7 +412,7 @@ get_funcId <- function(data) {
 #'
 #' @return A sorted list of all unique algorithm ids which occur in the DataSetList
 #' @export
-get_AlgId <- function(data) {
+get_algId <- function(data) {
   sapply(data, function(d) attr(d, 'algId')) %>% unique %>% sort
 }
 
@@ -422,7 +422,7 @@ get_AlgId <- function(data) {
 #'
 #' @return A sorted list of all unique parameter ids which occur in the DataSetList
 #' @export
-get_ParId <- function(data) {
+get_parId <- function(data) {
   lapply(data, function(d) setdiff(names(d), c('RT', 'FV', 'RT.summary'))) %>% unlist %>% unique
 }
 
@@ -504,7 +504,7 @@ max_ERTs <- function(dsList, aggr_on = 'funcId', targets = NULL, maximize = T) U
 #' @return A data.table containing ERT-values
 #' @export
 max_ERTs.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, maximize = T) {
-  N <- length(get_AlgId(dsList))
+  N <- length(get_algId(dsList))
 
   aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
   if(!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
@@ -512,8 +512,8 @@ max_ERTs.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, max
   second_aggr <- if(aggr_on == 'funcId') get_DIM(dsList) else get_funcId(dsList)
   if(length(second_aggr) >1 ) return(NULL)
 
-  erts <- seq(0, 0, length.out = length(get_AlgId(dsList)))
-  names(erts) <- get_AlgId(dsList)
+  erts <- seq(0, 0, length.out = length(get_algId(dsList)))
+  names(erts) <- get_algId(dsList)
 
   for (j in seq_along(aggr_attr)) {
     dsList_filetered <- if(aggr_on == 'funcId') subset(dsList, funcId==aggr_attr[[j]])
@@ -528,7 +528,7 @@ max_ERTs.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, max
     summary <- get_RT_summary(dsList_filetered, ftarget = Fval)
     ert <- summary$ERT
     names(ert) <- summary$algId
-    erts <- rbind(erts, ert[get_AlgId(dsList)])
+    erts <- rbind(erts, ert[get_algId(dsList)])
   }
   return(erts[-1,])
 }
@@ -553,7 +553,7 @@ mean_FVs <- function(dsList, aggr_on = 'funcId', runtimes = NULL) UseMethod("mea
 #' @return A data.table containing expected fucntion-values
 #' @export
 mean_FVs.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NULL) {
-  N <- length(get_AlgId(dsList))
+  N <- length(get_algId(dsList))
 
   aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
   if(!is.null(runtimes) && length(runtimes) != length(aggr_attr)) targets <- NULL
@@ -561,8 +561,8 @@ mean_FVs.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NULL) {
   second_aggr <- if(aggr_on == 'funcId') get_DIM(dsList) else get_funcId(dsList)
   if(length(second_aggr) >1 ) return(NULL)
 
-  erts <- seq(0, 0, length.out = length(get_AlgId(dsList)))
-  names(erts) <- get_AlgId(dsList)
+  erts <- seq(0, 0, length.out = length(get_algId(dsList)))
+  names(erts) <- get_algId(dsList)
 
   for (j in seq_along(aggr_attr)) {
     dsList_filetered <- if(aggr_on == 'funcId') subset(dsList, funcId==aggr_attr[[j]])
@@ -577,7 +577,7 @@ mean_FVs.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NULL) {
     summary <- get_FV_summary(dsList_filetered, runtime = RTval)
     ert <- summary$mean
     names(ert) <- summary$algId
-    erts <- rbind(erts, ert[get_AlgId(dsList)])
+    erts <- rbind(erts, ert[get_algId(dsList)])
   }
   return(erts[-1,])
 }

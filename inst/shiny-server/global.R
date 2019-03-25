@@ -11,8 +11,71 @@ suppressMessages(library(dplyr))
 suppressMessages(library(plotly))
 suppressMessages(library(shinydashboard))
 
+# global options
 options(datatable.print.nrows = 20)
-options(width = 120)
+options(width = 80)
+options(shiny.maxRequestSize = 200 * 1024 ^ 2)   # maximal number of requests, this is too many...
+
+widget_html <- function(name, package, id, style, class, inline = FALSE, ...){
+  
+  # attempt to lookup custom html function for widget
+  fn <- tryCatch(get(paste0(name, "_html"),
+                     asNamespace(package),
+                     inherits = FALSE),
+                 error = function(e) NULL)
+  
+  # call the custom function if we have one, otherwise create a div
+  if (is.function(fn)) {
+    fn(id = id, style = style, class = class, ...)
+  } else if (inline) {
+    tags$span(id = id, style = style, class = class)
+  } else {
+    tags$div(id = id, style = style, class = class)
+  }
+}
+
+checkShinyVersion <- function(error = TRUE) {
+  x <- utils::packageDescription('htmlwidgets', fields = 'Enhances')
+  r <- '^.*?shiny \\(>= ([0-9.]+)\\).*$'
+  if (is.na(x) || length(grep(r, x)) == 0 || system.file(package = 'shiny') == '')
+    return()
+  v <- gsub(r, '\\1', x)
+  f <- if (error) stop else packageStartupMessage
+  if (utils::packageVersion('shiny') < v)
+    f("Please upgrade the 'shiny' package to (at least) version ", v)
+}
+
+widget_dependencies <- function(name, package){
+  htmlwidgets::getDependency(name, package)
+}
+
+plotlyOutput.IOHanalyzer <- function(outputId, width = '100%', aspect_ratio = 16/10) {
+  padding_bottom <- paste0(100 / aspect_ratio, '%')
+  reportSize <- TRUE
+  inline <- FALSE
+  
+  checkShinyVersion()
+  html <- htmltools::tagList(
+    widget_html('plotly', 'plotly', id = outputId, 
+                class = paste0('plotly', " html-widget html-widget-output", 
+                               if (reportSize) 
+                                 " shiny-report-size"), 
+                style = sprintf("width:%s; height: 0; padding-bottom:%s; %s", 
+                                htmltools::validateCssUnit(width), 
+                                htmltools::validateCssUnit(padding_bottom), 
+                                if (inline) 
+                                  "display: inline-block;"
+                                else ""), 
+                width = width, height = 0)
+  )
+  
+  dependencies = widget_dependencies('plotly', 'plotly')
+  htmltools::attachDependencies(html, dependencies)
+}
+
+# markers for plotly
+symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
+             "triangle-up-open", "triangle-down-open")
 
 # ploting settings for UI ---------------------
 aspect_ratio <-  4 / 3
@@ -20,11 +83,6 @@ fig_height <- 1100
 fig_height2 <- 1100
 fig_width <- fig_height * aspect_ratio
 fig_width2 <- fig_height * (16 / 10)
-
-# plotly_height <- paste0(fig_height, "px")
-# plotly_width <- paste0(fig_width, "px")
-# plotly_height2 <- paste0(fig_height2, "px")
-# plotly_width2 <- paste0(fig_width2, "px")
 
 plotly_height <- "auto"
 plotly_width <- "auto"
@@ -38,17 +96,19 @@ AUTOMATIC <- 'AUTOMATIC'
 BIBOJ_COCO <- 'BIBOJ_COCO'
 
 # directory where rds-data is stored
-get_repo_location <- function(official) {
+get_repo_location <- function(official = T) {
   if (official) {
     user_repo <- file.path(Sys.getenv('HOME'), 'repository')
     installed_repo <- file.path(find.package('IOHanalyzer'), 'data')
     if (file.exists(user_repo)) return(user_repo) else return(installed_repo)
-  }
-  else {
+  } else {
     user_repo <- file.path(Sys.getenv('HOME'), 'repository_unofficial')
     return(user_repo)
   }
 }
+
+print_html <- function(s, widget_id = 'process_data_promt') 
+  shinyjs::html(widget_id, s, add = TRUE)
 
 
 # download file names: csv, image ---------------------

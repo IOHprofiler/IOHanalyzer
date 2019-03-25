@@ -14,7 +14,7 @@
 #   color = 'black'
 # )
 #
-# plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
+# plotly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
 #   plot_ly() %>%
 #     layout(title = title,
 #            autosize = T, hovermode = 'compare',

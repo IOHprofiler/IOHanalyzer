@@ -3,27 +3,28 @@
 # Author: Hao Wang
 # Email: wangronin@gmail.com
 
-
 suppressMessages(library(plotly))
 suppressMessages(library(ggplot2))
 
 # font No. 2...
 f2 <- list(
   family = 'Old Standard TT, serif',
-  size = 23,
+  size = 13,
   color = 'black'
 )
 
 # TODO: determine a good font type for plotly
-plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
+plotly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
   plot_ly() %>%
     layout(title = title,
            autosize = T, hovermode = 'compare',
            legend = list(x = 1.01, y = 0.9, orientation = 'v',
-                         font = list(size = 21, family = 'Old Standard TT, serif')),
+                         font = list(size = 13, family = 'Old Standard TT, serif')),
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
-           font = list(size = 25, family = 'Old Standard TT, serif'),
-           titlefont = list(size = 16, family = 'sans-serif'),
+           font = list(size = 13, family = 'Old Standard TT, serif'),
+           titlefont = list(size = 15, family = 'sans-serif'),
+           autosize = T,
+           showlegend = T, 
            xaxis = list(title = x.title,
                         gridcolor = 'rgb(255,255,255)',
                         showgrid = TRUE,

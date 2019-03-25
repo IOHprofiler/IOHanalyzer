@@ -23,7 +23,7 @@ rt_ecdf_single_target_box <- function(width = 12, collapsible = T, collapsed = T
                     The displayed curves can be selected by clicking on the legend on the right. A <b>tooltip</b>
                     and <b>toolbar</b> appears when hovering over the figure.
                     This also includes the option to download the plot as png file.'),
-            plotlyOutput("RT_ECDF", height = plotly_height, width = plotly_width2)
+            plotlyOutput.IOHanalyzer("RT_ECDF")
           )
         )
       )
@@ -69,7 +69,7 @@ rt_ecdf_agg_targets_box <- function(width = 12, collapsible = T, collapsed = T) 
               \\(v\\) is plotted against the available budget \\(t\\). The displayed elements can be switched
               on and off by clicking on the legend on the right. A <b>tooltip</b>
               and <b>toolbar</b> appears when hovering over the figure.'),
-       plotlyOutput('RT_ECDF_AGGR', height = plotly_height, width = plotly_width2)
+       plotlyOutput.IOHanalyzer('RT_ECDF_AGGR')
       )
     )
   )
@@ -122,7 +122,7 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
                 functions and dimension can be switched on or off using the checkboxes on
                 the left; when aggregation is off the selected function / dimension
                 is chosen according the the value in the bottom-left selection-box.'),
-        plotlyOutput('RT_ECDF_MULT', height = plotly_height, width = plotly_width2)
+        plotlyOutput.IOHanalyzer('RT_ECDF_MULT')
       )
     )
   )
@@ -157,7 +157,7 @@ rt_ecdf_auc_box <- function(width = 12, collapsible = T, collapsed = T) {
                The displayed algorithms can be selected by clicking on the legend on the right.
                A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.
                This also includes the option to download the plot as png file.'),
-        plotlyOutput("RT_AUC", height = plotly_height, width = plotly_width2)
+        plotlyOutput.IOHanalyzer("RT_AUC")
       )
     )
   )

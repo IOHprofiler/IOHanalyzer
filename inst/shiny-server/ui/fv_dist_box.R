@@ -22,7 +22,7 @@ fv_histgram_box <- function(width = 12, collapsible = T, collapsed = T) {
       ),
 
       mainPanel(
-        width = 9,
+        width = 10,
         column(
           width = 12, align = "center",
           HTML('<p align="left" "font-size:120%;">
@@ -34,7 +34,7 @@ fv_histgram_box <- function(width = 12, collapsible = T, collapsed = T) {
                and \\(75\\%\\) percentile of the runtime and \\(n\\) is the sample size.
                The displayed algorithms can be selected by clicking on the legend on the right.
                A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
-          plotlyOutput('FCE_HIST', height = plotly_height2, width = plotly_width2)
+          plotlyOutput.IOHanalyzer('FCE_HIST')
         )
       )
   )
@@ -70,7 +70,7 @@ fv_pdf_box <- function(width = 12, collapsible = T, collapsed = T) {
                 The displayed algorithms can be selected by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b>
                 appear when hovering over the figure. A csv file with the runtime data can be downlowaded from the
                 <a href="#shiny-tab-FCE_DATA", data-toggle="tab"> Data Summary tab</a>.'),
-          plotlyOutput('FCE_PDF', height = plotly_height, width = plotly_width2)
+          plotlyOutput.IOHanalyzer('FCE_PDF')
         )
       )
     )

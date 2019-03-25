@@ -1,6 +1,6 @@
-upload_box <- function(width = 12, collapsible = T, collapsed = T) {
+upload_box <- function(width = 12, collapsible = T, collapsed = T, height = '650px') {   # TODO: find a way to add all arguments
   box(title = HTML('<p style="font-size:120%;">Upload Data</p>'), width = width,
-      solidHeader = T, status = "primary", collapsible = collapsible, height = '620px', collapsed = collapsed,
+      solidHeader = T, status = "primary", collapsible = collapsible, height = height, collapsed = collapsed,
       sidebarPanel(
         width = 12,
 
@@ -52,13 +52,13 @@ data_list_box <- function(width = 12, collapsible = T, collapsed = T) {
   box(title = HTML('<p style="font-size:120%;">List of Processed Data</p>'),
       width = width, solidHeader = T, status = "primary",
       collapsible = collapsible, collapsed = collapsed,
-      dataTableOutput('DATASETLIST_INFO')
+      dataTableOutput('data_info')
   )
 }
 
-repository_box<- function(width = 12, collapsible = F, collapsed = T){
+repository_box<- function(width = 12, collapsible = F, collapsed = T, height = '650px') {
   box(title = HTML('<p style="font-size:120%;">Load Data from repository</p>'), width = width,
-      solidHeader = T, status = "primary", collapsible = collapsible, height = '620px', collapsed = collapsed,
+      solidHeader = T, status = "primary", collapsible = collapsible, height = height, collapsed = collapsed,
       sidebarPanel(
         width = 12,
 

@@ -16,7 +16,6 @@ suppressMessages(library(data.table))
 source('R/readFiles.R')
 source('R/stats.R')
 
-
 #' Constructor of S3 class 'DataSet'
 #'
 #' DataSet contains the following attributes
@@ -145,7 +144,7 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     # AUX$RT.summary <- RT.summary
 
     do.call(function(...) structure(c(RT, FV, AUX), class = c('DataSet', 'list'), ...),
-            c(info, list(maxRT = maxRT, finalFV = finalFV, src = format,
+            c(info, list(maxRT = maxRT, finalFV = finalFV, format = format,
                          maximization = maximization)))
 
   } else {
@@ -235,7 +234,7 @@ summary.DataSet <- function(object, ...) {
 #TODO: Should this function be removed? Seems to be replaced by plot_RT_line
 
 # plot_ERT <- function(ds, backend = 'ggplot2') {
-#   p <- plot_ly_default(x.title = "best-so-far f(x)-value",
+#   p <- plotly_default(x.title = "best-so-far f(x)-value",
 #                        y.title = "function evaluations")
 #
 #   for (i in seq_along(data)) {
@@ -277,7 +276,7 @@ summary.DataSet <- function(object, ...) {
 
 # TODO: merge this function with the onese in plotDataSetList.R
 # plot_ERT <- function(ds, backend = 'ggplot2') {
-#   p <- plot_ly_default(x.title = "best-so-far f(x)-value",
+#   p <- plotly_default(x.title = "best-so-far f(x)-value",
 #                        y.title = "function evaluations")
 #
 #   for (i in seq_along(data)) {

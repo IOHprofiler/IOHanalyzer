@@ -708,7 +708,7 @@ plot_RT_PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
     ds <- dsList[[i]]
 
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.55)')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.52)')
 
     p %<>%
       add_trace(data = get_RT_sample(ds, ftarget, output = 'long'),
@@ -722,8 +722,8 @@ plot_RT_PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
                 scalemode = 'count',
                 meanline = list(visible = F),
                 fillcolor = rgba_str,
-                line = list(color = 'black', width = 2),
-                marker = list(color = rgb_str, size = 8))
+                line = list(color = 'black', width = 1.1),
+                marker = list(color = rgb_str, size = 6))
 
   }
   p %<>%

@@ -68,7 +68,7 @@ fv_pdf_box <- function(width = 12, collapsible = T, collapsed = T) {
                 The plot shows, for the budget selected on the left, the distribution
                 of the best-so-far function values of the individual runs (dots), and an estimated distribution of the probability mass function.
                 The displayed algorithms can be selected by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b>
-                appear when hovering over the figure. A csv file with the runtime data can be downlowaded from the
+                appear when hovering over the figure. A csv file with the runtime data can be downloaded from the
                 <a href="#shiny-tab-FCE_DATA", data-toggle="tab"> Data Summary tab</a>.'),
           plotlyOutput.IOHanalyzer('FCE_PDF')
         )

@@ -1057,7 +1057,7 @@ plot_FV_PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
 
     p %<>%
       add_trace(data = get_FV_sample(ds, runtime, output = 'long'),
-                x = ~algId, y = ~'f(x)', split = ~algId, type = 'violin',
+                x = ~algId, y = ~`f(x)`, split = ~algId, type = 'violin',
                 hoveron = "points+kde",
                 box = list(visible = T),
                 points = points,

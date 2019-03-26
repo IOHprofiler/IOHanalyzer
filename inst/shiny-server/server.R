@@ -142,6 +142,7 @@ shinyServer(function(input, output, session) {
                                         dim = input$Repository.dim,
                                         funcid = input$Repository.funcid)
     }
+
     DataList$data <- c(DataList$data, to_load)
     format <<- attr(to_load[[1]], 'src')
   })
@@ -751,6 +752,7 @@ shinyServer(function(input, output, session) {
 
   # historgram of the running time
   output$RT_HIST <- renderPlotly({
+    req(input$RTPMF.Bar.Target)
     render_RT_HIST()
   })
 
@@ -776,6 +778,7 @@ shinyServer(function(input, output, session) {
   })
 
   output$RT_ECDF_MULT <- renderPlotly({
+    req(length(DATA_UNFILTERED()) > 0)
     render_RT_ECDF_MULT()
   })
 
@@ -805,6 +808,7 @@ shinyServer(function(input, output, session) {
 
     if (is.null(targets)) {
       data <- subset(DATA_UNFILTERED(), DIM == input$Overall.Dim)
+      if(length(data) == 0 ) return("")
       targets <- get_default_ECDF_targets(data)
       funcId <- unique(attr(data, 'funcId')) %>% sort
     }
@@ -817,6 +821,7 @@ shinyServer(function(input, output, session) {
   })
 
   output$RT_GRID_GENERATED <- renderTable({
+    req(length(DATA_UNFILTERED()) > 0)
     df <- RT_ECDF_MULTI_TABLE()
     df$funcId <- as.integer(df$funcId)
     df
@@ -1066,6 +1071,7 @@ shinyServer(function(input, output, session) {
 
   # Expected Target Value Convergence
   output$FCE_PER_FUN <- renderPlotly({
+    req(input$FCEPlot.Min, input$FCEPlot.Max)
     render_FV_PER_FUN()
   })
 
@@ -1329,12 +1335,17 @@ shinyServer(function(input, output, session) {
 
     f_min <- format_FV(input$PAR.Plot.Min) %>% as.numeric
     f_max <- format_FV(input$PAR.Plot.Max) %>% as.numeric
-
+    tryCatch(
     plot_PAR_Line(DATA(),f_min,f_max,algids = input$PAR.Plot.Algid,
                   show.mean = (input$PAR.Plot.show.mean == 'mean'),
                   show.median = (input$PAR.Plot.show.mean == 'median'),
                   scale.xlog = input$PAR.Plot.Logx,
-                  scale.ylog = input$PAR.Plot.Logy)
+                  scale.ylog = input$PAR.Plot.Logy),
+      error = function(e) {
+        #TODO: more robust error handling; don't assume this causes the error
+        shinyjs::alert("Not all algorithms contain the same parameters. Please select a single algorithm to plot instead.")
+      }
+    )
   })
 
   output$PAR.Plot.Download <- downloadHandler(

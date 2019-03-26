@@ -58,9 +58,7 @@ grad_functions <- c(
 
 #' Plot lineplot of the ERTs of a DataSetList
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
-#'
+#' @inheritParams plot_RT_line.DataSetList
 #' @return A plot of ERT-values of the DataSetList
 #' @export
 #'
@@ -68,8 +66,7 @@ grad_functions <- c(
 plot_RT_line <- function(dsList, ...) UseMethod("plot_RT_line", dsList)
 #' Plot lineplot of the expected function values of a DataSetList
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_FV_line.DataSetList
 #'
 #' @return A plot of ERT-values of the DataSetList
 #' @export
@@ -78,8 +75,7 @@ plot_RT_line <- function(dsList, ...) UseMethod("plot_RT_line", dsList)
 plot_FV_line <- function(dsList,...) UseMethod("plot_FV_line", dsList)
 #' Plot probablity mass function of the runtimes of a DataSetList at a certain target function value
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_RT_PMF.DataSetList
 #'
 #' @return A plot of the probablity mass function of the runtimes at a the
 #'         target function value of the DataSetList
@@ -89,8 +85,7 @@ plot_FV_line <- function(dsList,...) UseMethod("plot_FV_line", dsList)
 plot_RT_PMF <- function(dsList,...) UseMethod("plot_RT_PMF", dsList)
 #' Plot histograms of the runtimes of a DataSetList at a certain target function value
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_RT_HIST.DataSetList
 #'
 #' @return A plot of the histograms of the runtimes at a the
 #'         target function value of the DataSetList
@@ -101,8 +96,7 @@ plot_RT_HIST <- function(dsList,...) UseMethod("plot_RT_HIST", dsList)
 #' Plot the empirical cumulative distriburtion as a function of the running times of
 #' a DataSetList at certain target function values
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_RT_ECDF.DataSetList
 #'
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the running times of the DataSetList at the target function values
@@ -113,8 +107,7 @@ plot_RT_ECDF <- function(dsList,...) UseMethod("plot_RT_ECDF", dsList)
 #' Plot the aggregated empirical cumulative distriburtion as a function of the running times of
 #' a DataSetList.
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_RT_ECDF_AGGR.DataSetList
 #'
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the running times of the DataSetList
@@ -124,8 +117,7 @@ plot_RT_ECDF <- function(dsList,...) UseMethod("plot_RT_ECDF", dsList)
 plot_RT_ECDF_AGGR <- function(dsList,...) UseMethod("plot_RT_ECDF_AGGR", dsList)
 #' Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_RT_AUC.DataSetList
 #'
 #' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
 #' @export
@@ -135,8 +127,7 @@ plot_RT_AUC <- function(dsList,...) UseMethod("plot_RT_AUC", dsList)
 #' Plot probablity density function of the function values of a DataSetList at
 #' a certain target runtime
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_FV_PDF.DataSetList
 #'
 #' @return A plot of the probablity density function of the runtimes at a the
 #'         target function value of the DataSetList
@@ -146,8 +137,7 @@ plot_RT_AUC <- function(dsList,...) UseMethod("plot_RT_AUC", dsList)
 plot_FV_PDF <- function(dsList,...) UseMethod("plot_FV_PDF", dsList)
 #' Plot histograms of the function values of a DataSetList at a certain target runtime
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_FV_HIST.DataSetList
 #'
 #' @return A plot of the histograms of the function values at a the
 #'         target runtime of the DataSetList
@@ -158,8 +148,7 @@ plot_FV_HIST <- function(dsList,...) UseMethod("plot_FV_HIST", dsList)
 #' Plot the empirical cumulative distriburtion as a function of the target values of
 #' a DataSetList at certain target runtimes
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_FCE_ECDF_PER_TARGET.DataSetList
 #'
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the fucntion values of the DataSetList at the target runtimes
@@ -170,8 +159,7 @@ plot_FCE_ECDF_PER_TARGET <- function(dsList,...) UseMethod("plot_FCE_ECDF_PER_TA
 #' Plot the aggregated empirical cumulative distriburtion as a function of the function values of
 #' a DataSetList.
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_FV_ECDF_AGGR.DataSetList
 #'
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the function values of the DataSetList
@@ -181,8 +169,7 @@ plot_FCE_ECDF_PER_TARGET <- function(dsList,...) UseMethod("plot_FCE_ECDF_PER_TA
 plot_FV_ECDF_AGGR <- function(dsList,...) UseMethod("plot_FV_ECDF_AGGR", dsList)
 #' Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_FV_AUC.DataSetList
 #'
 #' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
 #' @export
@@ -191,8 +178,7 @@ plot_FV_ECDF_AGGR <- function(dsList,...) UseMethod("plot_FV_ECDF_AGGR", dsList)
 plot_FV_AUC <- function(dsList,...) UseMethod("plot_FV_AUC", dsList)
 #' Plot the parameter values recorded in a DataSetList
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_PAR_Line.DataSetList
 #'
 #' @return A plot of for every recorded parameter in the DataSetList
 #' @export
@@ -202,8 +188,7 @@ plot_PAR_Line <- function(dsList,...) UseMethod("plot_PAR_Line", dsList)
 #' Plot the aggregated empirical cumulative distriburtion as a function of the running times of
 #' a DataSetList. Aggregated over multiple functions or dimensions.
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_RT_ECDF_MULTI.DataSetList
 #'
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the running times of the DataSetList
@@ -213,8 +198,7 @@ plot_PAR_Line <- function(dsList,...) UseMethod("plot_PAR_Line", dsList)
 plot_RT_ECDF_MULTI <- function(dsList,...) UseMethod("plot_RT_ECDF_MULTI", dsList)
 #' Plot ERT-plots for multiple functions or dimensions
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_RT_all_fcts.DataSetList
 #'
 #' @return A plot of ERT-values of the DataSetList
 #' @export
@@ -223,8 +207,7 @@ plot_RT_ECDF_MULTI <- function(dsList,...) UseMethod("plot_RT_ECDF_MULTI", dsLis
 plot_RT_all_fcts <- function(dsList,...) UseMethod("plot_RT_all_fcts", dsList)
 #' Plot ERT-based comparison over multiple functions or dimensions
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_ERT_AGGR.DataSetList
 #'
 #' @return A plot of ERT-based comparison on the provided functions or dimensions of the DataSetList
 #' @export
@@ -233,8 +216,7 @@ plot_RT_all_fcts <- function(dsList,...) UseMethod("plot_RT_all_fcts", dsList)
 plot_ERT_AGGR <- function(dsList,...) UseMethod("plot_ERT_AGGR", dsList)
 #' Plot expected function value-based comparison over multiple functions or dimensions
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_FCE_AGGR.DataSetList
 #'
 #' @return A plot of expected function value-based comparison on the provided functions
 #'  or dimensions of the DataSetList
@@ -244,8 +226,7 @@ plot_ERT_AGGR <- function(dsList,...) UseMethod("plot_ERT_AGGR", dsList)
 plot_FCE_AGGR <- function(dsList,...) UseMethod("plot_FCE_AGGR", dsList)
 #' Plot expected function value-plots for multiple functions or dimensions
 #'
-#' @param dsList A DataSetList (should consist of only one function and dimension).
-#' @param ... Arguments passed to other methods
+#' @inheritParams plot_FCE_MULTI.DataSetList
 #'
 #' @return A plot of expected function values of the DataSetList
 #' @export

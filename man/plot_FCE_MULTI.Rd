@@ -7,7 +7,7 @@
 plot_FCE_MULTI(dsList, ...)
 }
 \arguments{
-\item{dsList}{A DataSetList (should consist of only one function and dimension).}
+\item{dsList}{A DataSetList (should consist of only one function OR dimension).}
 
 \item{...}{Arguments passed to other methods}
 }

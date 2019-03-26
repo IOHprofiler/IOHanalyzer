@@ -8,7 +8,7 @@ a DataSetList. Aggregated over multiple functions or dimensions.}
 plot_RT_ECDF_MULTI(dsList, ...)
 }
 \arguments{
-\item{dsList}{A DataSetList (should consist of only one function and dimension).}
+\item{dsList}{A DataSetList.}
 
 \item{...}{Arguments passed to other methods}
 }

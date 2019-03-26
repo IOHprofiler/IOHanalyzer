@@ -1103,19 +1103,16 @@ shinyServer(function(input, output, session) {
     render_FCEPlot_multi_plot()
   )
 
+  render_FCEPlot_multi_plot <- eventReactive(input$FCEPlot.Multi.PlotButton, {
+    req(input$FCEPlot.Multi.Algs)
+    data <- subset(DATA_UNFILTERED(),
+                   algId %in% input$FCEPlot.Multi.Algs,
+                   DIM == input$Overall.Dim)
+    req(data)
 
-
-  render_FCEPlot_multi_plot <- reactive({
-    req(input$FCEPlot.Multi.PlotButton)
-    data <- DATA_UNFILTERED()
-    data <- subset(data, algId %in% input$FCEPlot.Multi.Algs)
-    if(length(data) == 0) return(NULL)
-    if(input$FCEPlot.Multi.Aggregator == 'Functions') data <- subset(data, DIM==input$Overall.Dim)
-    else data <- subset(data, funcId==input$Overall.Funcid)
-    plot_FCE_MULTI(data, plot_mode = input$FCEPlot.Multi.Mode,
-                   scale.xlog = input$FCEPlot.Multi.Logx, scale.ylog = input$FCEPlot.Multi.Logy,
-                   aggr_on = ifelse(input$FCEPlot.Multi.Aggregator == 'Functions', 'funcId', 'DIM'))
-
+    plot_FV_all_fcts(data,
+                     scale.xlog = input$FCEPlot.Multi.Logx,
+                     scale.ylog = input$FCEPlot.Multi.Logy)
   })
 
   output$FCEPlot.Multi.Download <- downloadHandler(

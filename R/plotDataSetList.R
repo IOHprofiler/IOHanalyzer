@@ -241,13 +241,14 @@ plot_FCE_AGGR <- function(dsList, aggr_on = 'funcId', runtimes = NULL,
                           scale.ylog = T, fvs = NULL) UseMethod("plot_FCE_AGGR", dsList)
 #' Plot expected function value-plots for multiple functions or dimensions
 #'
-#' @inheritParams plot_FCE_MULTI.DataSetList
+#' @inheritParams plot_FV_all_fcts.DataSetList
 #'
 #' @return A plot of expected function values of the DataSetList
 #' @export
 #'
-plot_FCE_MULTI <- function(dsList, plot_mode = 'subplot', scale.xlog = F,
-                           scale.ylog = F, aggr_on = 'funcId') UseMethod("plot_FCE_MULTI", dsList)
+plot_FV_all_fcts <- function(dsList, scale.xlog = F,
+                             scale.ylog = F,
+                             backend = 'plotly') UseMethod("plot_FV_all_fcts", dsList)
 
 ##Implementations
 
@@ -1573,6 +1574,102 @@ plot_RT_all_fcts.DataSetList <- function(dsList, scale.xlog = F,
   p
 }
 
+#' Plot FV-plots for multiple functions or dimensions
+#'
+#' @param dsList A DataSetList (should consist of only one function OR dimension).
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param backend Which plotting library to use. Either 'plotly' or 'ggplot2'.
+#'
+#' @return A plot of Function-values of the DataSetList
+#' @export
+#'
+plot_FV_all_fcts.DataSetList <- function(dsList, scale.xlog = F,
+                                         scale.ylog = F,
+                                         backend = 'plotly') {
+  xscale <- if (scale.xlog) 'log' else 'linear'
+  yscale <- if (scale.ylog) 'log' else 'linear'
+  funcIds <- get_funcId(dsList)
+  n_fcts <- length(funcIds)
+
+  algIds <- get_algId(dsList)
+  n_algIds <- length(algIds)
+
+  colors <- color_palettes(n_algIds)
+  names(colors) <- algIds
+
+  # how many columns do we want...
+  if (n_fcts <= 10) {
+    n_rows <- ceiling(n_fcts / 2.)
+    n_cols <- 2
+  } else if (n_fcts <= 20) {
+    n_rows <- ceiling(n_fcts / 3.)
+    n_cols <- 3
+  } else if (n_fcts <= 30) {
+    n_rows <- ceiling(n_fcts / 4.)
+    n_cols <- 4
+  }
+
+  dt <- list()
+  for (i in seq(n_fcts)) {
+    data <- subset(dsList, funcId == funcIds[i])
+
+    RTall <- get_Runtimes(data)
+    RTstart <- min(RTall)
+    RTstop <- max(RTall)
+    RTseq <- seq_FV(RTall, RTstart, RTstop, length.out = 30, scale = xscale)
+
+    if (length(RTseq) == 0) return(NULL)
+
+    dt[[i]] <- get_FV_summary(data, runtime = RTseq)
+  }
+  dt <- rbindlist(dt)
+
+  if (backend == 'ggplot2') {
+    dt[, funcId := paste0('F', funcId)]
+
+    p <- ggplot(data = dt, aes(group = algId, colour = algId)) +
+      geom_line(aes(runtime, `mean`), linetype = 'solid') +
+      facet_wrap(~funcId, scales = 'free', nrow = n_rows, ncol = n_cols) +
+      scale_color_manual(values = colors)
+
+  } else if (backend == 'plotly') {
+    p <- lapply(
+      seq(n_fcts),
+      function(x)
+        plot_ly_default(x.title = "", y.title = "mean function value") %>%
+        layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 4, autorange = T),
+               yaxis = list(type = yscale, tickfont = f1, ticklen = 4))
+    )
+
+    for (i in seq(n_fcts)) {
+      showlegend <- ifelse(i == 1, T, F)
+      dt_plot <- dt[funcId == funcIds[[i]]]
+
+      p[[i]] %<>%
+        add_trace(
+          data = dt_plot, x = ~runtime, y = ~`mean`, color = ~algId, legendgroup = ~algId,
+          type = 'scatter', mode = 'lines+markers',
+          line = list(width = 1.8), marker = list(size = 4), # TODO: perhaps turn off the marker here
+          colors = colors, showlegend = showlegend
+        ) %>%
+        layout(
+          annotations = list(
+            text = paste0('F', funcIds[[i]]), font = f2, align = "center",
+            xref = "paper", yref = "paper",
+            yanchor = "bottom", xanchor = "center",
+            x = 0.5, y = 1, showarrow = FALSE
+          )
+        )
+    }
+
+    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.02,
+                 heights = rep(1 / n_rows, n_rows),
+                 widths = rep(1 / n_cols, n_cols))
+  }
+  p
+}
+
 #' Plot ERT-based comparison over multiple functions or dimensions
 #'
 #' @param dsList A DataSetList (should consist of only one function OR dimension).
@@ -1823,99 +1920,5 @@ plot_FCE_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NUL
       layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
              xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
   }
-  p
-}
-#' Plot expected function value-plots for multiple functions or dimensions
-#'
-#' @param dsList A DataSetList (should consist of only one function OR dimension).
-#' @param plot_mode How the plots should be created. Can be 'subplot' for one plot
-#' per function/dimension or 'overlay' for on plot containing all functions/dimensions
-#' @param aggr_on Whether to create a plot for each function ('funcId') or dimension ('DIM')
-#' @param scale.xlog Whether or not to scale the x-axis logaritmically
-#' @param scale.ylog Whether or not to scale the y-axis logaritmically
-#'
-#' @return A plot of expected function values of the DataSetList
-#' @export
-#'
-plot_FCE_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog = F,
-                                       scale.ylog = F, aggr_on = 'funcId'){
-
-  N <- length(get_algId(dsList))
-  colors <- color_palettes(N)
-
-  in_legend <- integer(N)
-  names(in_legend) <- get_algId(dsList)
-  names(colors) <- get_algId(dsList)
-
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
-  M <- length(aggr_attr)
-  if (M <= 10)
-    nrows <- ceiling(M / 2.) # keep to columns for the histograms
-  else
-    nrows <- ceiling(M / 3.) # keep to columns for the histograms
-
-  if (plot_mode == 'overlay') {
-    p <- plot_ly_default(x.title = "function evaluations", y.title = "ERT")
-  } else if (plot_mode == 'subplot') {
-    p <- lapply(seq(M), function(x) {
-      plot_ly_default(x.title = "function evaluations", y.title = "ERT") %>%
-        add_annotations(text=paste0(ifelse(aggr_on=='funcId', "F ", "D "),aggr_attr[[x]]),
-                        showarrow=F, xanchor = 'center', yanchor = 'top',
-                        y = 1.15, yref = 'paper', x = 0.5, xref= 'paper')
-    })
-  }
-
-  for (j in seq_along(aggr_attr)) {
-    dsList_filetered <- if(aggr_on == 'funcId') subset(dsList,funcId==aggr_attr[[j]])
-    else subset(dsList,DIM==aggr_attr[[j]])
-
-    RTall <- get_Runtimes(dsList_filetered)
-    RTstart <- min(RTall)
-    RTstop <- max(RTall)
-
-    RTseq <- seq_FV(RTall, RTstart, RTstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
-    if (length(RTseq) == 0) return(NULL)
-
-    dt <- get_FV_summary(dsList_filetered, runtime = RTseq)
-    dt[, `:=`(upper = mean + sd, lower = mean - sd)]
-
-
-    for (i in seq_along(dsList_filetered)){
-      df <- dsList_filetered[[i]]
-      algId <- attr(df, 'algId')
-      to_show_legend <- (in_legend[[algId]] == 0)
-      in_legend[[algId]] <- 1
-      ds_FCE <- dt[algId == attr(df, 'algId') &
-                     funcId == attr(df, 'funcId') &
-                     DIM == attr(df, 'DIM')]
-
-      color <- colors[[algId]]
-      rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
-
-
-
-      if (plot_mode == 'overlay') {
-        p %<>%
-          add_trace(data = ds_FCE, x = ~runtime, y = ~mean, type = 'scatter',
-                    mode = 'lines+markers',
-                    marker = list(color = rgb_str),
-                    line = list(color = rgb_str),name = algId, showlegend=to_show_legend)
-      } else if (plot_mode == 'subplot') {
-        p[[j]] %<>%
-          add_trace(data = ds_FCE, x = ~runtime, y = ~mean, type = 'scatter',
-                    mode = 'lines+markers',
-                    marker = list(color = rgb_str),
-                    line = list(color = rgb_str),name = algId, showlegend=to_show_legend)
-      }
-    }
-  }
-
-  if (plot_mode == 'subplot') {
-    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.04)
-  }
-  p %<>%
-    layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
-           yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
   p
 }

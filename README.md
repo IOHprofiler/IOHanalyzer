@@ -20,15 +20,11 @@ After R environment is correctly installed on you machine, 'devtools' package is
 install.packages('devtools')
 ```
 
-Then load the package by using the command:
-```r
-library('devtools')
-```
-
 Error messages will be shown in your R console if there is any installation issue.
-Now, the IOHProfiler package can be installed using the following command:
+Now, the IOHanalyzer package can be installed and loaded using the following commands:
 ```r
-install_github('IOHProfiler/IOHAnalyzer')
+devtools::install_github('IOHprofiler/IOHanalyzer')
+library('IOHanalyzer')
 ```
 
 This will install the package and all required dependencies. The GUI can be acessed using the command:
@@ -36,7 +32,6 @@ This will install the package and all required dependencies. The GUI can be aces
 runServer()
 ```
 
-<<<<<<< HEAD
 ## <a name="install"></a>Installation
 
 Alternatively, you can clone the source-code directely.
@@ -71,8 +66,6 @@ To start the post-processing tool, please execute the following commands in the 
 > shiny::runApp('/path/to/the/clone/folder')
 ```
 
-=======
->>>>>>> InDevelopment
 ## <a name="server"></a> Online Service
 
 Alternatively, we have built a server to put this tool online, which is currently hosted in [Leiden Institute of Advanced Computer Science](https://liacs.leidenuniv.nl/), Leiden University. The server can be accessed via [http://iohprofiler.liacs.nl](http://iohprofiler.liacs.nl).

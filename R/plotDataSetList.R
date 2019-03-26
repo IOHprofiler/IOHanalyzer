@@ -1547,8 +1547,8 @@ plot_RT_all_fcts.DataSetList <- function(dsList, xscale = 'linear',
   }
   
   dt <- list()
-  for (i in seq(n_algIds)) {
-    data <- subset(dsList, algId == algIds[i])
+  for (i in seq(n_fcts)) {
+    data <- subset(dsList, funcId == funcIds[i])
     
     Fall <- get_Funvals(data)
     Fstart <- min(Fall)
@@ -1583,18 +1583,16 @@ plot_RT_all_fcts.DataSetList <- function(dsList, xscale = 'linear',
       showlegend <- ifelse(i == 1, T, F)
       dt_plot <- dt[funcId == funcIds[[i]]]
       
-      # TODO: perhaps turn off the marker here
       p[[i]] %<>% 
         add_trace(
-          data = dt_plot, x = ~target, y = ~ERT, color = ~algId, 
-          legendgroup = ~algId, colors = colors,
+          data = dt_plot, x = ~target, y = ~ERT, color = ~algId, legendgroup = ~algId, 
           type = 'scatter', mode = 'lines+markers', 
-          line = list(width = 1.5), marker = list(size = 3),
-          showlegend = showlegend
+          line = list(width = 1.8), marker = list(size = 4), # TODO: perhaps turn off the marker here
+          colors = colors, showlegend = showlegend
         ) %>% 
         layout(
           annotations = list(
-            text = paste0('F', funcIds[[i]]), font = f1, align = "center",
+            text = paste0('F', funcIds[[i]]), font = f2, align = "center",
             xref = "paper", yref = "paper",
             yanchor = "bottom", xanchor = "center",
             x = 0.5, y = 1, showarrow = FALSE
@@ -1602,7 +1600,7 @@ plot_RT_all_fcts.DataSetList <- function(dsList, xscale = 'linear',
         )
     }
       
-    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.025,
+    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.02,
                  heights = rep(1 / n_rows, n_rows), 
                  widths = rep(1 / n_cols, n_cols))
   }

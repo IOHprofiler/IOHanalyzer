@@ -296,26 +296,27 @@ shinyServer(function(input, output, session) {
       return()
     
     # TODO: create reactive values for them
-    algId <- c(get_algId(data), 'all')
-    parId <- c(get_parId(data), 'all')
-    funcID <- get_funcId(data)
-    dim <- get_DIM(data)
+    algIds_ <- get_algId(data)
+    algIds <- c(algIds_, 'all')
+    parIds <- c(get_parId(data), 'all')
+    funcIds <- get_funcId(data)
+    DIMs <- get_DIM(data)
     
-    updateSelectInput(session, 'Overall.Dim', choices = dim, selected = dim[1])
-    updateSelectInput(session, 'Overall.Funcid', choices = funcID, selected = funcID[1])
-    updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algId, selected = 'all')
-    updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algId, selected = 'all')
-    updateSelectInput(session, 'FCESummary.Overview.Algid', choices = algId, selected = 'all')
-    updateSelectInput(session, 'RTSummary.Sample.Algid', choices = algId, selected = 'all')
-    updateSelectInput(session, 'PAR.Plot.Algid', choices = algId, selected = 'all')
-    updateSelectInput(session, 'FCESummary.Statistics.Algid', choices = algId, selected = 'all')
-    updateSelectInput(session, 'FCESummary.Sample.Algid', choices = algId, selected = 'all')
-    updateSelectInput(session, 'PAR.Summary.Algid', choices = algId, selected = 'all')
-    updateSelectInput(session, 'PAR.Sample.Algid', choices = algId, selected = 'all')
-    updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = get_algId(data), selected = NULL)
-    updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = get_algId(data), selected = NULL)
-    updateSelectInput(session, 'PAR.Summary.Param', choices = parId, selected = 'all')
-    updateSelectInput(session, 'PAR.Sample.Param', choices = parId, selected = 'all')
+    updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = DIMs[1])
+    updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = funcIds[1])
+    updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algIds, selected = 'all')
+    updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algIds, selected = 'all')
+    updateSelectInput(session, 'FCESummary.Overview.Algid', choices = algIds, selected = 'all')
+    updateSelectInput(session, 'RTSummary.Sample.Algid', choices = algIds, selected = 'all')
+    updateSelectInput(session, 'PAR.Plot.Algid', choices = algIds, selected = 'all')
+    updateSelectInput(session, 'FCESummary.Statistics.Algid', choices = algIds, selected = 'all')
+    updateSelectInput(session, 'FCESummary.Sample.Algid', choices = algIds, selected = 'all')
+    updateSelectInput(session, 'PAR.Summary.Algid', choices = algIds, selected = 'all')
+    updateSelectInput(session, 'PAR.Sample.Algid', choices = algIds, selected = 'all')
+    updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = algIds_, selected = algIds_[1])
+    updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = algIds_, selected = algIds_[1])
+    updateSelectInput(session, 'PAR.Summary.Param', choices = parIds, selected = 'all')
+    updateSelectInput(session, 'PAR.Sample.Param', choices = parIds, selected = 'all')
   })
 
   # update (filter) according to users selection DataSets
@@ -626,7 +627,7 @@ shinyServer(function(input, output, session) {
   )
 
   render_ERTPlot_multi_plot <- reactive({
-    req(input$ERTPlot.Multi.PlotButton)
+    req(input$ERTPlot.Multi.Algs)
     data <- subset(DATA_UNFILTERED(), 
                    algId %in% input$ERTPlot.Multi.Algs, 
                    DIM == input$Overall.Dim)

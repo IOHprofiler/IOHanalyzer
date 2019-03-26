@@ -9,10 +9,9 @@ suppressMessages(library(ggplot2))
 # font No. 1...
 f1 <- list(
   family = 'Old Standard TT, serif',
-  size = 8,
+  size = 11,
   color = 'black'
 )
-
 
 # font No. 2...
 f2 <- list(
@@ -21,7 +20,13 @@ f2 <- list(
   color = 'black'
 )
 
-# TODO: determine a good font type for plotly
+# font No. 3...
+f3 <- list(
+  family = 'Old Standard TT, serif',
+  size = 16,
+  color = 'black'
+)
+
 plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
   plot_ly() %>%
     layout(title = title,
@@ -30,10 +35,10 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                          font = list(size = 13, family = 'Old Standard TT, serif')),
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
            font = list(size = 13, family = 'Old Standard TT, serif'),
-           titlefont = list(size = 15, family = 'sans-serif'),
+           titlefont = list(size = 13, family = 'Old Standard TT, serif'),
            autosize = T,
            showlegend = T, 
-           xaxis = list(title = x.title,
+           xaxis = list(title = list(text = x.title, font = f3),
                         gridcolor = 'rgb(255,255,255)',
                         showgrid = TRUE,
                         showline = FALSE,
@@ -44,7 +49,7 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickfont = f2,
                         exponentformat = 'E',
                         zeroline = F),
-           yaxis = list(title = y.title,
+           yaxis = list(title = list(text = y.title, font = f3),
                         gridcolor = 'rgb(255,255,255)',
                         showgrid = TRUE,
                         showline = FALSE,

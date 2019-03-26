@@ -12,6 +12,7 @@ This tool is mainly built on R package [Shiny](https://shiny.rstudio.com/), [plo
 The details on the experimentation and post-processing tool can be found on [arXiv.org](https://arxiv.org/abs/1810.05281).
 
 ## <a name="package"></a> Using IOHprofiler as a R-package
+
 To install the IOHProfiler R-package, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/).
 
 After R environment is correctly installed on you machine, 'devtools' package is needed to install the sorftware. Please start up the __R console__, which can be done (in case you're not familiar with R) by either executing command `R` in your system terminal or open the R application. Once it is done, please copy-paste and execute the following command into the R console
@@ -19,20 +20,50 @@ After R environment is correctly installed on you machine, 'devtools' package is
 install.packages('devtools')
 ```
 
-Then load the package by using the command:
-```r
-library('devtools')
-```
-
 Error messages will be shown in your R console if there is any installation issue.
-Now, the IOHProfiler package can be installed using the following command:
+Now, the IOHanalyzer package can be installed and loaded using the following commands:
 ```r
-install_github('IOHProfiler/IOHAnalyzer')
+devtools::install_github('IOHprofiler/IOHanalyzer')
+library('IOHanalyzer')
 ```
 
 This will install the package and all required dependencies. The GUI can be acessed using the command:
 ```r
 runServer()
+```
+
+## <a name="install"></a>Installation
+
+Alternatively, you can clone the source-code directely.
+This software is mainly written in __R__. To run it directly from the source code, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/).
+
+After R environment is correctly installed on you machine, several R packages are needed to execute the sorftware. Please start up the __R console__, which can be done (in case you're not familiar with R) by either executing command `R` in your system terminal or open the R application. Once it is done, please copy-paste and execute the following commands into the R console to install all depedencies.
+
+Error messages will be shown in your R console if there is any installation issue.
+
+To use the repository, the following additional packages are required
+```r
+install.packages(c('DBI','RMariaDB'))
+```
+
+To allow for downloading of plots, orca[https://github.com/plotly/orca] and inkscape[https://inkscape.org/release/inkscape-0.92.4/] are needed.
+
+Then, please clone (or downlaod) this repository into your own system. To clone the repository, please execute the following command in your __system console__ (terminal):
+
+```Shell
+> git clone git@github.com:IOHprofiler/Post-Processing.git
+```
+
+```Shell
+> git clone https://github.com/IOHprofiler/Post-Processing.git
+```
+
+To download, please click the green download button on this page.
+
+To start the post-processing tool, please execute the following commands in the __R console__:
+
+```r
+> shiny::runApp('/path/to/the/clone/folder')
 ```
 
 ## <a name="server"></a> Online Service

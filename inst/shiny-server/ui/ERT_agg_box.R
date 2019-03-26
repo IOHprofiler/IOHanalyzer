@@ -5,7 +5,7 @@ ERT_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed
       sidebarLayout(
           sidebarPanel(
             width = 2,
-            selectInput('ERTPlot.Multi.Algs', label = 'Select the algs to show', 
+            selectInput('ERTPlot.Multi.Algs', label = 'add the algorithms:', 
                         multiple = T, selected = NULL, choices = NULL),
             
             checkboxInput('ERTPlot.Multi.Logx', 
@@ -15,9 +15,7 @@ ERT_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed
             checkboxInput('ERTPlot.Multi.Logy', 
                           label = 'scale y axis log10',
                           value = T),
-            
-            actionButton('ERTPlot.Multi.PlotButton', label = 'Plot the figure'),
-            
+            hr(),
             selectInput('ERTPlot.Multi.Format', label = 'Select the figure format',
                         choices = supported_fig_format, selected = 'pdf'),
             
@@ -28,7 +26,7 @@ ERT_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed
         width = 10,
         column(
           width = 12, align = "center",
-          plotlyOutput.IOHanalyzer('ERTPlot.Multi.Plot', aspect_ratio = 0.6)
+          plotlyOutput.IOHanalyzer('ERTPlot.Multi.Plot', aspect_ratio = 1)
         )
       )
     )

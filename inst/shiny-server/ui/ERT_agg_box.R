@@ -5,7 +5,7 @@ ERT_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed
       sidebarLayout(
           sidebarPanel(
             width = 2,
-            selectInput('ERTPlot.Multi.Algs', label = 'add the algorithms:', 
+            selectInput('ERTPlot.Multi.Algs', label = 'add more algorithms:', 
                         multiple = T, selected = NULL, choices = NULL),
             
             checkboxInput('ERTPlot.Multi.Logx', 
@@ -15,6 +15,8 @@ ERT_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed
             checkboxInput('ERTPlot.Multi.Logy', 
                           label = 'scale y axis log10',
                           value = T),
+            
+            actionButton('ERTPlot.Multi.PlotButton', label = 'refresh the figure'),
             hr(),
             selectInput('ERTPlot.Multi.Format', label = 'Select the figure format',
                         choices = supported_fig_format, selected = 'pdf'),

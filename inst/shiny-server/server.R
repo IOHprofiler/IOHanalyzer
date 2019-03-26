@@ -626,7 +626,7 @@ shinyServer(function(input, output, session) {
     render_ERTPlot_multi_plot()
   )
 
-  render_ERTPlot_multi_plot <- reactive({
+  render_ERTPlot_multi_plot <- eventReactive(input$ERTPlot.Multi.PlotButton, {
     req(input$ERTPlot.Multi.Algs)
     data <- subset(DATA_UNFILTERED(), 
                    algId %in% input$ERTPlot.Multi.Algs, 

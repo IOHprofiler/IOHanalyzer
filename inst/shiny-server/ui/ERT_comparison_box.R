@@ -1,5 +1,5 @@
 ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
-  box(title = HTML('<p style="font-size:120%;">Expected Runtime comparisons</p>'), 
+  box(title = HTML('<p style="font-size:120%;">Expected Runtime Comparisons</p>'), 
       width = width, collapsible = collapsible, solidHeader = TRUE, 
       status = "primary", collapsed = collapsed,
       sidebarLayout(

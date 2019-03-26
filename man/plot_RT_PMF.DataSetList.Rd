@@ -5,7 +5,7 @@
 \title{Plot probablity mass function of the runtimes of a DataSetList at a certain target function value}
 \usage{
 \method{plot_RT_PMF}{DataSetList}(dsList, ftarget, show.sample = F,
-  scale.ylog = F, backend = "plotly", ...)
+  scale.ylog = F, backend = "plotly")
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -17,8 +17,6 @@
 \item{scale.ylog}{Whether or not to scale the y-axis logaritmically}
 
 \item{backend}{Which plotting library to use. Can be 'plotly' or 'ggplot2'}
-
-\item{...}{Arguments passed to other methods}
 }
 \value{
 A plot of the probablity mass function of the runtimes at a the

@@ -9,7 +9,7 @@
   show.runs = F, show.density = 50, show.grad = F,
   show.intensity = 0, show.pareto = F, show.optimal = F,
   backend = "plotly", scale.xlog = F, scale.ylog = F,
-  scale.reverse = F, ...)
+  scale.reverse = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -43,8 +43,6 @@
 \item{scale.ylog}{Whether or not to scale the y-axis logaritmically}
 
 \item{scale.reverse}{Wheter or not to reverse the x-axis (when using minimization)}
-
-\item{...}{Arguments passed to other methods}
 }
 \value{
 A plot of ERT-values of the DataSetList

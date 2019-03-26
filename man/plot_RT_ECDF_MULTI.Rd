@@ -5,12 +5,13 @@
 \title{Plot the aggregated empirical cumulative distriburtion as a function of the running times of
 a DataSetList. Aggregated over multiple functions or dimensions.}
 \usage{
-plot_RT_ECDF_MULTI(dsList, ...)
+plot_RT_ECDF_MULTI(dsList, targets = NULL)
 }
 \arguments{
 \item{dsList}{A DataSetList.}
 
-\item{...}{Arguments passed to other methods}
+\item{targets}{The target function values. Specified in a data.frame, as can be generated
+by the function 'get_default_ECDF_targets'}
 }
 \value{
 A plot of the empirical cumulative distriburtion as a function of

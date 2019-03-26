@@ -1,6 +1,6 @@
 ## Test environments
-* local windows install, R 3.5.1
-* local ubuntu install, R 3.5.2
+* local windows install, R 3.5.1 and 3.5.3
+* local ubuntu install, R 3.4.4
 
 ## R CMD check results
 There were no ERRORs or WARNINGs.

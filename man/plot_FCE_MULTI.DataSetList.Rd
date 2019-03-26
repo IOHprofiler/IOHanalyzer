@@ -5,7 +5,7 @@
 \title{Plot expected function value-plots for multiple functions or dimensions}
 \usage{
 \method{plot_FCE_MULTI}{DataSetList}(dsList, plot_mode = "subplot",
-  scale.xlog = F, scale.ylog = F, aggr_on = "funcId", ...)
+  scale.xlog = F, scale.ylog = F, aggr_on = "funcId")
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function OR dimension).}
@@ -18,8 +18,6 @@ per function/dimension or 'overlay' for on plot containing all functions/dimensi
 \item{scale.ylog}{Whether or not to scale the y-axis logaritmically}
 
 \item{aggr_on}{Whether to create a plot for each function ('funcId') or dimension ('DIM')}
-
-\item{...}{Arguments passed to other methods}
 }
 \value{
 A plot of expected function values of the DataSetList

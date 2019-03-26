@@ -50,10 +50,12 @@ max_samples <- 100
 #'
 #' @section Functions:
 #' The IOHanalyzer consists of 3 main functionalities:
-#' Reading and alligning data from different heuristics, such as IOHExperimenter.
-#' This is done using the DataSet and DataSetList functions
-#' Processing and summarizing this data
-#' Creating various plots
+#' \itemize{
+#' \item Reading and alligning data from different heuristics, such as IOHExperimenter.
+#' This is done using the \code{\link{DataSet}} and \code{\link{DataSetList}} functions
+#' \item Processing and summarizing this data
+#' \item Creating various plots
+#' }
 #'
 #' @docType package
 #' @name IOHanalyzer

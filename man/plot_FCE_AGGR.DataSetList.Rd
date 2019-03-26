@@ -6,7 +6,7 @@
 \usage{
 \method{plot_FCE_AGGR}{DataSetList}(dsList, aggr_on = "funcId",
   runtimes = NULL, plot_mode = "radar", use_rank = F,
-  scale.ylog = T, fvs = NULL, ...)
+  scale.ylog = T, fvs = NULL)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function OR dimension).}
@@ -25,8 +25,6 @@ values will be used.}
 \item{fvs}{Pre-calculated expected function-values for the provided runtimes Created by the
 max_ERTs function of DataSetList. Can be provided to prevent needless computation
 in recalculating ERTs when recreating this plot.}
-
-\item{...}{Arguments passed to other methods}
 }
 \value{
 A plot of expected function value-based comparison on the provided functions

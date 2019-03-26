@@ -4,12 +4,25 @@
 \alias{plot_PAR_Line}
 \title{Plot the parameter values recorded in a DataSetList}
 \usage{
-plot_PAR_Line(dsList, ...)
+plot_PAR_Line(dsList, f_min = NULL, f_max = NULL, algids = "all",
+  scale.xlog = F, scale.ylog = F, show.mean = T, show.median = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
 
-\item{...}{Arguments passed to other methods}
+\item{f_min}{The starting function value.}
+
+\item{f_max}{The final function value.}
+
+\item{algids}{Which algorithms from dsList to use}
+
+\item{scale.xlog}{Whether or not to scale the x-axis logaritmically}
+
+\item{scale.ylog}{Whether or not to scale the y-axis logaritmically}
+
+\item{show.mean}{Whether or not to show the mean parameter values}
+
+\item{show.median}{Whether or not to show the median parameter values}
 }
 \value{
 A plot of for every recorded parameter in the DataSetList

@@ -5,7 +5,7 @@
 \title{Plot ERT-plots for multiple functions or dimensions}
 \usage{
 \method{plot_RT_all_fcts}{DataSetList}(dsList, scale.xlog = F,
-  scale.ylog = F, scale.reverse = F, backend = "plotly", ...)
+  scale.ylog = F, scale.reverse = F, backend = "plotly")
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function OR dimension).}
@@ -17,8 +17,6 @@
 \item{scale.reverse}{Wheter or not to reverse the x-axis (when using minimization)}
 
 \item{backend}{Which plotting library to use. Either 'plotly' or 'ggplot2'.}
-
-\item{...}{Arguments passed to other methods}
 }
 \value{
 A plot of ERT-values of the DataSetList

@@ -5,12 +5,16 @@
 \title{Plot probablity density function of the function values of a DataSetList at
 a certain target runtime}
 \usage{
-plot_FV_PDF(dsList, ...)
+plot_FV_PDF(dsList, runtime, show.sample = F, scale.ylog = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
 
-\item{...}{Arguments passed to other methods}
+\item{runtime}{The target runtime}
+
+\item{show.sample}{Whether or not to show the individual function value samples}
+
+\item{scale.ylog}{Whether or not to scale the y-axis logaritmically}
 }
 \value{
 A plot of the probablity density function of the runtimes at a the

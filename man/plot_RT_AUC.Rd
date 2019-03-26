@@ -4,12 +4,19 @@
 \alias{plot_RT_AUC}
 \title{Radarplot of the area under the aggregated ECDF-curve of a DataSetList.}
 \usage{
-plot_RT_AUC(dsList, ...)
+plot_RT_AUC(dsList, fstart = NULL, fstop = NULL, fstep = NULL,
+  fval_formatter = as.integer)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
 
-\item{...}{Arguments passed to other methods}
+\item{fstart}{The starting function value}
+
+\item{fstop}{The final function value}
+
+\item{fstep}{The spacing between starting and final function values}
+
+\item{fval_formatter}{Function to format the function-value labels}
 }
 \value{
 A radarplot of the area under the aggregated ECDF-curve of the DataSetList

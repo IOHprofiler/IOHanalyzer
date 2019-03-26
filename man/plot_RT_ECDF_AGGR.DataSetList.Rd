@@ -6,8 +6,7 @@
 a DataSetList.}
 \usage{
 \method{plot_RT_ECDF_AGGR}{DataSetList}(dsList, fstart = NULL,
-  fstop = NULL, fstep = NULL, show.per_target = F, scale.xlog = F,
-  ...)
+  fstop = NULL, fstep = NULL, show.per_target = F, scale.xlog = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -21,8 +20,6 @@ a DataSetList.}
 \item{show.per_target}{Whether or not to show the individual ECDF-curves for each target}
 
 \item{scale.xlog}{Whether or not to scale the x-axis logaritmically}
-
-\item{...}{Arguments passed to other methods}
 }
 \value{
 A plot of the empirical cumulative distriburtion as a function of

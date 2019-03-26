@@ -5,7 +5,7 @@
 \title{Plot the empirical cumulative distriburtion as a function of the running times of
 a DataSetList at certain target function values}
 \usage{
-\method{plot_RT_ECDF}{DataSetList}(dsList, ftargets, scale.xlog = F, ...)
+\method{plot_RT_ECDF}{DataSetList}(dsList, ftargets, scale.xlog = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -13,8 +13,6 @@ a DataSetList at certain target function values}
 \item{ftargets}{The target function values}
 
 \item{scale.xlog}{Whether or not to scale the x-axis logaritmically}
-
-\item{...}{Arguments passed to other methods}
 }
 \value{
 A plot of the empirical cumulative distriburtion as a function of

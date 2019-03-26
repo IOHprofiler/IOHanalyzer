@@ -15,7 +15,7 @@
 #' @importFrom shiny req
 #' @importFrom Rcpp sourceCpp
 #' @useDynLib IOHanalyzer
-NULL
+NULL  # TODO: what is this?
 #Ugly hack, but appears to be required to appease CRAN
 utils::globalVariables(c(".","algId","run","ERT","RT","max_samples",
                          "DIM", "Fvalue", "lower", "upper", "target", "format",
@@ -306,17 +306,6 @@ AUC.ECDF <- function(fun, from = NULL, to = NULL) {
     integrate(fun, lower = from, upper = to, subdivisions = 1e3L)$value / (to - from)
 }
 
-# # TODO: remove the function, deprecated!
-# CDF_discrete <- function(x) {
-#   x <- sort(x)
-#   x.unique <- unique(x)
-#   res <- seq_along(x) / length(x)
-#   for (v in x.unique) {
-#     res[x == v] <- max(res[x == v])
-#   }
-#   res
-# }
-
 #TODO: inconsistent use of format_func gives slightly different results between
 #generated and uploaded targets
 #' Generate ECDF targets for a DataSetList
@@ -330,7 +319,7 @@ AUC.ECDF <- function(fun, from = NULL, to = NULL) {
 #' @examples
 get_default_ECDF_targets <- function(data, format_func = as.integer){
   funcIds <- get_funcId(data)
-  dims <- get_DIM(data)
+  dims <- get_dim(data)
 
   targets <- list()
   for (i in seq_along(funcIds)) {
@@ -339,7 +328,7 @@ get_default_ECDF_targets <- function(data, format_func = as.integer){
     for (j in seq_along(dims)) {
       dim <- dims
       data_subsub <- subset(data_sub, DIM == dim)
-      fall <- get_Funvals(data_subsub)
+      fall <- get_funvals(data_subsub)
       #TODO: Account for minimization / maximization
       fmin <- min(fall)
       fmax <- max(fall)

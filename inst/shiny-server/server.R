@@ -4,12 +4,10 @@
 #
 # Author: Hao Wang
 # Email: wangronin@gmail.com
-
-source('plot.R')
-source('repository.R')
-
 format <- NULL         # the unique format of the data set
 sub_sampling <- TRUE   # perform sub-sampling of the data set?
+repo_dir <- ''         # repository directory  
+repo_data <- NULL      # repository data  
 
 # Formatter for function values
 format_FV <- function(v) format(v, digits = 2, nsmall = 2)
@@ -17,9 +15,6 @@ format_RT <- function(v) as.integer(v)
 
 # directory where data are extracted from the zip file
 exdir <- file.path(Sys.getenv('HOME'), 'data')
-
-repository <- NULL
-current_repo <- NULL
 
 setTextInput <- function(session, id, name, alternative) {
   v <- REG[[id]]
@@ -32,7 +27,7 @@ setTextInput <- function(session, id, name, alternative) {
 #TODO: this function could be made more clear
 set_format_func <- function(format){
   format_FV <<- ifelse((format == COCO || format == BIBOJ_COCO),
-                       function(v) format(v, format = "e", digits = 5, nsmall = 2),
+                       function(v) format(v, format = 'e', digits = 5, nsmall = 2),
                        function(v) format(v, digits = 2, nsmall = 2))
 }
 
@@ -45,12 +40,12 @@ get_data_id <- function(dsList) {
   if (is.null(dsList) | length(dsList) == 0)
     return(NULL)
 
-  paste(get_funcId(dsList), get_DIM(dsList), sep = '-')
+  paste(get_funcId(dsList), get_dim(dsList), sep = '-')
 }
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
-
+  
   # clean up the temporarsy files on server when exiting
   session$onSessionEnded(function() {
     close_connection()
@@ -63,107 +58,59 @@ shinyServer(function(input, output, session) {
 
   # set up the global variable
   observe({
-    sub_sampling <<- input$Upload.subsampling
+    sub_sampling <<- input$upload.subsampling
   })
 
-  # scan the repository, looking for .rds files
+  # set up list of datasets (scan the repository, looking for .rds files)
   observe({
-    repo_dir <- get_repo_location()
-    if (dir.exists(repo_dir)) {
-      filenames = list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
-      updateSelectInput(session, 'Repository.Setname', choices = filenames, selected = NULL)
-    }
-  })
-
-  # Load correct options for repository
-  # TODO: this function needs improvements
-  # TODO: review the user repo part
-  observe({
-    if (!dir.exists(get_repo_location())) {
+    repo_dir <<- get_repo_location()
+    rds_files <- list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
+    
+    if (length(rds_files) != 0) {
+      updateSelectInput(session, 'repository.dataset', choices = rds_files, selected = NULL)
+    } else { # TODO: the alert msg should be updated
       shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository, 
                       please create a folder called 'repository' in your home directory 
                       and make sure it contains the '2019gecco.rds'-file 
                       provided on the IOHProfiler github-page.")
-      shinyjs::disable('Repository.load')
     }
-
-    if (input$Repository.source == "Official") {
-      if (input$Repository.suite == IOHprofiler) {
-        if (is.null(input$Repository.Setname) || input$Repository.Setname == ""){
-          return(NULL)
-        }
-        if (is.null(repository) || current_repo != input$Repository.Setname) {
-          current_repo <<- input$Repository.Setname
-          file_name <- paste0(input$Repository.Setname,".rds")
-          file_location <- file.path(get_repo_location(T), file_name)
-          repository <<- readRDS(file_location)
-        }
-      } else {
-        shinyjs::disable('Repository.load')
-        return(NULL)
-      }
-      algId <- c(get_algId(repository), 'all')
-      dim <- c(get_DIM(repository), 'all')
-      func <- c(get_funcId(repository), 'all')
-    } else {
-      if (!open_connection() || !dir.exists(get_repo_location(F))) {
-        shinyjs::alert("Loading data from the user-uploaded repository is currently not supported on
-                       this version of the IOHprofiler. Please use the web-version at iohprofiler.liacs.nl
-                       instead when user-uploaded data is required.")
-      }
-      #TODO: change how the selectinputs are updated based on previously selected values
-      if (!open_connection() || (input$Repository.suite != IOHprofiler & input$Repository.suite != COCO)) {
-        shinyjs::disable('Repository.load')
-        return(NULL)
-      }
-      algId <- c(get_available_algs(input$Repository.suite), 'all')
-      dim <- c(get_available_dims(input$Repository.suite), 'all')
-      func <- c(get_available_funcs(input$Repository.suite), 'all')
-    }
-    updateSelectInput(session, 'Repository.algid', choices = algId, selected = 'all')
-    updateSelectInput(session, 'Repository.dim', choices = dim, selected = 'all')
-    updateSelectInput(session, 'Repository.funcid', choices = func, selected = 'all')
-    shinyjs::enable('Repository.load')
   })
 
-  observeEvent(input$Repository.load, {
-    if (input$Repository.source == "Official") {
-      to_load = repository
-      if (input$Repository.funcid != 'all')
-        to_load <- subset(to_load, funcId == input$Repository.funcid)
-      if (input$Repository.dim != 'all')
-        to_load <- subset(to_load, DIM == input$Repository.dim)
-      if (input$Repository.algid != 'all')
-        to_load <- subset(to_load, algId == input$Repository.algid)
-    } else {
-      if (open_connection())
-        to_load <- load_from_repository(input$Repository.suite, 
-                                        algid = input$Repository.algid,
-                                        dim = input$Repository.dim, 
-                                        funcid = input$Repository.funcid)
-    }
-    DataList$data <- c(DataList$data, to_load)
-    format <<- attr(to_load[[1]], 'src')
+  # load repository that is selected
+  observeEvent(input$repository.dataset, {
+    req(input$repository.dataset)
+    
+    rds_file <- file.path(repo_dir, paste0(input$repository.dataset, ".rds"))
+    repo_data <<- readRDS(rds_file)
+    
+    algIds <- c(get_algId(repo_data), 'all')
+    dims <- c(get_dim(repo_data), 'all')
+    funcIds <- c(get_funcId(repo_data), 'all')
+    
+    updateSelectInput(session, 'repository.algId', choices = algIds, selected = 'all')
+    updateSelectInput(session, 'repository.dim', choices = dims, selected = 'all')
+    updateSelectInput(session, 'repository.funcId', choices = funcIds, selected = 'all')
+    shinyjs::enable('repository.load_button')
   })
 
-  # IMPORTANT: this only works locally, keep it for the local version
-  # links to users file systems
-  # volumes <- getVolumes()
-  # shinyDirChoose(input, 'directory', roots = volumes, session = session)
+  # add the data from repository
+  observeEvent(input$repository.load_button, {
+    data <- repo_data
+    if (input$repository.funcId != 'all')
+      data <- subset(data, funcId == input$repository.funcId)
+    if (input$repository.dim != 'all')
+      data <- subset(data, DIM == input$repository.dim)
+    if (input$repository.algId != 'all')
+      data <- subset(data, algId == input$repository.algId)
 
-  # browse data directory, upload data and process data -------
+    DataList$data <- c(DataList$data, data)
+    format <<- attr(data[[1]], 'src')
+  })
 
-  # the directory selected by the user
-  # selected_folders <- reactive({
-  #   # a <- list(root = "Macintosh HD", path = list('', "Users", "wanghao", "(1+1)-Cholesky-CMA"))
-  #   # parseDirPath(volumes, a)
-  #   parseDirPath(volumes, input$directory)
-  # })
-
-  # the folder where the uploaded zip file is uncompressed
+  # upload the compressed the data file and uncompress them
   selected_folders <- reactive({
-    if (!is.null(input$Upload.zip)) {
-      datapath <- input$Upload.zip$datapath
+    if (!is.null(input$upload.add_zip)) {
+      datapath <- input$upload.add_zip$datapath
       folders <- rep('', length(datapath))
 
       for (i in seq(datapath)) {
@@ -203,8 +150,8 @@ shinyServer(function(input, output, session) {
   # load, process the data folders and update DataSetList
   observeEvent(selected_folders(), {
     folders <- selected_folders()
-    format_selected <- input$Upload.format
-    maximization <- input$Upload.minmax
+    format_selected <- input$upload.data_format
+    maximization <- input$upload.maximization
     
     req(length(folders) != 0)
 
@@ -270,7 +217,7 @@ shinyServer(function(input, output, session) {
   })
 
   # remove all uploaded data set
-  observeEvent(input$Upload.remove, {
+  observeEvent(input$upload.remove_data, {
     if (length(DataList$data) != 0) {
       DataList$data <- DataSetList() # must be a 'DataSetList'
       folderList$data <- list()
@@ -300,7 +247,7 @@ shinyServer(function(input, output, session) {
     algIds <- c(algIds_, 'all')
     parIds <- c(get_parId(data), 'all')
     funcIds <- get_funcId(data)
-    DIMs <- get_DIM(data)
+    DIMs <- get_dim(data)
     
     updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = DIMs[1])
     updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = funcIds[1])
@@ -329,8 +276,8 @@ shinyServer(function(input, output, session) {
     subset(DataList$data, DIM == dim, funcId == id)
   })
 
-  # TODO: give a different name for DATA and DATA_UNFILTERED
-  DATA_UNFILTERED <- reactive({
+  # TODO: give a different name for DATA and DATA_RAW
+  DATA_RAW <- reactive({
     DataList$data
   })
 
@@ -375,7 +322,7 @@ shinyServer(function(input, output, session) {
   # update the values for the grid of target values
   observe({
     data <- DATA()
-    v <- get_Funvals(data)
+    v <- get_funvals(data)
     name <- get_data_id(data)
     req(v)
 
@@ -429,7 +376,7 @@ shinyServer(function(input, output, session) {
   # update the values for the grid of running times
   observe({
     data <- DATA()
-    v <- get_Runtimes(data)
+    v <- get_runtimes(data)
     name <- get_data_id(data)
     # s <- ((max(v) - min(v)) * 0.05 + min(v)) %>% as.integer
     # e <- ((max(v) - min(v)) * 0.95 + min(v)) %>% as.integer
@@ -479,7 +426,7 @@ shinyServer(function(input, output, session) {
     data <- DATA()
     
     req(fstart <= fstop, fstep <= fstop - fstart, data)
-    fall <- get_Funvals(data)
+    fall <- get_funvals(data)
 
     if (input$RTSummary.Statistics.Single)
       fstop <- fstart
@@ -509,7 +456,7 @@ shinyServer(function(input, output, session) {
   runtime_summary_condensed <- reactive({
     data <- DATA()
     req(data)
-    fall <- get_Funvals(data)
+    fall <- get_funvals(data)
     get_FV_overview(data, algorithm = input$RTSummary.Overview.Algid)
   })
 
@@ -552,7 +499,7 @@ shinyServer(function(input, output, session) {
     data <- DATA()
 
     req(fstart <= fstop, fstep <= fstop - fstart, data)
-    fall <- get_Funvals(data)
+    fall <- get_funvals(data)
 
     if (input$RTSummary.Sample.Single)
       fstop <- fstart
@@ -606,7 +553,7 @@ shinyServer(function(input, output, session) {
     fstart <- input$ERTPlot.Min %>% as.numeric
     fstop <- input$ERTPlot.Max %>% as.numeric
     
-    plot_RT_line(DATA(), Fstart = fstart, Fstop = fstop,
+    plot_RT_single_fct(DATA(), Fstart = fstart, Fstop = fstop,
                  show.CI = input$ERTPlot.show.CI, 
                  show.density = input$ERTPlot.show.density,
                  show.runs = input$ERTPlot.show_all, 
@@ -628,7 +575,7 @@ shinyServer(function(input, output, session) {
 
   render_ERTPlot_multi_plot <- eventReactive(input$ERTPlot.Multi.PlotButton, {
     req(input$ERTPlot.Multi.Algs)
-    data <- subset(DATA_UNFILTERED(), 
+    data <- subset(DATA_RAW(), 
                    algId %in% input$ERTPlot.Multi.Algs, 
                    DIM == input$Overall.Dim)
     req(data)
@@ -654,8 +601,8 @@ shinyServer(function(input, output, session) {
   output$ERTPlot.Aggr.Plot <- renderPlotly(
     render_ERTPlot_aggr_plot()
   )
-
-  get_max_targets <- function(data, aggr_on, maximize){
+  
+   get_max_targets <- function(data, aggr_on, maximize){
     targets <- c()
     aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
 
@@ -663,7 +610,7 @@ shinyServer(function(input, output, session) {
       dsList_filetered <- if (aggr_on == 'funcId') subset(data,funcId == aggr_attr[[j]])
       else subset(data, DIM == aggr_attr[[j]])
 
-      Fall <- get_Funvals(dsList_filetered)
+      Fall <- get_funvals(dsList_filetered)
       Fval <- ifelse(maximize, max(Fall), min(Fall))
       targets <- c(targets,Fval)
     }
@@ -672,40 +619,14 @@ shinyServer(function(input, output, session) {
 
   render_ERTPlot_aggr_plot <- reactive({
     #TODO: figure out how to avoid plotting again when default targets are written to input
-    data <- DATA_UNFILTERED()
+    data <- DATA_RAW()
     if (length(data) == 0) return(NULL)
-    if (input$ERTPlot.Aggr.Aggregator == 'Functions') {
-      data <- subset(data, DIM == input$Overall.Dim)
-      erts <- MAX_ERTS_FUNC()
-    } else {
-      data <- subset(data, funcId == input$Overall.Funcid)
-      erts <- MAX_ERTS_DIM()
-    }
-    aggr_on = ifelse(input$ERTPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
+    data <- subset(data, DIM == input$Overall.Dim)
+    erts <- MAX_ERTS_FUNC()
+    aggr_on = 'funcId'
     aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
-    update_targets <- F
-    update_data <- T
-    
-    if(input$ERTPlot.Aggr.Targets == ""){
-      update_targets <- T
-    } else {
-      targets <- as.numeric(unlist(strsplit(input$ERTPlot.Aggr.Targets,",")))
-      targets2 <- get_max_targets(data, aggr_on, maximize = !(format == COCO || format == BIBOJ_COCO))
-      if(targets == targets2)
-        update_data <- F
-      if(length(targets) != length(aggr_attr)){
-        update_targets <- T
-      }
-    }
-    
-    if (update_targets) {
-      targets <- get_max_targets(data, aggr_on, maximize = !(format == COCO || format == BIBOJ_COCO))
-      updateTextInput(session, 'ERTPlot.Aggr.Targets', value = targets %>% toString)
-      return(NULL)
-    }
-
-    if(update_data)
-      erts <- max_ERTs(data, aggr_on, targets, maximize = !(format == COCO || format == BIBOJ_COCO))
+    targets <- get_max_targets(data, aggr_on, maximize = !(format == COCO || format == BIBOJ_COCO))
+    erts <- max_ERTs(data, aggr_on, targets, maximize = !(format == COCO || format == BIBOJ_COCO))
 
     plot_ERT_AGGR(data, plot_mode = input$ERTPlot.Aggr.Mode, targets = targets,
                   scale.ylog = input$ERTPlot.Aggr.Logy,
@@ -781,7 +702,7 @@ shinyServer(function(input, output, session) {
 
   render_RT_ECDF_MULT <- reactive({
 
-    dsList <- subset(DATA_UNFILTERED(), DIM == input$Overall.Dim)
+    dsList <- subset(DATA_RAW(), DIM == input$Overall.Dim)
     targets <- uploaded_RT_ECDF_targets()
 
     plot_RT_ECDF_MULTI(dsList, targets = targets)
@@ -804,7 +725,7 @@ shinyServer(function(input, output, session) {
     funcId <- names(targets)
 
     if (is.null(targets)) {
-      data <- subset(DATA_UNFILTERED(), DIM == input$Overall.Dim)
+      data <- subset(DATA_RAW(), DIM == input$Overall.Dim)
       targets <- get_default_ECDF_targets(data)
       funcId <- unique(attr(data, 'funcId')) %>% sort
     }
@@ -864,7 +785,7 @@ shinyServer(function(input, output, session) {
 
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
-    fall <- get_Funvals(data)
+    fall <- get_funvals(data)
 
     seq_FV(fall, fstart, fstop, by = fstep) %>% cat
   })
@@ -933,7 +854,7 @@ shinyServer(function(input, output, session) {
   # Data summary for Fixed-Budget target (FCE)  --------------
   FCE_runtime_summary_condensed <- reactive({
     data <- DATA()
-    fall <- get_Funvals(data)
+    fall <- get_funvals(data)
     get_RT_overview(data, algorithm = input$FCESummary.Overview.Algid)
   })
 
@@ -958,7 +879,7 @@ shinyServer(function(input, output, session) {
 
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     data <- DATA()
-    rt <- get_Runtimes(data)
+    rt <- get_runtimes(data)
 
     if (input$FCESummary.Statistics.Single)
       rt_max <- rt_min
@@ -1012,7 +933,7 @@ shinyServer(function(input, output, session) {
 
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     data <- DATA()
-    rt <- get_Runtimes(data)
+    rt <- get_runtimes(data)
 
     if (input$FCESummary.Sample.Single)
       rt_max <- rt_min
@@ -1101,7 +1022,7 @@ shinyServer(function(input, output, session) {
 
   render_FCEPlot_multi_plot <- reactive({
     req(input$FCEPlot.Multi.PlotButton)
-    data <- DATA_UNFILTERED()
+    data <- DATA_RAW()
     data <- subset(data, algId %in% input$FCEPlot.Multi.Algs)
     if(length(data) == 0) return(NULL)
     if(input$FCEPlot.Multi.Aggregator == 'Functions') data <- subset(data, DIM==input$Overall.Dim)
@@ -1130,13 +1051,13 @@ shinyServer(function(input, output, session) {
 
   get_max_runtimes <- function(data, aggr_on){
     runtimes <- c()
-    aggr_attr <- if(aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
+    aggr_attr <- if(aggr_on == 'funcId') get_funcId(data) else get_dim(data)
 
     for (j in seq_along(aggr_attr)) {
       dsList_filetered <- if(aggr_on == 'funcId') subset(data,funcId==aggr_attr[[j]])
       else subset(data, DIM==aggr_attr[[j]])
 
-      RTall <- get_Runtimes(dsList_filetered)
+      RTall <- get_runtimes(dsList_filetered)
       RTval <- max(RTall)
       runtimes <- c(runtimes,RTval)
     }
@@ -1145,7 +1066,7 @@ shinyServer(function(input, output, session) {
 
   render_FCEPlot_aggr_plot <- reactive({
     #TODO: figure out how to avoid plotting again when default targets are written to input
-    data <- DATA_UNFILTERED()
+    data <- DATA_RAW()
     if(length(data) == 0) return(NULL)
     if(input$FCEPlot.Aggr.Aggregator == 'Functions'){
       data <- subset(data, DIM==input$Overall.Dim)
@@ -1156,7 +1077,7 @@ shinyServer(function(input, output, session) {
       fvs <- MEAN_FVALS_DIM()
     }
     aggr_on = ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
-    aggr_attr <- if(aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
+    aggr_attr <- if(aggr_on == 'funcId') get_funcId(data) else get_dim(data)
     update_targets <- F
     update_data <- T
     if(input$FCEPlot.Aggr.Targets == ""){
@@ -1261,7 +1182,7 @@ shinyServer(function(input, output, session) {
 
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     data <- DATA()
-    rt <- get_Runtimes(data)
+    rt <- get_runtimes(data)
 
     seq_RT(rt, from = rt_min, to = rt_max, by = rt_step) %>% cat
   })
@@ -1381,7 +1302,7 @@ shinyServer(function(input, output, session) {
 
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
-    fall <- get_Funvals(data)
+    fall <- get_funvals(data)
 
     if (input$PAR.Summary.Single)
       fstop <- fstart
@@ -1403,7 +1324,7 @@ shinyServer(function(input, output, session) {
 
     req(fstart <= fstop, fstep <= fstop - fstart)
     data <- DATA()
-    fall <- get_Funvals(data)
+    fall <- get_funvals(data)
 
     if (input$PAR.Sample.Single)
       fstop <- fstart

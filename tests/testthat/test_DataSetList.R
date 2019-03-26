@@ -12,7 +12,7 @@ test_that("Validate reading of files",{
   # dsl1 <- DataSetList(path)
   #
   # expect_true(any(match(class(dsl1), "DataSetList")))
-  # expect_equal(get_DIM(dsl1), 100)
+  # expect_equal(get_dim(dsl1), 100)
   # expect_equal(get_algId(dsl1), "ONE_PLUS_LAMDA_EA")
   # expect_equal(get_funcId(dsl1), 1)
   #
@@ -40,6 +40,6 @@ test_that("Validate overview, summary and sample functions",{
   # expect_equal(get_FV_sample(dsl[1],400)$"run.5",215)
   # expect_equal(get_FV_sample(dsl[[1]],400)$"run.5",454)
   # expect_equal(get_FV_sample(dsl[1],400)$"run.5",454)
-  # expect_equal(min(get_Funvals(dsl[1])),295)
-  # expect_equal(min(get_Runtimes(dsl[1])),1)
+  # expect_equal(min(get_funvals(dsl[1])),295)
+  # expect_equal(min(get_runtimes(dsl[1])),1)
 })

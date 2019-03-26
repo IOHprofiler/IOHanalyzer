@@ -3,18 +3,11 @@
 #
 # Author: Hao Wang
 # Email: wangronin@gmail.com
-#
-# TODO:
-#   1. add Roxygen docs
-#   2. perhaps migrate to data.table completely for speed concern and simplicity
-#   3. maybe separate DataSetList class from DataSet class
 
+# TODO: do we need to import those here?
 suppressMessages(library(magrittr))
 suppressMessages(library(reshape2))
 suppressMessages(library(data.table))
-
-source('R/readFiles.R')
-source('R/stats.R')
 
 #' Constructor of S3 class 'DataSet'
 #'
@@ -231,7 +224,7 @@ summary.DataSet <- function(object, ...) {
   cat(paste('Attributes:', paste0(names(ds_attr), collapse = ', ')))
 }
 
-#TODO: Should this function be removed? Seems to be replaced by plot_RT_line
+#TODO: Should this function be removed? Seems to be replaced by plot_RT_single_fct
 
 # plot_ERT <- function(ds, backend = 'ggplot2') {
 #   p <- plotly_default(x.title = "best-so-far f(x)-value",
@@ -394,7 +387,18 @@ plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
     attr(dsL, 'comment') == attr(dsR, 'comment')
 }
 
-# adding S3 generics
+#' Get Expected RunTime
+#'
+#' @param ds A DataSet or DataSetList object
+#' @param ... Arguments passed to other methods
+#'
+#'
+#' @return A data.table containing the runtime samples for each provided target
+#' function value
+#' @export
+#'
+#' @examples
+get_ERT <- function(ds, ...) UseMethod("get_ERT", ds)
 #' Get RunTime Sample
 #'
 #' @param ds A DataSet or DataSetList object
@@ -559,6 +563,47 @@ get_RT_overview.DataSet <- function(ds, ...) {
              Budget = budget)
 }
 
+#' Get Expected RunTime
+#'
+#' @param ds A DataSet object
+#' @param ftarget The function target(s) for which to get the runtime summary
+#' @param ... Arguments passed to other methods
+#'
+#' @return A data.table containing the runtime statistics for each provided target
+#' function value
+#' @export
+#'
+#' @examples
+get_ERT.DataSet <- function(ds, ftarget) {
+  data <- ds$RT
+  maxRT <- attr(ds, 'maxRT')
+  algId <- attr(ds, 'algId')
+  maximization <- attr(ds, 'maximization')
+  
+  ftarget <- c(ftarget) %>% as.double %>% sort(decreasing = !maximization)
+  FValues <- rownames(data) %>% as.numeric
+  idx <- seq_along(FValues)
+  op <- ifelse(maximization, `>=`, `<=`)
+  
+  matched <- sapply(
+    ftarget,
+    function(f) {
+      idx[`op`(FValues, f)][1]
+    }
+  )
+  
+  if (is.list(matched)) {
+    return(data.table())
+  }
+  
+  data <- data[matched, , drop = FALSE]
+  
+  SP(data, maxRT)$ERT %>% 
+  cbind(algId, ftarget, .) %>% 
+    as.data.table %>% 
+    set_colnames(c('algId', 'target', 'ERT'))
+}
+
 #' Get RunTime Summary
 #'
 #' @param ds A DataSet object
@@ -570,7 +615,10 @@ get_RT_overview.DataSet <- function(ds, ...) {
 #' @export
 #'
 #' @examples
-get_RT_summary.DataSet <- function(ds, ftarget, ...) {
+get_RT_summary.DataSet <- function(ds, ftarget, 
+                                   # func = c('mean', 'median', 'sd', 'quantile',
+                                   #          'ERT'), 
+                                   ...) {
   data <- ds$RT
   maxRT <- attr(ds, 'maxRT')
   algId <- attr(ds, 'algId')
@@ -591,7 +639,15 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
   if (is.list(matched)) {
     return(data.table())
   }
-
+  
+  # func <- lapply(func,
+  #   function(f)
+  #     switch(f, 
+  #       mean = .mean, median = .median, sd = .sd,
+  #       quantile = D_quantile, ERT = SP
+  #     )
+  # )
+  
   if (1 < 2) {
     data <- data[matched, , drop = FALSE]
     apply(data, 1, D_quantile) %>%

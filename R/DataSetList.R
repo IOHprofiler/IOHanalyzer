@@ -20,14 +20,6 @@ read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
               format = format, subsampling = subsampling)
 }
 
-# TODO: find a better name for this function
-# TODO: implement this... maybe we don't need this function
-load_index <- function(file) {
-
-}
-
-# TODO: put class DataSetList in a separate file
-
 #' S3 constructor of the 'DataSetList'
 #'
 #' Attributes
@@ -205,6 +197,31 @@ summary.DataSetList <- function(object, ...) {
   }) %>%
     t %>%
     as.data.frame
+}
+
+
+#' Get Expected RunTime
+#'
+#' @param ds A DataSetList object
+#' @param ftarget The function target(s) for which to get the ERT
+#' @param algorithm Which algorithms in the DataSetList to consider.
+#' @param ... Arguments passed to other methods
+#'
+#' @return A data.table containing the runtime statistics for each provided target
+#' function value
+#' @export
+#'
+#' @examples
+get_ERT.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
+  if (algorithm != 'all')
+    ds <- subset(ds, algId == algorithm)
+  
+  lapply(ds, function(ds) {
+    res <- cbind(attr(ds, 'DIM'), attr(ds, 'funcId'), get_ERT(ds, ftarget))
+    colnames(res)[1] <- 'DIM'
+    colnames(res)[2] <- 'funcId'
+    res
+  }) %>% rbindlist
 }
 
 #' Get RunTime Summary
@@ -388,42 +405,42 @@ get_PAR_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
 
 #' Get all dimensions present in a DataSetList
 #'
-#' @param data The DataSetLsit
+#' @param dsList The DataSetLsit
 #'
 #' @return A sorted list of all unique dimensions which occur in the DataSetList
 #' @export
-get_DIM <- function(data) {
-  sapply(data, function(d) attr(d, 'DIM')) %>% unique %>% sort
+get_dim <- function(dsList) {
+  sapply(dsList, function(d) attr(d, 'DIM')) %>% unique %>% sort
 }
 
 #' Get all function ids present in a DataSetList
 #'
-#' @param data The DataSetLsit
+#' @param dsList The DataSetLsit
 #'
 #' @return A sorted list of all unique function ids which occur in the DataSetList
 #' @export
-get_funcId <- function(data) {
-  sapply(data, function(d) attr(d, 'funcId')) %>% unique %>% sort
+get_funcId <- function(dsList) {
+  sapply(dsList, function(d) attr(d, 'funcId')) %>% unique %>% sort
 }
 
 #' Get all algorithm ids present in a DataSetList
 #'
-#' @param data The DataSetLsit
+#' @param dsList The DataSetLsit
 #'
 #' @return A sorted list of all unique algorithm ids which occur in the DataSetList
 #' @export
-get_algId <- function(data) {
-  sapply(data, function(d) attr(d, 'algId')) %>% unique %>% sort
+get_algId <- function(dsList) {
+  sapply(dsList, function(d) attr(d, 'algId')) %>% unique %>% sort
 }
 
 #' Get all parameter ids present in a DataSetList
 #'
-#' @param data The DataSetLsit
+#' @param dsList The DataSetLsit
 #'
 #' @return A sorted list of all unique parameter ids which occur in the DataSetList
 #' @export
-get_parId <- function(data) {
-  lapply(data, function(d) setdiff(names(d), c('RT', 'FV', 'RT.summary'))) %>% unlist %>% unique
+get_parId <- function(dsList) {
+  lapply(dsList, function(d) setdiff(names(d), c('RT', 'FV', 'RT.summary'))) %>% unlist %>% unique
 }
 
 # TODO: let the user choose/detect whether the problem is subject to maximization
@@ -431,35 +448,45 @@ get_parId <- function(data) {
 
 #' Get all function values present in a DataSetList
 #'
-#' @param data The DataSetLsit
+#' @param dsList The DataSetLsit
 #'
 #' @return A list matrices of all function values which occur in the DataSetList
 #' @export
-get_Funvals <- function(data) {
-  lapply(data, function(x) rownames(x$RT)) %>% unlist %>%
+get_funvals <- function(dsList) {
+  lapply(dsList, function(x) rownames(x$RT)) %>% unlist %>%
     as.numeric %>% unique %>% sort %>% rev
 }
 
 #' Get all runtime values present in a DataSetList
 #'
-#' @param data The DataSetLsit
+#' @param dsList The DataSetLsit
 #'
 #' @return A list matrices of all runtime values which occur in the DataSetList
 #' @export
-get_Runtimes <- function(data) {
-  lapply(data, function(x) rownames(x$FV)) %>% unlist %>%
+get_runtimes <- function(dsList) {
+  lapply(dsList, function(x) rownames(x$FV)) %>% unlist %>%
     as.numeric %>% unique %>% sort
 }
 
-# # TODO: this is deprecated! remove it
-# filter.DataSetList <- function(data, by) {
-#   on <- names(by)
-#   idx <- rep(TRUE, length(data))
-#   for (i in seq_along(on)) {
-#     idx <- idx & sapply(data, . %>% attr(on[i])) == by[i]
-#   }
-#   data[idx]
-# }
+#' Get the best function value reached in a DataSetList
+#'
+#' @param dsList The DataSetLsit
+#'
+#' @return A list matrices of all runtime values which occur in the DataSetList
+#' @export
+get_best_targets <- function(dsList, by = 'funcId', maximize = T) {
+  targets <- c()
+  funcIds <- get_funcId(dsList)
+  
+  for (i in seq_along(aggr_attr)) {
+    data <- subset(dsList, funcId == funcIds[i])
+    
+    Fall <- get_funvals(data)
+    Fval <- ifelse(maximize, max(Fall), min(Fall))
+    targets <- c(targets, Fval)
+  }
+  targets
+}
 
 #' Filter a DataSetList by some criterium
 #'
@@ -493,7 +520,7 @@ subset.DataSetList <- function(x, ...) {
 #' @export
 max_ERTs <- function(dsList, aggr_on = 'funcId', targets = NULL, maximize = T) UseMethod("max_ERTs", dsList)
 
-#TODO: rename this function!
+#TODO: rename this function! this function needs to be rewritten
 #' S3 generic function to get the ERT-values for all DataSets in a DataSetList at certain targets
 #'
 #' @param dsList The DataSetLsit
@@ -506,10 +533,10 @@ max_ERTs <- function(dsList, aggr_on = 'funcId', targets = NULL, maximize = T) U
 max_ERTs.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, maximize = T) {
   N <- length(get_algId(dsList))
 
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
   if(!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
 
-  second_aggr <- if(aggr_on == 'funcId') get_DIM(dsList) else get_funcId(dsList)
+  second_aggr <- if(aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
   if(length(second_aggr) >1 ) return(NULL)
 
   erts <- seq(0, 0, length.out = length(get_algId(dsList)))
@@ -520,7 +547,7 @@ max_ERTs.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, max
     else subset(dsList, DIM==aggr_attr[[j]])
 
     if(is.null(targets)){
-      Fall <- get_Funvals(dsList_filetered)
+      Fall <- get_funvals(dsList_filetered)
       Fval <- ifelse(maximize, max(Fall), min(Fall))
     }
     else
@@ -555,10 +582,10 @@ mean_FVs <- function(dsList, aggr_on = 'funcId', runtimes = NULL) UseMethod("mea
 mean_FVs.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NULL) {
   N <- length(get_algId(dsList))
 
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
   if(!is.null(runtimes) && length(runtimes) != length(aggr_attr)) targets <- NULL
 
-  second_aggr <- if(aggr_on == 'funcId') get_DIM(dsList) else get_funcId(dsList)
+  second_aggr <- if(aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
   if(length(second_aggr) >1 ) return(NULL)
 
   erts <- seq(0, 0, length.out = length(get_algId(dsList)))
@@ -569,7 +596,7 @@ mean_FVs.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NULL) {
     else subset(dsList, DIM==aggr_attr[[j]])
 
     if(is.null(runtimes)){
-      RTall <- get_Runtimes(dsList_filetered)
+      RTall <- get_runtimes(dsList_filetered)
       RTval <- max(RTall)
     }
     else

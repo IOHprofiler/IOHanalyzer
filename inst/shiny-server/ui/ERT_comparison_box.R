@@ -4,12 +4,9 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
       status = "primary", collapsed = collapsed,
       sidebarLayout(
         sidebarPanel(
-            width = 3,
+            width = 2,
             selectInput('ERTPlot.Aggr.Mode', label = 'Select the plotting mode',
-                        choices = c('radar','line'), selected = 'radar'),
-            
-            selectInput('ERTPlot.Aggr.Aggregator', label = 'Create plot for all?',
-                        choices = c('Functions','Dimensions'), selected = 'Functions'),
+                        choices = c('radar', 'line'), selected = 'radar'),
             
             checkboxInput('ERTPlot.Aggr.Ranking', 
                           label = 'Use ranking instead of ERT-values',
@@ -19,7 +16,6 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
                           label = 'scale y axis log10',
                           value = F),
             
-            textInput('ERTPlot.Aggr.Targets', label = 'choose the ERT-targets (comma-separated)'),
             selectInput('ERTPlot.Aggr.Format', label = 'Select the figure format',
                         choices = supported_fig_format, selected = 'pdf'),
             
@@ -27,7 +23,7 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
           ),
       
       mainPanel(
-        width = 9,
+        width = 10,
         column(
           width = 12, align = "center",
           plotlyOutput.IOHanalyzer('ERTPlot.Aggr.Plot')

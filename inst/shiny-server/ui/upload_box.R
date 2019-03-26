@@ -1,31 +1,44 @@
-upload_box <- function(width = 12, collapsible = T, collapsed = T, height = '650px') {   # TODO: find a way to add all arguments
-  box(title = HTML('<p style="font-size:120%;">Upload Data</p>'), width = width,
-      solidHeader = T, status = "primary", collapsible = collapsible, height = height, collapsed = collapsed,
-      sidebarPanel(
-        width = 12,
+upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: find a way to include all potential arguments
+                       height = '600px') {  
+  box(
+    title = HTML('<p style="font-size:120%;">Upload Data</p>'), 
+    width = width, height = height, collapsed = collapsed, collapsible = collapsible, 
+    solidHeader = T, status = "primary", 
+    sidebarPanel(
+      width = 12,
+      selectInput('upload.data_format', 
+                  label = HTML('<p align="left" style="font-size:120%;">
+                               Please choose the format of your data sets</p>'),
+                  choices = c(AUTOMATIC,IOHprofiler, COCO, TWO_COL), 
+                  selected = AUTOMATIC, width = '50%'),
+      
+      selectInput('upload.maximization', 
+                  label = HTML('<p align="left" style="font-size:120%;">
+                               Maximization or minimization?</p>'),
+                  choices = c(AUTOMATIC,"MAXIMIZE", "MINIMIZE"), 
+                  selected = AUTOMATIC, width = '50%'),
 
-        selectInput('Upload.format', label = HTML('<p align="left" style="font-size:120%;">Please choose the format of your data sets</p>'),
-                    choices = c(AUTOMATIC,IOHprofiler, COCO, TWO_COL), selected = AUTOMATIC, width = '50%'),
-        selectInput('Upload.minmax', label = HTML('<p align="left" style="font-size:100%;">Use maximization or minimization?</p>'),
-                    choices = c(AUTOMATIC,"MAXIMIZE", "MINIMIZE"), selected = AUTOMATIC, width = '50%'),
+      HTML('<p align="justify" style="font-size:120%;">When the data set is huge, 
+           the alignment can take a very long time. In this case, you could toggle 
+           the efficient mode to subsample the data set. However, 
+           the precision of data will be compromised.</p>'),
+      
+      checkboxInput('upload.subsampling', 
+                    label = HTML('<p align="left" style="font-size:120%;">
+                                 Efficient mode</p>'), 
+                    value = F),
 
-        HTML('<p align="justify" style="font-size:120%;">When the data set is huge, the alignment
-             can take a very long time. In this case, you could toggle the efficient mode to subsample
-             the data set. However, the precision of data will be compromised.</p>'),
-        checkboxInput('Upload.subsampling', label = HTML('<p align="left" style="font-size:120%;">Efficient mode</p>'), value = F),
+      fileInput("upload.add_zip", 
+                label = HTML('<p align="left" style="font-size:120%;">
+                             Please choose a <i>zip file</i> containing the 
+                             benchmark data</p>'),
+                multiple = TRUE, accept = c("Application/zip", ".zip")),
 
-        checkboxInput('Upload.add_repository', label = HTML('<p align="left" style="font-size:120%;">Upload data to IOHProfiler database for use by others?</p>'), value = F),
-
-        fileInput("Upload.zip", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>zip file</i> containing the benchmark data</p>'),
-                  multiple = TRUE, accept = c("Application/zip", ".zip")),
-
-        # TODO: keep this for the local version
-        # shinyDirButton('directory', 'Browse the folder',
-        #                title = 'Please choose a directory containing the benchmark data'),
-        HTML('<p align="left" style="font-size:120%;"><b>Remove all data you uploaded</b></p>'),
-        actionButton('Upload.remove', 'Clear data')
-        )
+      actionButton('upload.remove_data', 
+                   label = HTML('<p align="center" style="font-size:120%;"><b> 
+                   Remove all the data</b></p>'))
       )
+    )
 }
 
 upload_prompt_box <- function(width = 12, collapsible = T, collapsed = T) {
@@ -49,37 +62,46 @@ upload_prompt_box <- function(width = 12, collapsible = T, collapsed = T) {
 }
 
 data_list_box <- function(width = 12, collapsible = T, collapsed = T) {
-  box(title = HTML('<p style="font-size:120%;">List of Processed Data</p>'),
-      width = width, solidHeader = T, status = "primary",
-      collapsible = collapsible, collapsed = collapsed,
-      dataTableOutput('data_info')
+  box(
+    title = HTML('<p style="font-size:120%;">List of Processed Data</p>'),
+    width = width, solidHeader = T, status = "primary",
+    collapsible = collapsible, collapsed = collapsed,
+    dataTableOutput('data_info')
   )
 }
 
-repository_box<- function(width = 12, collapsible = F, collapsed = T, height = '650px') {
-  box(title = HTML('<p style="font-size:120%;">Load Data from repository</p>'), width = width,
-      solidHeader = T, status = "primary", collapsible = collapsible, height = height, collapsed = collapsed,
-      sidebarPanel(
-        width = 12,
+repository_box <- function(width = 12, collapsible = F, collapsed = T, 
+                           height = '600px') {
+  box(
+    title = HTML('<p style="font-size:120%;">Load Data from Repository</p>'), 
+    width = width, height = height, collapsed = collapsed, collapsible = collapsible,
+    solidHeader = T, status = "primary",  
+    sidebarPanel(
+      width = 12,
+      selectInput('repository.dataset', 
+                  label = HTML('<p align="left" style="font-size:120%;">
+                               Select the dataset</p>'),
+                  choices = NULL, selected = NULL, width = '50%'),
 
-        radioButtons('Repository.source',label = "select the source to be used", choices = c("Official", "User-uploaded"),selected = "Official"),
-
-        selectInput('Repository.suite', label = HTML('<p align="left" style="font-size:120%;">Please choose the suite</p>'),
-                    choices = c(IOHprofiler, COCO), selected = IOHprofiler, width = '50%'),
-        conditionalPanel(condition = 'input["Repository.source"] == "Official"',
-                         selectInput('Repository.Setname', label = "Select the dataset",
-                                     choices = NULL, selected = NULL, width = '50%')
-                         ),
-
-        selectInput('Repository.funcid', label = HTML('<p align="left" style="font-size:120%;">Please choose the function</p>'),
-                    choices = NULL, selected = NULL, width = '50%'),
-        selectInput('Repository.dim', label = HTML('<p align="left" style="font-size:120%;">Please choose the dimension</p>'),
-                    choices = NULL, selected = NULL, width = '50%'),
-        selectInput('Repository.algid', label = HTML('<p align="left" style="font-size:120%;">Please choose the algorithm</p>'),
-                    choices = NULL, selected = NULL, width = '50%'),
-
-        actionButton('Repository.load', 'Load data')
+      selectInput('repository.funcId', 
+                  label = HTML('<p align="left" style="font-size:120%;">
+                               Please choose the function</p>'),
+                  choices = NULL, selected = NULL, width = '50%'),
+      
+      selectInput('repository.dim', 
+                  label = HTML('<p align="left" style="font-size:120%;">
+                               Please choose the dimension</p>'),
+                  choices = NULL, selected = NULL, width = '50%'),
+      
+      selectInput('repository.algId', 
+                  label = HTML('<p align="left" style="font-size:120%;">
+                               Please choose the algorithm</p>'),
+                  choices = NULL, selected = NULL, width = '50%'),
+      
+      shinyjs::disabled(
+        actionButton('repository.load_button', 'load data')
       )
+    )
   )
 }
 

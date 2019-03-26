@@ -65,7 +65,7 @@ grad_functions <- c(
 #' @export
 #'
 #' @examples
-plot_RT_line <- function(dsList, ...) UseMethod("plot_RT_line", dsList)
+plot_RT_single_fct <- function(dsList, ...) UseMethod("plot_RT_single_fct", dsList)
 #' Plot lineplot of the expected function values of a DataSetList
 #'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
@@ -280,20 +280,22 @@ plot_FCE_MULTI <- function(dsList,...) UseMethod("plot_FCE_MULTI", dsList)
 #' @export
 #'
 #' @examples
-plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
-                                     show.ERT = T, show.CI = T, show.mean = F,
-                                     show.runs = F, show.density = 50,
-                                     show.grad = F, show.intensity = 0,
-                                     show.pareto = F, show.optimal = F,
-                                     show.median = F, backend = 'plotly',
-                                     scale.xlog = F, scale.ylog = F,
-                                     scale.reverse = F, ...) {
+plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
+                                           show.ERT = T, show.CI = T, show.mean = F,
+                                           show.runs = F, show.density = 50,
+                                           show.grad = F, show.intensity = 0,
+                                           show.pareto = F, show.optimal = F,
+                                           show.median = F, backend = 'plotly',
+                                           scale.xlog = F, scale.ylog = F,
+                                           scale.reverse = F, ...) {
 
-  Fall <- get_Funvals(dsList)
+  Fall <- get_funvals(dsList)
   if (is.null(Fstart)) Fstart <- min(Fall)
   if (is.null(Fstop)) Fstop <- max(Fall)
 
-  Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
+  Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 60, 
+                 scale = ifelse(scale.xlog, 'log', 'linear'))
+  
   if (length(Fseq) == 0) return(NULL)
 
   N <- length(dsList)
@@ -306,7 +308,8 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
   if (backend == 'plotly') {
     p <- plot_ly_default(x.title = "best-so-far f(x)-value",
                          y.title = "function evaluations")
-
+    
+    # TODO: improve this part, get rid of the loop
     for (i in seq_along(dsList)) {
       legend <- legends[i]
       ds_ERT <- dt[algId == attr(dsList[[i]], 'algId') &
@@ -344,7 +347,7 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                          marker = list(color = rgb_str), legendgroup = legend,
                          line = list(color = rgb_str, dash = 'dot'))
 
-      if (show.runs||show.grad) {
+      if (show.runs || show.grad) {
         # TODO: Fix this for the case where algorithms do not have the same number of runs
         dr <- get_RT_sample(dsList, Fseq)
         dr_ERT <- dr[algId == attr(dsList[[i]], 'algId')&
@@ -505,7 +508,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
                                      scale.xlog = F, scale.ylog = F,
                                      scale.reverse = F, ...) {
 
-  RTall <- get_Runtimes(dsList)
+  RTall <- get_runtimes(dsList)
   if (is.null(RTstart)) Fstart <- min(RTall)
   if (is.null(RTstop)) Fstop <- max(RTall)
 
@@ -877,7 +880,7 @@ plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F, ...){
 plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
                                           fstep = NULL, show.per_target = F,
                                           scale.xlog = F, ...){
-  fall <- get_Funvals(dsList)
+  fall <- get_funvals(dsList)
   if (is.null(fstart)) fstart <- min(fall)
   if (is.null(fstop)) fstop <- max(fall)
 
@@ -969,7 +972,7 @@ plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
 plot_RT_AUC.DataSetList <- function(dsList, fstart = NULL,
                                     fstop = NULL, fstep = NULL,
                                     fval_formatter = as.integer, ...){
-  fall <- get_Funvals(dsList)
+  fall <- get_funvals(dsList)
   if (is.null(fstart)) fstart <- min(fall)
   if (is.null(fstop)) fstop <- max(fall)
 
@@ -1226,7 +1229,7 @@ plot_FV_ECDF_AGGR.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
                                           rt_step = NULL, scale.xlog = F,
                                           show.per_target = F, ...){
 
-  rt <- get_Runtimes(dsList)
+  rt <- get_runtimes(dsList)
   if(is.null(rt_min)) rt_min <- min(rt)
   if(is.null(rt_max)) rt_max <- max(rt)
 
@@ -1302,7 +1305,7 @@ plot_FV_ECDF_AGGR.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' @examples
 plot_FV_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
                                     rt_step = NULL, ...){
-  rt <- get_Runtimes(dsList)
+  rt <- get_runtimes(dsList)
   if(is.null(rt_min)) rt_min <- min(rt)
   if(is.null(rt_max)) rt_max <- max(rt)
 
@@ -1383,7 +1386,7 @@ plot_PAR_Line.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
   #TODO: clean this up
   req(xor(show.mean,show.median))
 
-  fall <- get_Funvals(dsList)
+  fall <- get_funvals(dsList)
   if(is.null(f_min)) f_min <- min(fall)
   if(is.null(f_max)) f_max <- max(fall)
 
@@ -1483,7 +1486,7 @@ plot_RT_ECDF_MULTI.DataSetList <- function(dsList, targets = NULL, ...){
   p <- plot_ly_default(x.title = "function evaluations",
                        y.title = "Proportion of (run, target, ...) pairs")
 
-  rts <- get_Runtimes(dsList)
+  rts <- get_runtimes(dsList)
   x <- seq(min(rts), max(rts), length.out = 50)
   colors <- color_palettes(length(algId))
 
@@ -1550,7 +1553,7 @@ plot_RT_all_fcts.DataSetList <- function(dsList, xscale = 'linear',
   for (i in seq(n_fcts)) {
     data <- subset(dsList, funcId == funcIds[i])
     
-    Fall <- get_Funvals(data)
+    Fall <- get_funvals(data)
     Fstart <- min(Fall)
     Fstop <- max(Fall)
     Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 30, scale = xscale)
@@ -1626,8 +1629,8 @@ plot_RT_all_fcts.DataSetList <- function(dsList, xscale = 'linear',
 #'
 #' @examples
 plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL,
-                                      plot_mode = 'radar', use_rank = F,
-                                      scale.ylog = T, maximize = T,
+                                      plot_mode = 'radar', use_rank = F, 
+                                      scale.ylog = T, maximize = T, 
                                       erts = NULL, ...){
   if (is.null(erts))
     erts <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, maximize = maximize)
@@ -1641,10 +1644,10 @@ plot_ERT_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL
   names(in_legend) <- get_algId(dsList)
   names(colors) <- get_algId(dsList)
 
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
   if(!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
 
-  second_aggr <- if(aggr_on == 'funcId') get_DIM(dsList) else get_funcId(dsList)
+  second_aggr <- if(aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
   if(length(second_aggr) >1 ) return(NULL)
 
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
@@ -1777,10 +1780,10 @@ plot_FCE_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NUL
   names(in_legend) <- get_algId(dsList)
   names(colors) <- get_algId(dsList)
 
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
   if(!is.null(runtimes) && length(runtimes) != length(aggr_attr)) runtimes <- NULL
 
-  second_aggr <- if(aggr_on == 'funcId') get_DIM(dsList) else get_funcId(dsList)
+  second_aggr <- if(aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
   if(length(second_aggr) >1 ) return(NULL)
 
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
@@ -1887,7 +1890,7 @@ plot_FCE_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog
   names(in_legend) <- get_algId(dsList)
   names(colors) <- get_algId(dsList)
 
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_DIM(dsList)
+  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
   M <- length(aggr_attr)
   if (M <= 10)
     nrows <- ceiling(M / 2.) # keep to columns for the histograms
@@ -1909,7 +1912,7 @@ plot_FCE_MULTI.DataSetList <- function(dsList, plot_mode = 'subplot', scale.xlog
     dsList_filetered <- if(aggr_on == 'funcId') subset(dsList,funcId==aggr_attr[[j]])
     else subset(dsList,DIM==aggr_attr[[j]])
 
-    RTall <- get_Runtimes(dsList_filetered)
+    RTall <- get_runtimes(dsList_filetered)
     RTstart <- min(RTall)
     RTstop <- max(RTall)
 

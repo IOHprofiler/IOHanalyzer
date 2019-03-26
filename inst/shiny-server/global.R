@@ -16,8 +16,8 @@ options(datatable.print.nrows = 20)
 options(width = 80)
 options(shiny.maxRequestSize = 200 * 1024 ^ 2)   # maximal number of requests, this is too many...
 
-widget_html <- function(name, package, id, style, class, inline = FALSE, ...){
-  
+# for customized 'plotlyOutput' function -----
+widget_html <- function(name, package, id, style, class, inline = FALSE, ...) {
   # attempt to lookup custom html function for widget
   fn <- tryCatch(get(paste0(name, "_html"),
                      asNamespace(package),
@@ -68,7 +68,6 @@ plotlyOutput.IOHanalyzer <- function(outputId, width = '100%', aspect_ratio = 16
                                 else ""), 
                 width = width, height = 0)
   )
-  
   dependencies = widget_dependencies('plotly', 'plotly')
   htmltools::attachDependencies(html, dependencies)
 }
@@ -78,6 +77,7 @@ symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
              "triangle-up-open", "triangle-down-open")
 
 # ploting settings for UI ---------------------
+# TODO: those should be deprecated. Verify and delete those
 aspect_ratio <-  4 / 3
 fig_height <- 1100
 fig_height2 <- 1100
@@ -96,15 +96,9 @@ AUTOMATIC <- 'AUTOMATIC'
 BIBOJ_COCO <- 'BIBOJ_COCO'
 
 # directory where rds-data is stored
-get_repo_location <- function(official = T) {
-  if (official) {
-    user_repo <- file.path(Sys.getenv('HOME'), 'repository')
-    installed_repo <- file.path(find.package('IOHanalyzer'), 'data')
-    if (file.exists(user_repo)) return(user_repo) else return(installed_repo)
-  } else {
-    user_repo <- file.path(Sys.getenv('HOME'), 'repository_unofficial')
-    return(user_repo)
-  }
+get_repo_location <- function() {
+  user_repo <- file.path(Sys.getenv('HOME'), 'repository')
+  if (file.exists(user_repo)) user_repo else ''
 }
 
 print_html <- function(s, widget_id = 'process_data_promt') 

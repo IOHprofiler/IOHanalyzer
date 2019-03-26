@@ -10,7 +10,7 @@
 \item{x}{The DataSetLsit}
 
 \item{...}{The condition to filter on. Can be any expression which assigns True or False
-to a DataSet object, such as DIM==625 or funcId==2}
+to a DataSet object, such as DIM == 625 or funcId == 2}
 }
 \value{
 The filtered DataSetList

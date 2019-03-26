@@ -453,7 +453,7 @@ plot_RT_line.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 
     if (scale.reverse)
       p %<>% layout(xaxis = list(autorange = "reversed"))
-    
+
   } else if (backend == 'ggplot2') {
     dt[, 'group' := paste(algId, funcId, DIM, sep = '-')]
     p <- ggplot(data = dt, aes(group = 'group', colour = 'group'))
@@ -1509,87 +1509,88 @@ plot_RT_ECDF_MULTI.DataSetList <- function(dsList, targets = NULL, ...){
 #' Plot ERT-plots for multiple functions or dimensions
 #'
 #' @param dsList A DataSetList (should consist of only one function OR dimension).
-#' @param plot_mode How the plots should be created. Can be 'subplot' for one plot
-#' per function/dimension or 'overlay' for on plot containing all functions/dimensions
-#' @param aggr_on Whether to create a plot for each function ('funcId') or dimension ('DIM')
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
 #' @param scale.ylog Whether or not to scale the y-axis logaritmically
 #' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
+#' @param backend Which plotting library to use. Either 'plotly' or 'ggplot2'.
 #' @param ... Arguments passed to other methods
 #'
 #' @return A plot of ERT-values of the DataSetList
 #' @export
 #'
 #' @examples
-plot_RT_all_fcts.DataSetList <- function(dsList, xscale = 'linear',
-                                         yscale = 'linear', 
+plot_RT_all_fcts.DataSetList <- function(dsList, scale.xlog = F,
+                                         scale.ylog = F,
                                          scale.reverse = F,
-                                         backend = 'plotly') {
+                                         backend = 'plotly',
+                                         ...) {
+  xscale <- if (scale.xlog) 'log' else 'linear'
+  yscale <- if (scale.ylog) 'log' else 'linear'
   funcIds <- get_funcId(dsList)
   n_fcts <- length(funcIds)
-  
+
   algIds <- get_algId(dsList)
   n_algIds <- length(algIds)
-  
+
   colors <- color_palettes(n_algIds)
   names(colors) <- algIds
-  
+
   # how many columns do we want...
   if (n_fcts <= 10) {
-    n_rows <- ceiling(n_fcts / 2.) 
+    n_rows <- ceiling(n_fcts / 2.)
     n_cols <- 2
   } else if (n_fcts <= 20) {
-    n_rows <- ceiling(n_fcts / 3.) 
+    n_rows <- ceiling(n_fcts / 3.)
     n_cols <- 3
   } else if (n_fcts <= 30) {
-    n_rows <- ceiling(n_fcts / 4.) 
+    n_rows <- ceiling(n_fcts / 4.)
     n_cols <- 4
   }
-  
+
   dt <- list()
   for (i in seq(n_fcts)) {
     data <- subset(dsList, funcId == funcIds[i])
-    
+
     Fall <- get_Funvals(data)
     Fstart <- min(Fall)
     Fstop <- max(Fall)
     Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 30, scale = xscale)
-    
+
     if (length(Fseq) == 0) return(NULL)
-    
+
     dt[[i]] <- get_RT_summary(data, ftarget = Fseq)
   }
   dt <- rbindlist(dt)
-  
+
   if (backend == 'ggplot2') {
     dt[, funcId := paste0('F', funcId)]
-    
+
     p <- ggplot(data = dt, aes(group = algId, colour = algId)) +
-      geom_line(aes(target, ERT), linetype = 'solid') + 
-      facet_wrap(~funcId, scales = 'free', nrow = n_rows, ncol = n_cols) + 
+      geom_line(aes(target, ERT), linetype = 'solid') +
+      facet_wrap(~funcId, scales = 'free', nrow = n_rows, ncol = n_cols) +
       scale_color_manual(values = colors)
-    
+
   } else if (backend == 'plotly') {
     autorange <- ifelse(scale.reverse, 'reversed', T)
     p <- lapply(
-      seq(n_fcts), 
+      seq(n_fcts),
       function(x)
-        plot_ly_default(x.title = "", y.title = "ERT") %>% 
+        plot_ly_default(x.title = "", y.title = "ERT") %>%
           layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 4, autorange = autorange),
                  yaxis = list(type = yscale, tickfont = f1, ticklen = 4))
     )
-    
+
     for (i in seq(n_fcts)) {
       showlegend <- ifelse(i == 1, T, F)
       dt_plot <- dt[funcId == funcIds[[i]]]
-      
-      p[[i]] %<>% 
+
+      p[[i]] %<>%
         add_trace(
-          data = dt_plot, x = ~target, y = ~ERT, color = ~algId, legendgroup = ~algId, 
-          type = 'scatter', mode = 'lines+markers', 
+          data = dt_plot, x = ~target, y = ~ERT, color = ~algId, legendgroup = ~algId,
+          type = 'scatter', mode = 'lines+markers',
           line = list(width = 1.8), marker = list(size = 4), # TODO: perhaps turn off the marker here
           colors = colors, showlegend = showlegend
-        ) %>% 
+        ) %>%
         layout(
           annotations = list(
             text = paste0('F', funcIds[[i]]), font = f2, align = "center",
@@ -1599,9 +1600,9 @@ plot_RT_all_fcts.DataSetList <- function(dsList, xscale = 'linear',
           )
         )
     }
-      
+
     p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.02,
-                 heights = rep(1 / n_rows, n_rows), 
+                 heights = rep(1 / n_rows, n_rows),
                  widths = rep(1 / n_cols, n_cols))
   }
   p

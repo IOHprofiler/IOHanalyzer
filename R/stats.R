@@ -11,7 +11,7 @@
 #' @importFrom plotly add_annotations add_trace orca plot_ly rename_ subplot layout
 #' @importFrom ggplot2 aes geom_jitter geom_line geom_ribbon geom_violin ggplot
 #' @importFrom ggplot2 guides scale_color_manual scale_colour_manual scale_fill_manual
-#' @importFrom ggplot2 scale_x_continuous scale_x_log10
+#' @importFrom ggplot2 scale_x_continuous scale_x_log10 facet_wrap
 #' @importFrom shiny req
 #' @importFrom Rcpp sourceCpp
 #' @useDynLib IOHanalyzer

@@ -822,7 +822,7 @@ plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F){
         next
 
       # TODO: Fix this function to use the updated ECDF-function correctely
-      ecdf <- ECDF(df, i)
+      ecdf <- ECDF(df, ftargets[[i]])
       vals <- ecdf(rt)
       # # position of the markers
       # x <- quantile(rt, probs = c(0.25, 0.5, 0.75), names = F, type = 3)

@@ -38,7 +38,6 @@ source('R/stats.R')
 #' @return A S3 object 'DataSet'
 #' @export
 #'
-#' @examples
 DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler,
                     subsampling = FALSE) {
   if (!is.null(info)) {
@@ -405,7 +404,6 @@ plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
 #' function value
 #' @export
 #'
-#' @examples
 get_RT_sample <- function(ds, ...) UseMethod("get_RT_sample", ds)
 #' Get RunTime Summary
 #'
@@ -416,7 +414,6 @@ get_RT_sample <- function(ds, ...) UseMethod("get_RT_sample", ds)
 #' function value
 #' @export
 #'
-#' @examples
 get_RT_summary <- function(ds, ...) UseMethod("get_RT_summary", ds)
 #' Get Funtion Value Samples
 #'
@@ -427,7 +424,6 @@ get_RT_summary <- function(ds, ...) UseMethod("get_RT_summary", ds)
 #' target runtime
 #' @export
 #'
-#' @examples
 get_FV_sample <- function(ds, ...) UseMethod("get_FV_sample", ds)
 #' Get Function Value Summary
 #'
@@ -438,7 +434,6 @@ get_FV_sample <- function(ds, ...) UseMethod("get_FV_sample", ds)
 #' target runtime value
 #' @export
 #'
-#' @examples
 get_FV_summary <- function(ds, ...) UseMethod("get_FV_summary", ds)
 #' Get Parameter Value Samples
 #'
@@ -448,7 +443,6 @@ get_FV_summary <- function(ds, ...) UseMethod("get_FV_summary", ds)
 #' @return A data.table object containing parameter values aligned at each given target value
 #' @export
 #'
-#' @examples
 get_PAR_sample <- function(ds, ...) UseMethod("get_PAR_sample", ds)
 #' Get Parameter Value Summary
 #'
@@ -458,7 +452,6 @@ get_PAR_sample <- function(ds, ...) UseMethod("get_PAR_sample", ds)
 #' @return A data.table object containing basic statistics of parameter values aligned at each given target value
 #' @export
 #'
-#' @examples
 get_PAR_summary <- function(ds, ...) UseMethod("get_PAR_summary", ds)
 
 #' Get the parameter names of the algorithm
@@ -468,7 +461,6 @@ get_PAR_summary <- function(ds, ...) UseMethod("get_PAR_summary", ds)
 #' @return a character list of paramter names, if recorded in the data set
 #' @export
 #'
-#' @examples
 get_PAR_name <- function(ds) UseMethod("get_PAR_name", ds)
 #' Get Function Value condensed overview
 #'
@@ -479,7 +471,6 @@ get_PAR_name <- function(ds) UseMethod("get_PAR_name", ds)
 #' values, the number of runs and available budget for the DataSet
 #' @export
 #'
-#' @examples
 get_FV_overview <- function(ds, ...) UseMethod("get_FV_overview", ds)
 #' Get Runtime Value condensed overview
 #'
@@ -489,7 +480,6 @@ get_FV_overview <- function(ds, ...) UseMethod("get_FV_overview", ds)
 #' @return A data.table containing the algorithm ID, minimum and maximum used evaluations,
 #' number of runs and available budget for the DataSet
 #' @export
-#' @examples
 get_RT_overview <- function(ds, ...) UseMethod("get_RT_overview", ds)
 
 #' Get Function Value condensed overview
@@ -501,7 +491,6 @@ get_RT_overview <- function(ds, ...) UseMethod("get_RT_overview", ds)
 #' values, the number of runs and available budget for the DataSet
 #' @export
 #'
-#' @examples
 get_FV_overview.DataSet <- function(ds, ...) {
   data <- ds$FV
   runs <- ncol(data)
@@ -541,7 +530,6 @@ get_FV_overview.DataSet <- function(ds, ...) {
 #' number of runs and available budget for the DataSet
 #' @export
 #'
-#' @examples
 get_RT_overview.DataSet <- function(ds, ...) {
   data <- ds$RT
   runs <- ncol(data)
@@ -569,7 +557,6 @@ get_RT_overview.DataSet <- function(ds, ...) {
 #' function value
 #' @export
 #'
-#' @examples
 get_RT_summary.DataSet <- function(ds, ftarget, ...) {
   data <- ds$RT
   maxRT <- attr(ds, 'maxRT')
@@ -630,7 +617,6 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
 #' function value
 #' @export
 #'
-#' @examples
 get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide', ...) {
   data <- ds$RT
   N <- ncol(data)
@@ -673,7 +659,6 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide', ...) {
 #' target runtime value
 #' @export
 #'
-#' @examples
 get_FV_summary.DataSet <- function(ds, runtime, ...) {
   data <- ds$FV
   NC <- ncol(data)
@@ -712,7 +697,6 @@ get_FV_summary.DataSet <- function(ds, runtime, ...) {
 #' target runtime
 #' @export
 #'
-#' @examples
 get_FV_sample.DataSet <- function(ds, runtime, output = 'wide', ...) {
   data <- ds$FV
   N <- ncol(data)
@@ -749,7 +733,6 @@ get_FV_sample.DataSet <- function(ds, runtime, output = 'wide', ...) {
 #' @return a character list of paramter names, if recorded in the data set
 #' @export
 #'
-#' @examples
 get_PAR_name.DataSet <- function(ds) {
   name <- names(ds)
   name[!(name %in% c('RT', 'RT.summary', 'FV'))]
@@ -766,7 +749,6 @@ get_PAR_name.DataSet <- function(ds) {
 #' at each given target value
 #' @export
 #'
-#' @examples
 get_PAR_summary.DataSet <- function(ds, ftarget, parId = 'all', ...) {
   FValues <- rownames(ds$RT) %>% as.numeric
   idx <- seq_along(FValues)
@@ -817,7 +799,6 @@ get_PAR_summary.DataSet <- function(ds, ftarget, parId = 'all', ...) {
 #' @return A data.table object containing parameter values aligned at each given target value
 #' @export
 #'
-#' @examples
 get_PAR_sample.DataSet <- function(ds, ftarget, parId = 'all', output = 'wide', ...) {
   N <- length(attr(ds, 'instance'))
   FValues <- rownames(ds$RT) %>% as.numeric

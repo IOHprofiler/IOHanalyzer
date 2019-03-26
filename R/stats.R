@@ -8,7 +8,6 @@
 #' @return A list containing ERTs, number of succesfull runs and the succes rate
 #' @export
 #'
-#' @examples
 SP <- function(data, max_runtime) {
   N <- ncol(data)
   succ <- apply(data, 1, function(x) sum(!is.na(x)))
@@ -38,7 +37,6 @@ SP <- function(data, max_runtime) {
 #' @return A sequence of function values
 #' @export
 #'
-#' @examples
 seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, scale = NULL) {
   from <- max(from, min(FV))
   to <- min(to, max(FV))
@@ -110,7 +108,6 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
 #' @return A sequence of runtime values
 #' @export
 #'
-#' @examples
 seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
                    scale = 'linear') {
   rev_trans <- function(x) x
@@ -170,7 +167,6 @@ EPMF <- function() {
 #' @return a object of type 'ECDF'
 #' @export
 #'
-#' @examples
 ECDF <- function(ds, ftarget, ...) UseMethod("ECDF", ds)
 
 # TODO: also implement the ecdf functions for function values and parameters
@@ -180,7 +176,6 @@ ECDF <- function(ds, ftarget, ...) UseMethod("ECDF", ds)
 #' @param ftarget A Numerical vector. Function values at which runtime values are consumed
 #' @return a object of type 'ECDF'
 #'
-#' @examples
 ECDF.DataSet <- function(ds, ftarget) {
   runtime <- get_RT_sample(ds, ftarget, output = 'long')$RT
   runtime <- runtime[!is.na(runtime)]
@@ -205,7 +200,6 @@ ECDF.DataSet <- function(ds, ftarget) {
 #' @param funcId Function Ids to use
 #' @return a object of type 'ECDF'
 #'
-#' @examples
 ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
   if (length(dsList) == 0) return(NULL)
 
@@ -243,7 +237,6 @@ ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
 #' @return a object of type 'ECDF'
 #' @export
 #'
-#' @examples
 AUC <- function(fun, from = NULL, to = NULL) UseMethod('AUC', fun)
 
 #' Area Under Curve (Empirical Cumulative Dsitribution Function)
@@ -254,7 +247,6 @@ AUC <- function(fun, from = NULL, to = NULL) UseMethod('AUC', fun)
 #'
 #' @return a object of type 'ECDF'
 #'
-#' @examples
 AUC.ECDF <- function(fun, from = NULL, to = NULL) {
   if (is.null(from))
     from <- attr(fun, 'min')
@@ -288,7 +280,6 @@ AUC.ECDF <- function(fun, from = NULL, to = NULL) {
 #' @return a vector of targets
 #' @export
 #'
-#' @examples
 get_default_ECDF_targets <- function(data, format_func = as.integer){
   funcIds <- get_funcId(data)
   dims <- get_DIM(data)

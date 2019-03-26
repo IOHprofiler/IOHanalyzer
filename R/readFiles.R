@@ -21,11 +21,8 @@ sourceCpp('src/read.cc')
 #'
 #' @param df The data to subsample
 #' @param n The amount of samples
-
 #' @return A smaller data.frame
 #' @export
-#'
-#' @examples
 limit.data <- function(df, n) {
   N <- nrow(df)
   if (N > n) {
@@ -40,8 +37,6 @@ limit.data <- function(df, n) {
 #' @param folder The folder containing the .info files
 #' @return The paths to all found .info-files
 #' @export
-#'
-#' @examples
 scan_IndexFile <- function(folder) {
   folder <- trimws(folder)
   file.path(folder, list.files(folder, pattern = '.info', recursive = T))
@@ -54,7 +49,6 @@ scan_IndexFile <- function(folder) {
 #' @return The data contained in the .info file
 #' @export
 #'
-#' @examples
 read_IndexFile <- function(fname) {
   tryCatch(read_IndexFile_IOH(fname),
            warning = function(e) read_IndexFile_BIOBJ_COCO(fname),
@@ -69,7 +63,6 @@ read_IndexFile <- function(fname) {
 #' @return The data contained in the .info file
 #' @export
 #'
-#' @examples
 read_IndexFile_IOH <- function(fname) {
   f <- file(fname, 'r')
   path <- dirname(fname)
@@ -146,7 +139,6 @@ read_IndexFile_IOH <- function(fname) {
 #' @return The data contained in the .info file
 #' @export
 #'
-#' @examples
 read_IndexFile_BIOBJ_COCO <- function(fname) {
   f <- file(fname, 'r')
   path <- dirname(fname)
@@ -233,7 +225,6 @@ read_IndexFile_BIOBJ_COCO <- function(fname) {
 #' @return The format of the data in the given folder. Either 'COCO' or 'IOHprofiler'.
 #' @export
 #'
-#' @examples
 check_format <- function(path) {
   index_files <- scan_IndexFile(path)
   info <- lapply(index_files, read_IndexFile) %>% unlist(recursive = F)
@@ -270,7 +261,6 @@ check_format <- function(path) {
 #' @return A list of data.frames
 #' @export
 #'
-#' @examples
 read_dat <- function(fname, subsampling = FALSE) {
   # TODO: use the same data loading method as in read_COCO_dat
   df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
@@ -314,7 +304,6 @@ read_dat <- function(fname, subsampling = FALSE) {
 #' @return A list of data.frames
 #' @export
 #'
-#' @examples
 read_COCO_dat <- function(fname, subsampling = FALSE) {
   c_read_dat(path.expand(fname), 7, '%')
 }
@@ -381,7 +370,6 @@ n_data_column <- 5
 #' @return Data aligned by runtime
 #' @export
 #'
-#' @examples
 align_runtime <- function(data, format = IOHprofiler) {
   if (format == IOHprofiler) {
     maximization <- TRUE
@@ -477,7 +465,6 @@ align_non_contiguous <- function(data, idx, rownames) {
 #' @return Data aligned by function value
 #' @export
 #'
-#' @examples
 align_function_value <- function(data, include_param = TRUE, format = IOHprofiler) {
   N <- length(data)
   n_column <- sapply(data, ncol) %>% unique

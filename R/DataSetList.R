@@ -43,10 +43,9 @@ load_index <- function(file) {
 #' @param subsampling Logical. Whether *.cdat files are subsampled?
 #' @param print_fun Function used to print output when in verbose mode
 #'
-#' @return
+#' @return A DataSetList object
 #' @export
 #'
-#' @examples
 DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization = TRUE,
                         format = IOHprofiler, subsampling = FALSE) {
   if (is.null(path))
@@ -128,7 +127,6 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
 #' @return A new DataSetList
 #' @export
 #'
-#' @examples
 c.DataSetList <- function(...) {
   # TODO: maybe remove duplicated dataset in the further
   # remove the empty list first
@@ -156,7 +154,6 @@ c.DataSetList <- function(...) {
 #' @return The DataSetList of the DataSets at indices i of DataSetList x
 #' @export
 #'
-#' @examples
 `[.DataSetList` <- function(x, i, drop = FALSE) {
   # remove the attributes firstly
   obj <- unclass(x)[i]
@@ -175,7 +172,6 @@ c.DataSetList <- function(...) {
 #' @param ... Arguments for underlying print function?
 #' @export
 #'
-#' @examples
 print.DataSetList <- function(x, ...) {
   cat('DataSetList:\n')
   for (i in seq_along(x)) {
@@ -194,7 +190,6 @@ print.DataSetList <- function(x, ...) {
 #' @param ... Arguments for underlying summary function?
 #' @export
 #'
-#' @examples
 summary.DataSetList <- function(object, ...) {
   sapply(object, function(d) {
     list(funcId = attr(d, 'funcId'),
@@ -218,7 +213,6 @@ summary.DataSetList <- function(object, ...) {
 #' function value
 #' @export
 #'
-#' @examples
 get_RT_summary.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
@@ -244,7 +238,6 @@ get_RT_summary.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
 #' function value
 #' @export
 #'
-#' @examples
 get_RT_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
@@ -268,7 +261,6 @@ get_RT_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
 #' target runtime value
 #' @export
 #'
-#' @examples
 get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
@@ -292,7 +284,6 @@ get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
 #' values, the number of runs and available budget for the DataSet
 #' @export
 #'
-#' @examples
 get_FV_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
@@ -310,7 +301,6 @@ get_FV_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
 #' @return A data.table containing the algorithm ID, minimum and maximum used evaluations,
 #' number of runs and available budget for the DataSet
 #' @export
-#' @examples
 get_RT_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
@@ -336,7 +326,6 @@ get_RT_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
 #' target runtime
 #' @export
 #'
-#' @examples
 get_FV_sample.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
@@ -360,7 +349,6 @@ get_FV_sample.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
 #' at each given target value
 #' @export
 #'
-#' @examples
 get_PAR_summary.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
@@ -378,7 +366,6 @@ get_PAR_summary.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
 #' @return A data.table object containing parameter values aligned at each given target value
 #' @export
 #'
-#' @examples
 get_PAR_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)

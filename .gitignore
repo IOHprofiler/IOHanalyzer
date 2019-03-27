@@ -10,7 +10,7 @@
 *.html
 .*
 
-
+!/.Rbuildignore
 !/.gitignore
 __pycache__
 rawdata/

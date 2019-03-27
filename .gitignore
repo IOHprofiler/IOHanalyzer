@@ -9,7 +9,7 @@
 *.pdf
 *.html
 .*
-data/
+
 
 !/.gitignore
 __pycache__
@@ -19,7 +19,6 @@ rsconnect/
 tmp/
 tmp2/
 rawdata/
-extract_data.R
 extract_data.R
 .Rproj.user
 *.Rproj

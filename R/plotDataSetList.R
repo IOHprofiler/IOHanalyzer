@@ -802,7 +802,7 @@ plot_RT_HIST.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'){
 plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F){
   req(length(ftargets) != 0)
 
-  N <- length(data)
+  N <- length(dsList)
   colors <- color_palettes(N)
 
   p <- plot_ly_default(title = NULL,
@@ -830,7 +830,7 @@ plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F){
 
       p %<>%
         add_trace(data = NULL, x = rt, y = vals, type = 'scatter',
-                  mode = 'lines', name = algId, showlegend = F,
+                  mode = 'lines', name = algId, showlegend = (i == 1),
                   legendgroup = paste0(k),
                   line = list(color = rgb_str, width = 3))
       # add_trace(data = NULL, x = x, y = y, type = 'scatter',

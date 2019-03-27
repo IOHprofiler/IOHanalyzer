@@ -104,7 +104,7 @@ shinyServer(function(input, output, session) {
       data <- subset(data, algId == input$repository.algId)
 
     DataList$data <- c(DataList$data, data)
-    format <<- attr(data[[1]], 'src')
+    format <<- attr(data[[1]], 'format')
   })
 
   # upload the compressed the data file and uncompress them

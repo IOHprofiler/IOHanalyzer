@@ -5,7 +5,7 @@
 \title{Radarplot of the area under the aggregated ECDF-curve of a DataSetList.}
 \usage{
 \method{plot_FV_AUC}{DataSetList}(dsList, rt_min = NULL, rt_max = NULL,
-  rt_step = NULL, ...)
+  rt_step = NULL)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -15,8 +15,6 @@
 \item{rt_max}{The final runtime}
 
 \item{rt_step}{The spacing between starting and final runtimes}
-
-\item{...}{Arguments passed to other methods}
 }
 \value{
 A radarplot of the area under the aggregated ECDF-curve of the DataSetList

@@ -81,15 +81,14 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
   )
 }
 
-fv_agg_box <- function(width = 12, collapsible = T, collapsed = T) {
-  box(title = HTML('<p style="font-size:120%;">Expected Function value (aggregated)</p>'),
+fv_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed = T) {
+  box(title = HTML('<p style="font-size:120%;">Expected Function values: all functions</p>'),
       width = width, collapsible = collapsible, solidHeader = T,
       status = "primary", collapsed = collapsed,
       sidebarLayout(
         sidebarPanel(
-          width = 3,
-
-          selectInput('FCEPlot.Multi.Algs', label = 'Select the algs to show',
+          width = 2,
+          selectInput('FCEPlot.Multi.Algs', label = 'add more algorithms:',
                       multiple = T, selected = NULL, choices = NULL),
 
           checkboxInput('FCEPlot.Multi.Logx',
@@ -100,14 +99,8 @@ fv_agg_box <- function(width = 12, collapsible = T, collapsed = T) {
                         label = 'scale y axis log10',
                         value = T),
 
-          selectInput('FCEPlot.Multi.Mode', label = 'Select the plotting mode',
-                      choices = c('overlay','subplot'), selected = 'subplot'),
-
-          selectInput('FCEPlot.Multi.Aggregator', label = 'Create plot for all?',
-                      choices = c('Functions','Dimensions'), selected = 'Functions'),
-
-          actionButton('FCEPlot.Multi.PlotButton', label = 'Plot the figure'),
-
+          actionButton('FCEPlot.Multi.PlotButton', label = 'refresh the figure'),
+          hr(),
           selectInput('FCEPlot.Multi.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = 'pdf'),
 
@@ -115,10 +108,10 @@ fv_agg_box <- function(width = 12, collapsible = T, collapsed = T) {
         ),
 
         mainPanel(
-          width = 9,
+          width = 10,
           column(
             width = 12, align = "center",
-            plotlyOutput.IOHanalyzer('FCEPlot.Multi.Plot')
+            plotlyOutput.IOHanalyzer('FCEPlot.Multi.Plot', aspect_ratio = 1)
           )
         )
       )

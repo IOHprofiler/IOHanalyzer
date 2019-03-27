@@ -4,12 +4,15 @@
 \alias{plot_FV_HIST}
 \title{Plot histograms of the function values of a DataSetList at a certain target runtime}
 \usage{
-plot_FV_HIST(dsList, ...)
+plot_FV_HIST(dsList, runtime, plot_mode = "overlay")
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
 
-\item{...}{Arguments passed to other methods}
+\item{runtime}{The target runtime}
+
+\item{plot_mode}{How to plot the different hisograms for each algorithm. Can be either
+'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.}
 }
 \value{
 A plot of the histograms of the function values at a the

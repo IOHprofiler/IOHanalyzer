@@ -5,12 +5,14 @@
 \title{Plot the empirical cumulative distriburtion as a function of the target values of
 a DataSetList at certain target runtimes}
 \usage{
-plot_FCE_ECDF_PER_TARGET(dsList, ...)
+plot_FCE_ECDF_PER_TARGET(dsList, runtimes, scale.xlog = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
 
-\item{...}{Arguments passed to other methods}
+\item{runtimes}{The target runtimes}
+
+\item{scale.xlog}{Whether or not to scale the x-axis logaritmically}
 }
 \value{
 A plot of the empirical cumulative distriburtion as a function of

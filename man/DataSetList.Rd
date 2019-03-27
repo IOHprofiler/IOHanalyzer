@@ -21,6 +21,9 @@ the corresponding datafiles to create the DataSetList}
 
 \item{subsampling}{Logical. Whether *.cdat files are subsampled?}
 }
+\value{
+A DataSetList object
+}
 \description{
 Attributes
   funId

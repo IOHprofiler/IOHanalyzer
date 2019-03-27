@@ -4,12 +4,19 @@
 \alias{plot_RT_PMF}
 \title{Plot probablity mass function of the runtimes of a DataSetList at a certain target function value}
 \usage{
-plot_RT_PMF(dsList, ...)
+plot_RT_PMF(dsList, ftarget, show.sample = F, scale.ylog = F,
+  backend = "plotly")
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
 
-\item{...}{Arguments passed to other methods}
+\item{ftarget}{The target function value.}
+
+\item{show.sample}{Whether or not to show the individual runtime samples}
+
+\item{scale.ylog}{Whether or not to scale the y-axis logaritmically}
+
+\item{backend}{Which plotting library to use. Can be 'plotly' or 'ggplot2'}
 }
 \value{
 A plot of the probablity mass function of the runtimes at a the

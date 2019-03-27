@@ -4,12 +4,15 @@
 \alias{plot_RT_HIST}
 \title{Plot histograms of the runtimes of a DataSetList at a certain target function value}
 \usage{
-plot_RT_HIST(dsList, ...)
+plot_RT_HIST(dsList, ftarget, plot_mode = "overlay")
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
 
-\item{...}{Arguments passed to other methods}
+\item{ftarget}{The target function value.}
+
+\item{plot_mode}{How to plot the different hisograms for each algorithm. Can be either
+'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.}
 }
 \value{
 A plot of the histograms of the runtimes at a the

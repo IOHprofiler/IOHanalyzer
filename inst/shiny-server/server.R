@@ -130,7 +130,7 @@ shinyServer(function(input, output, session) {
         info <- files[idx]
 
         if (is.null(info)) return(NULL)
-        
+
         if (basename(info) == info) {
           folder <- Sys.time()  # generate a folder name here
           .exdir <- file.path(exdir, folder)
@@ -162,21 +162,21 @@ shinyServer(function(input, output, session) {
 
     req(length(folder_new) != 0)
     format_detected <- lapply(folder_new, check_format) %>% unique
-    
-    if (length(format_detected) != 1) 
+
+    if (length(format_detected) != 1)
       print_html(paste('<p style="color:red;">more than one format: <br>',
                        format_detected,
                        'is detected in the uploaded data set... skip the uploaded data'))
-    
-    else 
+
+    else
       format <<- format_detected   # set the global data format
 
     for (folder in folder_new) {
       indexFiles <- scan_IndexFile(folder)
-      
+
       if (length(indexFiles) == 0)
-        print_html(paste('<p style="color:red;">format', format_selected, 
-                         'is selected, however', format_detected, 
+        print_html(paste('<p style="color:red;">format', format_selected,
+                         'is selected, however', format_detected,
                          'is detected...<br>using the detected one...</p>'))
       else {
         folderList$data <- c(folderList$data, folder)
@@ -184,12 +184,12 @@ shinyServer(function(input, output, session) {
         if (format_selected == AUTOMATIC) {
           set_format_func(format)
         } else if (format_detected != format) {
-          print_html(paste('<p style="color:red;">format', format_selected, 
-                           'is selected, however', format, 
+          print_html(paste('<p style="color:red;">format', format_selected,
+                           'is selected, however', format,
                            'is detected...<br>using the detected one...</p>'))
         }
 
-        if (maximization == AUTOMATIC) 
+        if (maximization == AUTOMATIC)
           maximization <- ifelse((format == COCO || format == BIBOJ_COCO), FALSE, TRUE)
         else
           maximization <- ifelse((maximization == "MAXIMIZE"), TRUE, FALSE)
@@ -201,7 +201,7 @@ shinyServer(function(input, output, session) {
                    format = format,
                    subsampling = sub_sampling),
           error = function(e) {
-            print_html(paste('<p style="color:red;">The following error happened 
+            print_html(paste('<p style="color:red;">The following error happened
                             when processing the data set:</p>'))
             print_html(paste('<p style="color:red;">', e, '</p>'))
             DataSetList()
@@ -210,7 +210,7 @@ shinyServer(function(input, output, session) {
 
         DataList$data <- c(DataList$data, new_data)
         shinyjs::html("upload_data_promt",
-                      sprintf('%d: %s\n', length(folderList$data), folder), 
+                      sprintf('%d: %s\n', length(folderList$data), folder),
                       add = TRUE)
       }
     }
@@ -241,7 +241,7 @@ shinyServer(function(input, output, session) {
     data <- DataList$data
     if (length(data) == 0)
       return()
-    
+
     # TODO: create reactive values for them
     algIds_ <- get_algId(data)
     algIds <- c(algIds_, 'all')
@@ -343,7 +343,7 @@ shinyServer(function(input, output, session) {
       step <- fseq[3] - fseq[2]
     else
       step <- log10(fseq[3]) - log10(fseq[2])
-    
+
     setTextInput(session, 'RTSummary.Statistics.Min', name, alternative = format_FV(start))
     setTextInput(session, 'RTSummary.Statistics.Max', name, alternative = format_FV(stop))
     setTextInput(session, 'RTSummary.Statistics.Step', name, alternative = format_FV(step))
@@ -416,15 +416,15 @@ shinyServer(function(input, output, session) {
 
   # Data summary for Fixed-Target Runtime (ERT)  --------------
   runtime_summary <- reactive({
-    req(input$RTSummary.Statistics.Min, 
-        input$RTSummary.Statistics.Max, 
+    req(input$RTSummary.Statistics.Min,
+        input$RTSummary.Statistics.Max,
         input$RTSummary.Statistics.Step)
 
     fstart <- format_FV(input$RTSummary.Statistics.Min) %>% as.numeric
     fstop <- format_FV(input$RTSummary.Statistics.Max) %>% as.numeric
     fstep <- format_FV(input$RTSummary.Statistics.Step) %>% as.numeric
     data <- DATA()
-    
+
     req(fstart <= fstop, fstep <= fstop - fstart, data)
     fall <- get_funvals(data)
 
@@ -489,8 +489,8 @@ shinyServer(function(input, output, session) {
   )
 
   get_RT <- reactive({
-    req(input$RTSummary.Sample.Min, 
-        input$RTSummary.Sample.Max, 
+    req(input$RTSummary.Sample.Min,
+        input$RTSummary.Sample.Max,
         input$RTSummary.Sample.Step)
 
     fstart <- format_FV(input$RTSummary.Sample.Min) %>% as.numeric
@@ -556,15 +556,15 @@ shinyServer(function(input, output, session) {
     plot_RT_single_fct(DATA(), Fstart = fstart, Fstop = fstop,
                  show.CI = input$ERTPlot.show.CI, 
                  show.density = input$ERTPlot.show.density,
-                 show.runs = input$ERTPlot.show_all, 
+                 show.runs = input$ERTPlot.show_all,
                  show.optimal = input$ERTPlot.show.best_of_all,
-                 show.pareto = input$ERTPlot.show.pareto_optima, 
+                 show.pareto = input$ERTPlot.show.pareto_optima,
                  show.ERT = input$ERTPlot.show.ERT,
-                 show.mean = input$ERTPlot.show.mean, 
+                 show.mean = input$ERTPlot.show.mean,
                  show.median = input$ERTPlot.show.median,
-                 scale.xlog = input$ERTPlot.semilogx, 
+                 scale.xlog = input$ERTPlot.semilogx,
                  scale.ylog = input$ERTPlot.semilogy,
-                 show.grad = input$ERTPlot.show.grad, 
+                 show.grad = input$ERTPlot.show.grad,
                  show.intensity = input$ERTPlot.show.intensity,
                  scale.reverse = (format == COCO || format == BIBOJ_COCO))
   })
@@ -579,10 +579,10 @@ shinyServer(function(input, output, session) {
                    algId %in% input$ERTPlot.Multi.Algs, 
                    DIM == input$Overall.Dim)
     req(data)
-    
-    plot_RT_all_fcts(data, 
-                     xscale = ifelse(input$ERTPlot.Multi.Logx, 'log', 'linear'),
-                     yscale = ifelse(input$ERTPlot.Multi.Logy, 'log', 'linear'),
+
+    plot_RT_all_fcts(data,
+                     scale.xlog = input$ERTPlot.Multi.Logx,
+                     scale.ylog = input$ERTPlot.Multi.Logy,
                      scale.reverse = (format == COCO || format == BIBOJ_COCO))
   })
 
@@ -672,6 +672,7 @@ shinyServer(function(input, output, session) {
 
   # historgram of the running time
   output$RT_HIST <- renderPlotly({
+    req(input$RTPMF.Bar.Target)
     render_RT_HIST()
   })
 
@@ -697,6 +698,7 @@ shinyServer(function(input, output, session) {
   })
 
   output$RT_ECDF_MULT <- renderPlotly({
+    req(length(DATA_UNFILTERED()) > 0)
     render_RT_ECDF_MULT()
   })
 
@@ -738,6 +740,7 @@ shinyServer(function(input, output, session) {
   })
 
   output$RT_GRID_GENERATED <- renderTable({
+    req(length(DATA_UNFILTERED()) > 0)
     df <- RT_ECDF_MULTI_TABLE()
     df$funcId <- as.integer(df$funcId)
     df
@@ -987,6 +990,7 @@ shinyServer(function(input, output, session) {
 
   # Expected Target Value Convergence
   output$FCE_PER_FUN <- renderPlotly({
+    req(input$FCEPlot.Min, input$FCEPlot.Max)
     render_FV_PER_FUN()
   })
 
@@ -1018,19 +1022,16 @@ shinyServer(function(input, output, session) {
     render_FCEPlot_multi_plot()
   )
 
+  render_FCEPlot_multi_plot <- eventReactive(input$FCEPlot.Multi.PlotButton, {
+    req(input$FCEPlot.Multi.Algs)
+    data <- subset(DATA_UNFILTERED(),
+                   algId %in% input$FCEPlot.Multi.Algs,
+                   DIM == input$Overall.Dim)
+    req(data)
 
-
-  render_FCEPlot_multi_plot <- reactive({
-    req(input$FCEPlot.Multi.PlotButton)
-    data <- DATA_RAW()
-    data <- subset(data, algId %in% input$FCEPlot.Multi.Algs)
-    if(length(data) == 0) return(NULL)
-    if(input$FCEPlot.Multi.Aggregator == 'Functions') data <- subset(data, DIM==input$Overall.Dim)
-    else data <- subset(data, funcId==input$Overall.Funcid)
-    plot_FCE_MULTI(data, plot_mode = input$FCEPlot.Multi.Mode,
-                   scale.xlog = input$FCEPlot.Multi.Logx, scale.ylog = input$FCEPlot.Multi.Logy,
-                   aggr_on = ifelse(input$FCEPlot.Multi.Aggregator == 'Functions', 'funcId', 'DIM'))
-
+    plot_FV_all_fcts(data,
+                     scale.xlog = input$FCEPlot.Multi.Logx,
+                     scale.ylog = input$FCEPlot.Multi.Logy)
   })
 
   output$FCEPlot.Multi.Download <- downloadHandler(
@@ -1250,12 +1251,17 @@ shinyServer(function(input, output, session) {
 
     f_min <- format_FV(input$PAR.Plot.Min) %>% as.numeric
     f_max <- format_FV(input$PAR.Plot.Max) %>% as.numeric
-
+    tryCatch(
     plot_PAR_Line(DATA(),f_min,f_max,algids = input$PAR.Plot.Algid,
                   show.mean = (input$PAR.Plot.show.mean == 'mean'),
                   show.median = (input$PAR.Plot.show.mean == 'median'),
                   scale.xlog = input$PAR.Plot.Logx,
-                  scale.ylog = input$PAR.Plot.Logy)
+                  scale.ylog = input$PAR.Plot.Logy),
+      error = function(e) {
+        #TODO: more robust error handling; don't assume this causes the error
+        shinyjs::alert("Not all algorithms contain the same parameters. Please select a single algorithm to plot instead.")
+      }
+    )
   })
 
   output$PAR.Plot.Download <- downloadHandler(

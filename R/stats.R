@@ -1,44 +1,3 @@
-#' @importFrom stats dt ecdf integrate median quantile sd
-#' @importFrom grDevices col2rgb colors nclass.FD
-#' @importFrom graphics hist
-#' @importFrom utils data head read.csv tail
-#' @importFrom dplyr %>% mutate
-#' @importFrom magrittr set_names set_rownames set_colnames %<>%
-#' @importFrom colorspace sequential_hcl
-#' @importFrom RColorBrewer brewer.pal
-#' @importFrom colorRamps primary.colors
-#' @importFrom data.table as.data.table rbindlist data.table fread := melt
-#' @importFrom plotly add_annotations add_trace orca plot_ly rename_ subplot layout
-#' @importFrom ggplot2 aes geom_jitter geom_line geom_ribbon geom_violin ggplot
-#' @importFrom ggplot2 guides scale_color_manual scale_colour_manual scale_fill_manual
-#' @importFrom ggplot2 scale_x_continuous scale_x_log10
-#' @importFrom shiny req
-#' @importFrom Rcpp sourceCpp
-#' @useDynLib IOHanalyzer
-NULL  # TODO: what is this?
-#Ugly hack, but appears to be required to appease CRAN
-utils::globalVariables(c(".","algId","run","ERT","RT","max_samples",
-                         "DIM", "Fvalue", "lower", "upper", "target", "format",
-                         "runtime", "parId", "instance", "input", "funcId"))
-
-probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
-
-.mean <- function(x) mean(x, na.rm = T)
-.median <- function(x) median(x, na.rm = T)
-.sd <- function(x) sd(x, na.rm = T)
-.sum <- function(x) sum(x, na.rm = T)
-
-D_quantile <- function(x, pct = probs) quantile(x, pct, names = F, type = 3, na.rm = T)
-C_quantile <- function(x, pct = probs) quantile(x, pct, names = F, na.rm = T)
-
-IOHprofiler <- 'IOHprofiler'
-COCO <- 'COCO'
-BIBOJ_COCO <- 'BIBOJ_COCO'
-TWO_COL <- 'TWO_COL'
-AUTOMATIC <- 'AUTOMATIC'
-
-max_samples <- 100
-
 #' Estimator 'SP' for the Expected Running Time (ERT)
 #'
 #' @param data A dataframe or matrix
@@ -47,7 +6,6 @@ max_samples <- 100
 #' @return A list containing ERTs, number of succesfull runs and the succes rate
 #' @export
 #'
-#' @examples
 SP <- function(data, max_runtime) {
   N <- ncol(data)
   succ <- apply(data, 1, function(x) sum(!is.na(x)))
@@ -77,7 +35,6 @@ SP <- function(data, max_runtime) {
 #' @return A sequence of function values
 #' @export
 #'
-#' @examples
 seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, scale = NULL) {
   from <- max(from, min(FV))
   to <- min(to, max(FV))
@@ -149,7 +106,6 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
 #' @return A sequence of runtime values
 #' @export
 #'
-#' @examples
 seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
                    scale = 'linear') {
   rev_trans <- function(x) x
@@ -209,7 +165,6 @@ EPMF <- function() {
 #' @return a object of type 'ECDF'
 #' @export
 #'
-#' @examples
 ECDF <- function(ds, ftarget, ...) UseMethod("ECDF", ds)
 
 # TODO: also implement the ecdf functions for function values and parameters
@@ -219,7 +174,6 @@ ECDF <- function(ds, ftarget, ...) UseMethod("ECDF", ds)
 #' @param ftarget A Numerical vector. Function values at which runtime values are consumed
 #' @return a object of type 'ECDF'
 #'
-#' @examples
 ECDF.DataSet <- function(ds, ftarget) {
   runtime <- get_RT_sample(ds, ftarget, output = 'long')$RT
   runtime <- runtime[!is.na(runtime)]
@@ -244,7 +198,6 @@ ECDF.DataSet <- function(ds, ftarget) {
 #' @param funcId Function Ids to use
 #' @return a object of type 'ECDF'
 #'
-#' @examples
 ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
   if (length(dsList) == 0) return(NULL)
 
@@ -282,7 +235,6 @@ ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
 #' @return a object of type 'ECDF'
 #' @export
 #'
-#' @examples
 AUC <- function(fun, from = NULL, to = NULL) UseMethod('AUC', fun)
 
 #' Area Under Curve (Empirical Cumulative Dsitribution Function)
@@ -293,7 +245,6 @@ AUC <- function(fun, from = NULL, to = NULL) UseMethod('AUC', fun)
 #'
 #' @return a object of type 'ECDF'
 #'
-#' @examples
 AUC.ECDF <- function(fun, from = NULL, to = NULL) {
   if (is.null(from))
     from <- attr(fun, 'min')
@@ -316,7 +267,6 @@ AUC.ECDF <- function(fun, from = NULL, to = NULL) {
 #' @return a vector of targets
 #' @export
 #'
-#' @examples
 get_default_ECDF_targets <- function(data, format_func = as.integer){
   funcIds <- get_funcId(data)
   dims <- get_dim(data)

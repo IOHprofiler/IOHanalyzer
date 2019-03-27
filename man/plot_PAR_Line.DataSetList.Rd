@@ -6,7 +6,7 @@
 \usage{
 \method{plot_PAR_Line}{DataSetList}(dsList, f_min = NULL, f_max = NULL,
   algids = "all", scale.xlog = F, scale.ylog = F, show.mean = T,
-  show.median = F, ...)
+  show.median = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -24,8 +24,6 @@
 \item{show.mean}{Whether or not to show the mean parameter values}
 
 \item{show.median}{Whether or not to show the median parameter values}
-
-\item{...}{Arguments passed to other methods}
 }
 \value{
 A plot of for every recorded parameter in the DataSetList

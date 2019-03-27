@@ -9,7 +9,37 @@ plot_RT_single_fct(dsList, ...)
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
 
-\item{...}{Arguments passed to other methods}
+\item{Fstart}{The starting function value.}
+
+\item{Fstop}{The final function value.}
+
+\item{show.ERT}{Whether or not to show the ERT-values}
+
+\item{show.CI}{Whether or not to show the standard deviations}
+
+\item{show.mean}{Whether or not to show the mean hitting times}
+
+\item{show.runs}{Whether or not to show the individual runs}
+
+\item{show.density}{Percentage of individual runs to show when show.runs is true}
+
+\item{show.grad}{Whether or not to show the run intensity}
+
+\item{show.intensity}{Intensity to use when using show.grad}
+
+\item{show.pareto}{Whether or not to show the pareto-optimal run}
+
+\item{show.optimal}{Whether or not to show the optimal run}
+
+\item{show.median}{Whether or not to show the median hitting times}
+
+\item{backend}{Which plotting library to use. Can be 'plotly' or 'ggplot2'}
+
+\item{scale.xlog}{Whether or not to scale the x-axis logaritmically}
+
+\item{scale.ylog}{Whether or not to scale the y-axis logaritmically}
+
+\item{scale.reverse}{Wheter or not to reverse the x-axis (when using minimization)}
 }
 \value{
 A plot of ERT-values of the DataSetList

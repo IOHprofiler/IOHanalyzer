@@ -5,12 +5,21 @@
 \title{Plot the aggregated empirical cumulative distriburtion as a function of the function values of
 a DataSetList.}
 \usage{
-plot_FV_ECDF_AGGR(dsList, ...)
+plot_FV_ECDF_AGGR(dsList, rt_min = NULL, rt_max = NULL,
+  rt_step = NULL, scale.xlog = F, show.per_target = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
 
-\item{...}{Arguments passed to other methods}
+\item{rt_min}{The starting runtime}
+
+\item{rt_max}{The final runtime}
+
+\item{rt_step}{The spacing between starting and final runtimes}
+
+\item{scale.xlog}{Whether or not to scale the x-axis logaritmically}
+
+\item{show.per_target}{Whether or not to show the individual ECDF-curves for each runtime}
 }
 \value{
 A plot of the empirical cumulative distriburtion as a function of

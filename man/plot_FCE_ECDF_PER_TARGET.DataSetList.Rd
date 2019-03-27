@@ -6,7 +6,7 @@
 a DataSetList at certain target runtimes}
 \usage{
 \method{plot_FCE_ECDF_PER_TARGET}{DataSetList}(dsList, runtimes,
-  scale.xlog = F, ...)
+  scale.xlog = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -14,8 +14,6 @@ a DataSetList at certain target runtimes}
 \item{runtimes}{The target runtimes}
 
 \item{scale.xlog}{Whether or not to scale the x-axis logaritmically}
-
-\item{...}{Arguments passed to other methods}
 }
 \value{
 A plot of the empirical cumulative distriburtion as a function of

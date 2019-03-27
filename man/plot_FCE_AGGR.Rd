@@ -4,12 +4,26 @@
 \alias{plot_FCE_AGGR}
 \title{Plot expected function value-based comparison over multiple functions or dimensions}
 \usage{
-plot_FCE_AGGR(dsList, ...)
+plot_FCE_AGGR(dsList, aggr_on = "funcId", runtimes = NULL,
+  plot_mode = "radar", use_rank = F, scale.ylog = T, fvs = NULL)
 }
 \arguments{
-\item{dsList}{A DataSetList (should consist of only one function and dimension).}
+\item{dsList}{A DataSetList (should consist of only one function OR dimension).}
 
-\item{...}{Arguments passed to other methods}
+\item{aggr_on}{Whether to compare on functions ('funcId') or dimensions ('DIM')}
+
+\item{runtimes}{Custom list of function-value targets, one for each function or dimension.}
+
+\item{plot_mode}{How the plots should be created. Can be 'line' or 'radar'}
+
+\item{use_rank}{Wheter to use a ranking system. If False, the actual expected function-
+values will be used.}
+
+\item{scale.ylog}{Whether or not to scale the y-axis logaritmically}
+
+\item{fvs}{Pre-calculated expected function-values for the provided runtimes Created by the
+max_ERTs function of DataSetList. Can be provided to prevent needless computation
+in recalculating ERTs when recreating this plot.}
 }
 \value{
 A plot of expected function value-based comparison on the provided functions

@@ -698,7 +698,7 @@ shinyServer(function(input, output, session) {
   })
 
   output$RT_ECDF_MULT <- renderPlotly({
-    req(length(DATA_UNFILTERED()) > 0)
+    req(length(DATA_RAW()) > 0)
     render_RT_ECDF_MULT()
   })
 
@@ -740,7 +740,7 @@ shinyServer(function(input, output, session) {
   })
 
   output$RT_GRID_GENERATED <- renderTable({
-    req(length(DATA_UNFILTERED()) > 0)
+    req(length(DATA_RAW()) > 0)
     df <- RT_ECDF_MULTI_TABLE()
     df$funcId <- as.integer(df$funcId)
     df
@@ -815,7 +815,6 @@ shinyServer(function(input, output, session) {
     fstart <- format_FV(input$RTECDF.Multi.Min) %>% as.numeric
     fstop <- format_FV(input$RTECDF.Multi.Max) %>% as.numeric
     fstep <- format_FV(input$RTECDF.Multi.Step) %>% as.numeric
-
 
     plot_RT_ECDF_AGGR(
       DATA(), fstart, fstop, fstep,
@@ -1024,7 +1023,7 @@ shinyServer(function(input, output, session) {
 
   render_FCEPlot_multi_plot <- eventReactive(input$FCEPlot.Multi.PlotButton, {
     req(input$FCEPlot.Multi.Algs)
-    data <- subset(DATA_UNFILTERED(),
+    data <- subset(DATA_RAW(),
                    algId %in% input$FCEPlot.Multi.Algs,
                    DIM == input$Overall.Dim)
     req(data)

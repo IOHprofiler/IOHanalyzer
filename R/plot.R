@@ -38,7 +38,9 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
            titlefont = list(size = 13, family = 'Old Standard TT, serif'),
            autosize = T,
            showlegend = T, 
-           xaxis = list(title = list(text = x.title, font = f3),
+           xaxis = list(
+                        # title = list(text = x.title, font = f3),
+                        title = x.title,
                         gridcolor = 'rgb(255,255,255)',
                         showgrid = TRUE,
                         showline = FALSE,
@@ -49,7 +51,9 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickfont = f2,
                         exponentformat = 'E',
                         zeroline = F),
-           yaxis = list(title = list(text = y.title, font = f3),
+           yaxis = list(
+                        # title = list(text = y.title, font = f3),
+                        title = y.title,
                         gridcolor = 'rgb(255,255,255)',
                         showgrid = TRUE,
                         showline = FALSE,

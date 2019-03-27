@@ -836,7 +836,7 @@ plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F){
         add_trace(data = NULL, x = rt, y = vals, type = 'scatter',
                   mode = 'lines', name = algId, showlegend = (i == 1),
                   legendgroup = paste0(k),
-                  line = list(color = rgb_str, width = 3))
+                  line = list(color = rgb_str, width = 2))
       # add_trace(data = NULL, x = x, y = y, type = 'scatter',
       #           mode = 'markers',  legendgroup = paste0(k),
       #           name = sprintf('(%s, %.2e)', algId, ftargets[i]),
@@ -916,8 +916,8 @@ plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
       add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
                 mode = 'lines+markers', name = sprintf('%s', algId),
                 showlegend = T, legendgroup = paste0(k),
-                line = list(color = rgb_str, width = 4.5),
-                marker = list(color = rgb_str, size = 11))
+                line = list(color = rgb_str, width = 2),
+                marker = list(color = rgb_str, size = 9))
 
     if (show.per_target) {
       for (f in fseq) {

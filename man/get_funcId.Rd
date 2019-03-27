@@ -4,10 +4,10 @@
 \alias{get_funcId}
 \title{Get all function ids present in a DataSetList}
 \usage{
-get_funcId(data)
+get_funcId(dsList)
 }
 \arguments{
-\item{data}{The DataSetLsit}
+\item{dsList}{The DataSetLsit}
 }
 \value{
 A sorted list of all unique function ids which occur in the DataSetList

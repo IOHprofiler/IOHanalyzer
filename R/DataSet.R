@@ -396,7 +396,6 @@ plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
 #' function value
 #' @export
 #'
-#' @examples
 get_ERT <- function(ds, ...) UseMethod("get_ERT", ds)
 #' Get RunTime Sample
 #'
@@ -561,7 +560,6 @@ get_RT_overview.DataSet <- function(ds, ...) {
 #' function value
 #' @export
 #'
-#' @examples
 get_ERT.DataSet <- function(ds, ftarget) {
   data <- ds$RT
   maxRT <- attr(ds, 'maxRT')

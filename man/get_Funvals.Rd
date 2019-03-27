@@ -4,10 +4,10 @@
 \alias{get_funvals}
 \title{Get all function values present in a DataSetList}
 \usage{
-get_funvals(data)
+get_funvals(dsList)
 }
 \arguments{
-\item{data}{The DataSetLsit}
+\item{dsList}{The DataSetLsit}
 }
 \value{
 A list matrices of all function values which occur in the DataSetList

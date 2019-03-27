@@ -4,10 +4,10 @@
 \alias{get_dim}
 \title{Get all dimensions present in a DataSetList}
 \usage{
-get_dim(data)
+get_dim(dsList)
 }
 \arguments{
-\item{data}{The DataSetLsit}
+\item{dsList}{The DataSetLsit}
 }
 \value{
 A sorted list of all unique dimensions which occur in the DataSetList

@@ -4,10 +4,10 @@
 \alias{get_parId}
 \title{Get all parameter ids present in a DataSetList}
 \usage{
-get_parId(data)
+get_parId(dsList)
 }
 \arguments{
-\item{data}{The DataSetLsit}
+\item{dsList}{The DataSetLsit}
 }
 \value{
 A sorted list of all unique parameter ids which occur in the DataSetList

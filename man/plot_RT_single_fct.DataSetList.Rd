@@ -4,12 +4,12 @@
 \alias{plot_RT_single_fct.DataSetList}
 \title{Plot lineplot of the ERTs of a DataSetList}
 \usage{
-\method{plot_RT_single_fct}{DataSetList}(dsList, Fstart = NULL, Fstop = NULL,
-  show.ERT = T, show.CI = T, show.mean = F, show.runs = F,
-  show.density = 50, show.grad = F, show.intensity = 0,
-  show.pareto = F, show.optimal = F, show.median = F,
-  backend = "plotly", scale.xlog = F, scale.ylog = F,
-  scale.reverse = F)
+\method{plot_RT_single_fct}{DataSetList}(dsList, Fstart = NULL,
+  Fstop = NULL, show.ERT = T, show.CI = T, show.mean = F,
+  show.runs = F, show.density = 50, show.grad = F,
+  show.intensity = 0, show.pareto = F, show.optimal = F,
+  show.median = F, backend = "plotly", scale.xlog = F,
+  scale.ylog = F, scale.reverse = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

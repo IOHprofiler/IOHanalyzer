@@ -206,7 +206,6 @@ summary.DataSetList <- function(object, ...) {
 #' function value
 #' @export
 #'
-#' @examples
 get_ERT.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
@@ -455,25 +454,25 @@ get_runtimes <- function(dsList) {
     as.numeric %>% unique %>% sort
 }
 
-#' Get the best function value reached in a DataSetList
-#'
-#' @param dsList The DataSetLsit
-#'
-#' @return A list matrices of all runtime values which occur in the DataSetList
-#' @export
-get_best_targets <- function(dsList, by = 'funcId', maximize = T) {
-  targets <- c()
-  funcIds <- get_funcId(dsList)
+# #' Get the best function value reached in a DataSetList
+# #'
+# #' @param dsList The DataSetLsit
+# #'
+# #' @return A list matrices of all runtime values which occur in the DataSetList
+# #' @export
+# get_best_targets <- function(dsList, by = 'funcId', maximize = T) {
+#   targets <- c()
+#   funcIds <- get_funcId(dsList)
   
-  for (i in seq_along(aggr_attr)) {
-    data <- subset(dsList, funcId == funcIds[i])
+#   for (i in seq_along(aggr_attr)) {
+#     data <- subset(dsList, funcId == funcIds[i])
     
-    Fall <- get_funvals(data)
-    Fval <- ifelse(maximize, max(Fall), min(Fall))
-    targets <- c(targets, Fval)
-  }
-  targets
-}
+#     Fall <- get_funvals(data)
+#     Fval <- ifelse(maximize, max(Fall), min(Fall))
+#     targets <- c(targets, Fval)
+#   }
+#   targets
+# }
 
 #' Filter a DataSetList by some criterium
 #'

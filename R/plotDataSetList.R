@@ -62,7 +62,6 @@ grad_functions <- c(
 #' @return A plot of ERT-values of the DataSetList
 #' @export
 #'
-#' @examples
 plot_RT_single_fct <- function(dsList, Fstart = NULL, Fstop = NULL,
                          show.ERT = T, show.CI = T, show.mean = F,
                          show.runs = F, show.density = 50,
@@ -277,7 +276,6 @@ plot_FV_all_fcts <- function(dsList, scale.xlog = F,
 #' @return A plot of ERT-values of the DataSetList
 #' @export
 #'
-#' @examples
 plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                            show.ERT = T, show.CI = T, show.mean = F,
                                            show.runs = F, show.density = 50,
@@ -867,7 +865,7 @@ plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F){
 #'
 plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
                                           fstep = NULL, show.per_target = F,
-                                          scale.xlog = F, ...){
+                                          scale.xlog = F) {
   fall <- get_funvals(dsList)
   if (is.null(fstart)) fstart <- min(fall)
   if (is.null(fstop)) fstop <- max(fall)
@@ -957,7 +955,7 @@ plot_RT_ECDF_AGGR.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
 #'
 plot_RT_AUC.DataSetList <- function(dsList, fstart = NULL,
                                     fstop = NULL, fstep = NULL,
-                                    fval_formatter = as.integer, ...){
+                                    fval_formatter = as.integer) {
   fall <- get_funvals(dsList)
   if (is.null(fstart)) fstart <- min(fall)
   if (is.null(fstop)) fstop <- max(fall)
@@ -1279,8 +1277,7 @@ plot_FV_ECDF_AGGR.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
 #' @export
 #'
-plot_FV_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
-                                    rt_step = NULL, ...){
+plot_FV_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, rt_step = NULL) {
   rt <- get_runtimes(dsList)
   if(is.null(rt_min)) rt_min <- min(rt)
   if(is.null(rt_max)) rt_max <- max(rt)

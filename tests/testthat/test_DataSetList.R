@@ -40,6 +40,6 @@ test_that("Validate overview, summary and sample functions",{
   expect_equal(get_FV_sample(dsl[1],12)$"run.5",13)
   expect_equal(get_RT_sample(dsl[[1]],12)$"run.5",10)
   expect_equal(get_RT_sample(dsl[1],12)$"run.5",10)
-  expect_equal(min(get_Funvals(dsl[1])),5)
-  expect_equal(min(get_Runtimes(dsl[1])),1)
+  expect_equal(min(get_funvals(dsl[1])),5)
+  expect_equal(min(get_runtimes(dsl[1])),1)
 })

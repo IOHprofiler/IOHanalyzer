@@ -4,10 +4,10 @@
 \alias{get_algId}
 \title{Get all algorithm ids present in a DataSetList}
 \usage{
-get_algId(data)
+get_algId(dsList)
 }
 \arguments{
-\item{data}{The DataSetLsit}
+\item{dsList}{The DataSetLsit}
 }
 \value{
 A sorted list of all unique algorithm ids which occur in the DataSetList

@@ -1,9 +1,9 @@
 context("Basic DataSetList functionality")
 
-# test_that("Can DataSetLists be loaded?",{
-#   expect_true(any(match(class(dsl), "DataSetList")))
-#   expect_true(any(match(class(dsl[[1]]), "DataSet")))
-# })
+test_that("Can DataSetLists be loaded?",{
+  expect_true(any(match(class(dsl), "DataSetList")))
+  expect_true(any(match(class(dsl[[1]]), "DataSet")))
+})
 
 test_that("Validate reading of files",{
   path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
@@ -28,18 +28,18 @@ test_that("Validate reading of files",{
 })
 
 test_that("Validate overview, summary and sample functions",{
-  # expect_equal(get_FV_summary(dsl[1], 400)$"98%", 458)
-  # expect_equal(get_FV_summary(dsl[[1]], 400)$"98%", 458)
-  # expect_equal(get_RT_summary(dsl[1], 400)$"98%", 263)
-  # expect_equal(get_RT_summary(dsl[[1]], 400)$"98%", 263)
-  # expect_equal(get_FV_overview(dsl[1])$"Mean reached value", 625)
-  # expect_equal(get_FV_overview(dsl[[1]])$"Mean reached value", 625)
-  # expect_equal(get_RT_overview(dsl[[1]])$"Number of runs", 11)
-  # expect_equal(get_RT_overview(dsl[1])$"Number of runs", 11)
-  # expect_equal(get_FV_sample(dsl[[1]],400)$"run.5",215)
-  # expect_equal(get_FV_sample(dsl[1],400)$"run.5",215)
-  # expect_equal(get_FV_sample(dsl[[1]],400)$"run.5",454)
-  # expect_equal(get_FV_sample(dsl[1],400)$"run.5",454)
-  # expect_equal(min(get_Funvals(dsl[1])),295)
-  # expect_equal(min(get_Runtimes(dsl[1])),1)
+  expect_equal(get_FV_summary(dsl[1], 12)$"98%", 14)
+  expect_equal(get_FV_summary(dsl[[1]], 12)$"98%", 14)
+  expect_equal(get_RT_summary(dsl[1], 12)$"98%", 21)
+  expect_equal(get_RT_summary(dsl[[1]], 12)$"98%", 21)
+  expect_equal(get_FV_overview(dsl[1])$"mean reached f(x)", 16)
+  expect_equal(get_FV_overview(dsl[[1]])$"mean reached f(x)", 16)
+  expect_equal(get_RT_overview(dsl[[1]])$"runs", 11)
+  expect_equal(get_RT_overview(dsl[1])$"runs", 11)
+  expect_equal(get_FV_sample(dsl[[1]],12)$"run.5",13)
+  expect_equal(get_FV_sample(dsl[1],12)$"run.5",13)
+  expect_equal(get_RT_sample(dsl[[1]],12)$"run.5",10)
+  expect_equal(get_RT_sample(dsl[1],12)$"run.5",10)
+  expect_equal(min(get_Funvals(dsl[1])),5)
+  expect_equal(min(get_Runtimes(dsl[1])),1)
 })

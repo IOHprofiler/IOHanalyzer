@@ -6,15 +6,15 @@
 # Email: wangronin@gmail.com
 format <- NULL         # the unique format of the data set
 sub_sampling <- TRUE   # perform sub-sampling of the data set?
-repo_dir <- ''         # repository directory  
-repo_data <- NULL      # repository data  
+repo_dir <- ''         # repository directory
+repo_data <- NULL      # repository data
 
 # Formatter for function values
 format_FV <- function(v) format(v, digits = 2, nsmall = 2)
 format_RT <- function(v) as.integer(v)
 
 # directory where data are extracted from the zip file
-exdir <- file.path(Sys.getenv('HOME'), 'data')
+exdir <- file.path(tempdir(check = T), 'data')
 
 setTextInput <- function(session, id, name, alternative) {
   v <- REG[[id]]
@@ -45,10 +45,10 @@ get_data_id <- function(dsList) {
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
-  
+
   # clean up the temporarsy files on server when exiting
   session$onSessionEnded(function() {
-    close_connection()
+    # close_connection()
     unlink(exdir, recursive = T)
   })
 
@@ -65,13 +65,13 @@ shinyServer(function(input, output, session) {
   observe({
     repo_dir <<- get_repo_location()
     rds_files <- list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
-    
+
     if (length(rds_files) != 0) {
       updateSelectInput(session, 'repository.dataset', choices = rds_files, selected = NULL)
     } else { # TODO: the alert msg should be updated
-      shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository, 
-                      please create a folder called 'repository' in your home directory 
-                      and make sure it contains the '2019gecco.rds'-file 
+      shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository,
+                      please create a folder called 'repository' in your home directory
+                      and make sure it contains the '2019gecco.rds'-file
                       provided on the IOHProfiler github-page.")
     }
   })
@@ -79,14 +79,14 @@ shinyServer(function(input, output, session) {
   # load repository that is selected
   observeEvent(input$repository.dataset, {
     req(input$repository.dataset)
-    
+
     rds_file <- file.path(repo_dir, paste0(input$repository.dataset, ".rds"))
     repo_data <<- readRDS(rds_file)
-    
+
     algIds <- c(get_algId(repo_data), 'all')
     dims <- c(get_dim(repo_data), 'all')
     funcIds <- c(get_funcId(repo_data), 'all')
-    
+
     updateSelectInput(session, 'repository.algId', choices = algIds, selected = 'all')
     updateSelectInput(session, 'repository.dim', choices = dims, selected = 'all')
     updateSelectInput(session, 'repository.funcId', choices = funcIds, selected = 'all')
@@ -152,7 +152,7 @@ shinyServer(function(input, output, session) {
     folders <- selected_folders()
     format_selected <- input$upload.data_format
     maximization <- input$upload.maximization
-    
+
     req(length(folders) != 0)
 
     if (length(folderList$data) == 0)
@@ -248,7 +248,7 @@ shinyServer(function(input, output, session) {
     parIds <- c(get_parId(data), 'all')
     funcIds <- get_funcId(data)
     DIMs <- get_dim(data)
-    
+
     updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = DIMs[1])
     updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = funcIds[1])
     updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algIds, selected = 'all')
@@ -552,9 +552,9 @@ shinyServer(function(input, output, session) {
     req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
     fstart <- input$ERTPlot.Min %>% as.numeric
     fstop <- input$ERTPlot.Max %>% as.numeric
-    
+
     plot_RT_single_fct(DATA(), Fstart = fstart, Fstop = fstop,
-                 show.CI = input$ERTPlot.show.CI, 
+                 show.CI = input$ERTPlot.show.CI,
                  show.density = input$ERTPlot.show.density,
                  show.runs = input$ERTPlot.show_all,
                  show.optimal = input$ERTPlot.show.best_of_all,
@@ -575,8 +575,8 @@ shinyServer(function(input, output, session) {
 
   render_ERTPlot_multi_plot <- eventReactive(input$ERTPlot.Multi.PlotButton, {
     req(input$ERTPlot.Multi.Algs)
-    data <- subset(DATA_RAW(), 
-                   algId %in% input$ERTPlot.Multi.Algs, 
+    data <- subset(DATA_RAW(),
+                   algId %in% input$ERTPlot.Multi.Algs,
                    DIM == input$Overall.Dim)
     req(data)
 
@@ -601,7 +601,7 @@ shinyServer(function(input, output, session) {
   output$ERTPlot.Aggr.Plot <- renderPlotly(
     render_ERTPlot_aggr_plot()
   )
-  
+
    get_max_targets <- function(data, aggr_on, maximize){
     targets <- c()
     aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_DIM(data)

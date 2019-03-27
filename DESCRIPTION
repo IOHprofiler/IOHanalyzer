@@ -2,10 +2,10 @@ Package: IOHanalyzer
 Type: Package
 Title: Data Analysis Part of IOHprofiler
 Version: 0.1.0
-Author: Hao Wang [cre], Diederick Vermetten [aut], Carola Doerr [aut], Thomas Bäck [aut]
+Author: Hao Wang [cre, aut], Diederick Vermetten [aut], Carola Doerr [aut], Thomas Bäck [aut]
 Maintainer: Hao Wang <h.wang@liacs.leidenuniv.nl>
 Authors@R: c(
-    person("Hao", "Wang", email = "h.wang@liacs.leidenuniv.nl", role = "cre"),
+    person("Hao", "Wang", email = "h.wang@liacs.leidenuniv.nl", role = c("cre","aut")),
     person("Diederick", "Vermetten", email="d.vermetten@gmail.com", role = "aut"),
     person("Carola", "Doerr", email = "Carola.Doerr@mpi-inf.mpg.de", role = "aut"),
     person("Thomas", "Bäck", email="t.h.w.baeck@liacs.leidenuniv.nl", role = "aut"))
@@ -43,3 +43,4 @@ RoxygenNote: 6.1.1
 Suggests: 
     testthat
 Depends: R (>= 2.10)
+Data: 2019-03-27

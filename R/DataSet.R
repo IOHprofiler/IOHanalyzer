@@ -5,9 +5,9 @@
 # Email: wangronin@gmail.com
 
 # TODO: do we need to import those here?
-suppressMessages(library(magrittr))
-suppressMessages(library(reshape2))
-suppressMessages(library(data.table))
+# suppressMessages(library(magrittr))
+# suppressMessages(library(reshape2))
+# suppressMessages(library(data.table))
 
 #' Constructor of S3 class 'DataSet'
 #'
@@ -560,7 +560,7 @@ get_RT_overview.DataSet <- function(ds, ...) {
 #' function value
 #' @export
 #'
-get_ERT.DataSet <- function(ds, ftarget) {
+get_ERT.DataSet <- function(ds, ftarget, ...) {
   data <- ds$RT
   maxRT <- attr(ds, 'maxRT')
   algId <- attr(ds, 'algId')

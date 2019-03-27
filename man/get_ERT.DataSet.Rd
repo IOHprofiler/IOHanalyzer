@@ -4,7 +4,7 @@
 \alias{get_ERT.DataSet}
 \title{Get Expected RunTime}
 \usage{
-\method{get_ERT}{DataSet}(ds, ftarget)
+\method{get_ERT}{DataSet}(ds, ftarget, ...)
 }
 \arguments{
 \item{ds}{A DataSet object}

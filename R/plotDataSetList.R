@@ -1617,7 +1617,7 @@ plot_FV_all_fcts.DataSetList <- function(dsList, scale.xlog = F,
   for (i in seq(n_fcts)) {
     data <- subset(dsList, funcId == funcIds[i])
 
-    RTall <- get_Runtimes(data)
+    RTall <- get_runtimes(data)
     RTstart <- min(RTall)
     RTstop <- max(RTall)
     RTseq <- seq_FV(RTall, RTstart, RTstop, length.out = 30, scale = xscale)

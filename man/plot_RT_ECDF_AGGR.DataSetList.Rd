@@ -6,8 +6,7 @@
 a DataSetList.}
 \usage{
 \method{plot_RT_ECDF_AGGR}{DataSetList}(dsList, fstart = NULL,
-  fstop = NULL, fstep = NULL, show.per_target = F, scale.xlog = F,
-  ...)
+  fstop = NULL, fstep = NULL, show.per_target = F, scale.xlog = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

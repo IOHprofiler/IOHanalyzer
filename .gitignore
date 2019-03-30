@@ -1,20 +1,24 @@
 *.csv
+**.o
+**.so
+**.dll
 *.log
-*.pyc
 *.RData
 *.Rhistory
-*.ipynb
 *.bk
 *.pdf
 *.html
 .*
 
+!/.Rbuildignore
 !/.gitignore
 __pycache__
 rawdata/
-data/
 test/
 rsconnect/
 tmp/
 tmp2/
 rawdata/
+extract_data.R
+.Rproj.user
+*.Rproj

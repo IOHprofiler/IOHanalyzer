@@ -54,14 +54,14 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
           checkboxInput('ERTPlot.show_all',
                         label = 'show/hide multiple runs',
                         value = F),
-          conditionalPanel(condition = 'input["ERTPlot.input.show_all"] == true',
+          conditionalPanel(condition = 'input["ERTPlot.show_all"] == true',
 
                            fluidRow(column(
                              11,
                              offset = 1,
                              sliderInput('ERTPlot.show.density',
                                          label = "Runs density(%)",
-                                         min = 1, max = 100, value = 50, step = 1),
+                                         min = 1, max = 100, value = 100, step = 1),
                              checkboxInput('ERTPlot.show.best_of_all',
                                            label = 'show/hide best run',
                                            value = F),

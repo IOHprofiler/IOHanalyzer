@@ -52,7 +52,7 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
                          offset = 1,
                          sliderInput('FCEPlot.show.density',
                                      label = "Runs density(%)",
-                                     min = 1, max = 100, value = 50, step = 1),
+                                     min = 1, max = 100, value = 100, step = 1),
                          checkboxInput('FCEPlot.show.best_of_all',
                                        label = 'show/hide best run',
                                        value = F),

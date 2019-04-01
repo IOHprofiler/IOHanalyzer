@@ -398,9 +398,9 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
               type = 'scatter',
               mode = 'lines',
               line = list(color = rgb_str, width = 0.5),
-              text = paste(run_v),
               hoverinfo = 'none',
               showlegend = !mentioned,
+              legendgroup = legend,
               name = paste("runs of ", algId)
             )
             mentioned <- TRUE

@@ -35,7 +35,7 @@ body <- dashboardBody(
 
   tags$script(HTML('
       $(document).ready(function() {
-        $("header").find("nav").append(\'<span class="myClass"> Post-Processing Part for Performance Evaluation</span>\');
+        $("header").find("nav").append(\'<span class="myClass">Performance Evaluation for Iterative Optimization Heuristics</span>\');
       })
      ')),
 
@@ -191,6 +191,5 @@ body <- dashboardBody(
   )
 )
 
-
 # -----------------------------------------------------------
-dashboardPage(title = IOHprofiler, header, sidebar, body)
+dashboardPage(title = 'IOHanalyzer', header, sidebar, body)

@@ -14,7 +14,7 @@ format_FV <- function(v) format(v, digits = 2, nsmall = 2)
 format_RT <- function(v) as.integer(v)
 
 # directory where data are extracted from the zip file
-exdir <- file.path(tempdir(check = T), 'data')
+exdir <- file.path(tempdir(), 'data')
 
 setTextInput <- function(session, id, name, alternative) {
   v <- REG[[id]]

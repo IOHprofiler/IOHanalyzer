@@ -366,13 +366,25 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
         if (show.grad) {
           dr_ERT_ <- dr_ERT[complete.cases(dr_ERT)]
           sorted_dr_ERT <- apply(dr_ERT_[, -c('algId', 'target', 'funcId', 'DIM')], 1, function(x){sort(x, decreasing = FALSE, na.last = T)})
-          counter = 0
-          names_amount = length(all_names)
           
-          for (counter in c(1:length(all_names))){
-            fill_density <- fill_density + grad_functions$fixed_edges(counter,names_amount,show.intensity)
-            rgba_str_m  <- generate_rbga(col2rgb(colors[i]),fill_density)
-            p %<>% add_trace(x = dr_ERT_[['target']], y = sorted_dr_ERT[counter,],
+          if (is.matrix(sorted_dr_ERT)) {
+            counter = 0
+            names_amount = length(all_names)
+            
+            for (counter in c(1:length(all_names))){
+              fill_density <- fill_density + grad_functions$fixed_edges(counter,names_amount,show.intensity)
+              rgba_str_m  <- generate_rbga(col2rgb(colors[i]),fill_density)
+              p %<>% add_trace(x = dr_ERT_[['target']], y = sorted_dr_ERT[counter,],
+                               type = 'scatter', mode = 'none',
+                               hoverinfo = 'none',
+                               showlegend = F,
+                               fill = 'tonexty',
+                               fillcolor = rgba_str_m
+              )
+            }
+            rgba_str_m  <- generate_rbga(col2rgb(colors[i]),1)
+            upper_border <- max(sorted_dr_ERT, na.rm = T)
+            p %<>% add_trace(x = dr_ERT_[['target']], y = seq(upper_border, upper_border, length.out = length(dr_ERT_[['target']])),
                              type = 'scatter', mode = 'none',
                              hoverinfo = 'none',
                              showlegend = F,
@@ -380,15 +392,6 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                              fillcolor = rgba_str_m
             )
           }
-          rgba_str_m  <- generate_rbga(col2rgb(colors[i]),1)
-          upper_border <- max(sorted_dr_ERT, na.rm = T)
-          p %<>% add_trace(x = dr_ERT_[['target']], y = seq(upper_border, upper_border, length.out = length(dr_ERT_[['target']])),
-                           type = 'scatter', mode = 'none',
-                           hoverinfo = 'none',
-                           showlegend = F,
-                           fill = 'tonexty',
-                           fillcolor = rgba_str_m
-          )
         }
         if (show.runs){
           for (run_v in names_to_show) {

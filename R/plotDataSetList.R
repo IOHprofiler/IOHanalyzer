@@ -22,10 +22,11 @@ get_legends <- function(dsList) {
 insert_best_parts <- function(from_data, to_data, best_is_min) {
   if (all(is.na(from_data)))
     to_data
-  else {
-    if (best_is_min) pmin(from_data, to_data, na.rm = T)
-    else pmax(from_data, to_data, na.rm = T)
-  }
+  else
+    if (best_is_min)
+      pmin(from_data, to_data, na.rm = T)
+  else
+    pmax(from_data, to_data, na.rm = T)
 }
 
 generate_rbga <- function(color,a){
@@ -299,9 +300,6 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 
   dt <- get_RT_summary(dsList, ftarget = Fseq)
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
-  
-  dr <- get_RT_sample(dsList, ftarget = Fseq)
-  run.names <- grep('run', names(dr),  value = T)
 
   if (backend == 'plotly') {
     p <- plot_ly_default(x.title = "best-so-far f(x)-value",
@@ -320,12 +318,12 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 
       if (show.CI)
         p %<>%
-          add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-                    line = list(color = rgba_str, width = 0), legendgroup = legend,
-                    showlegend = F, name = 'mean +/- sd') %>%
-          add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
-                    fill = 'tonexty',  line = list(color = 'transparent'), legendgroup = legend,
-                    fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
+        add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
+                  line = list(color = rgba_str, width = 0), legendgroup = legend,
+                  showlegend = F, name = 'mean +/- sd') %>%
+        add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
+                  fill = 'tonexty',  line = list(color = 'transparent'), legendgroup = legend,
+                  fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
 
       if (show.ERT)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
@@ -345,24 +343,25 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                          marker = list(color = rgb_str), legendgroup = legend,
                          line = list(color = rgb_str, dash = 'dot'))
 
-      if (show.runs || show.grad) {
-        dr_ERT <- dr[algId == attr(dsList[[i]], 'algId') &
+      if (show.runs||show.grad) {
+        dr <- get_RT_sample(dsList, Fseq)
+        dr_ERT <- dr[algId == attr(dsList[[i]], 'algId')&
                        funcId == attr(dsList[[i]], 'funcId') &
                        DIM == attr(dsList[[i]], 'DIM')]
+        dr_ERT <- dr_ERT[complete.cases(dr_ERT)]
         
-        counter <- ceiling(length(run.names) * show.density / 100)
-        run.names <- sample(run.names)
-        run.names <- run.names[1:counter]
+        names_to_show = sample(colnames(dr_ERT))
+        names_to_show <-
+          names_to_show[!names_to_show %in% c('algId', 'target', 'funcId','DIM')]
         
-        index <- apply(!is.na(dr_ERT[, ..run.names]), 1, any)
-        dr_ERT <- dr_ERT[index]
-        
-        best_parts <- apply(dr_ERT[, ..run.names], 1, . %>% min(na.rm = T))
+        counter <- as.integer(length(names_to_show) * show.density / 100) + 1
         fill_density <- 0
-        all_names <- run.names
+        all_names <- names_to_show
+        names_to_show <- head(names_to_show, counter)
+        best_parts <- NA
         mentioned <- FALSE
         
-        if (show.grad) {
+        if (show.grad){
           sorted_dr_ERT <- apply(dr_ERT[, -c('algId', 'target', 'funcId', 'DIM')], 1, function(x){sort(x,decreasing = FALSE)})
           counter = 0
           names_amount = length(all_names)
@@ -388,22 +387,23 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                            fillcolor = rgba_str_m
           )
         }
-        
         if (show.runs){
-          for (run_v in run.names) {
+          for (run_v in names_to_show) {
             p %<>% add_trace(
               data = dr_ERT,
-              x = ~target,
+              x = ~ target,
               y = dr_ERT[[run_v]],
               type = 'scatter',
               mode = 'lines',
               line = list(color = rgb_str, width = 0.5),
+              text = paste(run_v),
               hoverinfo = 'none',
               showlegend = !mentioned,
-              legendgroup = legend,
               name = paste("runs of ", algId)
             )
             mentioned <- TRUE
+            best_parts <-
+              insert_best_parts(best_parts, dr_ERT[[run_v]], attr(dsList[[i]],"maximization"))
           }
           
           if (show.optimal) {
@@ -412,7 +412,7 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
             target_idx <- max(NonNAindex)
             
             check_value <- best_parts[target_idx]
-            for (run_v in run.names) {
+            for (run_v in names_to_show){
               found_val <- dr_ERT[[run_v]][target_idx]
               
               if (!is.na(found_val) & check_value == found_val) {
@@ -430,7 +430,6 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
               }
             }
           }
-          
           if (show.pareto) {
             p %<>% add_trace(
               x = dr_ERT[['target']],

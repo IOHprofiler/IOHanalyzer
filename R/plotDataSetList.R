@@ -300,6 +300,9 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 
   dt <- get_RT_summary(dsList, ftarget = Fseq)
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
+  
+  dr <- get_RT_sample(dsList, Fseq)
+  run.names <- grep('run', names(dr),  value = T)
 
   if (backend == 'plotly') {
     p <- plot_ly_default(x.title = "best-so-far f(x)-value",
@@ -344,32 +347,32 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                          line = list(color = rgb_str, dash = 'dot'))
 
       if (show.runs||show.grad) {
-        dr <- get_RT_sample(dsList, Fseq)
+        
         dr_ERT <- dr[algId == attr(dsList[[i]], 'algId')&
                        funcId == attr(dsList[[i]], 'funcId') &
                        DIM == attr(dsList[[i]], 'DIM')]
-        dr_ERT <- dr_ERT[complete.cases(dr_ERT)]
         
-        names_to_show = sample(colnames(dr_ERT))
-        names_to_show <-
-          names_to_show[!names_to_show %in% c('algId', 'target', 'funcId','DIM')]
+        counter <- ceiling(length(run.names) * show.density / 100)
+        names_to_show <- sample(run.names)[1:counter]
         
-        counter <- as.integer(length(names_to_show) * show.density / 100) + 1
         fill_density <- 0
         all_names <- names_to_show
-        names_to_show <- head(names_to_show, counter)
-        best_parts <- NA
+        
+        index <- apply(!is.na(dr_ERT[, ..names_to_show]), 1, any)
+        dr_ERT <- dr_ERT[index, ]
+        best_parts <- apply(dr_ERT[, ..names_to_show], 1, . %>% min(na.rm = T))
         mentioned <- FALSE
         
-        if (show.grad){
-          sorted_dr_ERT <- apply(dr_ERT[, -c('algId', 'target', 'funcId', 'DIM')], 1, function(x){sort(x,decreasing = FALSE)})
+        if (show.grad) {
+          dr_ERT_ <- dr_ERT[complete.cases(dr_ERT)]
+          sorted_dr_ERT <- apply(dr_ERT_[, -c('algId', 'target', 'funcId', 'DIM')], 1, function(x){sort(x, decreasing = FALSE, na.last = T)})
           counter = 0
           names_amount = length(all_names)
           
           for (counter in c(1:length(all_names))){
             fill_density <- fill_density + grad_functions$fixed_edges(counter,names_amount,show.intensity)
             rgba_str_m  <- generate_rbga(col2rgb(colors[i]),fill_density)
-            p %<>% add_trace(x = dr_ERT[['target']], y = sorted_dr_ERT[counter,],
+            p %<>% add_trace(x = dr_ERT_[['target']], y = sorted_dr_ERT[counter,],
                              type = 'scatter', mode = 'none',
                              hoverinfo = 'none',
                              showlegend = F,
@@ -378,8 +381,8 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
             )
           }
           rgba_str_m  <- generate_rbga(col2rgb(colors[i]),1)
-          upper_border <- max(sorted_dr_ERT)
-          p %<>% add_trace(x = dr_ERT[['target']], y = seq(upper_border, upper_border, length.out = length(dr_ERT[['target']])),
+          upper_border <- max(sorted_dr_ERT, na.rm = T)
+          p %<>% add_trace(x = dr_ERT_[['target']], y = seq(upper_border, upper_border, length.out = length(dr_ERT_[['target']])),
                            type = 'scatter', mode = 'none',
                            hoverinfo = 'none',
                            showlegend = F,
@@ -399,11 +402,12 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
               text = paste(run_v),
               hoverinfo = 'none',
               showlegend = !mentioned,
+              legendgroup = legend,
               name = paste("runs of ", algId)
             )
             mentioned <- TRUE
-            best_parts <-
-              insert_best_parts(best_parts, dr_ERT[[run_v]], attr(dsList[[i]],"maximization"))
+            # best_parts <-
+              # insert_best_parts(best_parts, dr_ERT[[run_v]], attr(dsList[[i]],"maximization"))
           }
           
           if (show.optimal) {

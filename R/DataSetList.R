@@ -79,7 +79,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
 
       # check for duplicated instances
       if (length(object) != 0) {
-        idx <- sapply(object, . %>% `==`(data)) %>% which
+        idx <- sapply(object, function(obj) obj == data) %>% which
         for (k in idx) {
           instance_ <- attr(object[[k]], 'instance')
           if (all(instance == instance_)) {

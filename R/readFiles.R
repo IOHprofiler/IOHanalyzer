@@ -6,15 +6,15 @@
 #
 # TODO: maybe I should always use data.table as it is very fast
 
-suppressMessages(library(magrittr))
-suppressMessages(library(dplyr))
-suppressMessages(library(reshape2))
-suppressMessages(library(data.table))
-suppressMessages(library(Rcpp))
-suppressMessages(library(ggplot2))
+# suppressMessages(library(magrittr))
+# suppressMessages(library(dplyr))
+# suppressMessages(library(reshape2))
+# suppressMessages(library(data.table))
+# suppressMessages(library(Rcpp))
+# suppressMessages(library(ggplot2))
 
-sourceCpp('src/align.cc')
-sourceCpp('src/read.cc')
+# sourceCpp('src/align.cc')
+# sourceCpp('src/read.cc')
 # source('global.R')
 
 #' reduce the size of the data set by evenly subsampling the records

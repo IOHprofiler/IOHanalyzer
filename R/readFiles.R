@@ -1,22 +1,3 @@
-# This file contains some functions for reading, aligning, analyzing the raw data
-# from the pseudo-boolean benchmarking
-#
-# Author: Hao Wang
-# Email: wangronin@gmail.com
-#
-# TODO: maybe I should always use data.table as it is very fast
-
-# suppressMessages(library(magrittr))
-# suppressMessages(library(dplyr))
-# suppressMessages(library(reshape2))
-# suppressMessages(library(data.table))
-# suppressMessages(library(Rcpp))
-# suppressMessages(library(ggplot2))
-
-# sourceCpp('src/align.cc')
-# sourceCpp('src/read.cc')
-# source('global.R')
-
 #' reduce the size of the data set by evenly subsampling the records
 #'
 #' @param df The data to subsample

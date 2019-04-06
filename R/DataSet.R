@@ -1,14 +1,3 @@
-# This file contains some functions for reading, aligning, analyzing the raw data
-# from the pseudo-boolean benchmarking
-#
-# Author: Hao Wang
-# Email: wangronin@gmail.com
-
-# TODO: do we need to import those here?
-# suppressMessages(library(magrittr))
-# suppressMessages(library(reshape2))
-# suppressMessages(library(data.table))
-
 #' Constructor of S3 class 'DataSet'
 #'
 #' DataSet contains the following attributes

@@ -1,3 +1,22 @@
+# This file contains some functions for reading, aligning, analyzing the raw data
+# from the pseudo-boolean benchmarking
+#
+# Author: Hao Wang
+# Email: wangronin@gmail.com
+#
+# TODO: maybe I should always use data.table as it is very fast
+
+suppressMessages(library(magrittr))
+suppressMessages(library(dplyr))
+suppressMessages(library(reshape2))
+suppressMessages(library(data.table))
+suppressMessages(library(Rcpp))
+suppressMessages(library(ggplot2))
+
+sourceCpp('src/align.cc')
+sourceCpp('src/read.cc')
+# source('global.R')
+
 #' reduce the size of the data set by evenly subsampling the records
 #'
 #' @param df The data to subsample
@@ -213,7 +232,7 @@ check_format <- function(path) {
 
   format <- lapply(datafile, function(file) {
     first_line <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
-    if (startsWith(first_line, '% function'))
+    if (startsWith(first_line, '% function') || startsWith(first_line, '% f evaluations'))
       COCO
     else if (startsWith(first_line, '\"function'))
       IOHprofiler
@@ -289,8 +308,8 @@ read_COCO_dat <- function(fname, subsampling = FALSE) {
   c_read_dat(path.expand(fname), 7, '%')
 }
 
-read_COCO_dat2 <- function(fname, subsampling = FALSE) {
-  select <- seq(5)
+read_COCO_dat2 <- function(fname, DIM, subsampling = FALSE) {
+  select <- seq(5 + DIM)
   # read the file as a character vector (one string per row)
   X <- fread(fname, header = FALSE, sep = '\n', colClasses = 'character')[[1]]
   idx <- which(startsWith(X, '%'))
@@ -300,6 +319,7 @@ read_COCO_dat2 <- function(fname, subsampling = FALSE) {
     gsub('\\.\\.\\.|% ', '', ., perl = T) %>% {
       strsplit(., split = '\\|')[[1]][select]
     }
+  header[6:(5+DIM)] <- seq(DIM) %>% paste0('x', .)
 
   df <- fread(text = X[-idx], header = F, sep = ' ', select = select, fill = T)
   idx <- c((idx + 1) - seq_along(idx), nrow(df))
@@ -348,10 +368,11 @@ n_data_column <- 5
 #' Align data by runtimes
 #' @param data The data to align
 #' @param format Whether the data is form IOHprofiler or COCO.
+#' @param include_param Whether to include the recorded parameters in the alignment
 #' @return Data aligned by runtime
 #' @export
 #'
-align_runtime <- function(data, format = IOHprofiler) {
+align_runtime <- function(data, format = IOHprofiler, include_param = FALSE) {
   if (format == IOHprofiler) {
     maximization <- TRUE
     idxTarget <- 3
@@ -377,9 +398,9 @@ align_runtime <- function(data, format = IOHprofiler) {
   n_column <- sapply(data, ncol) %>% unique
 
   if (format == COCO) {
-    n_param <- 0
-    idxValue <- idxEvals
-    param_names <- NULL
+    n_param <- n_column - n_data_column
+    idxValue <- c(idxEvals, (n_data_column + 1):n_column)
+    param_names <- seq(n_param) %>% paste0('x',.)
   } else if (format == IOHprofiler) {
     n_param <- n_column - n_data_column
     if (n_param > 0) {
@@ -393,7 +414,7 @@ align_runtime <- function(data, format = IOHprofiler) {
     param_names <- NULL
     idxValue <- idxEvals
   }
-
+  if (!include_param) param_names <- NULL
   c_align_runtime(data, FV, idxValue - 1, maximization, idxTarget - 1) %>%
     set_names(c('RT', param_names))
 }
@@ -454,7 +475,7 @@ align_function_value <- function(data, include_param = TRUE, format = IOHprofile
   if (format == COCO) {
     maximization <- FALSE
     idxTarget <- 3
-    n_param <- 0
+    n_param <- n_column - n_data_column
   } else if (format == IOHprofiler) {
     maximization <- TRUE
     idxTarget <- 3
@@ -485,7 +506,8 @@ align_function_value <- function(data, include_param = TRUE, format = IOHprofile
   FV <- align_func(data, idxTarget, runtime)
 
   if (include_param) {
-    param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
+    if (format == COCO) param_names <- seq(n_param) %>% paste0('x', .)
+    else param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
     param <- list()
     for (i in seq(n_param)) {
       name <- param_names[i]

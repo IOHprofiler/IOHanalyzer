@@ -1,3 +1,14 @@
+# This file contains some functions for reading, aligning, analyzing the raw data
+# from the pseudo-boolean benchmarking
+#
+# Author: Hao Wang
+# Email: wangronin@gmail.com
+
+# TODO: do we need to import those here?
+# suppressMessages(library(magrittr))
+# suppressMessages(library(reshape2))
+# suppressMessages(library(data.table))
+
 #' Constructor of S3 class 'DataSet'
 #'
 #' DataSet contains the following attributes
@@ -16,12 +27,12 @@
 #' @param maximization Logical. Whether the underlying optimization algorithm performs a maximization?
 #' @param format A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL"
 #' @param subsampling Logical. Whether *.cdat files are subsampled?
-#'
+#' @param include_param Whether to include the recorded parameters in the alignment
 #' @return A S3 object 'DataSet'
 #' @export
 #'
 DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler,
-                    subsampling = FALSE) {
+                    subsampling = FALSE, include_param = TRUE) {
   if (!is.null(info)) {
     datFile <- info$datafile
     path <- dirname(info$datafile)
@@ -54,8 +65,8 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
       dat <- read_dat(datFile, subsampling)         # read the dat file
       cdat <- read_dat(cdatFile, subsampling)       # read the cdat file
     } else if (format == COCO) {
-      dat <- read_COCO_dat(datFile, subsampling)    # read the dat file
-      cdat <- read_COCO_dat(tdatFile, subsampling)   # read the tdat file
+      dat <- read_COCO_dat2(datFile, DIM=info$DIM, subsampling)    # read the dat file
+      cdat <- read_COCO_dat2(tdatFile, DIM=info$DIM, subsampling)   # read the tdat file
     } else if (format == BIBOJ_COCO) {
       dat <- read_BIOBJ_COCO_dat(datFile, subsampling)    # read the dat file
       cdat <- read_BIOBJ_COCO_dat(tdatFile, subsampling)   # read the tdat file
@@ -73,13 +84,13 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
       maximization <- FALSE
 
     # RT <- align_by_target(dat, maximization = maximization, format = format) # runtime
-    RT <- align_runtime(dat, format = format)
+    RT <- align_runtime(dat, format = format, include_param = include_param)
 
     #TODO: check if this works correctly without CDAT-file
     if (format == TWO_COL)
-      FV <- align_function_value(dat, format = format)  # function value
+      FV <- align_function_value(dat, format = format, include_param = include_param)  # function value
     else
-      FV <- align_function_value(cdat, format = format)  # function value
+      FV <- align_function_value(cdat, format = format, include_param = include_param)  # function value
 
     # TODO: remove this and incorporate the parameters aligned by runtimes
     FV[names(FV) != 'FV'] <- NULL
@@ -554,28 +565,28 @@ get_ERT.DataSet <- function(ds, ftarget, ...) {
   maxRT <- attr(ds, 'maxRT')
   algId <- attr(ds, 'algId')
   maximization <- attr(ds, 'maximization')
-  
+
   ftarget <- c(ftarget) %>% as.double %>% sort(decreasing = !maximization)
   FValues <- rownames(data) %>% as.numeric
   idx <- seq_along(FValues)
   op <- ifelse(maximization, `>=`, `<=`)
-  
+
   matched <- sapply(
     ftarget,
     function(f) {
       idx[`op`(FValues, f)][1]
     }
   )
-  
+
   if (is.list(matched)) {
     return(data.table())
   }
-  
+
   data <- data[matched, , drop = FALSE]
-  
-  SP(data, maxRT)$ERT %>% 
-  cbind(algId, ftarget, .) %>% 
-    as.data.table %>% 
+
+  SP(data, maxRT)$ERT %>%
+  cbind(algId, ftarget, .) %>%
+    as.data.table %>%
     set_colnames(c('algId', 'target', 'ERT'))
 }
 
@@ -610,15 +621,15 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
   if (is.list(matched)) {
     return(data.table())
   }
-  
+
   # func <- lapply(func,
   #   function(f)
-  #     switch(f, 
+  #     switch(f,
   #       mean = .mean, median = .median, sd = .sd,
   #       quantile = D_quantile, ERT = SP
   #     )
   # )
-  
+
   if (1 < 2) {
     data <- data[matched, , drop = FALSE]
     apply(data, 1, D_quantile) %>%

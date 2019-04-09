@@ -8,7 +8,7 @@ format <- NULL         # the unique format of the data set
 sub_sampling <- TRUE   # perform sub-sampling of the data set?
 repo_dir <- ''         # repository directory
 repo_data <- NULL      # repository data
-
+has_rendered_ERT_per_fct <- FALSE
 # Formatter for function values
 format_FV <- function(v) format(v, digits = 2, nsmall = 2)
 format_RT <- function(v) as.integer(v)
@@ -548,11 +548,16 @@ shinyServer(function(input, output, session) {
     contentType = paste0('image/', input$ERTPlot.Format)
   )
 
+  update_ert_per_fct <- observe({
+    plotlyProxy("ERT_PER_FUN", session) %>%
+      plotlyProxyInvoke("relayout", list(xaxis = list(type = ifelse(input$ERTPlot.semilogx, 'log', 'linear')),
+                                         yaxis = list(type = ifelse(input$ERTPlot.semilogy, 'log', 'linear'))))
+  })
+
   render_ert_per_fct <- reactive({
     req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
     fstart <- input$ERTPlot.Min %>% as.numeric
     fstop <- input$ERTPlot.Max %>% as.numeric
-
     plot_RT_single_fct(DATA(), Fstart = fstart, Fstop = fstop,
                  show.CI = input$ERTPlot.show.CI,
                  show.density = input$ERTPlot.show.density,
@@ -562,8 +567,8 @@ shinyServer(function(input, output, session) {
                  show.ERT = input$ERTPlot.show.ERT,
                  show.mean = input$ERTPlot.show.mean,
                  show.median = input$ERTPlot.show.median,
-                 scale.xlog = input$ERTPlot.semilogx,
-                 scale.ylog = input$ERTPlot.semilogy,
+                 scale.xlog = isolate(input$ERTPlot.semilogx),
+                 scale.ylog = isolate(input$ERTPlot.semilogy),
                  show.grad = input$ERTPlot.show.grad,
                  show.intensity = input$ERTPlot.show.intensity,
                  scale.reverse = (format == COCO || format == BIBOJ_COCO))

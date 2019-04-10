@@ -554,6 +554,118 @@ shinyServer(function(input, output, session) {
                                          yaxis = list(type = ifelse(input$ERTPlot.semilogy, 'log', 'linear'))))
   })
 
+  ert_per_fct_data <- reactive({
+    req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
+    dsList <- DATA()
+    Fall <- get_funvals(dsList)
+
+    Fseq <- seq_FV(Fall, as.numeric(input$ERTPlot.Min), as.numeric(input$ERTPlot.Max), length.out = 60,
+                   scale = ifelse(isolate(input$ERTPlot.semilogx), 'log', 'linear'))
+
+    dt <- get_RT_summary(dsList, ftarget = Fseq)
+    dt[, `:=`(upper = mean + sd, lower = mean - sd)]
+    dt
+  })
+
+  #TODO: Think of a better method to add / remove traces. Keep an eye on https://github.com/ropensci/plotly/issues/1248 for possible fix
+  update_ert_per_fct_ERT <- observe({
+    req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
+
+    dsList <- DATA()
+    N <- length(dsList)
+    if (input$ERTPlot.show.ERT){
+      nr_other_active = isolate(1+input$ERTPlot.show.mean + input$ERTPlot.show.median)
+      legends <- get_legends(dsList)
+      colors <- color_palettes(N)
+      dt <- ert_per_fct_data()
+
+      for (i in seq_along(dsList)) {
+        rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
+
+        legend <- legends[i]
+        ds_ERT <- dt[algId == attr(dsList[[i]], 'algId') &
+                       funcId == attr(dsList[[i]], 'funcId') &
+                       DIM == attr(dsList[[i]], 'DIM')]
+        plotlyProxy("ERT_PER_FUN", session) %>%
+          plotlyProxyInvoke("addTraces", list(x = ds_ERT$target, y = ds_ERT$ERT, type = 'scatter',
+                          name = paste0(legend, '.ERT'), mode = 'lines+markers',
+                          marker = list(color = rgb_str), legendgroup = legend,
+                          line = list(color = rgb_str)),(i-1)*nr_other_active)
+      }
+    }
+    else{
+      nr_other_active = isolate(1+input$ERTPlot.show.mean + input$ERTPlot.show.median)
+      plotlyProxy("ERT_PER_FUN", session) %>%
+        plotlyProxyInvoke("deleteTraces", nr_other_active*0:(N-1))
+    }
+  })
+
+  update_ert_per_fct_mean <- observe({
+    req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
+
+    dsList <- DATA()
+    N <- length(dsList)
+    if (input$ERTPlot.show.mean){
+      nr_other_active = isolate(1+input$ERTPlot.show.ERT + input$ERTPlot.show.median)
+      legends <- get_legends(dsList)
+      colors <- color_palettes(N)
+      dt <- ert_per_fct_data()
+
+      for (i in seq_along(dsList)) {
+        rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
+
+        legend <- legends[i]
+        ds_ERT <- dt[algId == attr(dsList[[i]], 'algId') &
+                       funcId == attr(dsList[[i]], 'funcId') &
+                       DIM == attr(dsList[[i]], 'DIM')]
+        plotlyProxy("ERT_PER_FUN", session) %>%
+          plotlyProxyInvoke("addTraces", list(x = ds_ERT$target, y = ds_ERT$mean, type = 'scatter',
+                                              name = paste0(legend, '.mean'), mode = 'lines+markers',
+                                              marker = list(color = rgb_str), legendgroup = legend,
+                                              line = list(color = rgb_str)),1+(i-1)*nr_other_active)
+      }
+    }
+    else{
+      nr_other_active = isolate(1+input$ERTPlot.show.ERT + input$ERTPlot.show.median)
+      plotlyProxy("ERT_PER_FUN", session) %>%
+        plotlyProxyInvoke("deleteTraces", 1+(nr_other_active*0:(N-1)))
+    }
+  })
+
+  update_ert_per_fct_median <- observe({
+    req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
+
+    dsList <- DATA()
+    N <- length(dsList)
+    if (input$ERTPlot.show.median){
+      nr_other_active = isolate(input$ERTPlot.show.mean + input$ERTPlot.show.ERT)
+      legends <- get_legends(dsList)
+      colors <- color_palettes(N)
+      dt <- ert_per_fct_data()
+
+      for (i in seq_along(dsList)) {
+        rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
+
+        legend <- legends[i]
+        ds_ERT <- dt[algId == attr(dsList[[i]], 'algId') &
+                       funcId == attr(dsList[[i]], 'funcId') &
+                       DIM == attr(dsList[[i]], 'DIM')]
+        plotlyProxy("ERT_PER_FUN", session) %>%
+          plotlyProxyInvoke("addTraces", list(x = ds_ERT$target, y = ds_ERT$median, type = 'scatter',
+                                              name = paste0(legend, '.median'), mode = 'lines+markers',
+                                              marker = list(color = rgb_str), legendgroup = legend,
+                                              line = list(color = rgb_str)),nr_other_active+(i-1)*(nr_other_active+1))
+      }
+    }
+    else{
+      nr_other_active = isolate(input$ERTPlot.show.mean + input$ERTPlot.show.ERT)
+      seq_del = nr_other_active+((1+nr_other_active)*0:(N-1))
+      plotlyProxy("ERT_PER_FUN", session) %>%
+        plotlyProxyInvoke("deleteTraces", seq_del)
+    }
+  })
+
+
   render_ert_per_fct <- reactive({
     req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
     fstart <- input$ERTPlot.Min %>% as.numeric
@@ -564,9 +676,9 @@ shinyServer(function(input, output, session) {
                  show.runs = input$ERTPlot.show_all,
                  show.optimal = input$ERTPlot.show.best_of_all,
                  show.pareto = input$ERTPlot.show.pareto_optima,
-                 show.ERT = input$ERTPlot.show.ERT,
-                 show.mean = input$ERTPlot.show.mean,
-                 show.median = input$ERTPlot.show.median,
+                 show.ERT = isolate(input$ERTPlot.show.ERT),
+                 show.mean = isolate(input$ERTPlot.show.mean),
+                 show.median = isolate(input$ERTPlot.show.median),
                  scale.xlog = isolate(input$ERTPlot.semilogx),
                  scale.ylog = isolate(input$ERTPlot.semilogy),
                  show.grad = input$ERTPlot.show.grad,

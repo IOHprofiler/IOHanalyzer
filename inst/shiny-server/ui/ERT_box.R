@@ -73,7 +73,8 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
           selectInput('ERTPlot.Format', label = 'select the figure format',
                       choices = supported_fig_format, selected = 'pdf'),
 
-          downloadButton('ERTPlot.Download', label = 'download the figure')
+          downloadButton('ERTPlot.Download', label = 'download the figure'),
+          textAreaInput('ERTPlot_Traces',"Test label")
 
           # checkboxInput('show.instance',
           #               label = 'show each independent run',

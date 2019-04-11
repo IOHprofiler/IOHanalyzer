@@ -8,7 +8,60 @@ format <- NULL         # the unique format of the data set
 sub_sampling <- TRUE   # perform sub-sampling of the data set?
 repo_dir <- ''         # repository directory
 repo_data <- NULL      # repository data
-has_rendered_ERT_per_fct <- FALSE
+
+
+#TODO: duplicated from plotDataSetList; should maybe be exported in future version?
+get_legends <- function(dsList) {
+  N <- length(dsList)
+  legends <- sapply(dsList, function(d) attr(d, 'algId'))
+
+  if (length(unique(legends)) < N) {
+    funcId <- sapply(dsList, function(d) attr(d, 'funcId'))
+    if (length(unique(funcId)) > 1)
+      legends <- paste0(legends, '-F', funcId)
+  }
+
+  if (length(unique(legends)) < N) {
+    DIM <- sapply(dsList, function(d) attr(d, 'DIM'))
+    if (length(unique(DIM)) > 1)
+      legends <- paste0(legends, '-', DIM, 'D')
+  }
+  legends
+}
+#TODO: duplicated from plot; should maybe be exported in future version?
+Set3 <- function(n) colorspace::sequential_hcl(n, c(-88, 59), c. = c(60, 75, 55), l = c(40, 90),
+                                               power = c(0.1, 1.2), gamma = NULL,
+                                               fixup = TRUE, alpha = 1)
+color_palettes <- function(ncolor) {
+  if (ncolor < 5) return(Set3(ncolor)) #Was set2, which gave NAFF as color?
+
+  brewer <- function(n) {
+    colors <- RColorBrewer::brewer.pal(n, 'Spectral')
+    colors[colors == "#FFFFBF"] <- "#B2B285"
+    colors
+  }
+
+  color_fcts <- c(colorRamps::primary.colors, Set3)
+
+  n <- min(11, ncolor)
+  colors <- brewer(n)
+  ncolor <- ncolor - n
+
+  i <- 1
+  while (ncolor > 0) {
+    n <- min(8, ncolor)
+    if (i > length(color_fcts)) {
+      colors <- c(colors, colorRamps::primary.colors(ncolor))
+      break
+    } else {
+      colors <- c(colors, color_fcts[[i]](n))
+      ncolor <- ncolor - n
+    }
+    i <- i + 1
+  }
+  colors
+}
+
 # Formatter for function values
 format_FV <- function(v) format(v, digits = 2, nsmall = 2)
 format_RT <- function(v) as.integer(v)
@@ -567,10 +620,17 @@ shinyServer(function(input, output, session) {
     dt
   })
 
+  ERTPlot_traces <- reactive({
+    input$ERTPlot_Traces
+  })
+
   #TODO: Think of a better method to add / remove traces. Keep an eye on https://github.com/ropensci/plotly/issues/1248 for possible fix
+  #TODO: Figure out how to get visibility of current traces to set the 'visible' property correctely
   update_ert_per_fct_ERT <- observe({
     req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
-
+    x <- session$sendCustomMessage("set_trace_input","#FF0073")
+    visible_traces <- ERTPlot_traces()
+    shinyjs::alert(visible_traces)
     dsList <- DATA()
     N <- length(dsList)
     if (input$ERTPlot.show.ERT){
@@ -602,6 +662,7 @@ shinyServer(function(input, output, session) {
 
   update_ert_per_fct_mean <- observe({
     req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
+    x <- session$sendCustomMessage("set_trace_input","#FF0073")
 
     dsList <- DATA()
     N <- length(dsList)
@@ -634,6 +695,7 @@ shinyServer(function(input, output, session) {
 
   update_ert_per_fct_median <- observe({
     req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
+    x <- session$sendCustomMessage("set_trace_input","#FF0073")
 
     dsList <- DATA()
     N <- length(dsList)
@@ -665,13 +727,55 @@ shinyServer(function(input, output, session) {
     }
   })
 
+  update_ert_per_fct_CI <- observe({
+    req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
+
+    dsList <- DATA()
+    N <- length(dsList)
+    if (input$ERTPlot.show.CI){
+      nr_other_active = isolate(input$ERTPlot.show.mean + input$ERTPlot.show.ERT + input$ERTPlot.show.median)
+      legends <- get_legends(dsList)
+      colors <- color_palettes(N)
+      dt <- ert_per_fct_data()
+
+      for (i in seq_along(dsList)) {
+        rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
+
+        legend <- legends[i]
+        ds_ERT <- dt[algId == attr(dsList[[i]], 'algId') &
+                       funcId == attr(dsList[[i]], 'funcId') &
+                       DIM == attr(dsList[[i]], 'DIM')]
+        plotlyProxy("ERT_PER_FUN", session) %>%
+          plotlyProxyInvoke("addTraces",
+                            list(x = ds_ERT$target, y = ds_ERT$upper, type = 'scatter', mode = 'lines',
+                                 line = list(color = rgba_str, width = 0), legendgroup = legend,
+                                 showlegend = F, name = 'mean +/- sd'),
+                            nr_other_active+(i-1)*(nr_other_active+1)) %>%
+          plotlyProxyInvoke("addTraces",
+                            list(x = ds_ERT$target, y = ds_ERT$lower, type = 'scatter', mode = 'lines',
+                                 fill = 'tonexty',  line = list(color = 'transparent'),
+                                 legendgroup = legend,
+                                 fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd'),
+                            nr_other_active+1+(i-1)*(nr_other_active+1))
+      }
+    }
+    else{
+      nr_other_active = isolate(input$ERTPlot.show.mean + input$ERTPlot.show.ERT + input$ERTPlot.show.median)
+      seq_del = nr_other_active+((2+nr_other_active)*0:(N-1))
+      seq_del2 = nr_other_active+((1+nr_other_active)*0:(N-1))
+
+      plotlyProxy("ERT_PER_FUN", session) %>%
+        plotlyProxyInvoke("deleteTraces", seq_del) %>%
+        plotlyProxyInvoke("deleteTraces", seq_del2)
+    }
+  })
 
   render_ert_per_fct <- reactive({
     req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
     fstart <- input$ERTPlot.Min %>% as.numeric
     fstop <- input$ERTPlot.Max %>% as.numeric
     plot_RT_single_fct(DATA(), Fstart = fstart, Fstop = fstop,
-                 show.CI = input$ERTPlot.show.CI,
+                 show.CI = isolate(input$ERTPlot.show.CI),
                  show.density = input$ERTPlot.show.density,
                  show.runs = input$ERTPlot.show_all,
                  show.optimal = input$ERTPlot.show.best_of_all,

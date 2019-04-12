@@ -207,6 +207,7 @@ observe({
   updateSelectInput(session, 'PAR.Summary.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'PAR.Sample.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = algIds_, selected = algIds_[1])
+  updateSelectInput(session, 'ERTPlot.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = algIds_, selected = algIds_[1])
   updateSelectInput(session, 'PAR.Summary.Param', choices = parIds, selected = 'all')
   updateSelectInput(session, 'PAR.Sample.Param', choices = parIds, selected = 'all')

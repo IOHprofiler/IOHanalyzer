@@ -16,25 +16,25 @@ output$ERTPlot.Download <- downloadHandler(
   contentType = paste0('image/', input$ERTPlot.Format)
 )
 
-update_ert_per_fct <- observe({
+update_ert_per_fct_axis <- observe({
   plotlyProxy("ERT_PER_FUN", session) %>%
     plotlyProxyInvoke("relayout", list(xaxis = list(type = ifelse(input$ERTPlot.semilogx, 'log', 'linear')),
                                        yaxis = list(type = ifelse(input$ERTPlot.semilogy, 'log', 'linear'))))
 })
 
-ert_per_fct_data <- reactive({
-  req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
-  dsList <- DATA()
-  Fall <- get_funvals(dsList)
-
-  Fseq <- seq_FV(Fall, as.numeric(input$ERTPlot.Min), as.numeric(input$ERTPlot.Max), length.out = 60,
-                 scale = ifelse(isolate(input$ERTPlot.semilogx), 'log', 'linear'))
-
-  dt <- get_RT_summary(dsList, ftarget = Fseq)
-  dt[, `:=`(upper = mean + sd, lower = mean - sd)]
-  dt
-})
-
+# ert_per_fct_data <- reactive({
+#   req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
+#   dsList <- DATA()
+#   Fall <- get_funvals(dsList)
+#
+#   Fseq <- seq_FV(Fall, as.numeric(input$ERTPlot.Min), as.numeric(input$ERTPlot.Max), length.out = 60,
+#                  scale = ifelse(isolate(input$ERTPlot.semilogx), 'log', 'linear'))
+#
+#   dt <- get_RT_summary(dsList, ftarget = Fseq)
+#   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
+#   dt
+# })
+#
 # #TODO: Think of a better method to add / remove traces. Keep an eye on https://github.com/ropensci/plotly/issues/1248 for possible fix
 # update_ert_per_fct_ERT <- observe({
 #   req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
@@ -136,9 +136,11 @@ ert_per_fct_data <- reactive({
 
 render_ert_per_fct <- reactive({
   req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
+  selected_algs <- input$ERTPlot.Algs
+  data <- subset(DATA(), algId %in% input$ERTPlot.Algs)
   fstart <- input$ERTPlot.Min %>% as.numeric
   fstop <- input$ERTPlot.Max %>% as.numeric
-  plot_RT_single_fct(DATA(), Fstart = fstart, Fstop = fstop,
+  plot_RT_single_fct(data, Fstart = fstart, Fstop = fstop,
                      show.CI = input$ERTPlot.show.CI,
                      show.density = input$ERTPlot.show.density,
                      show.runs = input$ERTPlot.show_all,

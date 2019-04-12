@@ -7,6 +7,9 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
           width = 3,
           HTML('<p style="font-size:120%;">Range of the displayed target values</p>'),
 
+          selectInput('ERTPlot.Algs', label = 'Select which algorithms to plot:',
+                      multiple = T, selected = NULL, choices = NULL),
+
           textInput('ERTPlot.Min',
                     label = F_MIN_LABEL,
                     value = ''),
@@ -73,9 +76,7 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
           selectInput('ERTPlot.Format', label = 'select the figure format',
                       choices = supported_fig_format, selected = 'pdf'),
 
-          downloadButton('ERTPlot.Download', label = 'download the figure'),
-          textAreaInput('ERTPlot_Traces',"Test label")
-
+          downloadButton('ERTPlot.Download', label = 'download the figure')
           # checkboxInput('show.instance',
           #               label = 'show each independent run',
           #               value = F)

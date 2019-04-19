@@ -817,7 +817,7 @@ plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F){
   N <- length(dsList)
   colors <- color_palettes(N)
 
-  p <- plot_ly_default(title = NULL,
+  p <- plot_ly_default(title = paste('ftarget:', paste(ftargets, collapse = ' ')),
                        x.title = "function evaluations",
                        y.title = "Proportion of runs")
 
@@ -842,9 +842,9 @@ plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F){
 
       p %<>%
         add_trace(data = NULL, x = rt, y = vals, type = 'scatter',
-                  mode = 'lines', name = algId, showlegend = (i == 1),
+                  mode = 'lines+markers', name = algId, showlegend = (i == 1),
                   legendgroup = paste0(k),
-                  line = list(color = rgb_str, width = 2))
+                  line = list(color = rgb_str, width = 3))
       # add_trace(data = NULL, x = x, y = y, type = 'scatter',
       #           mode = 'markers',  legendgroup = paste0(k),
       #           name = sprintf('(%s, %.2e)', algId, ftargets[i]),

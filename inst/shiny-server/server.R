@@ -564,8 +564,6 @@ shinyServer(function(input, output, session) {
                  show.median = input$ERTPlot.show.median,
                  scale.xlog = input$ERTPlot.semilogx,
                  scale.ylog = input$ERTPlot.semilogy,
-                 show.grad = input$ERTPlot.show.grad,
-                 show.intensity = input$ERTPlot.show.intensity,
                  scale.reverse = (format == COCO || format == BIBOJ_COCO))
   })
 

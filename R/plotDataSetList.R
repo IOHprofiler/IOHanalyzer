@@ -279,7 +279,6 @@ plot_FV_all_fcts <- function(dsList, scale.xlog = F,
 plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                            show.ERT = T, show.CI = T, show.mean = F,
                                            show.runs = F, show.density = 50,
-                                           show.grad = F, show.intensity = 0,
                                            show.pareto = F, show.optimal = F,
                                            show.median = F, backend = 'plotly',
                                            scale.xlog = F, scale.ylog = F,
@@ -345,111 +344,6 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                          name = paste0(legend, '.median'), mode = 'lines+markers',
                          marker = list(color = rgb_str), legendgroup = legend,
                          line = list(color = rgb_str, dash = 'dot'))
-
-      if (show.runs||show.grad) {
-        
-        dr_ERT <- dr[algId == attr(dsList[[i]], 'algId')&
-                       funcId == attr(dsList[[i]], 'funcId') &
-                       DIM == attr(dsList[[i]], 'DIM')]
-        
-        counter <- ceiling(length(run.names) * show.density / 100)
-        names_to_show <- sample(run.names)[1:counter]
-        
-        fill_density <- 0
-        all_names <- names_to_show
-        
-        index <- apply(!is.na(dr_ERT[, ..names_to_show]), 1, any)
-        dr_ERT <- dr_ERT[index, ]
-        best_parts <- apply(dr_ERT[, ..names_to_show], 1, . %>% min(na.rm = T))
-        mentioned <- FALSE
-        
-        if (show.grad) {
-          dr_ERT_ <- dr_ERT[complete.cases(dr_ERT)]
-          sorted_dr_ERT <- apply(dr_ERT_[, -c('algId', 'target', 'funcId', 'DIM')], 1, function(x){sort(x, decreasing = FALSE, na.last = T)})
-          
-          if (is.matrix(sorted_dr_ERT)) {
-            counter = 0
-            names_amount = length(all_names)
-            
-            for (counter in c(1:length(all_names))){
-              fill_density <- fill_density + grad_functions$fixed_edges(counter,names_amount,show.intensity)
-              rgba_str_m  <- generate_rbga(col2rgb(colors[i]),fill_density)
-              p %<>% add_trace(x = dr_ERT_[['target']], y = sorted_dr_ERT[counter,],
-                               type = 'scatter', mode = 'none',
-                               hoverinfo = 'none',
-                               showlegend = F,
-                               fill = 'tonexty',
-                               fillcolor = rgba_str_m
-              )
-            }
-            rgba_str_m  <- generate_rbga(col2rgb(colors[i]),1)
-            upper_border <- max(sorted_dr_ERT, na.rm = T)
-            p %<>% add_trace(x = dr_ERT_[['target']], y = seq(upper_border, upper_border, length.out = length(dr_ERT_[['target']])),
-                             type = 'scatter', mode = 'none',
-                             hoverinfo = 'none',
-                             showlegend = F,
-                             fill = 'tonexty',
-                             fillcolor = rgba_str_m
-            )
-          }
-        }
-        if (show.runs){
-          for (run_v in names_to_show) {
-            p %<>% add_trace(
-              data = dr_ERT,
-              x = ~ target,
-              y = dr_ERT[[run_v]],
-              type = 'scatter',
-              mode = 'lines',
-              line = list(color = rgb_str, width = 0.5),
-              text = paste(run_v),
-              hoverinfo = 'none',
-              showlegend = !mentioned,
-              legendgroup = legend,
-              name = paste("runs of ", algId)
-            )
-            mentioned <- TRUE
-            # best_parts <-
-              # insert_best_parts(best_parts, dr_ERT[[run_v]], attr(dsList[[i]],"maximization"))
-          }
-          
-          if (show.optimal) {
-            mentioned <- FALSE
-            NonNAindex <- which(!is.na(best_parts))
-            target_idx <- max(NonNAindex)
-            
-            check_value <- best_parts[target_idx]
-            for (run_v in names_to_show){
-              found_val <- dr_ERT[[run_v]][target_idx]
-              
-              if (!is.na(found_val) & check_value == found_val) {
-                p %<>% add_trace(
-                  data = dr_ERT,
-                  x = ~ target,
-                  y = dr_ERT[[run_v]],
-                  type = 'scatter',
-                  mode = 'lines',
-                  line = list(color = rgb_str, width = 1.5),
-                  showlegend = !mentioned,
-                  name = paste("best.", algId)
-                )
-                mentioned <- TRUE
-              }
-            }
-          }
-          if (show.pareto) {
-            p %<>% add_trace(
-              x = dr_ERT[['target']],
-              y = best_parts,
-              type = 'scatter',
-              mode = 'lines',
-              line = list(color = rgb_str, width = 2.5, dash = 'dot'),
-              showlegend = T,
-              name = paste("pareto_optima.", algId)
-            )
-          }
-        }
-      }
     }
     p %<>%
       layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),

@@ -21,11 +21,10 @@ f3 <- list(
 
 # TODO: create font object as above for title, axis...
 plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
-  plot_ly() %>%
+  plot_ly(width = 888, height = 500) %>%
     layout(title = list(text = title, 
                         font = list(size = 13, family = 'Old Standard TT, serif')),
-           autosize = T, width = 888, height = 500,
-           hovermode = 'compare',
+           autosize = T, hovermode = 'compare',
            legend = list(x = 1.01, y = 0.9, orientation = 'v',
                          font = list(size = 13, family = 'Old Standard TT, serif')),
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',

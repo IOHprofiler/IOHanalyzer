@@ -21,6 +21,8 @@ utils::globalVariables(c(".","algId","run","ERT","RT","max_samples",
                          "DIM", "Fvalue", "lower", "upper", "target", "format",
                          "runtime", "parId", "instance", "input", "funcId"))
 
+options(shiny.port = 4242)
+
 probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
 
 .mean <- function(x) mean(x, na.rm = T)

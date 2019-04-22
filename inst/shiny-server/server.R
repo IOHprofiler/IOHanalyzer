@@ -464,14 +464,14 @@ shinyServer(function(input, output, session) {
     req(input$RTSummary.Overview.Algid)
     df <- runtime_summary_condensed()
 
-    df$"Budget" %<>% as.integer
+    df$"budget" %<>% as.integer
     df$"runs" %<>% as.integer
-    df$"runs reached" %<>% as.integer
-    df$"Worst recorded f(x)" <- format_FV(df$"Worst recorded f(x)")
-    df$"Worst reached f(x)" <- format_FV(df$"Worst reached f(x)")
-    df$"mean reached f(x)" <- format_FV(df$"mean reached f(x)")
-    df$"median reached f(x)" <- format_FV(df$"median reached f(x)")
-    df$"Best reached f(x)" <- format_FV(df$"Best reached f(x)")
+    df$"succ" %<>% as.integer
+    df$"worst recorded" <- format_FV(df$"worst recorded")
+    df$"worst reached" <- format_FV(df$"worst reached")
+    df$"mean reached" <- format_FV(df$"mean reached")
+    df$"median" <- format_FV(df$"median reached")
+    df$"best reached" <- format_FV(df$"best reached")
     df
   })
 

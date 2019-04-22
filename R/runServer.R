@@ -2,11 +2,11 @@
 #'
 #'
 #' @export
-runServer <- function(){
+runServer <- function(port = getOption('shiny.port')) {
   appDir <- system.file("shiny-server", package = "IOHanalyzer")
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `IOHanalyzer`.", call. = FALSE)
   }
 
-  shiny::runApp(appDir, display.mode = "normal")
+  shiny::runApp(appDir, display.mode = "normal", port = port)
 }

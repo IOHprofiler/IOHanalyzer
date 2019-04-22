@@ -1472,7 +1472,7 @@ plot_RT_all_fcts.DataSetList <- function(dsList, scale.xlog = F,
         )
     }
 
-    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.02,
+    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.05,
                  heights = rep(1 / n_rows, n_rows),
                  widths = rep(1 / n_cols, n_cols))
   }

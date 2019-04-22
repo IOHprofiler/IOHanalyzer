@@ -21,7 +21,7 @@ f3 <- list(
 
 # TODO: create font object as above for title, axis...
 plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
-  plot_ly(width = 888, height = 500) %>%
+  plot_ly() %>%
     layout(title = list(text = title, 
                         font = list(size = 13, family = 'Old Standard TT, serif')),
            autosize = T, hovermode = 'compare',

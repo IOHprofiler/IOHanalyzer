@@ -510,7 +510,7 @@ get_FV_overview.DataSet <- function(ds, ...) {
              `median reached` = median_fv,
              runs = runs,
              `succ` = runs_reached,
-             Budget = budget)
+             budget = budget)
 }
 
 #' Get Runtime Value condensed overview

@@ -734,7 +734,7 @@ shinyServer(function(input, output, session) {
       paste0(as.character(t), collapse = ',')
     })
 
-    data.frame(funcId = funcId, target = unlist(targets))
+    data.frame(funcId = as.numeric(funcId), target = unlist(targets))
   })
 
   output$RT_GRID_GENERATED <- renderTable({

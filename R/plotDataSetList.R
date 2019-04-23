@@ -705,7 +705,7 @@ plot_RT_HIST.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'){
 #' the running times of the DataSetList at the target function values
 #' @export
 #'
-plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F){
+plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F) {
   req(length(ftargets) != 0)
 
   N <- length(dsList)
@@ -735,9 +735,10 @@ plot_RT_ECDF.DataSetList <- function(dsList, ftargets, scale.xlog = F){
       # y <- sapply(x, function(x) ecdf[rt == x][1])
 
       p %<>%
-        add_trace(data = NULL, x = rt, y = vals, type = 'scatter',
+        add_trace(x = rt, y = vals, type = 'scatter',
                   mode = 'lines+markers', name = algId, showlegend = (i == 1),
                   legendgroup = paste0(k),
+                  marker = list(color = rgb_str),
                   line = list(color = rgb_str, width = 3))
       # add_trace(data = NULL, x = x, y = y, type = 'scatter',
       #           mode = 'markers',  legendgroup = paste0(k),
@@ -1472,7 +1473,7 @@ plot_RT_all_fcts.DataSetList <- function(dsList, scale.xlog = F,
         )
     }
 
-    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.05,
+    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.03,
                  heights = rep(1 / n_rows, n_rows),
                  widths = rep(1 / n_cols, n_cols))
   }

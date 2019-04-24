@@ -2,9 +2,13 @@
 % Please edit documentation in R/DataSetList.R
 \name{mean_FVs}
 \alias{mean_FVs}
+\alias{mean_FVs.DataSetList}
 \title{Get the expected function-values for all DataSets in a DataSetList at certain runtimes}
 \usage{
 mean_FVs(dsList, aggr_on = "funcId", runtimes = NULL)
+
+\method{mean_FVs}{DataSetList}(dsList, aggr_on = "funcId",
+  runtimes = NULL)
 }
 \arguments{
 \item{dsList}{The DataSetLsit}

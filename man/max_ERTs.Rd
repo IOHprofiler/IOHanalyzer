@@ -2,9 +2,13 @@
 % Please edit documentation in R/DataSetList.R
 \name{max_ERTs}
 \alias{max_ERTs}
+\alias{max_ERTs.DataSetList}
 \title{Get the ERT-values for all DataSets in a DataSetList at certain targets}
 \usage{
 max_ERTs(dsList, aggr_on = "funcId", targets = NULL, maximize = T)
+
+\method{max_ERTs}{DataSetList}(dsList, aggr_on = "funcId",
+  targets = NULL, maximize = T)
 }
 \arguments{
 \item{dsList}{The DataSetLsit}

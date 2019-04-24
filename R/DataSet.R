@@ -151,6 +151,8 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
 #' @param ... Arguments passed to other methods
 #'
 #' @return A short description of the DataSet
+#' @examples 
+#' print(dsl)
 #' @export
 print.DataSet <- function(x, verbose = F, ...) {
   # TODO: implement the verbose mode
@@ -185,6 +187,8 @@ as.character.DataSet <- function(x, verbose = F, ...) {
 #' @param ... Arguments passed to other methods
 #'
 #' @return A summary of the DataSet containing both function-value and runtime based statistics.
+#' @examples 
+#' summary(dsl)
 #' @export
 summary.DataSet <- function(object, ...) {
   ds_attr <- attributes(object)
@@ -223,148 +227,64 @@ summary.DataSet <- function(object, ...) {
   cat(paste('Attributes:', paste0(names(ds_attr), collapse = ', ')))
 }
 
-#TODO: Should this function be removed? Seems to be replaced by plot_RT_single_fct
 
-# plot_ERT <- function(ds, backend = 'ggplot2') {
-#   p <- plotly_default(x.title = "best-so-far f(x)-value",
-#                        y.title = "function evaluations")
-#
-#   for (i in seq_along(data)) {
-#     algId <- attr(data[[i]], 'algId')
-#     ds_ERT <- dt[algId == attr(data[[i]], 'algId')]
-#
-#     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-#     rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
-#
-#     p %<>%
-#       add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-#                 line = list(color = rgba_str, width = 0),
-#                 showlegend = F, name = 'mean +/- sd') %>%
-#       add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
-#                 fill = 'tonexty',  line = list(color = 'transparent'),
-#                 fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd')
-#
-#     if (input$show.mean)
-#       p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
-#                        mode = 'lines+markers', name = paste0(algId, '.mean'),
-#                        marker = list(color = rgb_str),
-#                        line = list(color = rgb_str))
-#
-#     if (input$show.median)
-#       p %<>% add_trace(data = ds_ERT, x = ~target, y = ~median, type = 'scatter',
-#                        name = paste0(algId, '.median'), mode = 'lines+markers',
-#                        marker = list(color = rgb_str),
-#                        line = list(color = rgb_str, dash = 'dash'))
+# # TODO: implement the 'save' option
+# plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
+#   dt <- data.table(ds$RT)
+#   NC <- ncol(dt)
+#   colnames(dt) <- as.character(seq(ncol(dt)))
+#   dt[, target := as.numeric(rownames(ds$RT))]
+#   dt_mean <- data.table(target = dt$target, mean = rowMeans(dt[, -c('target')], na.rm = T))
+# 
+#   target <- dt[, target]
+#   N <- length(target)
+#   if (N >= 30) # limit the number of point to plot
+#     target <- as.numeric(target[seq(1, N, by = ceiling(N / 30))])
+# 
+#   # plot runtime curves
+#   p <- melt(dt, id.vars = 'target', variable.name = 'instance', value.name = 'runtime') %>%
+#     ggplot(aes(target, runtime, colour = as.factor(instance))) +
+#     geom_line(aes(group = instance), alpha = 0.8) +
+#     geom_line(data = dt_mean, aes(target, mean), colour = 'black', size = 1.5, alpha = 0.8) +
+#     scale_colour_manual(values = colorspace::rainbow_hcl(NC)) +
+#     scale_x_continuous(breaks = target) +
+#     guides(colour = FALSE)
+# 
+#   print(p)
+# 
+#   if (ask) x <- readline("show data aligned by runtime?")
+# 
+#   df <- ds$FV
+#   if (nrow(df) > 500) {
+#     idx <- c(1, seq(1, nrow(df), length.out = 500), nrow(df)) %>% unique
+#     df <- df[idx, ]
 #   }
-#   p %<>%
-#     layout(xaxis = list(type = ifelse(input$semilogx, 'log', 'linear')),
-#            yaxis = list(type = ifelse(input$semilogy, 'log', 'linear')))
-#
-#   # minimization for COCO
-#   if (format == 'COCO')
-#     p %<>% layout(xaxis = list(autorange = "reversed"))
-#   p
-# }
-
-# TODO: merge this function with the onese in plotDataSetList.R
-# plot_ERT <- function(ds, backend = 'ggplot2') {
-#   p <- plotly_default(x.title = "best-so-far f(x)-value",
-#                        y.title = "function evaluations")
-#
-#   for (i in seq_along(data)) {
-#     algId <- attr(data[[i]], 'algId')
-#     ds_ERT <- dt[algId == attr(data[[i]], 'algId')]
-#
-#     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-#     rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
-#
-#     p %<>%
-#       add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-#                 line = list(color = rgba_str, width = 0),
-#                 showlegend = F, name = 'mean +/- sd') %>%
-#       add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
-#                 fill = 'tonexty',  line = list(color = 'transparent'),
-#                 fillcolor = rgba_str, showlegend = T, name = 'mean +/- sd')
-#
-#     if (input$show.mean)
-#       p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
-#                        mode = 'lines+markers', name = paste0(algId, '.mean'),
-#                        marker = list(color = rgb_str),
-#                        line = list(color = rgb_str))
-#
-#     if (input$show.median)
-#       p %<>% add_trace(data = ds_ERT, x = ~target, y = ~median, type = 'scatter',
-#                        name = paste0(algId, '.median'), mode = 'lines+markers',
-#                        marker = list(color = rgb_str),
-#                        line = list(color = rgb_str, dash = 'dash'))
+# 
+#   dt <- data.table(df)
+#   colnames(dt) <- as.character(seq(ncol(dt)))
+#   dt[, budget := as.numeric(rownames(df))]
+#   dt_mean <- data.table(budget = dt$budget, mean = rowMeans(dt[, -c('budget')], na.rm = T))
+# 
+#   budget <- dt[, budget]
+#   N <- length(budget)
+#   if (N >= 30) {
+#     N.log10 <- log10(N)
+#     index <- floor(10 ^ seq(0, N.log10, by = N.log10 / 30))
+#     budget <- as.numeric(budget[index])
 #   }
-#   p %<>%
-#     layout(xaxis = list(type = ifelse(input$semilogx, 'log', 'linear')),
-#            yaxis = list(type = ifelse(input$semilogy, 'log', 'linear')))
-#
-#   # minimization for COCO
-#   if (format == 'COCO')
-#     p %<>% layout(xaxis = list(autorange = "reversed"))
-#   p
+# 
+#   # plot function value curves
+#   p <- melt(dt, id.vars = 'budget', variable.name = 'instance', value.name = 'Fvalue') %>%
+#     ggplot(aes(budget, Fvalue, colour = instance)) +
+#     geom_line(aes(group = instance), alpha = 0.8) +
+#     geom_line(data = dt_mean, aes(budget, mean), colour = 'black', size = 1.5, alpha = 0.8) +
+#     scale_colour_manual(values = colorspace::rainbow_hcl(NC)) +
+#     # scale_x_continuous(breaks = budget) +
+#     scale_x_log10() +
+#     guides(colour = FALSE)
+# 
+#   print(p)
 # }
-
-# TODO: implement the 'save' option
-plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
-  dt <- data.table(ds$RT)
-  NC <- ncol(dt)
-  colnames(dt) <- as.character(seq(ncol(dt)))
-  dt[, target := as.numeric(rownames(ds$RT))]
-  dt_mean <- data.table(target = dt$target, mean = rowMeans(dt[, -c('target')], na.rm = T))
-
-  target <- dt[, target]
-  N <- length(target)
-  if (N >= 30) # limit the number of point to plot
-    target <- as.numeric(target[seq(1, N, by = ceiling(N / 30))])
-
-  # plot runtime curves
-  p <- melt(dt, id.vars = 'target', variable.name = 'instance', value.name = 'runtime') %>%
-    ggplot(aes(target, runtime, colour = as.factor(instance))) +
-    geom_line(aes(group = instance), alpha = 0.8) +
-    geom_line(data = dt_mean, aes(target, mean), colour = 'black', size = 1.5, alpha = 0.8) +
-    scale_colour_manual(values = colorspace::rainbow_hcl(NC)) +
-    scale_x_continuous(breaks = target) +
-    guides(colour = FALSE)
-
-  print(p)
-
-  if (ask) x <- readline("show data aligned by runtime?")
-
-  df <- ds$FV
-  if (nrow(df) > 500) {
-    idx <- c(1, seq(1, nrow(df), length.out = 500), nrow(df)) %>% unique
-    df <- df[idx, ]
-  }
-
-  dt <- data.table(df)
-  colnames(dt) <- as.character(seq(ncol(dt)))
-  dt[, budget := as.numeric(rownames(df))]
-  dt_mean <- data.table(budget = dt$budget, mean = rowMeans(dt[, -c('budget')], na.rm = T))
-
-  budget <- dt[, budget]
-  N <- length(budget)
-  if (N >= 30) {
-    N.log10 <- log10(N)
-    index <- floor(10 ^ seq(0, N.log10, by = N.log10 / 30))
-    budget <- as.numeric(budget[index])
-  }
-
-  # plot function value curves
-  p <- melt(dt, id.vars = 'budget', variable.name = 'instance', value.name = 'Fvalue') %>%
-    ggplot(aes(budget, Fvalue, colour = instance)) +
-    geom_line(aes(group = instance), alpha = 0.8) +
-    geom_line(data = dt_mean, aes(budget, mean), colour = 'black', size = 1.5, alpha = 0.8) +
-    scale_colour_manual(values = colorspace::rainbow_hcl(NC)) +
-    # scale_x_continuous(breaks = budget) +
-    scale_x_log10() +
-    guides(colour = FALSE)
-
-  print(p)
-}
 
 #' S3 generic == operator for DataSets
 #'
@@ -374,6 +294,8 @@ plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
 #'
 #' @return True if the DataSets contain the same function, dimension and algorithm,
 #' and have equal precision and comments; False otherwise
+#' @examples 
+#' dsl[[1]] == dsl[[2]]
 #' @export
 `==.DataSet` <- function(dsL, dsR) {
   if (length(dsL) == 0 || length(dsR) == 0)
@@ -390,80 +312,102 @@ plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
 #'
 #' @param ds A DataSet or DataSetList object
 #' @param ... Arguments passed to other methods
-#'
+#' @param ftarget The function target(s) for which to get the ERT
 #'
 #' @return A data.table containing the runtime samples for each provided target
 #' function value
+#' @examples 
+#' get_ERT(dsl, 14)
+#' get_ERT(dsl[[1]], 14)
 #' @export
 #'
-get_ERT <- function(ds, ...) UseMethod("get_ERT", ds)
+get_ERT <- function(ds, ftarget, ...) UseMethod("get_ERT", ds)
 #' Get RunTime Sample
 #'
 #' @param ds A DataSet or DataSetList object
+#' @param ftarget A Numerical vector. Function values at which runtime values are consumed
 #' @param ... Arguments passed to other methods
 #'
 #'
 #' @return A data.table containing the runtime samples for each provided target
 #' function value
+#' @examples 
+#' get_RT_sample(dsl, 14)
+#' get_RT_sample(dsl[[1]], 14)
 #' @export
-#'
-get_RT_sample <- function(ds, ...) UseMethod("get_RT_sample", ds)
+get_RT_sample <- function(ds, ftarget, ...) UseMethod("get_RT_sample", ds)
 #' Get RunTime Summary
 #'
 #' @param ds A DataSet or DataSetList object
 #' @param ... Arguments passed to other methods
-#'
+#' @param ftarget The function target(s) for which to get the runtime summary
+#' 
 #' @return A data.table containing the runtime statistics for each provided target
 #' function value
+#' @examples 
+#' get_RT_summary(dsl, 14)
+#' get_RT_summary(dsl[[1]], 14)
 #' @export
-#'
-get_RT_summary <- function(ds, ...) UseMethod("get_RT_summary", ds)
+get_RT_summary <- function(ds, ftarget, ...) UseMethod("get_RT_summary", ds)
 #' Get Funtion Value Samples
 #'
 #' @param ds A DataSet or DataSetList object
+#' @param runtime A Numerical vector. Runtimes at which function values are reached
 #' @param ... Arguments passed to other methods
 #'
 #' @return A data.table containing the function value samples for each provided
 #' target runtime
+#' @examples 
+#' get_FV_sample(dsl, 100)
+#' get_FV_sample(dsl[[1]], 100)
 #' @export
-#'
 get_FV_sample <- function(ds, ...) UseMethod("get_FV_sample", ds)
 #' Get Function Value Summary
 #'
 #' @param ds A DataSet or DataSetList object
+#' @param runtime A Numerical vector. Runtimes at which function values are reached
 #' @param ... Arguments passed to other methods
 #'
 #' @return A data.table containing the function value statistics for each provided
 #' target runtime value
+#' @examples 
+#' get_FV_summary(dsl, 100)
+#' get_FV_summary(dsl[[1]], 100)
 #' @export
-#'
 get_FV_summary <- function(ds, ...) UseMethod("get_FV_summary", ds)
 #' Get Parameter Value Samples
 #'
 #' @param ds A DataSet or DataSetList object
+#' @param ftarget A Numerical vector. Function values at which parameter values are observed
 #' @param ... Arguments passed to other methods
-#'
+#' 
 #' @return A data.table object containing parameter values aligned at each given target value
+#' @examples 
+#' get_PAR_sample(dsl, 14)
+#' get_PAR_sample(dsl[[1]], 14)
 #' @export
-#'
-get_PAR_sample <- function(ds, ...) UseMethod("get_PAR_sample", ds)
+get_PAR_sample <- function(ds, ftarget, ...) UseMethod("get_PAR_sample", ds)
 #' Get Parameter Value Summary
 #'
 #' @param ds A DataSet or DataSetList object
+#' @param ftarget A Numerical vector. Function values at which parameter values are observed
 #' @param ... Arguments passed to other methods
 #'
 #' @return A data.table object containing basic statistics of parameter values aligned at each given target value
+#' @examples 
+#' get_PAR_summary(dsl, 14)
+#' get_PAR_summary(dsl[[1]], 14)
 #' @export
-#'
-get_PAR_summary <- function(ds, ...) UseMethod("get_PAR_summary", ds)
+get_PAR_summary <- function(ds, ftarget, ...) UseMethod("get_PAR_summary", ds)
 
 #' Get the parameter names of the algorithm
 #'
-#' @param ds A DataSet or DataSetList object
+#' @param ds A DataSet object
 #'
 #' @return a character list of paramter names, if recorded in the data set
+#' @examples 
+#' get_PAR_name(dsl[[1]])
 #' @export
-#'
 get_PAR_name <- function(ds) UseMethod("get_PAR_name", ds)
 #' Get Function Value condensed overview
 #'
@@ -472,8 +416,11 @@ get_PAR_name <- function(ds) UseMethod("get_PAR_name", ds)
 #'
 #' @return A data.table containing the algorithm ID, best, worst and mean reached function
 #' values, the number of runs and available budget for the DataSet
+#' @examples 
+#' get_FV_overview(dsl)
+#' get_FV_overview(dsl[[1]])
+#' get_FV_overview(dsl, algorithm = "(1+1)_greedy_hill_climber_1" )
 #' @export
-#'
 get_FV_overview <- function(ds, ...) UseMethod("get_FV_overview", ds)
 #' Get Runtime Value condensed overview
 #'
@@ -482,18 +429,15 @@ get_FV_overview <- function(ds, ...) UseMethod("get_FV_overview", ds)
 #'
 #' @return A data.table containing the algorithm ID, minimum and maximum used evaluations,
 #' number of runs and available budget for the DataSet
+#' @examples 
+#' get_RT_overview(dsl)
+#' get_RT_overview(dsl[[1]])
 #' @export
 get_RT_overview <- function(ds, ...) UseMethod("get_RT_overview", ds)
 
-#' Get Function Value condensed overview
-#'
-#' @param ds A DataSet object
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the algorithm ID, best, worst and mean reached function
-#' values, the number of runs and available budget for the DataSet
+
+#' @rdname get_FV_overview
 #' @export
-#'
 get_FV_overview.DataSet <- function(ds, ...) {
   data <- ds$FV
   runs <- ncol(data)
@@ -524,13 +468,7 @@ get_FV_overview.DataSet <- function(ds, ...) {
              Budget = budget)
 }
 
-#' Get Runtime Value condensed overview
-#'
-#' @param ds A DataSet object
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the algorithm ID, minimum and maximum used evaluations,
-#' number of runs and available budget for the DataSet
+#' @rdname get_RT_overview
 #' @export
 #'
 get_RT_overview.DataSet <- function(ds, ...) {
@@ -550,14 +488,7 @@ get_RT_overview.DataSet <- function(ds, ...) {
              Budget = budget)
 }
 
-#' Get Expected RunTime
-#'
-#' @param ds A DataSet object
-#' @param ftarget The function target(s) for which to get the runtime summary
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the runtime statistics for each provided target
-#' function value
+#' @rdname get_ERT
 #' @export
 #'
 get_ERT.DataSet <- function(ds, ftarget, ...) {
@@ -590,14 +521,7 @@ get_ERT.DataSet <- function(ds, ftarget, ...) {
     set_colnames(c('algId', 'target', 'ERT'))
 }
 
-#' Get RunTime Summary
-#'
-#' @param ds A DataSet object
-#' @param ftarget The function target(s) for which to get the runtime summary
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the runtime statistics for each provided target
-#' function value
+#' @rdname get_RT_summary
 #' @export
 #'
 get_RT_summary.DataSet <- function(ds, ftarget, ...) {
@@ -657,17 +581,9 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
   }
 }
 
-#' Get RunTime Sample
-#'
-#' @param ds A DataSet object
-#' @param ftarget A Numerical vector. Function values at which runtime values are consumed
+#' @rdname get_RT_sample
 #' @param output A character determining the format of output data.table: 'wide' or 'long'
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the runtime samples for each provided target
-#' function value
 #' @export
-#'
 get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide', ...) {
   data <- ds$RT
   N <- ncol(data)
@@ -700,14 +616,7 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide', ...) {
   res
 }
 
-#' Get Function Value Summary
-#'
-#' @param ds A DataSet object
-#' @param runtime A Numerical vector. Runtimes at which function values are reached
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the function value statistics for each provided
-#' target runtime value
+#' @rdname get_FV_summary
 #' @export
 #'
 get_FV_summary.DataSet <- function(ds, runtime, ...) {
@@ -737,15 +646,9 @@ get_FV_summary.DataSet <- function(ds, runtime, ...) {
     set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', 'sd', paste0(probs * 100, '%')))
 }
 
-#' Get Funtion Value Samples
+#' @rdname get_FV_sample
+#' @param output A String. The format of the output data: 'wide' or 'long'
 #'
-#' @param ds A DataSet object
-#' @param runtime A Numerical vector. Runtimes at which function values are reached
-#' @param output A character. The format of the output data: 'wide' or 'long'
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the function value samples for each provided
-#' target runtime
 #' @export
 #'
 get_FV_sample.DataSet <- function(ds, runtime, output = 'wide', ...) {
@@ -777,11 +680,7 @@ get_FV_sample.DataSet <- function(ds, runtime, output = 'wide', ...) {
   res
 }
 
-#' Get the parameter names of the algorithm
-#'
-#' @param ds A DataSet or DataSetList object
-#'
-#' @return a character list of paramter names, if recorded in the data set
+#' @rdname get_PAR_name
 #' @export
 #'
 get_PAR_name.DataSet <- function(ds) {
@@ -789,17 +688,9 @@ get_PAR_name.DataSet <- function(ds) {
   name[!(name %in% c('RT', 'RT.summary', 'FV'))]
 }
 
-#' Get Parameter Value Summary
-#'
-#' @param ds A DataSet object
-#' @param ftarget A Numerical vector. Function values at which parameter values are observed
+#' @rdname get_PAR_summary
 #' @param parId A character vector. Either 'all' or the name of parameters to be retrieved
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table object containing basic statistics of parameter values aligned
-#' at each given target value
 #' @export
-#'
 get_PAR_summary.DataSet <- function(ds, ftarget, parId = 'all', ...) {
   FValues <- rownames(ds$RT) %>% as.numeric
   idx <- seq_along(FValues)
@@ -839,17 +730,10 @@ get_PAR_summary.DataSet <- function(ds, ftarget, parId = 'all', ...) {
     rbindlist
 }
 
-#' Get Parameter Value Samples
-#'
-#' @param ds A DataSet object
-#' @param ftarget A Numerical vector. Function values at which parameter values are observed
+#' @rdname get_PAR_sample
 #' @param parId A character vector. Either 'all' or the name of parameters to be retrieved
 #' @param output A character. The format of the output data: 'wide' or 'long'
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table object containing parameter values aligned at each given target value
 #' @export
-#'
 get_PAR_sample.DataSet <- function(ds, ftarget, parId = 'all', output = 'wide', ...) {
   N <- length(attr(ds, 'instance'))
   FValues <- rownames(ds$RT) %>% as.numeric

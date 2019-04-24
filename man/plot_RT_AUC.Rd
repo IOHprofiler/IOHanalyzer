@@ -2,10 +2,14 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_RT_AUC}
 \alias{plot_RT_AUC}
+\alias{plot_RT_AUC.DataSetList}
 \title{Radarplot of the area under the aggregated ECDF-curve of a DataSetList.}
 \usage{
 plot_RT_AUC(dsList, fstart = NULL, fstop = NULL, fstep = NULL,
   fval_formatter = as.integer)
+
+\method{plot_RT_AUC}{DataSetList}(dsList, fstart = NULL, fstop = NULL,
+  fstep = NULL, fval_formatter = as.integer)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

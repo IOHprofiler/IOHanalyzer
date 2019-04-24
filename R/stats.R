@@ -168,13 +168,9 @@ EPMF <- function() {
 ECDF <- function(ds, ftarget, ...) UseMethod("ECDF", ds)
 
 # TODO: also implement the ecdf functions for function values and parameters
-#' Empirical Cumulative Dsitribution Function of Runtime of a single data set
-#'
-#' @param ds A DataSet object.
-#' @param ftarget A Numerical vector. Function values at which runtime values are consumed
-#' @return a object of type 'ECDF'
-#'
-ECDF.DataSet <- function(ds, ftarget) {
+#' @rdname ECDF
+#' @export
+ECDF.DataSet <- function(ds, ftarget, ...) {
   runtime <- get_RT_sample(ds, ftarget, output = 'long')$RT
   runtime <- runtime[!is.na(runtime)]
   if (length(runtime) == 0)
@@ -189,22 +185,16 @@ ECDF.DataSet <- function(ds, ftarget) {
 }
 
 #TODO: better description of funcId parameter
-#' Empirical Cumulative Dsitribution Function of Runtime of a list of data sets
-#'
-#' @param dsList A DataSetList object
-#' @param ftarget A Numerical vector or a list of numerical vector.
-#'                Function values at which runtime values are consumed. When it is a list,
-#'                it should have the same length as dsList
+#' @rdname ECDF
 #' @param funcId Function Ids to use
-#' @return a object of type 'ECDF'
-#'
-ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
-  if (length(dsList) == 0) return(NULL)
+#' @export
+ECDF.DataSetList <- function(ds, ftarget, funcId = NULL, ...) {
+  if (length(ds) == 0) return(NULL)
 
   if (is.list(ftarget)) {
     runtime <- sapply(seq_along(ftarget), function(i) {
       Id <- funcId[i]
-      data <- subset(dsList, funcId == Id)
+      data <- subset(ds, funcId == Id)
       if (length(data) == 0) return(NA)
       res <- get_RT_sample(data, ftarget[[i]], output = 'long')$RT
       res[is.na(res)] <- Inf
@@ -212,7 +202,7 @@ ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
     }) %>%
       unlist
   } else {
-    runtime <- get_RT_sample(dsList, ftarget, output = 'long')$RT
+    runtime <- get_RT_sample(ds, ftarget, output = 'long')$RT
     runtime[is.na(runtime)] <- Inf
   }
 

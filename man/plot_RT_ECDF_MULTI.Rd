@@ -2,10 +2,13 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_RT_ECDF_MULTI}
 \alias{plot_RT_ECDF_MULTI}
+\alias{plot_RT_ECDF_MULTI.DataSetList}
 \title{Plot the aggregated empirical cumulative distriburtion as a function of the running times of
 a DataSetList. Aggregated over multiple functions or dimensions.}
 \usage{
 plot_RT_ECDF_MULTI(dsList, targets = NULL)
+
+\method{plot_RT_ECDF_MULTI}{DataSetList}(dsList, targets = NULL)
 }
 \arguments{
 \item{dsList}{A DataSetList.}

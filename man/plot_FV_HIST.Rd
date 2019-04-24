@@ -2,9 +2,13 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_FV_HIST}
 \alias{plot_FV_HIST}
+\alias{plot_FV_HIST.DataSetList}
 \title{Plot histograms of the function values of a DataSetList at a certain target runtime}
 \usage{
 plot_FV_HIST(dsList, runtime, plot_mode = "overlay")
+
+\method{plot_FV_HIST}{DataSetList}(dsList, runtime,
+  plot_mode = "overlay")
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

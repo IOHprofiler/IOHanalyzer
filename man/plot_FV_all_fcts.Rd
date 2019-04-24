@@ -2,10 +2,14 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_FV_all_fcts}
 \alias{plot_FV_all_fcts}
-\title{Plot expected function value-plots for multiple functions or dimensions}
+\alias{plot_FV_all_fcts.DataSetList}
+\title{Plot FV-plots for multiple functions or dimensions}
 \usage{
 plot_FV_all_fcts(dsList, scale.xlog = F, scale.ylog = F,
   backend = "plotly")
+
+\method{plot_FV_all_fcts}{DataSetList}(dsList, scale.xlog = F,
+  scale.ylog = F, backend = "plotly")
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function OR dimension).}
@@ -17,8 +21,8 @@ plot_FV_all_fcts(dsList, scale.xlog = F, scale.ylog = F,
 \item{backend}{Which plotting library to use. Either 'plotly' or 'ggplot2'.}
 }
 \value{
-A plot of expected function values of the DataSetList
+A plot of Function-values of the DataSetList
 }
 \description{
-Plot expected function value-plots for multiple functions or dimensions
+Plot FV-plots for multiple functions or dimensions
 }

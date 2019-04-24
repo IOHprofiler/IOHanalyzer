@@ -2,10 +2,14 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_FCE_ECDF_PER_TARGET}
 \alias{plot_FCE_ECDF_PER_TARGET}
+\alias{plot_FCE_ECDF_PER_TARGET.DataSetList}
 \title{Plot the empirical cumulative distriburtion as a function of the target values of
 a DataSetList at certain target runtimes}
 \usage{
 plot_FCE_ECDF_PER_TARGET(dsList, runtimes, scale.xlog = F)
+
+\method{plot_FCE_ECDF_PER_TARGET}{DataSetList}(dsList, runtimes,
+  scale.xlog = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

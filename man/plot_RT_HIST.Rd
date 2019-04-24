@@ -2,9 +2,13 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_RT_HIST}
 \alias{plot_RT_HIST}
+\alias{plot_RT_HIST.DataSetList}
 \title{Plot histograms of the runtimes of a DataSetList at a certain target function value}
 \usage{
 plot_RT_HIST(dsList, ftarget, plot_mode = "overlay")
+
+\method{plot_RT_HIST}{DataSetList}(dsList, ftarget,
+  plot_mode = "overlay")
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

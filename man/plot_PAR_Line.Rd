@@ -2,10 +2,15 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_PAR_Line}
 \alias{plot_PAR_Line}
+\alias{plot_PAR_Line.DataSetList}
 \title{Plot the parameter values recorded in a DataSetList}
 \usage{
 plot_PAR_Line(dsList, f_min = NULL, f_max = NULL, algids = "all",
   scale.xlog = F, scale.ylog = F, show.mean = T, show.median = F)
+
+\method{plot_PAR_Line}{DataSetList}(dsList, f_min = NULL, f_max = NULL,
+  algids = "all", scale.xlog = F, scale.ylog = F, show.mean = T,
+  show.median = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

@@ -2,10 +2,15 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_FCE_AGGR}
 \alias{plot_FCE_AGGR}
+\alias{plot_FCE_AGGR.DataSetList}
 \title{Plot expected function value-based comparison over multiple functions or dimensions}
 \usage{
 plot_FCE_AGGR(dsList, aggr_on = "funcId", runtimes = NULL,
   plot_mode = "radar", use_rank = F, scale.ylog = T, fvs = NULL)
+
+\method{plot_FCE_AGGR}{DataSetList}(dsList, aggr_on = "funcId",
+  runtimes = NULL, plot_mode = "radar", use_rank = F,
+  scale.ylog = T, fvs = NULL)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function OR dimension).}

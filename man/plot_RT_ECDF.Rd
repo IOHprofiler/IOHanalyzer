@@ -2,10 +2,13 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_RT_ECDF}
 \alias{plot_RT_ECDF}
+\alias{plot_RT_ECDF.DataSetList}
 \title{Plot the empirical cumulative distriburtion as a function of the running times of
 a DataSetList at certain target function values}
 \usage{
 plot_RT_ECDF(dsList, ftargets, scale.xlog = F)
+
+\method{plot_RT_ECDF}{DataSetList}(dsList, ftargets, scale.xlog = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

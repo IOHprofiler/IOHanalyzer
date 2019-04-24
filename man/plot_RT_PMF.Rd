@@ -2,10 +2,14 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_RT_PMF}
 \alias{plot_RT_PMF}
+\alias{plot_RT_PMF.DataSetList}
 \title{Plot probablity mass function of the runtimes of a DataSetList at a certain target function value}
 \usage{
 plot_RT_PMF(dsList, ftarget, show.sample = F, scale.ylog = F,
   backend = "plotly")
+
+\method{plot_RT_PMF}{DataSetList}(dsList, ftarget, show.sample = F,
+  scale.ylog = F, backend = "plotly")
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

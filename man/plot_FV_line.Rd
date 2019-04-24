@@ -2,6 +2,7 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_FV_line}
 \alias{plot_FV_line}
+\alias{plot_FV_line.DataSetList}
 \title{Plot lineplot of the expected function values of a DataSetList}
 \usage{
 plot_FV_line(dsList, RTstart = NULL, RTstop = NULL, show.CI = T,
@@ -9,6 +10,13 @@ plot_FV_line(dsList, RTstart = NULL, RTstop = NULL, show.CI = T,
   show.grad = F, show.intensity = 0, show.pareto = F,
   show.optimal = F, backend = "plotly", scale.xlog = F,
   scale.ylog = F, scale.reverse = F)
+
+\method{plot_FV_line}{DataSetList}(dsList, RTstart = NULL,
+  RTstop = NULL, show.CI = T, show.mean = F, show.median = F,
+  show.runs = F, show.density = 50, show.grad = F,
+  show.intensity = 0, show.pareto = F, show.optimal = F,
+  backend = "plotly", scale.xlog = F, scale.ylog = F,
+  scale.reverse = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

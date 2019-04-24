@@ -2,10 +2,14 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_RT_all_fcts}
 \alias{plot_RT_all_fcts}
+\alias{plot_RT_all_fcts.DataSetList}
 \title{Plot ERT-plots for multiple functions or dimensions}
 \usage{
 plot_RT_all_fcts(dsList, scale.xlog = F, scale.ylog = F,
   scale.reverse = F, backend = "plotly")
+
+\method{plot_RT_all_fcts}{DataSetList}(dsList, scale.xlog = F,
+  scale.ylog = F, scale.reverse = F, backend = "plotly")
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function OR dimension).}

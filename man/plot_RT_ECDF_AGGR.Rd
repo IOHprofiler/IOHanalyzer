@@ -2,11 +2,15 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_RT_ECDF_AGGR}
 \alias{plot_RT_ECDF_AGGR}
+\alias{plot_RT_ECDF_AGGR.DataSetList}
 \title{Plot the aggregated empirical cumulative distriburtion as a function of the running times of
 a DataSetList.}
 \usage{
 plot_RT_ECDF_AGGR(dsList, fstart = NULL, fstop = NULL, fstep = NULL,
   show.per_target = F, scale.xlog = F)
+
+\method{plot_RT_ECDF_AGGR}{DataSetList}(dsList, fstart = NULL,
+  fstop = NULL, fstep = NULL, show.per_target = F, scale.xlog = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

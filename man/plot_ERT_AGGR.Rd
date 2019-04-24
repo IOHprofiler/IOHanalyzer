@@ -2,11 +2,16 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_ERT_AGGR}
 \alias{plot_ERT_AGGR}
+\alias{plot_ERT_AGGR.DataSetList}
 \title{Plot ERT-based comparison over multiple functions or dimensions}
 \usage{
 plot_ERT_AGGR(dsList, aggr_on = "funcId", targets = NULL,
   plot_mode = "radar", use_rank = F, scale.ylog = T, maximize = T,
   erts = NULL)
+
+\method{plot_ERT_AGGR}{DataSetList}(dsList, aggr_on = "funcId",
+  targets = NULL, plot_mode = "radar", use_rank = F,
+  scale.ylog = T, maximize = T, erts = NULL)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function OR dimension).}

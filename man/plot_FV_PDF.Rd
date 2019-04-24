@@ -2,10 +2,14 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_FV_PDF}
 \alias{plot_FV_PDF}
+\alias{plot_FV_PDF.DataSetList}
 \title{Plot probablity density function of the function values of a DataSetList at
 a certain target runtime}
 \usage{
 plot_FV_PDF(dsList, runtime, show.sample = F, scale.ylog = F)
+
+\method{plot_FV_PDF}{DataSetList}(dsList, runtime, show.sample = F,
+  scale.ylog = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

@@ -2,11 +2,16 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{plot_FV_ECDF_AGGR}
 \alias{plot_FV_ECDF_AGGR}
+\alias{plot_FV_ECDF_AGGR.DataSetList}
 \title{Plot the aggregated empirical cumulative distriburtion as a function of the function values of
 a DataSetList.}
 \usage{
 plot_FV_ECDF_AGGR(dsList, rt_min = NULL, rt_max = NULL,
   rt_step = NULL, scale.xlog = F, show.per_target = F)
+
+\method{plot_FV_ECDF_AGGR}{DataSetList}(dsList, rt_min = NULL,
+  rt_max = NULL, rt_step = NULL, scale.xlog = F,
+  show.per_target = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

@@ -38,3 +38,6 @@ A plot of ERT-based comparison on the provided functions or dimensions of the Da
 \description{
 Plot ERT-based comparison over multiple functions or dimensions
 }
+\examples{
+plot_ERT_AGGR(dsl)
+}

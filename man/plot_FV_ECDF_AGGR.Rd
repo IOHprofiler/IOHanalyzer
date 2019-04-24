@@ -34,3 +34,6 @@ the function values of the DataSetList
 Plot the aggregated empirical cumulative distriburtion as a function of the function values of
 a DataSetList.
 }
+\examples{
+plot_FV_ECDF_AGGR(subset(dsl, funcId == 1))
+}

@@ -28,3 +28,6 @@ A plot of the probablity density function of the runtimes at a the
 Plot probablity density function of the function values of a DataSetList at
 a certain target runtime
 }
+\examples{
+plot_FV_PDF(subset(dsl, funcId == 1), 100)
+}

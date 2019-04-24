@@ -25,3 +25,6 @@ A data.table containing ERT-values
 \description{
 Get the ERT-values for all DataSets in a DataSetList at certain targets
 }
+\examples{
+max_ERTs(dsl)
+}

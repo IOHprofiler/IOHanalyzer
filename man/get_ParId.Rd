@@ -15,3 +15,6 @@ A sorted list of all unique parameter ids which occur in the DataSetList
 \description{
 Get all parameter ids present in a DataSetList
 }
+\examples{
+get_parId(dsl)
+}

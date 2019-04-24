@@ -27,3 +27,7 @@ a object of type 'ECDF'
 \description{
 Empirical Cumulative Dsitribution Function of Runtime of a single data set
 }
+\examples{
+ECDF(dsl,c(12,14))
+ECDF(dsl[[1]],c(12,14))
+}

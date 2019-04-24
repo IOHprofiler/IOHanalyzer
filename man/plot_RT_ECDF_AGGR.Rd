@@ -33,3 +33,6 @@ the running times of the DataSetList
 Plot the aggregated empirical cumulative distriburtion as a function of the running times of
 a DataSetList.
 }
+\examples{
+plot_RT_ECDF_AGGR(subset(dsl, funcId == 1))
+}

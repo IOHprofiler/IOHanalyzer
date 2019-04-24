@@ -15,3 +15,6 @@ A list matrices of all function values which occur in the DataSetList
 \description{
 Get all function values present in a DataSetList
 }
+\examples{
+get_funvals(dsl)
+}

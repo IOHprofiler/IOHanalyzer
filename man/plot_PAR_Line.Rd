@@ -35,3 +35,6 @@ A plot of for every recorded parameter in the DataSetList
 \description{
 Plot the parameter values recorded in a DataSetList
 }
+\examples{
+plot_PAR_Line(subset(dsl, funcId == 1))
+}

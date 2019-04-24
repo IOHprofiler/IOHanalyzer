@@ -152,7 +152,7 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
 #'
 #' @return A short description of the DataSet
 #' @examples 
-#' print(dsl)
+#' print(dsl[[1]])
 #' @export
 print.DataSet <- function(x, verbose = F, ...) {
   # TODO: implement the verbose mode
@@ -175,6 +175,8 @@ cat.DataSet <- function(x) cat(as.character(x))
 #'
 #' @return A short description of the DataSet
 #' @export
+#' @examples 
+#' as.character(dsl[[1]])
 as.character.DataSet <- function(x, verbose = F, ...) {
   # TODO: implement the verbose mode
   sprintf('DataSet(%s on f%s %dD)', attr(x, 'algId'), attr(x, 'funcId'),
@@ -188,7 +190,7 @@ as.character.DataSet <- function(x, verbose = F, ...) {
 #'
 #' @return A summary of the DataSet containing both function-value and runtime based statistics.
 #' @examples 
-#' summary(dsl)
+#' summary(dsl[[1]])
 #' @export
 summary.DataSet <- function(object, ...) {
   ds_attr <- attributes(object)

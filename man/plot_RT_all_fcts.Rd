@@ -28,3 +28,6 @@ A plot of ERT-values of the DataSetList
 \description{
 Plot ERT-plots for multiple functions or dimensions
 }
+\examples{
+plot_RT_all_fcts(dsl)
+}

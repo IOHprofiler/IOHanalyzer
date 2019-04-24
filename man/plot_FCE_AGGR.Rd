@@ -37,3 +37,6 @@ A plot of expected function value-based comparison on the provided functions
 \description{
 Plot expected function value-based comparison over multiple functions or dimensions
 }
+\examples{
+plot_FCE_AGGR(dsl)
+}

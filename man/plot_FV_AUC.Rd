@@ -25,3 +25,6 @@ A radarplot of the area under the aggregated ECDF-curve of the DataSetList
 \description{
 Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
 }
+\examples{
+plot_FV_AUC(subset(dsl, funcId == 1))
+}

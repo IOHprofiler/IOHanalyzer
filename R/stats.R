@@ -5,7 +5,7 @@
 #'
 #' @return A list containing ERTs, number of succesfull runs and the succes rate
 #' @export
-#'
+#' 
 SP <- function(data, max_runtime) {
   N <- ncol(data)
   succ <- apply(data, 1, function(x) sum(!is.na(x)))
@@ -34,7 +34,9 @@ SP <- function(data, max_runtime) {
 #'
 #' @return A sequence of function values
 #' @export
-#'
+#' @examples 
+#' FVall <- get_runtimes(dsl)
+#' seq_FV(FVall, 10, 16, 1, scale='linear')
 seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, scale = NULL) {
   from <- max(from, min(FV))
   to <- min(to, max(FV))
@@ -105,7 +107,9 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
 #'
 #' @return A sequence of runtime values
 #' @export
-#'
+#' @examples 
+#' RTall <- get_runtimes(dsl)
+#' seq_RT(RTall, 0, 500, length.out=10, scale='log')
 seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
                    scale = 'linear') {
   rev_trans <- function(x) x
@@ -164,7 +168,9 @@ EPMF <- function() {
 #'
 #' @return a object of type 'ECDF'
 #' @export
-#'
+#' @examples 
+#' ECDF(dsl,c(12,14))
+#' ECDF(dsl[[1]],c(12,14))
 ECDF <- function(ds, ftarget, ...) UseMethod("ECDF", ds)
 
 # TODO: also implement the ecdf functions for function values and parameters
@@ -224,17 +230,13 @@ ECDF.DataSetList <- function(ds, ftarget, funcId = NULL, ...) {
 #'
 #' @return a object of type 'ECDF'
 #' @export
-#'
+#' @examples 
+#' ecdf <- ECDF(dsl,c(12,14))
+#' AUC(ecdf, 0, 100)
 AUC <- function(fun, from = NULL, to = NULL) UseMethod('AUC', fun)
 
-#' Area Under Curve (Empirical Cumulative Dsitribution Function)
-#'
-#' @param fun A ECDF object.
-#' @param from double. Starting point of the area on x-axis
-#' @param to   double. Ending point of the area on x-axis
-#'
-#' @return a object of type 'ECDF'
-#'
+#' @rdname AUC
+#' @export
 AUC.ECDF <- function(fun, from = NULL, to = NULL) {
   if (is.null(from))
     from <- attr(fun, 'min')
@@ -256,7 +258,8 @@ AUC.ECDF <- function(fun, from = NULL, to = NULL) {
 #'
 #' @return a vector of targets
 #' @export
-#'
+#' @examples 
+#' get_default_ECDF_targets(dsl)
 get_default_ECDF_targets <- function(data, format_func = as.integer){
   funcIds <- get_funcId(data)
   dims <- get_dim(data)

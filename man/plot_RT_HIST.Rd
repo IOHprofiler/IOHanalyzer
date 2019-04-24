@@ -25,3 +25,6 @@ A plot of the histograms of the runtimes at a the
 \description{
 Plot histograms of the runtimes of a DataSetList at a certain target function value
 }
+\examples{
+plot_RT_HIST(subset(dsl, funcId == 1), 14)
+}

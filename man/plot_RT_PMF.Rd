@@ -29,3 +29,6 @@ A plot of the probablity mass function of the runtimes at a the
 \description{
 Plot probablity mass function of the runtimes of a DataSetList at a certain target function value
 }
+\examples{
+plot_RT_PMF(subset(dsl, funcId == 1), 14)
+}

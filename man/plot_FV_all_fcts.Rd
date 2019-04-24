@@ -26,3 +26,6 @@ A plot of Function-values of the DataSetList
 \description{
 Plot FV-plots for multiple functions or dimensions
 }
+\examples{
+plot_FV_all_fcts(dsl)
+}

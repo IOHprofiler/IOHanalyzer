@@ -6,7 +6,7 @@
 \title{Plot lineplot of the ERTs of a DataSetList}
 \usage{
 plot_RT_single_fct(dsList, Fstart = NULL, Fstop = NULL, show.ERT = T,
-  show.CI = T, show.mean = F, show.runs = F, show.density = 50,
+  show.CI = F, show.mean = F, show.runs = F, show.density = 50,
   show.grad = F, show.intensity = 0, show.pareto = F,
   show.optimal = F, show.median = F, backend = "plotly",
   scale.xlog = F, scale.ylog = F, scale.reverse = F)
@@ -58,4 +58,7 @@ A plot of ERT-values of the DataSetList
 }
 \description{
 Plot lineplot of the ERTs of a DataSetList
+}
+\examples{
+plot_RT_single_fct(subset(dsl, funcId == 1))
 }

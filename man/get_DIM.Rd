@@ -15,3 +15,6 @@ A sorted list of all unique dimensions which occur in the DataSetList
 \description{
 Get all dimensions present in a DataSetList
 }
+\examples{
+get_dim(dsl)
+}

@@ -24,3 +24,6 @@ the running times of the DataSetList
 Plot the aggregated empirical cumulative distriburtion as a function of the running times of
 a DataSetList. Aggregated over multiple functions or dimensions.
 }
+\examples{
+plot_RT_ECDF_MULTI(subset(dsl, funcId == 1))
+}

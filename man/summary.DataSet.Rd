@@ -18,5 +18,5 @@ A summary of the DataSet containing both function-value and runtime based statis
 S3 generic summary operator for DataSet
 }
 \examples{
-summary(dsl)
+summary(dsl[[1]])
 }

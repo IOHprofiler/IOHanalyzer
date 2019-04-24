@@ -29,3 +29,7 @@ A sequence of function values
 \description{
 Function for generating sequences of function values
 }
+\examples{
+FVall <- get_runtimes(dsl)
+seq_FV(FVall, 10, 16, 1, scale='linear')
+}

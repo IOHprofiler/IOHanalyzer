@@ -20,5 +20,5 @@ A short description of the DataSet
 S3 generic print operator for DataSet
 }
 \examples{
-print(dsl)
+print(dsl[[1]])
 }

@@ -26,3 +26,6 @@ the fucntion values of the DataSetList at the target runtimes
 Plot the empirical cumulative distriburtion as a function of the target values of
 a DataSetList at certain target runtimes
 }
+\examples{
+plot_FCE_ECDF_PER_TARGET(subset(dsl, funcId == 1), 10)
+}

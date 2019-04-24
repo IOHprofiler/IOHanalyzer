@@ -18,3 +18,6 @@ The filtered DataSetList
 \description{
 Filter a DataSetList by some criterium
 }
+\examples{
+subset(dsl, funcId == 1)
+}

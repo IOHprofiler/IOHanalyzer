@@ -5,8 +5,8 @@
 \alias{plot_FV_line.DataSetList}
 \title{Plot lineplot of the expected function values of a DataSetList}
 \usage{
-plot_FV_line(dsList, RTstart = NULL, RTstop = NULL, show.CI = T,
-  show.mean = F, show.median = F, show.runs = F, show.density = 50,
+plot_FV_line(dsList, RTstart = NULL, RTstop = NULL, show.CI = F,
+  show.mean = T, show.median = F, show.runs = F, show.density = 50,
   show.grad = F, show.intensity = 0, show.pareto = F,
   show.optimal = F, backend = "plotly", scale.xlog = F,
   scale.ylog = F, scale.reverse = F)
@@ -56,4 +56,7 @@ A plot of ERT-values of the DataSetList
 }
 \description{
 Plot lineplot of the expected function values of a DataSetList
+}
+\examples{
+plot_FV_line(subset(dsl, funcId == 1))
 }

@@ -17,3 +17,6 @@ a vector of targets
 \description{
 Generate ECDF targets for a DataSetList
 }
+\examples{
+get_default_ECDF_targets(dsl)
+}

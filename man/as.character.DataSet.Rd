@@ -19,3 +19,6 @@ A short description of the DataSet
 \description{
 S3 generic as.character operator for DataSet
 }
+\examples{
+as.character(dsl[[1]])
+}

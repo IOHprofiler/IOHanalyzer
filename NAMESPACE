@@ -2,6 +2,7 @@
 
 S3method("==",DataSet)
 S3method("[",DataSetList)
+S3method(AUC,ECDF)
 S3method(ECDF,DataSet)
 S3method(ECDF,DataSetList)
 S3method(as.character,DataSet)

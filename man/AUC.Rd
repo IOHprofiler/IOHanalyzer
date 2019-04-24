@@ -2,9 +2,12 @@
 % Please edit documentation in R/stats.R
 \name{AUC}
 \alias{AUC}
+\alias{AUC.ECDF}
 \title{Area Under Curve (Empirical Cumulative Dsitribution Function)}
 \usage{
 AUC(fun, from = NULL, to = NULL)
+
+\method{AUC}{ECDF}(fun, from = NULL, to = NULL)
 }
 \arguments{
 \item{fun}{A ECDF object.}
@@ -18,4 +21,8 @@ a object of type 'ECDF'
 }
 \description{
 Area Under Curve (Empirical Cumulative Dsitribution Function)
+}
+\examples{
+ecdf <- ECDF(dsl,c(12,14))
+AUC(ecdf, 0, 100)
 }

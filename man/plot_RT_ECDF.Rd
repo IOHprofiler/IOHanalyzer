@@ -25,3 +25,6 @@ the running times of the DataSetList at the target function values
 Plot the empirical cumulative distriburtion as a function of the running times of
 a DataSetList at certain target function values
 }
+\examples{
+plot_RT_ECDF(subset(dsl, funcId == 1), 14)
+}

@@ -25,3 +25,6 @@ A plot of the histograms of the function values at a the
 \description{
 Plot histograms of the function values of a DataSetList at a certain target runtime
 }
+\examples{
+plot_FV_HIST(subset(dsl, funcId == 1), 100)
+}

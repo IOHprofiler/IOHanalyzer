@@ -103,7 +103,8 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
 #' @param ... The DataSetLists to concatenate
 #' @return A new DataSetList
 #' @export
-#'
+#' @examples 
+#' c(dsl[1],dsl[3])
 c.DataSetList <- function(...) {
   # TODO: maybe remove duplicated dataset in the further
   # remove the empty list first
@@ -130,7 +131,8 @@ c.DataSetList <- function(...) {
 #' @param drop Currently unused parameter
 #' @return The DataSetList of the DataSets at indices i of DataSetList x
 #' @export
-#'
+#' @examples 
+#' dsl[c(1,3)]
 `[.DataSetList` <- function(x, i, drop = FALSE) {
   # remove the attributes firstly
   obj <- unclass(x)[i]
@@ -148,7 +150,8 @@ c.DataSetList <- function(...) {
 #' @param x The DataSetList to print
 #' @param ... Arguments for underlying print function?
 #' @export
-#'
+#' @examples 
+#' print(dsl) 
 print.DataSetList <- function(x, ...) {
   cat('DataSetList:\n')
   for (i in seq_along(x)) {
@@ -166,7 +169,8 @@ print.DataSetList <- function(x, ...) {
 #' @param object The DataSetList to print
 #' @param ... Arguments for underlying summary function?
 #' @export
-#'
+#' @examples 
+#' summary(dsl)
 summary.DataSetList <- function(object, ...) {
   sapply(object, function(d) {
     list(funcId = attr(d, 'funcId'),
@@ -317,6 +321,8 @@ get_PAR_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
 #'
 #' @return A sorted list of all unique dimensions which occur in the DataSetList
 #' @export
+#' @examples 
+#' get_dim(dsl)
 get_dim <- function(dsList) {
   sapply(dsList, function(d) attr(d, 'DIM')) %>% unique %>% sort
 }
@@ -327,6 +333,8 @@ get_dim <- function(dsList) {
 #'
 #' @return A sorted list of all unique function ids which occur in the DataSetList
 #' @export
+#' @examples 
+#' get_funcId(dsl)
 get_funcId <- function(dsList) {
   sapply(dsList, function(d) attr(d, 'funcId')) %>% unique %>% sort
 }
@@ -337,6 +345,8 @@ get_funcId <- function(dsList) {
 #'
 #' @return A sorted list of all unique algorithm ids which occur in the DataSetList
 #' @export
+#' @examples 
+#' get_algId(dsl)
 get_algId <- function(dsList) {
   sapply(dsList, function(d) attr(d, 'algId')) %>% unique %>% sort
 }
@@ -347,6 +357,8 @@ get_algId <- function(dsList) {
 #'
 #' @return A sorted list of all unique parameter ids which occur in the DataSetList
 #' @export
+#' @examples 
+#' get_parId(dsl)
 get_parId <- function(dsList) {
   lapply(dsList, function(d) setdiff(names(d), c('RT', 'FV', 'RT.summary'))) %>% unlist %>% unique
 }
@@ -360,6 +372,8 @@ get_parId <- function(dsList) {
 #'
 #' @return A list matrices of all function values which occur in the DataSetList
 #' @export
+#' @examples 
+#' get_funvals(dsl)
 get_funvals <- function(dsList) {
   lapply(dsList, function(x) rownames(x$RT)) %>% unlist %>%
     as.numeric %>% unique %>% sort %>% rev
@@ -371,6 +385,8 @@ get_funvals <- function(dsList) {
 #'
 #' @return A list matrices of all runtime values which occur in the DataSetList
 #' @export
+#' @examples 
+#' get_runtimes(dsl)
 get_runtimes <- function(dsList) {
   lapply(dsList, function(x) rownames(x$FV)) %>% unlist %>%
     as.numeric %>% unique %>% sort
@@ -404,6 +420,8 @@ get_runtimes <- function(dsList) {
 #'
 #' @return The filtered DataSetList
 #' @export
+#' @examples 
+#' subset(dsl, funcId == 1)
 subset.DataSetList <- function(x, ...) {
   n <- nargs() - 1
   condition_call <- substitute(list(...))
@@ -426,6 +444,8 @@ subset.DataSetList <- function(x, ...) {
 #'
 #' @return A data.table containing ERT-values
 #' @export
+#' @examples 
+#' max_ERTs(dsl)
 max_ERTs <- function(dsList, aggr_on = 'funcId', targets = NULL, maximize = T) UseMethod("max_ERTs", dsList)
 
 #TODO: rename this function! this function needs to be rewritten
@@ -469,6 +489,8 @@ max_ERTs.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, max
 #'
 #' @return A data.table containing expected fucntion-values
 #' @export
+#' @examples 
+#' mean_FVs(dsl)
 mean_FVs <- function(dsList, aggr_on = 'funcId', runtimes = NULL) UseMethod("mean_FVs", dsList)
 
 #' @rdname mean_FVs

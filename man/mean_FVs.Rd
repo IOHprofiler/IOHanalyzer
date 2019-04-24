@@ -23,3 +23,6 @@ A data.table containing expected fucntion-values
 \description{
 Get the expected function-values for all DataSets in a DataSetList at certain runtimes
 }
+\examples{
+mean_FVs(dsl)
+}

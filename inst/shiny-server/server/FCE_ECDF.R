@@ -2,7 +2,7 @@
 output$FCE_ECDF_PER_TARGET <- renderPlotly({
   req(input$FCEECDF.Single.Target)
   runtimes <- as.integer(input$FCEECDF.Single.Target)
-  plot_FCE_ECDF_PER_TARGET(DATA(),runtimes, scale.xlog = input$FCEECDF.Single.Logx)
+  Plot.FV.ECDF_Per_Target(DATA(),runtimes, scale.xlog = input$FCEECDF.Single.Logx)
 })
 
 output$FCE_RT_GRID <- renderPrint({
@@ -26,7 +26,7 @@ render_FV_ECDF_AGGR <- reactive({
   rt_max <- input$FCEECDF.Mult.Max %>% as.integer
   rt_step <- input$FCEECDF.Mult.Step %>% as.integer
 
-  plot_FV_ECDF_AGGR(DATA(),rt_min = rt_min,
+  Plot.FV.ECDF_Single_Function(DATA(),rt_min = rt_min,
                     rt_max = rt_max, rt_step = rt_step,
                     scale.xlog = input$FCEECDF.Mult.Logx,
                     show.per_target = input$FCEECDF.Mult.Targets)
@@ -55,7 +55,7 @@ render_FV_AUC <- reactive({
   rt_min <- input$FCEECDF.AUC.Min %>% as.integer
   rt_max <- input$FCEECDF.AUC.Max %>% as.integer
   rt_step <- input$FCEECDF.AUC.Step %>% as.integer
-  plot_FV_AUC(DATA(), rt_min = rt_min,
+  Plot.FV.ECDF_AUC(DATA(), rt_min = rt_min,
               rt_max = rt_max, rt_step = rt_step)
 
 })

@@ -5,7 +5,7 @@ render_PAR_PER_FUN <- reactive({
   f_min <- format_FV(input$PAR.Plot.Min) %>% as.numeric
   f_max <- format_FV(input$PAR.Plot.Max) %>% as.numeric
   tryCatch(
-    plot_PAR_Line(DATA(),f_min,f_max,algids = input$PAR.Plot.Algid,
+    Plot.Parameters(DATA(),f_min,f_max,algids = input$PAR.Plot.Algid,
                   show.mean = (input$PAR.Plot.show.mean == 'mean'),
                   show.median = (input$PAR.Plot.show.mean == 'median'),
                   scale.xlog = input$PAR.Plot.Logx,

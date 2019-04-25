@@ -140,7 +140,7 @@ render_ert_per_fct <- reactive({
   data <- subset(DATA(), algId %in% input$ERTPlot.Algs)
   fstart <- input$ERTPlot.Min %>% as.numeric
   fstop <- input$ERTPlot.Max %>% as.numeric
-  plot_RT_single_fct(data, Fstart = fstart, Fstop = fstop,
+  Plot.RT.Single_Func(data, Fstart = fstart, Fstop = fstop,
                      show.CI = input$ERTPlot.show.CI,
                      show.density = input$ERTPlot.show.density,
                      show.runs = input$ERTPlot.show_all,
@@ -167,7 +167,7 @@ render_ERTPlot_multi_plot <- eventReactive(input$ERTPlot.Multi.PlotButton, {
                  DIM == input$Overall.Dim)
   req(data)
 
-  plot_RT_all_fcts(data,
+  Plot.RT.Multi_Func(data,
                    scale.xlog = input$ERTPlot.Multi.Logx,
                    scale.ylog = input$ERTPlot.Multi.Logy,
                    scale.reverse = (format == COCO || format == BIBOJ_COCO))
@@ -215,7 +215,7 @@ render_ERTPlot_aggr_plot <- reactive({
   targets <- get_max_targets(data, aggr_on, maximize = !(format == COCO || format == BIBOJ_COCO))
   erts <- max_ERTs(data, aggr_on, targets, maximize = !(format == COCO || format == BIBOJ_COCO))
 
-  plot_ERT_AGGR(data, plot_mode = input$ERTPlot.Aggr.Mode, targets = targets,
+  Plot.RT.Aggregated(data, plot_mode = input$ERTPlot.Aggr.Mode, targets = targets,
                 scale.ylog = input$ERTPlot.Aggr.Logy,
                 maximize = !(format == COCO || format == BIBOJ_COCO),
                 use_rank = input$ERTPlot.Aggr.Ranking,

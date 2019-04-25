@@ -19,7 +19,7 @@ output$FCEPlot.Download <- downloadHandler(
 render_FV_PER_FUN <- reactive({
   rt_min <- input$FCEPlot.Min %>% as.integer
   rt_max <- input$FCEPlot.Max %>% as.integer
-  plot_FV_line(DATA(), RTstart = rt_min, RTstop = rt_max, show.CI = input$FCEPlot.show.CI,
+  Plot.FV.Single_Func(DATA(), RTstart = rt_min, RTstop = rt_max, show.CI = input$FCEPlot.show.CI,
                show.grad = input$FCEPlot.show.grad, show.intensity = input$FCEPlot.show.intensity,
                show.density = input$FCEPlot.show.density, show.pareto = input$FCEPlot.show.pareto_optima,
                show.runs = input$FCEPlot.show.all, show.optimal = input$FCEPlot.show.best_of_all,
@@ -39,7 +39,7 @@ render_FCEPlot_multi_plot <- eventReactive(input$FCEPlot.Multi.PlotButton, {
                  DIM == input$Overall.Dim)
   req(data)
 
-  plot_FV_all_fcts(data,
+  Plot.FV.Multi_Func(data,
                    scale.xlog = input$FCEPlot.Multi.Logx,
                    scale.ylog = input$FCEPlot.Multi.Logy)
 })
@@ -110,7 +110,7 @@ render_FCEPlot_aggr_plot <- reactive({
   }
   if(update_data)
     fvs <- mean_FVs(data, aggr_on, runtimes)
-  plot_FCE_AGGR(data, plot_mode = input$FCEPlot.Aggr.Mode, runtimes = runtimes,
+  Plot.FV.Aggregated(data, plot_mode = input$FCEPlot.Aggr.Mode, runtimes = runtimes,
                 scale.ylog = input$FCEPlot.Aggr.Logy,
                 use_rank = input$FCEPlot.Aggr.Ranking,
                 aggr_on = aggr_on, fvs = fvs)

@@ -17,7 +17,7 @@ output$RTPMF.Bar.Download <- downloadHandler(
 
 render_RT_PMF <- reactive({
   ftarget <- input$RTPMF.Bar.Target %>% as.numeric
-  plot_RT_PMF(DATA(), ftarget, show.sample = input$RTPMF.Bar.Sample,
+  Plot.RT.PMF(DATA(), ftarget, show.sample = input$RTPMF.Bar.Sample,
               scale.ylog = input$RTPMF.Bar.Logy)
 })
 
@@ -45,5 +45,5 @@ render_RT_HIST <- reactive({
   plot_mode <- input$RTPMF.Hist.Mode
 
   # TODO: remove 'DataSetList' in the future
-  plot_RT_HIST(DATA(), ftarget, plot_mode = plot_mode)
+  Plot.RT.Histogram(DATA(), ftarget, plot_mode = plot_mode)
 })

@@ -2,7 +2,7 @@
 render_FV_PDF <- reactive({
   req(input$FCEPDF.Bar.Runtime)
   runtime <- input$FCEPDF.Bar.Runtime %>% as.integer
-  plot_FV_PDF(DATA(), runtime, show.sample = input$FCEPDF.Bar.Samples,
+  Plot.FV.PDF(DATA(), runtime, show.sample = input$FCEPDF.Bar.Samples,
               scale.ylog = input$FCEPDF.Bar.Logy )
 })
 
@@ -26,7 +26,7 @@ output$FCE_PDF <- renderPlotly({
 render_FV_HIST <- reactive({
   req(input$FCEPDF.Hist.Runtime != "")   # require non-empty input
   runtime <- input$FCEPDF.Hist.Runtime %>% as.integer
-  plot_FV_HIST(DATA(), runtime, plot_mode = input$FCEPDF.Hist.Mode)
+  Plot.FV.Histogram(DATA(), runtime, plot_mode = input$FCEPDF.Hist.Mode)
 })
 
 output$FCEPDF.Hist.Download <- downloadHandler(

@@ -22,7 +22,9 @@ read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
 #'
 #' @return A DataSetList object
 #' @export
-#'
+#' @examples 
+#' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
+#' DataSetList(path)
 DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization = TRUE,
                         format = IOHprofiler, subsampling = FALSE) {
   if (is.null(path))

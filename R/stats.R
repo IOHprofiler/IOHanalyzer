@@ -5,7 +5,8 @@
 #'
 #' @return A list containing ERTs, number of succesfull runs and the succes rate
 #' @export
-#' 
+#' @examples 
+#' SP(dsl[[1]]$RT, max(dsl[[1]]$RT))
 SP <- function(data, max_runtime) {
   N <- ncol(data)
   succ <- apply(data, 1, function(x) sum(!is.na(x)))

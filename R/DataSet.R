@@ -30,7 +30,10 @@
 #' @param include_param Whether to include the recorded parameters in the alignment
 #' @return A S3 object 'DataSet'
 #' @export
-#'
+#' @examples 
+#' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
+#' info <- read_IndexFile(file.path(path,"IOHprofiler_f1_i1.info"))
+#' DataSet(info[[1]])
 DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler,
                     subsampling = FALSE, include_param = TRUE) {
   if (!is.null(info)) {

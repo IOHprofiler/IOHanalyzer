@@ -15,3 +15,7 @@ The data contained in the .info file
 \description{
 Read .info files and extract information
 }
+\examples{
+path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
+info <- read_IndexFile(file.path(path,"IOHprofiler_f1_i1.info"))
+}

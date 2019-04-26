@@ -26,7 +26,7 @@ render_FV_ECDF_AGGR <- reactive({
   rt_max <- input$FCEECDF.Mult.Max %>% as.integer
   rt_step <- input$FCEECDF.Mult.Step %>% as.integer
 
-  Plot.FV.ECDF_Single_Function(DATA(),rt_min = rt_min,
+  Plot.FV.ECDF_Single_Func(DATA(),rt_min = rt_min,
                     rt_max = rt_max, rt_step = rt_step,
                     scale.xlog = input$FCEECDF.Mult.Logx,
                     show.per_target = input$FCEECDF.Mult.Targets)

@@ -174,10 +174,10 @@ Plot.RT.ECDF_Per_Target <- function(dsList, ftargets, scale.xlog = F) UseMethod(
 #' the running times of the DataSetList
 #' @export
 #' @examples 
-#' Plot.RT.ECDF_Multi_Function(subset(dsl, funcId == 1))
-Plot.RT.ECDF_Multi_Function <- function(dsList, fstart = NULL, fstop = NULL,
+#' Plot.RT.ECDF_Multi_Func(subset(dsl, funcId == 1))
+Plot.RT.ECDF_Multi_Func <- function(dsList, fstart = NULL, fstop = NULL,
                               fstep = NULL, show.per_target = F,
-                              scale.xlog = F) UseMethod("Plot.RT.ECDF_Multi_Function", dsList)
+                              scale.xlog = F) UseMethod("Plot.RT.ECDF_Multi_Func", dsList)
 #' Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
 #'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
@@ -247,10 +247,10 @@ Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F) UseMethod(
 #' the function values of the DataSetList
 #' @export
 #' @examples 
-#' Plot.FV.ECDF_Single_Function(subset(dsl, funcId == 1))
-Plot.FV.ECDF_Single_Function <- function(dsList, rt_min = NULL, rt_max = NULL,
+#' Plot.FV.ECDF_Single_Func(subset(dsl, funcId == 1))
+Plot.FV.ECDF_Single_Func <- function(dsList, rt_min = NULL, rt_max = NULL,
                               rt_step = NULL, scale.xlog = F,
-                              show.per_target = F) UseMethod("Plot.FV.ECDF_Single_Function", dsList)
+                              show.per_target = F) UseMethod("Plot.FV.ECDF_Single_Func", dsList)
 #' Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
 #'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
@@ -294,8 +294,8 @@ Plot.Parameters <- function(dsList, f_min = NULL, f_max = NULL,
 #' the running times of the DataSetList
 #' @export
 #' @examples 
-#' Plot.RT.ECDF_Single_Function(subset(dsl, funcId == 1))
-Plot.RT.ECDF_Single_Function <- function(dsList, targets = NULL) UseMethod("Plot.RT.ECDF_Single_Function", dsList)
+#' Plot.RT.ECDF_Single_Func(subset(dsl, funcId == 1))
+Plot.RT.ECDF_Single_Func <- function(dsList, targets = NULL) UseMethod("Plot.RT.ECDF_Single_Func", dsList)
 #' Plot ERT-plots for multiple functions or dimensions
 #'
 #' @param dsList A DataSetList (should consist of only one function OR dimension).
@@ -908,9 +908,9 @@ Plot.RT.ECDF_Per_Target.DataSetList <- function(dsList, ftargets, scale.xlog = F
   p
 }
 
-#' @rdname Plot.RT.ECDF_Multi_Function
+#' @rdname Plot.RT.ECDF_Multi_Func
 #' @export
-Plot.RT.ECDF_Multi_Function.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
+Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
                                           fstep = NULL, show.per_target = F,
                                           scale.xlog = F) {
   fall <- get_funvals(dsList)
@@ -1197,9 +1197,9 @@ Plot.FV.ECDF_Per_Target.DataSetList <- function(dsList, runtimes, scale.xlog = F
   p
 }
 
-#' @rdname Plot.FV.ECDF_Single_Function
+#' @rdname Plot.FV.ECDF_Single_Func
 #' @export
-Plot.FV.ECDF_Single_Function.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
+Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
                                           rt_step = NULL, scale.xlog = F,
                                           show.per_target = F){
 
@@ -1413,9 +1413,9 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
                     font = list(size = 22, family = 'sans-serif'))
 }
 
-#' @rdname Plot.RT.ECDF_Single_Function
+#' @rdname Plot.RT.ECDF_Single_Func
 #' @export
-Plot.RT.ECDF_Single_Function.DataSetList <- function(dsList, targets = NULL){
+Plot.RT.ECDF_Single_Func.DataSetList <- function(dsList, targets = NULL){
 
   if (is.null(targets))
     targets <- get_default_ECDF_targets(dsList)

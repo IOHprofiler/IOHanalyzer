@@ -6,10 +6,9 @@
 \usage{
 \method{plot_RT_single_fct}{DataSetList}(dsList, Fstart = NULL,
   Fstop = NULL, show.ERT = T, show.CI = T, show.mean = F,
-  show.runs = F, show.density = 50, show.grad = F,
-  show.intensity = 0, show.pareto = F, show.optimal = F,
-  show.median = F, backend = "plotly", scale.xlog = F,
-  scale.ylog = F, scale.reverse = F)
+  show.runs = F, show.density = 50, show.pareto = F,
+  show.optimal = F, show.median = F, backend = "plotly",
+  scale.xlog = F, scale.ylog = F, scale.reverse = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -28,10 +27,6 @@
 
 \item{show.density}{Percentage of individual runs to show when show.runs is true}
 
-\item{show.grad}{Whether or not to show the run intensity}
-
-\item{show.intensity}{Intensity to use when using show.grad}
-
 \item{show.pareto}{Whether or not to show the pareto-optimal run}
 
 \item{show.optimal}{Whether or not to show the optimal run}
@@ -45,6 +40,10 @@
 \item{scale.ylog}{Whether or not to scale the y-axis logaritmically}
 
 \item{scale.reverse}{Wheter or not to reverse the x-axis (when using minimization)}
+
+\item{show.grad}{Whether or not to show the run intensity}
+
+\item{show.intensity}{Intensity to use when using show.grad}
 }
 \value{
 A plot of ERT-values of the DataSetList

@@ -92,8 +92,8 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     # TODO: add the same sanity checks for TWO_COL format
     if (format != TWO_COL) {
       maxRT <- sapply(cdat, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
-      if (any(maxRT != info$maxRT))
-        warning('Inconsitent maxRT in *.info file and *.cdat file')
+      # if (any(maxRT != info$maxRT))
+      #   warning('Inconsitent maxRT in *.info file and *.cdat file')
     }
     else{
       maxRT <- info$maxRT
@@ -105,8 +105,8 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     else
       finalFV <- sapply(dat, function(d) d[nrow(d), idxTarget]) %>% set_names(NULL)
 
-    if (any(finalFV != info$finalFV))
-      warning('Inconsitent finalFvalue in *.info file and *.dat file')
+    # if (any(finalFV != info$finalFV))
+    #   warning('Inconsitent finalFvalue in *.info file and *.dat file')
 
     if (length(info$instance) != length(dat)) {
       warning('The number of instances found in the info is inconsistent with the data!')

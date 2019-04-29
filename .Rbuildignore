@@ -5,3 +5,4 @@
 ^NEWS\.md$
 ^\.vscode$
 ^\.vs*$
+^_config\.yml$

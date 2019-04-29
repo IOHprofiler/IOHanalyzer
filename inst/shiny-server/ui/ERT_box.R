@@ -45,9 +45,7 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
                       choices = supported_fig_format, selected = 'pdf'),
 
           downloadButton('ERTPlot.Download', label = 'download the figure')
-          # checkboxInput('show.instance',
-          #               label = 'show each independent run',
-          #               value = F)
+
         ),
 
         mainPanel(

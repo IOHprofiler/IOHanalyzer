@@ -133,7 +133,7 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
                          maximization = maximization)))
 
   } else {
-    structure(list(), class = c('DataSet'))
+    structure(list(), class = c('DataSet', 'list'))
   }
 }
 
@@ -391,17 +391,17 @@ get_FV_overview.DataSet <- function(ds, ...) {
   median_fv <- median(last_row, na.rm = T)
   runs_reached <- sum(last_row == best_fv)
 
-  data.table(Algorithm = attr(ds, 'algId'),
+  data.table(algId = attr(ds, 'algId'),
              DIM = attr(ds, 'DIM'),
-             fID = attr(ds, 'funcId'),
-             `Worst recorded f(x)` = worst_recorded_fv,
-             `Worst reached f(x)` = worst_fv,
-             `Best reached f(x)` = best_fv,
-             `mean reached f(x)` = mean_fv,
-             `median reached f(x)` = median_fv,
+             funcId = attr(ds, 'funcId'),
+             `worst recorded` = worst_recorded_fv,
+             `worst reached` = worst_fv,
+             `best reached` = best_fv,
+             `mean reached` = mean_fv,
+             `median reached` = median_fv,
              runs = runs,
-             `runs reached` = runs_reached,
-             Budget = budget)
+             `succ` = runs_reached,
+             budget = budget)
 }
 
 #' @rdname get_RT_overview
@@ -415,9 +415,9 @@ get_RT_overview.DataSet <- function(ds, ...) {
   min_rt <- min(data, na.rm = T)
   max_rt <- max(data, na.rm = T)
 
-  data.table(Algorithm = attr(ds, 'algId'),
+  data.table(algId = attr(ds, 'algId'),
              DIM = attr(ds, 'DIM'),
-             fID = attr(ds, 'funcId'),
+             funcId = attr(ds, 'funcId'),
              `miminal runtime` = min_rt,
              `maximal runtime` = max_rt,
              'runs' = runs,

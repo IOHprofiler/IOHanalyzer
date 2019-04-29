@@ -11,7 +11,7 @@
 #' @importFrom plotly add_annotations add_trace orca plot_ly rename_ subplot layout
 #' @importFrom ggplot2 aes geom_jitter geom_line geom_ribbon geom_violin ggplot element_text
 #' @importFrom ggplot2 guides scale_color_manual scale_colour_manual scale_fill_manual
-#' @importFrom ggplot2 scale_x_continuous scale_x_log10 facet_wrap theme_grey theme theme_set
+#' @importFrom ggplot2 scale_x_continuous scale_x_log10 facet_wrap theme_set theme_grey theme
 #' @importFrom shiny req
 #' @importFrom Rcpp sourceCpp
 #' @useDynLib IOHanalyzer
@@ -21,6 +21,8 @@ utils::globalVariables(c(".","algId","run","ERT","RT","max_samples",
                          "DIM", "Fvalue", "lower", "upper", "target", "format",
                          "runtime", "parId", "instance", "input", "funcId", "..names_to_show"))
 #TODO: verify ..names_to_show is needed here
+
+options(shiny.port = 4242)
 
 probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
 

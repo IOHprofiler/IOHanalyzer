@@ -1,4 +1,16 @@
-# read all raw data files in a give directory
+#' Read all the data file in a folfer
+#
+#' @param path Path to the data files. Will look for all .info-files in this directory and use
+#'  the corresponding datafiles to create the DataSetList
+#' @param verbose Logical.
+#' @param maximization Logical. Whether the underlying optimization algorithm performs a maximization?
+#' @param format A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL"
+#' @param subsampling Logical. Whether *.cdat files are subsampled?
+#' @param print_fun Function used to print output when in verbose mode
+#'
+#' @return A DataSetList object
+#' @export
+#'
 read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
                      format = IOHprofiler, subsampling = FALSE) {
   DataSetList(path, verbose, print_fun, maximization = maximization,

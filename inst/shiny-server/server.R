@@ -94,20 +94,4 @@ shinyServer(function(input, output, session) {
     df
   })
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 })

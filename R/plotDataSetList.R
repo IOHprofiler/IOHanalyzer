@@ -422,6 +422,7 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                   fill = 'tonexty',  line = list(color = 'transparent'), legendgroup = legend,
                   fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
 
+
     }
     p %<>%
       layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
@@ -642,7 +643,7 @@ Plot.RT.ECDF_Per_Target.DataSetList <- function(dsList, ftargets, scale.xlog = F
   N <- length(dsList)
   colors <- color_palettes(N)
 
-  p <- plot_ly_default(title = NULL,
+  p <- plot_ly_default(title = paste('ftarget:', paste(ftargets, collapse = ' ')),
                        x.title = "function evaluations",
                        y.title = "Proportion of runs")
 
@@ -666,10 +667,11 @@ Plot.RT.ECDF_Per_Target.DataSetList <- function(dsList, ftargets, scale.xlog = F
       # y <- sapply(x, function(x) ecdf[rt == x][1])
 
       p %<>%
-        add_trace(data = NULL, x = rt, y = vals, type = 'scatter',
-                  mode = 'lines', name = algId, showlegend = (i == 1),
+        add_trace(x = rt, y = vals, type = 'scatter',
+                  mode = 'lines+markers', name = algId, showlegend = (i == 1),
                   legendgroup = paste0(k),
-                  line = list(color = rgb_str, width = 2))
+                  marker = list(color = rgb_str),
+                  line = list(color = rgb_str, width = 3))
       # add_trace(data = NULL, x = x, y = y, type = 'scatter',
       #           mode = 'markers',  legendgroup = paste0(k),
       #           name = sprintf('(%s, %.2e)', algId, ftargets[i]),
@@ -1304,7 +1306,7 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
         )
     }
 
-    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.02,
+    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.03,
                  heights = rep(1 / n_rows, n_rows),
                  widths = rep(1 / n_cols, n_cols))
   }

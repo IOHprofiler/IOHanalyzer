@@ -19,15 +19,16 @@ f3 <- list(
   color = 'black'
 )
 
+# TODO: create font object as above for title, axis...
 plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
   plot_ly() %>%
-    layout(title = title,
+    layout(title = list(text = title, 
+                        font = list(size = 13, family = 'Old Standard TT, serif')),
            autosize = T, hovermode = 'compare',
            legend = list(x = 1.01, y = 0.9, orientation = 'v',
                          font = list(size = 13, family = 'Old Standard TT, serif')),
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
            font = list(size = 13, family = 'Old Standard TT, serif'),
-           titlefont = list(size = 13, family = 'Old Standard TT, serif'),
            autosize = T,
            showlegend = T, 
            xaxis = list(
@@ -161,8 +162,12 @@ save_plotly <- function(p, file, format = 'svg', ...) {
   else {
     file_svg <- paste0(file, '.svg')
     orca(p, file_svg, format = 'svg', ...)
-    invisible(system(paste('inkscape', file_svg, paste0('--export-', format, '=', file)),
-                     intern = T))
+    invisible(
+      system(
+        paste('inkscape', file_svg, paste0('--export-', format, '=', file)),
+        intern = T
+      )
+    )
     file.remove(file_svg)
   }
 

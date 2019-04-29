@@ -66,7 +66,13 @@ selected_folders <- reactive({
         unzip_fct <- unzip
       else if (filetype %in% c('bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz'))
         unzip_fct <- untar
-
+      else {
+        shinyjs::alert("This filetype is not (yet) supported.\n 
+                        Please use a different format. \n
+                        We support the following formats: \n 
+                       'zip', 'bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz' and 'xz'.")
+        return(NULL)
+      }
       if (filetype == 'zip')
         files <- unzip_fct(datapath[i], list = T)$Name
       else

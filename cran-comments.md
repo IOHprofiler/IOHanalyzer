@@ -1,3 +1,6 @@
+## This is a resubmission after a previous rejection
+All exported functions needed to have examples documented. This has now been implemented.
+
 ## Test environments
 * local windows install, R 3.5.1 and 3.5.3
 * local ubuntu install, R 3.4.4

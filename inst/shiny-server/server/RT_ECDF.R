@@ -8,7 +8,7 @@ render_RT_ECDF_MULT <- reactive({
   dsList <- subset(DATA_RAW(), DIM == input$Overall.Dim)
   targets <- uploaded_RT_ECDF_targets()
 
-  Plot.RT.ECDF_Single_Func(dsList, targets = targets)
+  Plot.RT.ECDF_Multi_Func(dsList, targets = targets)
 })
 
 output$RTECDF.Aggr.Download <- downloadHandler(
@@ -117,7 +117,7 @@ render_RT_ECDF_AGGR <- reactive({
   fstop <- format_FV(input$RTECDF.Multi.Max) %>% as.numeric
   fstep <- format_FV(input$RTECDF.Multi.Step) %>% as.numeric
 
-  Plot.RT.ECDF_Multi_Func(
+  Plot.RT.ECDF_Single_Func(
     DATA(), fstart, fstop, fstep,
     show.per_target = input$RTECDF.Multi.Targets,
     scale.xlog = input$RTECDF.Multi.Logx
@@ -148,7 +148,7 @@ render_RT_AUC <- reactive({
   fstop <- format_FV(input$RTECDF.AUC.Max) %>% as.numeric
   fstep <- format_FV(input$RTECDF.AUC.Step) %>% as.numeric
 
-  Plot.FV.ECDF_AUC(
+  Plot.RT.ECDF_AUC(
     DATA(), fstart, fstop, fstep, fval_formatter = format_FV
   )
 })

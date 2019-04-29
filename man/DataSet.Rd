@@ -5,7 +5,7 @@
 \title{Constructor of S3 class 'DataSet'}
 \usage{
 DataSet(info, verbose = F, maximization = TRUE, format = IOHprofiler,
-  subsampling = FALSE, include_param = TRUE)
+  subsampling = FALSE, include_param = FALSE)
 }
 \arguments{
 \item{info}{A List. Contains a set of in a *.info file.}

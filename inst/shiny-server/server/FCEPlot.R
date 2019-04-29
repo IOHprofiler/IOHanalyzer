@@ -20,9 +20,6 @@ render_FV_PER_FUN <- reactive({
   rt_min <- input$FCEPlot.Min %>% as.integer
   rt_max <- input$FCEPlot.Max %>% as.integer
   Plot.FV.Single_Func(DATA(), RTstart = rt_min, RTstop = rt_max, show.CI = input$FCEPlot.show.CI,
-               show.grad = input$FCEPlot.show.grad, show.intensity = input$FCEPlot.show.intensity,
-               show.density = input$FCEPlot.show.density, show.pareto = input$FCEPlot.show.pareto_optima,
-               show.runs = input$FCEPlot.show.all, show.optimal = input$FCEPlot.show.best_of_all,
                show.mean = input$FCEPlot.show.mean, show.median = input$FCEPlot.show.median,
                scale.xlog = input$FCEPlot.semilogx, scale.ylog = input$FCEPlot.semilogy)
 })

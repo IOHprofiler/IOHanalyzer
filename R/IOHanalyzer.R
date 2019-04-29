@@ -1,4 +1,4 @@
-#' @importFrom stats dt ecdf integrate median quantile sd complete.cases
+#' @importFrom stats dt ecdf integrate median quantile sd 
 #' @importFrom grDevices col2rgb colors nclass.FD
 #' @importFrom graphics hist
 #' @importFrom utils data head read.csv tail

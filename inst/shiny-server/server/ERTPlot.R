@@ -142,17 +142,11 @@ render_ert_per_fct <- reactive({
   fstop <- input$ERTPlot.Max %>% as.numeric
   Plot.RT.Single_Func(data, Fstart = fstart, Fstop = fstop,
                      show.CI = input$ERTPlot.show.CI,
-                     show.density = input$ERTPlot.show.density,
-                     show.runs = input$ERTPlot.show_all,
-                     show.optimal = input$ERTPlot.show.best_of_all,
-                     show.pareto = input$ERTPlot.show.pareto_optima,
                      show.ERT = input$ERTPlot.show.ERT,
                      show.mean = input$ERTPlot.show.mean,
                      show.median = input$ERTPlot.show.median,
                      scale.xlog = isolate(input$ERTPlot.semilogx),
                      scale.ylog = isolate(input$ERTPlot.semilogy),
-                     show.grad = input$ERTPlot.show.grad,
-                     show.intensity = input$ERTPlot.show.intensity,
                      scale.reverse = (format == COCO || format == BIBOJ_COCO))
 })
 

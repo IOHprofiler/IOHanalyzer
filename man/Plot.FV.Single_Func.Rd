@@ -6,15 +6,11 @@
 \title{Plot lineplot of the expected function values of a DataSetList}
 \usage{
 Plot.FV.Single_Func(dsList, RTstart = NULL, RTstop = NULL,
-  show.CI = F, show.mean = T, show.median = F, show.runs = F,
-  show.density = 50, show.grad = F, show.intensity = 0,
-  show.pareto = F, show.optimal = F, backend = "plotly",
+  show.CI = F, show.mean = T, show.median = F, backend = "plotly",
   scale.xlog = F, scale.ylog = F, scale.reverse = F)
 
 \method{Plot.FV.Single_Func}{DataSetList}(dsList, RTstart = NULL,
   RTstop = NULL, show.CI = T, show.mean = F, show.median = F,
-  show.runs = F, show.density = 50, show.grad = F,
-  show.intensity = 0, show.pareto = F, show.optimal = F,
   backend = "plotly", scale.xlog = F, scale.ylog = F,
   scale.reverse = F)
 }
@@ -30,18 +26,6 @@ Plot.FV.Single_Func(dsList, RTstart = NULL, RTstop = NULL,
 \item{show.mean}{Whether or not to show the mean runtimes}
 
 \item{show.median}{Whether or not to show the median runtimes}
-
-\item{show.runs}{Whether or not to show the individual runs}
-
-\item{show.density}{Percentage of individual runs to show when show.runs is true}
-
-\item{show.grad}{Whether or not to show the run intensity}
-
-\item{show.intensity}{Intensity to use when using show.grad}
-
-\item{show.pareto}{Whether or not to show the pareto-optimal run}
-
-\item{show.optimal}{Whether or not to show the optimal run}
 
 \item{backend}{Which plotting library to use. Can be 'plotly' or 'ggplot2'}
 

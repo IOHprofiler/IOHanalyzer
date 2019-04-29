@@ -65,25 +65,16 @@ grad_functions <- c(
 #' @param show.CI Whether or not to show the standard deviations
 #' @param show.mean Whether or not to show the mean hitting times
 #' @param show.median Whether or not to show the median hitting times
-#' @param show.runs Whether or not to show the individual runs
-#' @param show.density Percentage of individual runs to show when show.runs is true
-#' @param show.pareto Whether or not to show the pareto-optimal run
-#' @param show.optimal Whether or not to show the optimal run
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
 #' @param scale.ylog Whether or not to scale the y-axis logaritmically
 #' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
 #' @param backend Which plotting library to use. Can be 'plotly' or 'ggplot2'
-#' @param show.grad Whether or not to show the run intensity
-#' @param show.intensity Intensity to use when using show.grad
 #' @return A plot of ERT-values of the DataSetList
 #' @export
 #' @examples 
 #' Plot.RT.Single_Func(subset(dsl, funcId == 1))
 Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
                                show.ERT = T, show.CI = F, show.mean = F,
-                               show.runs = F, show.density = 50,
-                               show.grad = F, show.intensity = 0,
-                               show.pareto = F, show.optimal = F,
                                show.median = F, backend = 'plotly',
                                scale.xlog = F, scale.ylog = F,
                                scale.reverse = F) UseMethod("Plot.RT.Single_Func", dsList)
@@ -95,16 +86,10 @@ Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
 #' @param show.CI Whether or not to show the standard deviations
 #' @param show.mean Whether or not to show the mean runtimes
 #' @param show.median Whether or not to show the median runtimes
-#' @param show.runs Whether or not to show the individual runs
-#' @param show.density Percentage of individual runs to show when show.runs is true
-#' @param show.pareto Whether or not to show the pareto-optimal run
-#' @param show.optimal Whether or not to show the optimal run
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
 #' @param scale.ylog Whether or not to scale the y-axis logaritmically
 #' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
 #' @param backend Which plotting library to use. Can be 'plotly' or 'ggplot2'
-#' @param show.grad Whether or not to show the run intensity
-#' @param show.intensity Intensity to use when using show.grad
 #'
 #' @return A plot of ERT-values of the DataSetList
 #' @export
@@ -113,9 +98,6 @@ Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
 Plot.FV.Single_Func <- function(dsList, RTstart = NULL, RTstop = NULL,
                          show.CI = F,
                          show.mean = T, show.median = F,
-                         show.runs = F, show.density = 50,
-                         show.grad = F, show.intensity = 0,
-                         show.pareto = F, show.optimal = F,
                          backend = 'plotly',
                          scale.xlog = F, scale.ylog = F,
                          scale.reverse = F) UseMethod("Plot.FV.Single_Func", dsList)
@@ -375,9 +357,6 @@ Plot.FV.Multi_Func <- function(dsList, scale.xlog = F,
 #' @export
 Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                            show.ERT = T, show.CI = T, show.mean = F,
-                                           show.runs = F, show.density = 50,
-                                           show.grad = F, show.intensity = 0,
-                                           show.pareto = F, show.optimal = F,
                                            show.median = F, backend = 'plotly',
                                            scale.xlog = F, scale.ylog = F,
                                            scale.reverse = F) {
@@ -443,110 +422,6 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                   fill = 'tonexty',  line = list(color = 'transparent'), legendgroup = legend,
                   fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
 
-      if (show.runs||show.grad) {
-
-        dr_ERT <- dr[algId == attr(dsList[[i]], 'algId')&
-                       funcId == attr(dsList[[i]], 'funcId') &
-                       DIM == attr(dsList[[i]], 'DIM')]
-
-        counter <- ceiling(length(run.names) * show.density / 100)
-        names_to_show <- sample(run.names)[1:counter]
-
-        fill_density <- 0
-        all_names <- names_to_show
-
-        index <- apply(!is.na(dr_ERT[, ..names_to_show]), 1, any)
-        dr_ERT <- dr_ERT[index, ]
-        best_parts <- apply(dr_ERT[, ..names_to_show], 1, . %>% min(na.rm = T))
-        mentioned <- FALSE
-
-        if (show.grad) {
-          dr_ERT_ <- dr_ERT[complete.cases(dr_ERT)]
-          sorted_dr_ERT <- apply(dr_ERT_[, -c('algId', 'target', 'funcId', 'DIM')], 1, function(x){sort(x, decreasing = FALSE, na.last = T)})
-
-          if (is.matrix(sorted_dr_ERT)) {
-            counter = 0
-            names_amount = length(all_names)
-
-            for (counter in c(1:length(all_names))){
-              fill_density <- fill_density + grad_functions$fixed_edges(counter,names_amount,show.intensity)
-              rgba_str_m  <- generate_rbga(col2rgb(colors[i]),fill_density)
-              p %<>% add_trace(x = dr_ERT_[['target']], y = sorted_dr_ERT[counter,],
-                               type = 'scatter', mode = 'none',
-                               hoverinfo = 'none',
-                               showlegend = F,
-                               fill = 'tonexty',
-                               fillcolor = rgba_str_m
-              )
-            }
-            rgba_str_m  <- generate_rbga(col2rgb(colors[i]),1)
-            upper_border <- max(sorted_dr_ERT, na.rm = T)
-            p %<>% add_trace(x = dr_ERT_[['target']], y = seq(upper_border, upper_border, length.out = length(dr_ERT_[['target']])),
-                             type = 'scatter', mode = 'none',
-                             hoverinfo = 'none',
-                             showlegend = F,
-                             fill = 'tonexty',
-                             fillcolor = rgba_str_m
-            )
-          }
-        }
-        if (show.runs){
-          for (run_v in names_to_show) {
-            p %<>% add_trace(
-              data = dr_ERT,
-              x = ~ target,
-              y = dr_ERT[[run_v]],
-              type = 'scatter',
-              mode = 'lines',
-              line = list(color = rgb_str, width = 0.5),
-              text = paste(run_v),
-              hoverinfo = 'none',
-              showlegend = !mentioned,
-              legendgroup = legend,
-              name = paste("runs of ", algId)
-            )
-            mentioned <- TRUE
-            # best_parts <-
-              # insert_best_parts(best_parts, dr_ERT[[run_v]], attr(dsList[[i]],"maximization"))
-          }
-
-          if (show.optimal) {
-            mentioned <- FALSE
-            NonNAindex <- which(!is.na(best_parts))
-            target_idx <- max(NonNAindex)
-
-            check_value <- best_parts[target_idx]
-            for (run_v in names_to_show){
-              found_val <- dr_ERT[[run_v]][target_idx]
-
-              if (!is.na(found_val) & check_value == found_val) {
-                p %<>% add_trace(
-                  data = dr_ERT,
-                  x = ~ target,
-                  y = dr_ERT[[run_v]],
-                  type = 'scatter',
-                  mode = 'lines',
-                  line = list(color = rgb_str, width = 1.5),
-                  showlegend = !mentioned,
-                  name = paste("best.", algId)
-                )
-                mentioned <- TRUE
-              }
-            }
-          }
-          if (show.pareto) {
-            p %<>% add_trace(
-              x = dr_ERT[['target']],
-              y = best_parts,
-              type = 'scatter',
-              mode = 'lines',
-              line = list(color = rgb_str, width = 2.5, dash = 'dot'),
-              showlegend = T,
-              name = paste("pareto_optima.", algId)
-            )
-          }
-        }
-      }
     }
     p %<>%
       layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
@@ -577,9 +452,6 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
                                      show.CI = T,
                                      show.mean = F, show.median = F,
-                                     show.runs = F, show.density = 50,
-                                     show.grad = F, show.intensity = 0,
-                                     show.pareto = F, show.optimal = F,
                                      backend = 'plotly',
                                      scale.xlog = F, scale.ylog = F,
                                      scale.reverse = F) {
@@ -640,105 +512,6 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
       }
 
 
-
-      if (show.runs || show.grad) {
-        fce_runs <- get_FV_sample(dsList, RTseq)
-
-        fce_runs_ERT <- fce_runs[algId == attr(dsList[[i]], 'algId') &
-                                   funcId == attr(dsList[[i]], 'funcId') &
-                                   DIM == attr(dsList[[i]], 'DIM')]
-        names_to_show <- sample(colnames(fce_runs_ERT))
-        names_to_show <-
-          names_to_show[!names_to_show %in% c('algId', 'runtime', 'funcId', 'DIM')]
-
-        counter <- as.integer(length(names_to_show) * show.density / 100) + 1
-        fill_density <- 0
-        all_names <- names_to_show
-        names_to_show <- head(names_to_show, counter)
-        best_parts <- NA
-        mentioned <- FALSE
-
-        if (show.grad) {
-          sorted_fce_runs_ERT <- apply((fce_runs_ERT[, -c('algId', 'runtime', 'funcId', 'DIM')]), 1, function(x){sort(x,decreasing = TRUE)})
-          counter = 0
-          names_amount = length(all_names)
-
-          for (counter in c(1:length(all_names))) {
-            fill_density <- fill_density + grad_functions$fixed_edges(counter,names_amount,show.intensity)
-            rgba_str_m  <- generate_rbga(col2rgb(colors[i]),fill_density)
-            p %<>% add_trace(x = fce_runs_ERT[['runtime']], y = sorted_fce_runs_ERT[counter,],
-                             type = 'scatter', mode = 'none',
-                             hoverinfo = 'none',
-                             showlegend = F,
-                             fill = 'tonexty',
-                             fillcolor = rgba_str_m
-            )
-          }
-          rgba_str_m  <- generate_rbga(col2rgb(colors[i]),1)
-          lower_border <- min(sorted_fce_runs_ERT)
-          p %<>% add_trace(x = fce_runs_ERT[['runtime']], y = seq(lower_border, lower_border, length.out = length(fce_runs_ERT[['runtime']])),
-                           type = 'scatter', mode = 'none',
-                           hoverinfo = 'none',
-                           showlegend = F,
-                           fill = 'tonexty',
-                           fillcolor = rgba_str_m
-          )
-        }
-
-        if (show.runs) {
-          mentioned <- FALSE
-          for (run_v in names_to_show) {
-            p %<>% add_trace(
-              data = fce_runs_ERT,
-              x = ~ runtime,
-              y = fce_runs_ERT[[run_v]],
-              type = 'scatter',
-              mode = 'lines',
-              line = list(color = rgb_str, width = 0.5),
-              showlegend = !mentioned,
-              text = paste(run_v),
-              hoverinfo = 'none',
-              name = paste("runs of ", algId)
-            )
-            mentioned <- TRUE
-            best_parts <-
-              insert_best_parts(best_parts, fce_runs_ERT[[run_v]], !attr(dsList[[i]],"maximization"))
-          }
-
-          if (show.optimal) {
-            mentioned <- FALSE
-            check_value <- tail(best_parts, 1)
-            for (run_v in names_to_show)
-              if (check_value == tail(fce_runs_ERT[[run_v]], 1)) {
-                p %<>% add_trace(
-                  data = fce_runs_ERT,
-                  x = ~ runtime,
-                  y = fce_runs_ERT[[run_v]],
-                  type = 'scatter',
-                  mode = 'lines',
-                  line = list(color = rgb_str, width = 0.5 *
-                                3),
-                  showlegend = !mentioned,
-                  name = paste("best.", algId)
-                )
-                mentioned = TRUE
-              }
-          }
-
-          if (show.pareto) {
-            p %<>% add_trace(
-              x = fce_runs_ERT[['runtime']],
-              y = best_parts,
-              type = 'scatter',
-              mode = 'lines',
-              line = list(color = rgb_str, width = 0.5 *
-                            5, dash = 'dot'),
-              showlegend = T,
-              name = paste("pareto_optima.", algId)
-            )
-          }
-        }
-      }
     }
     p %<>%
       layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
@@ -800,6 +573,7 @@ Plot.RT.PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
   p %<>%
     layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
            xaxis = list(tickangle = 45))
+  p
 }
 
 #' @rdname Plot.RT.Histogram

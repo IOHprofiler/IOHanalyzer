@@ -1,14 +1,3 @@
-# This file contains some functions for reading, aligning, analyzing the raw data
-# from the pseudo-boolean benchmarking
-#
-# Author: Hao Wang
-# Email: wangronin@gmail.com
-
-# TODO: do we need to import those here?
-# suppressMessages(library(magrittr))
-# suppressMessages(library(reshape2))
-# suppressMessages(library(data.table))
-
 #' Constructor of S3 class 'DataSet'
 #'
 #' DataSet contains the following attributes
@@ -35,7 +24,7 @@
 #' info <- read_IndexFile(file.path(path,"IOHprofiler_f1_i1.info"))
 #' DataSet(info[[1]])
 DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler,
-                    subsampling = FALSE, include_param = TRUE) {
+                    subsampling = FALSE, include_param = FALSE) {
   if (!is.null(info)) {
     datFile <- info$datafile
     path <- dirname(info$datafile)
@@ -68,8 +57,9 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
       dat <- read_dat(datFile, subsampling)         # read the dat file
       cdat <- read_dat(cdatFile, subsampling)       # read the cdat file
     } else if (format == COCO) {
-      dat <- read_COCO_dat2(datFile, DIM=info$DIM, subsampling)    # read the dat file
-      cdat <- read_COCO_dat2(tdatFile, DIM=info$DIM, subsampling)   # read the tdat file
+      dim_val <- if (include_param) info$DIM else 0
+      dat <- read_COCO_dat2(datFile, DIM=dim_val, subsampling)    # read the dat file
+      cdat <- read_COCO_dat2(tdatFile, DIM=dim_val, subsampling)   # read the tdat file
     } else if (format == BIBOJ_COCO) {
       dat <- read_BIOBJ_COCO_dat(datFile, subsampling)    # read the dat file
       cdat <- read_BIOBJ_COCO_dat(tdatFile, subsampling)   # read the tdat file
@@ -231,65 +221,6 @@ summary.DataSet <- function(object, ...) {
 
   cat(paste('Attributes:', paste0(names(ds_attr), collapse = ', ')))
 }
-
-
-# # TODO: implement the 'save' option
-# plot.DataSet <- function(ds, ask = TRUE, save = FALSE) {
-#   dt <- data.table(ds$RT)
-#   NC <- ncol(dt)
-#   colnames(dt) <- as.character(seq(ncol(dt)))
-#   dt[, target := as.numeric(rownames(ds$RT))]
-#   dt_mean <- data.table(target = dt$target, mean = rowMeans(dt[, -c('target')], na.rm = T))
-# 
-#   target <- dt[, target]
-#   N <- length(target)
-#   if (N >= 30) # limit the number of point to plot
-#     target <- as.numeric(target[seq(1, N, by = ceiling(N / 30))])
-# 
-#   # plot runtime curves
-#   p <- melt(dt, id.vars = 'target', variable.name = 'instance', value.name = 'runtime') %>%
-#     ggplot(aes(target, runtime, colour = as.factor(instance))) +
-#     geom_line(aes(group = instance), alpha = 0.8) +
-#     geom_line(data = dt_mean, aes(target, mean), colour = 'black', size = 1.5, alpha = 0.8) +
-#     scale_colour_manual(values = colorspace::rainbow_hcl(NC)) +
-#     scale_x_continuous(breaks = target) +
-#     guides(colour = FALSE)
-# 
-#   print(p)
-# 
-#   if (ask) x <- readline("show data aligned by runtime?")
-# 
-#   df <- ds$FV
-#   if (nrow(df) > 500) {
-#     idx <- c(1, seq(1, nrow(df), length.out = 500), nrow(df)) %>% unique
-#     df <- df[idx, ]
-#   }
-# 
-#   dt <- data.table(df)
-#   colnames(dt) <- as.character(seq(ncol(dt)))
-#   dt[, budget := as.numeric(rownames(df))]
-#   dt_mean <- data.table(budget = dt$budget, mean = rowMeans(dt[, -c('budget')], na.rm = T))
-# 
-#   budget <- dt[, budget]
-#   N <- length(budget)
-#   if (N >= 30) {
-#     N.log10 <- log10(N)
-#     index <- floor(10 ^ seq(0, N.log10, by = N.log10 / 30))
-#     budget <- as.numeric(budget[index])
-#   }
-# 
-#   # plot function value curves
-#   p <- melt(dt, id.vars = 'budget', variable.name = 'instance', value.name = 'Fvalue') %>%
-#     ggplot(aes(budget, Fvalue, colour = instance)) +
-#     geom_line(aes(group = instance), alpha = 0.8) +
-#     geom_line(data = dt_mean, aes(budget, mean), colour = 'black', size = 1.5, alpha = 0.8) +
-#     scale_colour_manual(values = colorspace::rainbow_hcl(NC)) +
-#     # scale_x_continuous(breaks = budget) +
-#     scale_x_log10() +
-#     guides(colour = FALSE)
-# 
-#   print(p)
-# }
 
 #' S3 generic == operator for DataSets
 #'

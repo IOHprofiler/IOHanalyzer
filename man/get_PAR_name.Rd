@@ -2,16 +2,22 @@
 % Please edit documentation in R/DataSet.R
 \name{get_PAR_name}
 \alias{get_PAR_name}
+\alias{get_PAR_name.DataSet}
 \title{Get the parameter names of the algorithm}
 \usage{
 get_PAR_name(ds)
+
+\method{get_PAR_name}{DataSet}(ds)
 }
 \arguments{
-\item{ds}{A DataSet or DataSetList object}
+\item{ds}{A DataSet object}
 }
 \value{
 a character list of paramter names, if recorded in the data set
 }
 \description{
 Get the parameter names of the algorithm
+}
+\examples{
+get_PAR_name(dsl[[1]])
 }

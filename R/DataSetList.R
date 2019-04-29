@@ -34,7 +34,9 @@ read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
 #'
 #' @return A DataSetList object
 #' @export
-#'
+#' @examples 
+#' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
+#' DataSetList(path)
 DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization = TRUE,
                         format = IOHprofiler, subsampling = FALSE) {
   if (is.null(path))
@@ -115,7 +117,8 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
 #' @param ... The DataSetLists to concatenate
 #' @return A new DataSetList
 #' @export
-#'
+#' @examples 
+#' c(dsl[1],dsl[3])
 c.DataSetList <- function(...) {
   # TODO: maybe remove duplicated dataset in the further
   # remove the empty list first
@@ -142,7 +145,8 @@ c.DataSetList <- function(...) {
 #' @param drop Currently unused parameter
 #' @return The DataSetList of the DataSets at indices i of DataSetList x
 #' @export
-#'
+#' @examples 
+#' dsl[c(1,3)]
 `[.DataSetList` <- function(x, i, drop = FALSE) {
   # remove the attributes firstly
   obj <- unclass(x)[i]
@@ -160,7 +164,8 @@ c.DataSetList <- function(...) {
 #' @param x The DataSetList to print
 #' @param ... Arguments for underlying print function?
 #' @export
-#'
+#' @examples 
+#' print(dsl) 
 print.DataSetList <- function(x, ...) {
   cat('DataSetList:\n')
   for (i in seq_along(x)) {
@@ -178,7 +183,8 @@ print.DataSetList <- function(x, ...) {
 #' @param object The DataSetList to print
 #' @param ... Arguments for underlying summary function?
 #' @export
-#'
+#' @examples 
+#' summary(dsl)
 summary.DataSetList <- function(object, ...) {
   sapply(object, function(d) {
     list(funcId = attr(d, 'funcId'),
@@ -192,15 +198,9 @@ summary.DataSetList <- function(object, ...) {
 }
 
 
-#' Get Expected RunTime
-#'
-#' @param ds A DataSetList object
-#' @param ftarget The function target(s) for which to get the ERT
+#' @rdname get_ERT
 #' @param algorithm Which algorithms in the DataSetList to consider.
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the runtime statistics for each provided target
-#' function value
+#' 
 #' @export
 #'
 get_ERT.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
@@ -215,17 +215,9 @@ get_ERT.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   }) %>% rbindlist
 }
 
-#' Get RunTime Summary
-#'
-#' @param ds A DataSetList object
-#' @param ftarget The function target(s) for which to get the runtime summary
+#' @rdname get_RT_summary
 #' @param algorithm Which algorithms in the DataSetList to consider.
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the runtime statistics for each provided target
-#' function value
 #' @export
-#'
 get_RT_summary.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
@@ -238,19 +230,11 @@ get_RT_summary.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   }) %>% rbindlist
 }
 
-#TODO: Possibly get rid of ...-parameters?
 
-#' Get RunTime Sample
-#'
-#' @param ds A DataSetList object
-#' @param ftarget A Numerical vector. Function values at which runtime values are consumed
+#' @rdname get_RT_sample
 #' @param algorithm Which algorithms in the DataSetList to consider.
-#' @param ... Arguments passed to other methods
 #'
-#' @return A data.table containing the runtime samples for each provided target
-#' function value
 #' @export
-#'
 get_RT_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
@@ -263,15 +247,8 @@ get_RT_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   }) %>% rbindlist(fill = T)
 }
 
-#' Get Function Value Summary
-#'
-#' @param ds A DataSetList object
-#' @param runtime A Numerical vector. Runtimes at which function values are reached
+#' @rdname get_FV_summary
 #' @param algorithm Which algorithms in the DataSetList to consider.
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the function value statistics for each provided
-#' target runtime value
 #' @export
 #'
 get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
@@ -287,15 +264,9 @@ get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
   }) %>% rbindlist
 }
 
-#' Get Function Value condensed overview
-#'
-#' @param ds A DataSetList object
 #' @param algorithm Which algorithms in the DataSetList to consider.
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the algorithm ID, best, worst and mean reached function
-#' values, the number of runs and available budget for the DataSet
 #' @export
+#' @rdname get_FV_overview
 #'
 get_FV_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
   if (algorithm != 'all')
@@ -305,14 +276,8 @@ get_FV_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
 
 }
 
-#' Get Runtime Value condensed overview
-#'
-#' @param ds A DataSetList object
+#' @rdname get_RT_overview
 #' @param algorithm Which algorithms in the DataSetList to consider.
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the algorithm ID, minimum and maximum used evaluations,
-#' number of runs and available budget for the DataSet
 #' @export
 get_RT_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
   if (algorithm != 'all')
@@ -328,15 +293,8 @@ get_RT_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
 #   lapply(dsList, function(ds) get_FV_runs(ds, runtime)) %>% rbindlist
 # }
 
-#' Get Funtion Value Samples
-#'
-#' @param ds A DataSetList object
-#' @param runtime A Numerical vector. Runtimes at which function values are reached
+#' @rdname get_FV_sample
 #' @param algorithm Which algorithms in the DataSetList to consider.
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table containing the function value samples for each provided
-#' target runtime
 #' @export
 #'
 get_FV_sample.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
@@ -351,17 +309,9 @@ get_FV_sample.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
   }) %>% rbindlist(fill = T)
 }
 
-#' Get Parameter Value Summary
-#'
-#' @param ds A DataSetList object
-#' @param ftarget A Numerical vector. Function values at which parameter values are observed
+#' @rdname get_PAR_summary
 #' @param algorithm Which algorithms in the DataSetList to consider.
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table object containing basic statistics of all parameter values aligned
-#' at each given target value
 #' @export
-#'
 get_PAR_summary.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
@@ -369,16 +319,9 @@ get_PAR_summary.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   lapply(ds, function(ds) get_PAR_summary(ds, ftarget, ...)) %>% rbindlist
 }
 
-#' Get Parameter Value Samples
-#'
-#' @param ds A DataSetList object
-#' @param ftarget A Numerical vector. Function values at which parameter values are observed
+#' @rdname get_PAR_sample
 #' @param algorithm Which algorithms in the DataSetList to consider.
-#' @param ... Arguments passed to other methods
-#'
-#' @return A data.table object containing parameter values aligned at each given target value
 #' @export
-#'
 get_PAR_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
@@ -392,6 +335,8 @@ get_PAR_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
 #'
 #' @return A sorted list of all unique dimensions which occur in the DataSetList
 #' @export
+#' @examples 
+#' get_dim(dsl)
 get_dim <- function(dsList) {
   sapply(dsList, function(d) attr(d, 'DIM')) %>% unique %>% sort
 }
@@ -402,6 +347,8 @@ get_dim <- function(dsList) {
 #'
 #' @return A sorted list of all unique function ids which occur in the DataSetList
 #' @export
+#' @examples 
+#' get_funcId(dsl)
 get_funcId <- function(dsList) {
   sapply(dsList, function(d) attr(d, 'funcId')) %>% unique %>% sort
 }
@@ -412,6 +359,8 @@ get_funcId <- function(dsList) {
 #'
 #' @return A sorted list of all unique algorithm ids which occur in the DataSetList
 #' @export
+#' @examples 
+#' get_algId(dsl)
 get_algId <- function(dsList) {
   sapply(dsList, function(d) attr(d, 'algId')) %>% unique %>% sort
 }
@@ -422,6 +371,8 @@ get_algId <- function(dsList) {
 #'
 #' @return A sorted list of all unique parameter ids which occur in the DataSetList
 #' @export
+#' @examples 
+#' get_parId(dsl)
 get_parId <- function(dsList) {
   lapply(dsList, function(d) setdiff(names(d), c('RT', 'FV', 'RT.summary'))) %>% unlist %>% unique
 }
@@ -435,6 +386,8 @@ get_parId <- function(dsList) {
 #'
 #' @return A list matrices of all function values which occur in the DataSetList
 #' @export
+#' @examples 
+#' get_funvals(dsl)
 get_funvals <- function(dsList) {
   lapply(dsList, function(x) rownames(x$RT)) %>% unlist %>%
     as.numeric %>% unique %>% sort %>% rev
@@ -446,6 +399,8 @@ get_funvals <- function(dsList) {
 #'
 #' @return A list matrices of all runtime values which occur in the DataSetList
 #' @export
+#' @examples 
+#' get_runtimes(dsl)
 get_runtimes <- function(dsList) {
   lapply(dsList, function(x) rownames(x$FV)) %>% unlist %>%
     as.numeric %>% unique %>% sort
@@ -479,6 +434,8 @@ get_runtimes <- function(dsList) {
 #'
 #' @return The filtered DataSetList
 #' @export
+#' @examples 
+#' subset(dsl, funcId == 1)
 subset.DataSetList <- function(x, ...) {
   n <- nargs() - 1
   condition_call <- substitute(list(...))
@@ -501,17 +458,12 @@ subset.DataSetList <- function(x, ...) {
 #'
 #' @return A data.table containing ERT-values
 #' @export
+#' @examples 
+#' max_ERTs(dsl)
 max_ERTs <- function(dsList, aggr_on = 'funcId', targets = NULL, maximize = T) UseMethod("max_ERTs", dsList)
 
 #TODO: rename this function! this function needs to be rewritten
-#' S3 generic function to get the ERT-values for all DataSets in a DataSetList at certain targets
-#'
-#' @param dsList The DataSetLsit
-#' @param aggr_on Whether to aggregate on 'funcId' or 'DIM'.
-#' @param targets Predifined target function-values. Should be one for each function/dimension
-#' @param maximize Whether the DataSetList is from a maximization or minimization problem
-#'
-#' @return A data.table containing ERT-values
+#' @rdname max_ERTs
 #' @export
 max_ERTs.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, maximize = T) {
   N <- length(get_algId(dsList))
@@ -551,16 +503,11 @@ max_ERTs.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, max
 #'
 #' @return A data.table containing expected fucntion-values
 #' @export
+#' @examples 
+#' mean_FVs(dsl)
 mean_FVs <- function(dsList, aggr_on = 'funcId', runtimes = NULL) UseMethod("mean_FVs", dsList)
 
-#' S3 generic function to get the expected function-values for all DataSets in a
-#' DataSetList at certain runtimes
-#'
-#' @param dsList The DataSetLsit
-#' @param aggr_on Whether to aggregate on 'funcId' or 'DIM'.
-#' @param runtimes Predifined target runtimes-values. Should be one for each function/dimension
-#'
-#' @return A data.table containing expected fucntion-values
+#' @rdname mean_FVs
 #' @export
 mean_FVs.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NULL) {
   N <- length(get_algId(dsList))

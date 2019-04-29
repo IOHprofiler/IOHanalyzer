@@ -15,3 +15,6 @@ A new DataSetList
 \description{
 S3 concatenation function for DataSetList
 }
+\examples{
+c(dsl[1],dsl[3])
+}

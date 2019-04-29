@@ -29,38 +29,6 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
                     label = 'scale y axis log10',
                     value = T),
 
-      checkboxInput('FCEPlot.show.grad',
-                    label = 'show runs intensity',
-                    value = F),
-
-      conditionalPanel(
-        condition = 'input["FCEPlot.show.grad"] == true',
-        column(
-          width = 11, offset = 1,
-          sliderInput('FCEPlot.show.intensity', label = "Runs intensity(%)",
-                      min = -1, max = 1, value = 0, step = 0.1)
-        )
-      ),
-
-      checkboxInput('FCEPlot.show.all',
-                    label = 'show/hide multiple runs',
-                    value = F),
-      conditionalPanel(condition = 'input["FCEPlot.show.all"] == true',
-
-                       fluidRow(column(
-                         11,
-                         offset = 1,
-                         sliderInput('FCEPlot.show.density',
-                                     label = "Runs density(%)",
-                                     min = 1, max = 100, value = 100, step = 1),
-                         checkboxInput('FCEPlot.show.best_of_all',
-                                       label = 'show/hide best run',
-                                       value = F),
-                         checkboxInput('FCEPlot.show.pareto_optima',
-                                       label = 'show/hide pareto optimal front',
-                                       value = F)
-                       ))),
-
       selectInput('FCEPlot.Format', label = 'select the figure format',
                   choices = supported_fig_format, selected = 'pdf'),
 

@@ -15,3 +15,6 @@
 Prints the Function ID, Dimension, Algorithm Id, datafile location and comment for every
 DataSet in the DataSetList
 }
+\examples{
+summary(dsl)
+}

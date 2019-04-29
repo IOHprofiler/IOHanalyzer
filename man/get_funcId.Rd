@@ -15,3 +15,6 @@ A sorted list of all unique function ids which occur in the DataSetList
 \description{
 Get all function ids present in a DataSetList
 }
+\examples{
+get_funcId(dsl)
+}

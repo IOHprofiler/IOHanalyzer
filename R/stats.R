@@ -5,7 +5,8 @@
 #'
 #' @return A list containing ERTs, number of succesfull runs and the succes rate
 #' @export
-#'
+#' @examples 
+#' SP(dsl[[1]]$RT, max(dsl[[1]]$RT))
 SP <- function(data, max_runtime) {
   N <- ncol(data)
   succ <- apply(data, 1, function(x) sum(!is.na(x)))
@@ -34,7 +35,9 @@ SP <- function(data, max_runtime) {
 #'
 #' @return A sequence of function values
 #' @export
-#'
+#' @examples 
+#' FVall <- get_runtimes(dsl)
+#' seq_FV(FVall, 10, 16, 1, scale='linear')
 seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, scale = NULL) {
   from <- max(from, min(FV))
   to <- min(to, max(FV))
@@ -105,7 +108,9 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
 #'
 #' @return A sequence of runtime values
 #' @export
-#'
+#' @examples 
+#' RTall <- get_runtimes(dsl)
+#' seq_RT(RTall, 0, 500, length.out=10, scale='log')
 seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
                    scale = 'linear') {
   rev_trans <- function(x) x
@@ -164,17 +169,15 @@ EPMF <- function() {
 #'
 #' @return a object of type 'ECDF'
 #' @export
-#'
+#' @examples 
+#' ECDF(dsl,c(12,14))
+#' ECDF(dsl[[1]],c(12,14))
 ECDF <- function(ds, ftarget, ...) UseMethod("ECDF", ds)
 
 # TODO: also implement the ecdf functions for function values and parameters
-#' Empirical Cumulative Dsitribution Function of Runtime of a single data set
-#'
-#' @param ds A DataSet object.
-#' @param ftarget A Numerical vector. Function values at which runtime values are consumed
-#' @return a object of type 'ECDF'
-#'
-ECDF.DataSet <- function(ds, ftarget) {
+#' @rdname ECDF
+#' @export
+ECDF.DataSet <- function(ds, ftarget, ...) {
   runtime <- get_RT_sample(ds, ftarget, output = 'long')$RT
   runtime <- runtime[!is.na(runtime)]
   if (length(runtime) == 0)
@@ -189,22 +192,16 @@ ECDF.DataSet <- function(ds, ftarget) {
 }
 
 #TODO: better description of funcId parameter
-#' Empirical Cumulative Dsitribution Function of Runtime of a list of data sets
-#'
-#' @param dsList A DataSetList object
-#' @param ftarget A Numerical vector or a list of numerical vector.
-#'                Function values at which runtime values are consumed. When it is a list,
-#'                it should have the same length as dsList
+#' @rdname ECDF
 #' @param funcId Function Ids to use
-#' @return a object of type 'ECDF'
-#'
-ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
-  if (length(dsList) == 0) return(NULL)
+#' @export
+ECDF.DataSetList <- function(ds, ftarget, funcId = NULL, ...) {
+  if (length(ds) == 0) return(NULL)
 
   if (is.list(ftarget)) {
     runtime <- sapply(seq_along(ftarget), function(i) {
       Id <- funcId[i]
-      data <- subset(dsList, funcId == Id)
+      data <- subset(ds, funcId == Id)
       if (length(data) == 0) return(NA)
       res <- get_RT_sample(data, ftarget[[i]], output = 'long')$RT
       res[is.na(res)] <- Inf
@@ -212,7 +209,7 @@ ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
     }) %>%
       unlist
   } else {
-    runtime <- get_RT_sample(dsList, ftarget, output = 'long')$RT
+    runtime <- get_RT_sample(ds, ftarget, output = 'long')$RT
     runtime[is.na(runtime)] <- Inf
   }
 
@@ -234,17 +231,13 @@ ECDF.DataSetList <- function(dsList, ftarget, funcId = NULL) {
 #'
 #' @return a object of type 'ECDF'
 #' @export
-#'
+#' @examples 
+#' ecdf <- ECDF(dsl,c(12,14))
+#' AUC(ecdf, 0, 100)
 AUC <- function(fun, from = NULL, to = NULL) UseMethod('AUC', fun)
 
-#' Area Under Curve (Empirical Cumulative Dsitribution Function)
-#'
-#' @param fun A ECDF object.
-#' @param from double. Starting point of the area on x-axis
-#' @param to   double. Ending point of the area on x-axis
-#'
-#' @return a object of type 'ECDF'
-#'
+#' @rdname AUC
+#' @export
 AUC.ECDF <- function(fun, from = NULL, to = NULL) {
   if (is.null(from))
     from <- attr(fun, 'min')
@@ -266,7 +259,8 @@ AUC.ECDF <- function(fun, from = NULL, to = NULL) {
 #'
 #' @return a vector of targets
 #' @export
-#'
+#' @examples 
+#' get_default_ECDF_targets(dsl)
 get_default_ECDF_targets <- function(data, format_func = as.integer){
   funcIds <- get_funcId(data)
   dims <- get_dim(data)

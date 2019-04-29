@@ -16,7 +16,6 @@
 #' @param maximization Logical. Whether the underlying optimization algorithm performs a maximization?
 #' @param format A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL"
 #' @param subsampling Logical. Whether *.cdat files are subsampled?
-#' @param include_param Whether to include the recorded parameters in the alignment
 #' @return A S3 object 'DataSet'
 #' @export
 #' @examples 
@@ -24,7 +23,7 @@
 #' info <- read_IndexFile(file.path(path,"IOHprofiler_f1_i1.info"))
 #' DataSet(info[[1]])
 DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler,
-                    subsampling = FALSE, include_param = FALSE) {
+                    subsampling = FALSE) {
   if (!is.null(info)) {
     datFile <- info$datafile
     path <- dirname(info$datafile)
@@ -57,9 +56,9 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
       dat <- read_dat(datFile, subsampling)         # read the dat file
       cdat <- read_dat(cdatFile, subsampling)       # read the cdat file
     } else if (format == COCO) {
-      dim_val <- if (include_param) info$DIM else 0
-      dat <- read_COCO_dat2(datFile, DIM=dim_val, subsampling)    # read the dat file
-      cdat <- read_COCO_dat2(tdatFile, DIM=dim_val, subsampling)   # read the tdat file
+      #Should we use read_COCO_dat or read_COCO_dat2?
+      dat <- read_COCO_dat2(datFile, subsampling)    # read the dat file
+      cdat <- read_COCO_dat2(tdatFile, subsampling)   # read the tdat file
     } else if (format == BIBOJ_COCO) {
       dat <- read_BIOBJ_COCO_dat(datFile, subsampling)    # read the dat file
       cdat <- read_BIOBJ_COCO_dat(tdatFile, subsampling)   # read the tdat file
@@ -77,13 +76,13 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
       maximization <- FALSE
 
     # RT <- align_by_target(dat, maximization = maximization, format = format) # runtime
-    RT <- align_runtime(dat, format = format, include_param = include_param)
+    RT <- align_runtime(dat, format = format)
 
     #TODO: check if this works correctly without CDAT-file
     if (format == TWO_COL)
-      FV <- align_function_value(dat, format = format, include_param = include_param)  # function value
+      FV <- align_function_value(dat, format = format)  # function value
     else
-      FV <- align_function_value(cdat, format = format, include_param = include_param)  # function value
+      FV <- align_function_value(cdat, format = format)  # function value
 
     # TODO: remove this and incorporate the parameters aligned by runtimes
     FV[names(FV) != 'FV'] <- NULL

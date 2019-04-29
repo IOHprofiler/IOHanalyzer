@@ -4,14 +4,12 @@
 \alias{align_runtime}
 \title{Align data by runtimes}
 \usage{
-align_runtime(data, format = IOHprofiler, include_param = FALSE)
+align_runtime(data, format = IOHprofiler)
 }
 \arguments{
 \item{data}{The data to align}
 
 \item{format}{Whether the data is form IOHprofiler or COCO.}
-
-\item{include_param}{Whether to include the recorded parameters in the alignment}
 }
 \value{
 Data aligned by runtime

@@ -5,7 +5,7 @@
 \title{Constructor of S3 class 'DataSet'}
 \usage{
 DataSet(info, verbose = F, maximization = TRUE, format = IOHprofiler,
-  subsampling = FALSE, include_param = FALSE)
+  subsampling = FALSE)
 }
 \arguments{
 \item{info}{A List. Contains a set of in a *.info file.}
@@ -17,8 +17,6 @@ DataSet(info, verbose = F, maximization = TRUE, format = IOHprofiler,
 \item{format}{A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL"}
 
 \item{subsampling}{Logical. Whether *.cdat files are subsampled?}
-
-\item{include_param}{Whether to include the recorded parameters in the alignment}
 }
 \value{
 A S3 object 'DataSet'

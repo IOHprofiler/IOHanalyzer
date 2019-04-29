@@ -19,14 +19,26 @@ f3 <- list(
   color = 'black'
 )
 
+legend_right <- list(x = 1.01, y = 0.9, orientation = 'v',
+                     font = list(size = 13, family = 'Old Standard TT, serif'))
+
+legend_inside <- list(x = .01, y = 0.9, orientation = 'v',
+                      bgcolor = 'rgba(255, 255, 255, 0)',
+                      bordercolor = 'rgba(255, 255, 255, 0)',
+                      font = list(size = 13, family = 'Old Standard TT, serif'))
+
+legend_inside2 <- list(x = 0.7, y = 0.1, orientation = 'v',
+                      bgcolor = 'rgba(255, 255, 255, 0)',
+                      bordercolor = 'rgba(255, 255, 255, 0)',
+                      font = list(size = 13, family = 'Old Standard TT, serif'))
+
 # TODO: create font object as above for title, axis...
 plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
   plot_ly() %>%
     layout(title = list(text = title, 
                         font = list(size = 13, family = 'Old Standard TT, serif')),
            autosize = T, hovermode = 'compare',
-           legend = list(x = 1.01, y = 0.9, orientation = 'v',
-                         font = list(size = 13, family = 'Old Standard TT, serif')),
+           legend = legend_inside2,
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
            font = list(size = 13, family = 'Old Standard TT, serif'),
            autosize = T,
@@ -148,6 +160,15 @@ color_palettes <- function(ncolor) {
 
 # TODO: we have to change the working directory back and force because
 # function 'orca' always generates figures in the current folder
+
+#' Save plotly figure in multiple format
+#'
+#' @param p plotly object. The plot to be saved
+#' @param file String. The name of the figure file
+#' @param format String. The format of the figure: 'svg', 'pdf', 'eps', 'png' are supported
+#'
+#' @export
+#'
 save_plotly <- function(p, file, format = 'svg', ...) {
   pwd.calling <- getwd()
   des <- dirname(file)

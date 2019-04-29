@@ -96,12 +96,9 @@ export(get_runtimes)
 export(max_ERTs)
 export(mean_FVs)
 export(read_IndexFile)
+export(read_dir)
 export(runServer)
-<<<<<<< HEAD
 export(save_plotly)
-export(scan_IndexFile)
-=======
->>>>>>> 52de6b0b1bfdec134e171aea1a0003118339102b
 export(seq_FV)
 export(seq_RT)
 importFrom(RColorBrewer,brewer.pal)

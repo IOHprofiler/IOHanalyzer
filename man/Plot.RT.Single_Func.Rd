@@ -12,14 +12,8 @@ Plot.RT.Single_Func(dsList, Fstart = NULL, Fstop = NULL,
 
 \method{Plot.RT.Single_Func}{DataSetList}(dsList, Fstart = NULL,
   Fstop = NULL, show.ERT = T, show.CI = T, show.mean = F,
-<<<<<<< HEAD:man/plot_RT_single_fct.DataSetList.Rd
-  show.runs = F, show.density = 50, show.pareto = F,
-  show.optimal = F, show.median = F, backend = "plotly",
-  scale.xlog = F, scale.ylog = F, scale.reverse = F)
-=======
   show.median = F, backend = "plotly", scale.xlog = F,
   scale.ylog = F, scale.reverse = F)
->>>>>>> 52de6b0b1bfdec134e171aea1a0003118339102b:man/Plot.RT.Single_Func.Rd
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -34,17 +28,6 @@ Plot.RT.Single_Func(dsList, Fstart = NULL, Fstop = NULL,
 
 \item{show.mean}{Whether or not to show the mean hitting times}
 
-<<<<<<< HEAD:man/plot_RT_single_fct.DataSetList.Rd
-\item{show.runs}{Whether or not to show the individual runs}
-
-\item{show.density}{Percentage of individual runs to show when show.runs is true}
-
-\item{show.pareto}{Whether or not to show the pareto-optimal run}
-
-\item{show.optimal}{Whether or not to show the optimal run}
-
-=======
->>>>>>> 52de6b0b1bfdec134e171aea1a0003118339102b:man/Plot.RT.Single_Func.Rd
 \item{show.median}{Whether or not to show the median hitting times}
 
 \item{backend}{Which plotting library to use. Can be 'plotly' or 'ggplot2'}
@@ -54,10 +37,6 @@ Plot.RT.Single_Func(dsList, Fstart = NULL, Fstop = NULL,
 \item{scale.ylog}{Whether or not to scale the y-axis logaritmically}
 
 \item{scale.reverse}{Wheter or not to reverse the x-axis (when using minimization)}
-
-\item{show.grad}{Whether or not to show the run intensity}
-
-\item{show.intensity}{Intensity to use when using show.grad}
 }
 \value{
 A plot of ERT-values of the DataSetList

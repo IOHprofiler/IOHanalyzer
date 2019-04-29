@@ -15,3 +15,6 @@ A sorted list of all unique algorithm ids which occur in the DataSetList
 \description{
 Get all algorithm ids present in a DataSetList
 }
+\examples{
+get_algId(dsl)
+}

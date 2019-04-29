@@ -38,7 +38,7 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
     layout(title = list(text = title, 
                         font = list(size = 13, family = 'Old Standard TT, serif')),
            autosize = T, hovermode = 'compare',
-           legend = legend_inside2,
+           legend = legend_right,
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
            font = list(size = 13, family = 'Old Standard TT, serif'),
            autosize = T,

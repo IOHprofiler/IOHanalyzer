@@ -28,3 +28,7 @@ A sequence of runtime values
 \description{
 Function for generating sequences of runtime values
 }
+\examples{
+RTall <- get_runtimes(dsl)
+seq_RT(RTall, 0, 500, length.out=10, scale='log')
+}

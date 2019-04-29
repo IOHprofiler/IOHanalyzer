@@ -1,9 +1,12 @@
+sourceCpp('src/align.cc')
+sourceCpp('src/read.cc')
+# source('global.R')
+
 #' reduce the size of the data set by evenly subsampling the records
 #'
 #' @param df The data to subsample
 #' @param n The amount of samples
 #' @return A smaller data.frame
-#' @export
 limit.data <- function(df, n) {
   N <- nrow(df)
   if (N > n) {
@@ -18,6 +21,8 @@ limit.data <- function(df, n) {
 #' @param folder The folder containing the .info files
 #' @return The paths to all found .info-files
 #' @export
+#' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
+#' scan_indexFile(path)
 scan_IndexFile <- function(folder) {
   folder <- trimws(folder)
   file.path(folder, list.files(folder, pattern = '.info', recursive = T))
@@ -29,7 +34,9 @@ scan_IndexFile <- function(folder) {
 #' @param fname The path to the .info file
 #' @return The data contained in the .info file
 #' @export
-#'
+#' @examples 
+#' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
+#' info <- read_IndexFile(file.path(path,"IOHprofiler_f1_i1.info"))
 read_IndexFile <- function(fname) {
   tryCatch(read_IndexFile_IOH(fname),
            warning = function(e) read_IndexFile_BIOBJ_COCO(fname),
@@ -42,7 +49,6 @@ read_IndexFile <- function(fname) {
 #'
 #' @param fname The path to the .info file
 #' @return The data contained in the .info file
-#' @export
 #'
 read_IndexFile_IOH <- function(fname) {
   f <- file(fname, 'r')
@@ -118,7 +124,6 @@ read_IndexFile_IOH <- function(fname) {
 #'
 #' @param fname The path to the .info file
 #' @return The data contained in the .info file
-#' @export
 #'
 read_IndexFile_BIOBJ_COCO <- function(fname) {
   f <- file(fname, 'r')
@@ -205,7 +210,8 @@ read_IndexFile_BIOBJ_COCO <- function(fname) {
 #' @param path The path to the folder to check
 #' @return The format of the data in the given folder. Either 'COCO' or 'IOHprofiler'.
 #' @export
-#'
+#' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
+#' check_format(path)
 check_format <- function(path) {
   index_files <- scan_IndexFile(path)
   info <- lapply(index_files, read_IndexFile) %>% unlist(recursive = F)
@@ -213,7 +219,7 @@ check_format <- function(path) {
 
   format <- lapply(datafile, function(file) {
     first_line <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
-    if (startsWith(first_line, '% function'))
+    if (startsWith(first_line, '% function') || startsWith(first_line, '% f evaluations'))
       COCO
     else if (startsWith(first_line, '\"function'))
       IOHprofiler
@@ -240,8 +246,6 @@ check_format <- function(path) {
 #' @param fname The path to the .dat file
 #' @param subsampling Whether to subsample the data or not
 #' @return A list of data.frames
-#' @export
-#'
 read_dat <- function(fname, subsampling = FALSE) {
   # TODO: use the same data loading method as in read_COCO_dat
   df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
@@ -283,8 +287,6 @@ read_dat <- function(fname, subsampling = FALSE) {
 #' @param fname The path to the .dat file
 #' @param subsampling Whether to subsample the data or not
 #' @return A list of data.frames
-#' @export
-#'
 read_COCO_dat <- function(fname, subsampling = FALSE) {
   c_read_dat(path.expand(fname), 7, '%')
 }
@@ -300,7 +302,7 @@ read_COCO_dat2 <- function(fname, subsampling = FALSE) {
     gsub('\\.\\.\\.|% ', '', ., perl = T) %>% {
       strsplit(., split = '\\|')[[1]][select]
     }
-
+  
   df <- fread(text = X[-idx], header = F, sep = ' ', select = select, fill = T)
   idx <- c((idx + 1) - seq_along(idx), nrow(df))
 
@@ -349,8 +351,6 @@ n_data_column <- 5
 #' @param data The data to align
 #' @param format Whether the data is form IOHprofiler or COCO.
 #' @return Data aligned by runtime
-#' @export
-#'
 align_runtime <- function(data, format = IOHprofiler) {
   if (format == IOHprofiler) {
     maximization <- TRUE
@@ -393,7 +393,6 @@ align_runtime <- function(data, format = IOHprofiler) {
     param_names <- NULL
     idxValue <- idxEvals
   }
-
   c_align_runtime(data, FV, idxValue - 1, maximization, idxTarget - 1) %>%
     set_names(c('RT', param_names))
 }
@@ -444,8 +443,6 @@ align_non_contiguous <- function(data, idx, rownames) {
 #' @param format Whether the data is form IOHprofiler or COCO.
 #' @param include_param Whether to include the recorded parameters in the alignment
 #' @return Data aligned by function value
-#' @export
-#'
 align_function_value <- function(data, include_param = TRUE, format = IOHprofiler) {
   N <- length(data)
   n_column <- sapply(data, ncol) %>% unique

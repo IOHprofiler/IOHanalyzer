@@ -38,7 +38,17 @@ body <- dashboardBody(
         $("header").find("nav").append(\'<span class="myClass">Performance Evaluation for Iterative Optimization Heuristics</span>\');
       })
      ')),
-
+  tags$script("
+      Shiny.addCustomMessageHandler('background-color', function(color) {
+              document.body.style.backgroundColor = color;
+              document.body.innerText = color;
+              });
+              "),
+  tags$script("Shiny.addCustomMessageHandler('set_trace_input', function(color) {
+                Shiny.setInputValue('ERTPlot_Traces', document.getElementById('ERT_PER_FUN').data.map(trace => trace.visible != 'legendonly'));
+                document.body.style.backgroundColor = color;
+                document.body.innerText = color;
+              });"),
   tags$script(HTML('
        window.setInterval(function() {
         var elem = document.getElementById("process_data_promt");

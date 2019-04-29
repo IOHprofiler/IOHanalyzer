@@ -19,3 +19,6 @@ A short description of the DataSet
 \description{
 S3 generic print operator for DataSet
 }
+\examples{
+print(dsl[[1]])
+}

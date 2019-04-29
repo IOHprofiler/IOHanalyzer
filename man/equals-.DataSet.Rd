@@ -18,3 +18,6 @@ and have equal precision and comments; False otherwise
 \description{
 S3 generic == operator for DataSets
 }
+\examples{
+dsl[[1]] == dsl[[2]]
+}

@@ -1,4 +1,4 @@
-#' @importFrom stats dt ecdf integrate median quantile sd
+#' @importFrom stats dt ecdf integrate median quantile sd 
 #' @importFrom grDevices col2rgb colors nclass.FD
 #' @importFrom graphics hist
 #' @importFrom utils data head read.csv tail
@@ -19,7 +19,8 @@ NULL
 #Ugly hack, but appears to be required to appease CRAN
 utils::globalVariables(c(".","algId","run","ERT","RT","max_samples",
                          "DIM", "Fvalue", "lower", "upper", "target", "format",
-                         "runtime", "parId", "instance", "input", "funcId"))
+                         "runtime", "parId", "instance", "input", "funcId", "..names_to_show"))
+#TODO: verify ..names_to_show is needed here
 
 options(shiny.port = 4242)
 

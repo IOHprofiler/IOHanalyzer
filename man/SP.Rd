@@ -17,3 +17,6 @@ A list containing ERTs, number of succesfull runs and the succes rate
 \description{
 Estimator 'SP' for the Expected Running Time (ERT)
 }
+\examples{
+SP(dsl[[1]]$RT, max(dsl[[1]]$RT))
+}

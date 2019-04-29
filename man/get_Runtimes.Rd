@@ -15,3 +15,6 @@ A list matrices of all runtime values which occur in the DataSetList
 \description{
 Get all runtime values present in a DataSetList
 }
+\examples{
+get_runtimes(dsl)
+}

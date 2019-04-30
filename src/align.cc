@@ -102,7 +102,7 @@ NumericMatrix c_impute_runtime(NumericVector index, // index value recorded
 //' @param idxValue index of the function values
 //' @param maximization Boolean
 //' @param idxTarget index of the target
-//' @keywords internal
+//' @noRd
 // [[Rcpp::export]]
 List c_align_runtime(List data, NumericVector FV, NumericVector idxValue, bool maximization, int idxTarget) {
   int NC = data.size();

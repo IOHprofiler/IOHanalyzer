@@ -19,3 +19,4 @@ Data aligned by function value
 \description{
 Align data by function values
 }
+\keyword{internal}

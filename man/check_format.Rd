@@ -15,3 +15,7 @@ The format of the data in the given folder. Either 'COCO' or 'IOHprofiler'.
 \description{
 Throws a warning when multiple formats are found in the same folder.
 }
+\examples{
+path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
+check_format(path)
+}

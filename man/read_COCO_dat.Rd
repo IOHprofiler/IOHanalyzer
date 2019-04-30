@@ -17,3 +17,4 @@ A list of data.frames
 \description{
 read COCO '.dat'-like file
 }
+\keyword{internal}

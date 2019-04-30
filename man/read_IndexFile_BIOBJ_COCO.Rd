@@ -15,3 +15,4 @@ The data contained in the .info file
 \description{
 Read Biobjective COCO-based .info files and extract information
 }
+\keyword{internal}

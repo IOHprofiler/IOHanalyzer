@@ -22,25 +22,25 @@ f3 <- list(
 legend_right <- list(x = 1.01, y = 0.9, orientation = 'v',
                      font = list(size = 13, family = 'Old Standard TT, serif'))
 
-legend_inside <- list(x = .01, y = 0.9, orientation = 'v',
+legend_inside <- list(x = .01, y = 1, orientation = 'v',
                       bgcolor = 'rgba(255, 255, 255, 0)',
                       bordercolor = 'rgba(255, 255, 255, 0)',
-                      font = list(size = 13, family = 'Old Standard TT, serif'))
+                      font = list(size = 16, family = 'Old Standard TT, serif'))
 
 legend_inside2 <- list(x = 0.7, y = 0.1, orientation = 'v',
                       bgcolor = 'rgba(255, 255, 255, 0)',
                       bordercolor = 'rgba(255, 255, 255, 0)',
-                      font = list(size = 13, family = 'Old Standard TT, serif'))
+                      font = list(size = 16, family = 'Old Standard TT, serif'))
 
 # TODO: create font object as above for title, axis...
 plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
   plot_ly() %>%
     layout(title = list(text = title, 
-                        font = list(size = 13, family = 'Old Standard TT, serif')),
+                        font = list(size = 16, family = 'Old Standard TT, serif')),
            autosize = T, hovermode = 'compare',
-           legend = legend_right,
+           legend = legend_inside2,
            paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = 'rgb(229,229,229)',
-           font = list(size = 13, family = 'Old Standard TT, serif'),
+           font = list(size = 16, family = 'Old Standard TT, serif'),
            autosize = T,
            showlegend = T, 
            xaxis = list(
@@ -53,7 +53,7 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickcolor = 'rgb(127,127,127)',
                         ticks = 'outside',
                         ticklen = 9,
-                        tickfont = f2,
+                        tickfont = f3,
                         exponentformat = 'E',
                         zeroline = F),
            yaxis = list(
@@ -66,7 +66,7 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickcolor = 'rgb(127,127,127)',
                         ticks = 'outside',
                         ticklen = 9,
-                        tickfont = f2,
+                        tickfont = f3,
                         exponentformat = 'E',
                         zeroline = F))
 }

@@ -50,7 +50,7 @@ read_IndexFile <- function(fname) {
 #'
 #' @param fname The path to the .info file
 #' @return The data contained in the .info file
-#'
+#' @noRd
 read_IndexFile_IOH <- function(fname) {
   f <- file(fname, 'r')
   path <- dirname(fname)
@@ -125,7 +125,7 @@ read_IndexFile_IOH <- function(fname) {
 #'
 #' @param fname The path to the .info file
 #' @return The data contained in the .info file
-#' @keywords internal
+#' @noRd
 read_IndexFile_BIOBJ_COCO <- function(fname) {
   f <- file(fname, 'r')
   path <- dirname(fname)
@@ -247,7 +247,7 @@ check_format <- function(path) {
 #'
 #' @param fname The path to the .dat file
 #' @param subsampling Whether to subsample the data or not
-#' @keywords internal
+#' @noRd
 #' @return A list of data.frames
 read_dat <- function(fname, subsampling = FALSE) {
   # TODO: use the same data loading method as in read_COCO_dat
@@ -289,7 +289,7 @@ read_dat <- function(fname, subsampling = FALSE) {
 #'
 #' @param fname The path to the .dat file
 #' @param subsampling Whether to subsample the data or not
-#' @keywords internal
+#' @noRd
 #' @return A list of data.frames
 read_COCO_dat <- function(fname, subsampling = FALSE) {
   c_read_dat(path.expand(fname), 7, '%')
@@ -299,7 +299,7 @@ read_COCO_dat <- function(fname, subsampling = FALSE) {
 #'
 #' @param fname The path to the .dat file
 #' @param subsampling Whether to subsample the data or not
-#' @keywords internal
+#' @noRd
 #' @return A list of data.frames
 read_COCO_dat2 <- function(fname, subsampling = FALSE) {
   select <- seq(5)
@@ -360,7 +360,7 @@ n_data_column <- 5
 #' Align data by runtimes
 #' @param data The data to align
 #' @param format Whether the data is form IOHprofiler or COCO.
-#' @keywords internal
+#' @noRd
 #' @return Data aligned by runtime
 align_runtime <- function(data, format = IOHprofiler) {
   if (format == IOHprofiler) {
@@ -453,7 +453,7 @@ align_non_contiguous <- function(data, idx, rownames) {
 #' @param data The data to align
 #' @param format Whether the data is form IOHprofiler or COCO.
 #' @param include_param Whether to include the recorded parameters in the alignment
-#' @keywords internal
+#' @noRd
 #' @return Data aligned by function value
 align_function_value <- function(data, include_param = TRUE, format = IOHprofiler) {
   N <- length(data)

@@ -25,7 +25,7 @@ output$RTECDF.Aggr.Download <- downloadHandler(
 
 RT_ECDF_MULTI_TABLE <- reactive({
   targets <- uploaded_RT_ECDF_targets()
-  funcId <- names(targets)
+  funcId <- names(targets) %>% as.numeric
 
   if (is.null(targets)) {
     data <- subset(DATA_RAW(), DIM == input$Overall.Dim)

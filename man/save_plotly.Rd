@@ -12,7 +12,16 @@ save_plotly(p, file, format = "svg", ...)
 \item{file}{String. The name of the figure file}
 
 \item{format}{String. The format of the figure: 'svg', 'pdf', 'eps', 'png' are supported}
+
+\item{...}{Additional arguments for orca}
 }
 \description{
-Save plotly figure in multiple format
+NOTE: This function requires orca to be installed, and for pdf and eps formats 
+inkscape is also needed.
+}
+\examples{
+\donttest{
+p <- Plot.RT.Single_Func(dsl[1])
+save_plotly(p, 'example_file', format = 'png')
+}
 }

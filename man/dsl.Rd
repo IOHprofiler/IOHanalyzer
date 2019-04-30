@@ -11,4 +11,7 @@ dsl
 \description{
 A DataSetList containing DataSets on 2 IOHProfiler functions from 2 algorithms in 16D
 }
+\examples{
+summary(dsl)
+}
 \keyword{datasets}

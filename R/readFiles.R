@@ -21,8 +21,9 @@ limit.data <- function(df, n) {
 #' @param folder The folder containing the .info files
 #' @return The paths to all found .info-files
 #' @export
+#' @examples 
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
-#' scan_indexFile(path)
+#' scan_IndexFile(path)
 scan_IndexFile <- function(folder) {
   folder <- trimws(folder)
   file.path(folder, list.files(folder, pattern = '.info', recursive = T))
@@ -49,7 +50,7 @@ read_IndexFile <- function(fname) {
 #'
 #' @param fname The path to the .info file
 #' @return The data contained in the .info file
-#'
+#' @noRd
 read_IndexFile_IOH <- function(fname) {
   f <- file(fname, 'r')
   path <- dirname(fname)
@@ -124,7 +125,7 @@ read_IndexFile_IOH <- function(fname) {
 #'
 #' @param fname The path to the .info file
 #' @return The data contained in the .info file
-#'
+#' @noRd
 read_IndexFile_BIOBJ_COCO <- function(fname) {
   f <- file(fname, 'r')
   path <- dirname(fname)
@@ -210,6 +211,7 @@ read_IndexFile_BIOBJ_COCO <- function(fname) {
 #' @param path The path to the folder to check
 #' @return The format of the data in the given folder. Either 'COCO' or 'IOHprofiler'.
 #' @export
+#' @examples 
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
 #' check_format(path)
 check_format <- function(path) {
@@ -245,6 +247,7 @@ check_format <- function(path) {
 #'
 #' @param fname The path to the .dat file
 #' @param subsampling Whether to subsample the data or not
+#' @noRd
 #' @return A list of data.frames
 read_dat <- function(fname, subsampling = FALSE) {
   # TODO: use the same data loading method as in read_COCO_dat
@@ -286,11 +289,18 @@ read_dat <- function(fname, subsampling = FALSE) {
 #'
 #' @param fname The path to the .dat file
 #' @param subsampling Whether to subsample the data or not
+#' @noRd
 #' @return A list of data.frames
 read_COCO_dat <- function(fname, subsampling = FALSE) {
   c_read_dat(path.expand(fname), 7, '%')
 }
 
+#' read COCO '.dat'-like file directly in R
+#'
+#' @param fname The path to the .dat file
+#' @param subsampling Whether to subsample the data or not
+#' @noRd
+#' @return A list of data.frames
 read_COCO_dat2 <- function(fname, subsampling = FALSE) {
   select <- seq(5)
   # read the file as a character vector (one string per row)
@@ -350,6 +360,7 @@ n_data_column <- 5
 #' Align data by runtimes
 #' @param data The data to align
 #' @param format Whether the data is form IOHprofiler or COCO.
+#' @noRd
 #' @return Data aligned by runtime
 align_runtime <- function(data, format = IOHprofiler) {
   if (format == IOHprofiler) {
@@ -442,6 +453,7 @@ align_non_contiguous <- function(data, idx, rownames) {
 #' @param data The data to align
 #' @param format Whether the data is form IOHprofiler or COCO.
 #' @param include_param Whether to include the recorded parameters in the alignment
+#' @noRd
 #' @return Data aligned by function value
 align_function_value <- function(data, include_param = TRUE, format = IOHprofiler) {
   N <- length(data)

@@ -7,10 +7,8 @@
 #' @param format A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL"
 #' @param subsampling Logical. Whether *.cdat files are subsampled?
 #' @param print_fun Function used to print output when in verbose mode
-#'
+#' @noRd
 #' @return A DataSetList object
-#' @export
-#'
 read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
                      format = IOHprofiler, subsampling = FALSE) {
   DataSetList(path, verbose, print_fun, maximization = maximization,

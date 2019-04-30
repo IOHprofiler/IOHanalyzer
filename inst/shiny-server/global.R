@@ -1,7 +1,3 @@
-# some global variables shared between the server and ui
-#
-# Author: Hao Wang
-# Email: wangronin@gmail.com
 suppressMessages(library(IOHanalyzer))
 suppressMessages(library(shiny))
 suppressMessages(library(shinyjs))

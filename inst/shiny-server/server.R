@@ -1,9 +1,3 @@
-#
-# This is the server logic of a Shiny web application. You can run the
-# application by clicking 'Run App' above.
-#
-# Author: Hao Wang
-# Email: wangronin@gmail.com
 format <- NULL         # the unique format of the data set
 sub_sampling <- TRUE   # perform sub-sampling of the data set?
 repo_dir <- ''         # repository directory

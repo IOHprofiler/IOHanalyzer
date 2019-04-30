@@ -1,10 +1,3 @@
-#
-# This is the user interface of the Shiny web application. You can run the
-# application by clicking 'Run App' above.
-#
-# Author: Hao Wang
-# Email: wangronin@gmail.com
-
 for (f in list.files('ui', pattern = '.R', full.names = T)) {
   source(f)
 }

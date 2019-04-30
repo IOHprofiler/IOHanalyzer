@@ -277,7 +277,8 @@ Plot.Parameters <- function(dsList, f_min = NULL, f_max = NULL,
 #' @export
 #' @examples 
 #' Plot.RT.ECDF_Multi_Func(dsl)
-Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL) UseMethod("Plot.RT.ECDF_Multi_Func", dsList)
+Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = False) 
+  UseMethod("Plot.RT.ECDF_Multi_Func", dsList)
 #' Plot ERT-plots for multiple functions or dimensions
 #'
 #' @param dsList A DataSetList (should consist of only one function OR dimension).
@@ -1191,8 +1192,8 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
 
 #' @rdname Plot.RT.ECDF_Multi_Func
 #' @export
-Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL){
-
+Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
+                                                scale.xlog = F) {
   if (is.null(targets))
     targets <- get_default_ECDF_targets(dsList)
 
@@ -1219,8 +1220,10 @@ Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL){
                      line = list(color = rgb_str, width = 3),
                      marker = list(color = rgb_str, size = 10))
   }
+  
+  p %<>%
+    layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')))
   p
-
 }
 
 #' @rdname Plot.RT.Multi_Func

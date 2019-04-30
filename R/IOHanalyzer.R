@@ -19,8 +19,7 @@ NULL
 #Ugly hack, but appears to be required to appease CRAN
 utils::globalVariables(c(".","algId","run","ERT","RT","max_samples",
                          "DIM", "Fvalue", "lower", "upper", "target", "format",
-                         "runtime", "parId", "instance", "input", "funcId", "..names_to_show"))
-#TODO: verify ..names_to_show is needed here
+                         "runtime", "parId", "instance", "input", "funcId"))
 
 options(shiny.port = 4242)
 
@@ -62,4 +61,14 @@ max_samples <- 100
 #'
 #' @docType package
 #' @name IOHanalyzer
+#' @examples 
+#' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
+#' dsList <- DataSetList(path)
+#' summary(dsList)
+#' Plot.RT.Single_Func(dsList[1])
+#' 
+#' @examples 
+#' \donttest{
+#' runServer()
+#' }
 NULL

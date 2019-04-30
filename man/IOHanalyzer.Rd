@@ -24,3 +24,13 @@ This is done using the \code{\link{DataSet}} and \code{\link{DataSetList}} funct
 }
 }
 
+\examples{
+path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
+dsList <- DataSetList(path)
+summary(dsList)
+Plot.RT.Single_Func(dsList[1])
+
+\donttest{
+runServer()
+}
+}

@@ -9,8 +9,6 @@
 #' @param print_fun Function used to print output when in verbose mode
 #'
 #' @return A DataSetList object
-#' @export
-#'
 read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
                      format = IOHprofiler, subsampling = FALSE) {
   DataSetList(path, verbose, print_fun, maximization = maximization,

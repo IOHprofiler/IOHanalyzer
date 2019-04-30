@@ -15,3 +15,6 @@ A short description of the DataSet
 \description{
 S3 generic cat operator for DataSet
 }
+\examples{
+cat.DataSet(dsl[[1]])
+}

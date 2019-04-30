@@ -162,13 +162,20 @@ color_palettes <- function(ncolor) {
 # function 'orca' always generates figures in the current folder
 
 #' Save plotly figure in multiple format
+#' 
+#' NOTE: This function requires orca to be installed, and for pdf and eps formats 
+#' inkscape is also needed.
 #'
 #' @param p plotly object. The plot to be saved
 #' @param file String. The name of the figure file
 #' @param format String. The format of the figure: 'svg', 'pdf', 'eps', 'png' are supported
 #' @param ... Additional arguments for orca
 #' @export
-#'
+#' @examples 
+#' \donttest{
+#' p <- Plot.RT.Single_Func(dsl[1])
+#' save_plotly(p, 'example_file', format = 'png')
+#' }
 save_plotly <- function(p, file, format = 'svg', ...) {
   pwd.calling <- getwd()
   des <- dirname(file)

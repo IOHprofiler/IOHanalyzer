@@ -157,6 +157,8 @@ print.DataSet <- function(x, verbose = F, ...) {
 #'
 #' @return A short description of the DataSet
 #' @export
+#' @examples 
+#' cat.DataSet(dsl[[1]])
 cat.DataSet <- function(x) cat(as.character(x))
 
 #' S3 generic as.character operator for DataSet
@@ -543,6 +545,7 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide', ...) {
     set_colnames(c('algId', 'target', paste0('run.', seq(N))))
 
   if (output == 'long') {
+    #TODO: option to not add runnr etc to speed up performance of ECDF calculation?
     res <- melt(res, id = c('algId', 'target'), variable.name = 'run', value.name = 'RT')
     res[, run := as.numeric(gsub('run.', '', run)) %>% as.integer
         ][, RT := as.integer(RT)

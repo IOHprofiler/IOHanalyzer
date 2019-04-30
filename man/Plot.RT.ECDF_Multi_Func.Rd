@@ -25,5 +25,5 @@ Plot the aggregated empirical cumulative distriburtion as a function of the runn
 a DataSetList. Aggregated over multiple functions or dimensions.
 }
 \examples{
-Plot.RT.ECDF_Multi_Func(subset(dsl, funcId == 1))
+Plot.RT.ECDF_Multi_Func(dsl)
 }

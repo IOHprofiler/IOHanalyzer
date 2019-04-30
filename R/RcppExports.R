@@ -21,7 +21,6 @@ c_impute_runtime <- function(index, value, FV, maximization) {
 #' @param maximization Boolean
 #' @param idxTarget index of the target
 #'
-#' @export
 c_align_runtime <- function(data, FV, idxValue, maximization, idxTarget) {
     .Call('_IOHanalyzer_c_align_runtime', PACKAGE = 'IOHanalyzer', data, FV, idxValue, maximization, idxTarget)
 }

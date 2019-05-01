@@ -13,6 +13,37 @@ options(datatable.print.nrows = 20)
 options(width = 80)
 options(shiny.maxRequestSize = 200 * 1024 ^ 2)   # maximal number of requests, this is too many...
 
+# Save plotly figure in multiple format
+#
+# NOTE: This function requires orca to be installed, and for pdf and eps formats 
+# inkscape is also needed. This function does write to the file system!
+save_plotly <- function(p, file, format = 'svg', ...) {
+  pwd.calling <- getwd()
+  des <- dirname(file)
+  file <- basename(file)
+  
+  pwd <- file.path(Sys.getenv('HOME'))
+  dir.create(pwd, showWarnings = FALSE)
+  setwd(pwd)
+  
+  if (format %in% c('svg', 'png'))
+    orca(p, file, format = format, ...)
+  else {
+    file_svg <- paste0(file, '.svg')
+    orca(p, file_svg, format = 'svg', ...)
+    invisible(
+      system(
+        paste('inkscape', file_svg, paste0('--export-', format, '=', file)),
+        intern = T
+      )
+    )
+    file.remove(file_svg)
+  }
+  
+  file.rename(file, file.path(des, file))
+  setwd(pwd.calling)
+}
+
 # for customized 'plotlyOutput' function -----
 widget_html <- function(name, package, id, style, class, inline = FALSE, ...) {
   # attempt to lookup custom html function for widget

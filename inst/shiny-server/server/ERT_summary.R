@@ -3,13 +3,7 @@ runtime_summary_condensed <- reactive({
   data <- DATA()
   req(data)
   fall <- get_funvals(data)
-  get_FV_overview(data, algorithm = input$RTSummary.Overview.Algid)
-})
-
-output$table_RT_overview <- renderTable({
-  req(input$RTSummary.Overview.Algid)
-  df <- runtime_summary_condensed()
-
+  df <- get_FV_overview(data, algorithm = input$RTSummary.Overview.Algid)
   df$"Budget" %<>% as.integer
   df$"runs" %<>% as.integer
   df$"runs reached" %<>% as.integer
@@ -21,17 +15,36 @@ output$table_RT_overview <- renderTable({
   df
 })
 
+output$table_RT_overview <- renderTable({
+  req(input$RTSummary.Overview.Algid)
+  runtime_summary_condensed()
+})
+
+
+output$RTSummary.Overview.Download <- downloadHandler(
+  filename = function() {
+    eval(RT_overview_name)
+  },
+  content = function(file) {
+    if (input$RTSummary.Overview.Format == 'csv')
+      write.csv(runtime_summary_condensed(), file, row.names = F)
+    else{
+      print(xtable(runtime_summary_condensed()), file = file)
+    }
+  }
+)
+
 output$RTSummary.Statistics.Download <- downloadHandler(
-  filename = {
-    fstart <- format_FV(input$RTSummary.Statistics.Min)
-    fstop <- format_FV(input$RTSummary.Statistics.Max)
-    fstep <- format_FV(input$RTSummary.Statistics.Step)
+  filename = function() {
     eval(RT_csv_name)
   },
   content = function(file) {
-    write.csv(runtime_summary(), file, row.names = F)
-  },
-  contentType = "text/csv"
+    if (input$RTSummary.Statistics.Format == 'csv')
+      write.csv(runtime_summary(), file, row.names = F)
+    else{
+      print(xtable(runtime_summary()), file = file)
+    }
+  }
 )
 
 get_RT <- reactive({
@@ -58,16 +71,15 @@ get_RT <- reactive({
 })
 
 output$RTSummary.Sample.Download <- downloadHandler(
-  filename = {
-    fstart <- input$RTSummary.Sample.Min %>% format_FV
-    fstop <- input$RTSummary.Sample.Max %>% format_FV
-    fstep <- input$RTSummary.Sample.Step %>% format_FV
+  filename = function() {
     eval(RTSample_csv_name)
   },
   content = function(file) {
-    write.csv(get_RT(), file, row.names = F)
-  },
-  contentType = "text/csv"
+    if (input$RTSummary.Sample.Format == 'csv')
+      write.csv(get_RT(), file, row.names = F)
+    else
+      print(xtable(get_RT()), file = file)
+    }
 )
 
 output$table_RT_sample <- renderDataTable({

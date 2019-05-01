@@ -60,6 +60,7 @@ par_summary_box <- function(width = 12, collapsible = T, collapsed = T) {
                                                        used to generate the table on the right.</p>'), value = FALSE),
       selectInput('PAR.Summary.Algid', 'Algorithms', choices = NULL, selected = NULL),
       selectInput('PAR.Summary.Param', 'Parameters', choices = NULL, selected = NULL),
+      selectInput('PAR.Summary.Format', 'Format', choices = c('csv','tex'), selected = 'csv'),
       downloadButton("PAR.Summary.Download", "Save this table as csv")
       ),
 
@@ -92,7 +93,8 @@ par_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
       selectInput('PAR.Sample.Param', 'Parameters', choices = NULL, selected = NULL),
       selectInput('PAR.Sample.Format', 'Format of the csv',
                   choices = c('long', 'wide'), selected = 'wide'),
-      downloadButton("PAR.Sample.Download", "Save this table as csv")
+      selectInput('PAR.Sample.FileFormat', 'File-Format', choices = c('csv','tex'), selected = 'csv'),
+      downloadButton("PAR.Sample.Download", "Save this table")
     ),
 
     mainPanel(

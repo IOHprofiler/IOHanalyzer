@@ -6,6 +6,7 @@ suppressMessages(library(magrittr))
 suppressMessages(library(dplyr))
 suppressMessages(library(plotly))
 suppressMessages(library(shinydashboard))
+suppressMessages(library(xtable))
 
 # global options
 options(datatable.print.nrows = 20)
@@ -102,24 +103,22 @@ print_html <- function(s, widget_id = 'process_data_promt')
 
 
 # download file names: csv, image ---------------------
-RT_csv_name <- parse(text = "paste0('RT-', paste(Sys.Date(), input$Overall.Dim,
-                             paste0('F', input$Overall.Funcid), fstart, fstop, fstep,
-                             sep = '-'), '.csv')")
-RTSample_csv_name <- parse(text = "paste0('RTSample-', paste(Sys.Date(), input$Overall.Dim,
-                                   paste0('F', input$Overall.Funcid), fstart, fstop,
-                                   fstep, sep = '-'), '.csv')")
-FV_csv_name <- parse(text = "paste0('FV-', paste(Sys.Date(), input$Overall.Dim,
-                             paste0('F', input$Overall.Funcid), rt_min, rt_max, rt_step,
-                             sep = '-'), '.csv')")
-FVSample_csv_name <- parse(text = "paste0('FVSample-', paste(Sys.Date(), input$Overall.Dim,
-                                   paste0('F', input$Overall.Funcid), rt_min, rt_max,
-                                   rt_step, sep = '-'), '.csv')")
-PAR_csv_name <- parse(text = "paste0('PAR-', paste(Sys.Date(), input$Overall.Dim,
-                              paste0('F', input$Overall.Funcid), fstart, fstop, fstep,
-                              sep = '-'), '.csv')")
-PARSample_csv_name <- parse(text = "paste0('PARSample-', paste(Sys.Date(), input$Overall.Dim,
-                                    paste0('F', input$Overall.Funcid), fstart, fstop, fstep,
-                                    sep = '-'), '.csv')")
+RT_csv_name <- parse(text = "paste0('RTStats-', paste0(input$Overall.Dim, 'D'),
+                             paste0('F', input$Overall.Funcid), '.', input$RTSummary.Statistics.Format)")
+RT_overview_name <- parse(text = "paste0('RTOverview-', paste0(input$Overall.Dim, 'D'),
+                             paste0('F', input$Overall.Funcid), '.', input$RTSummary.Overview.Format)")
+RTSample_csv_name <- parse(text = "paste0('RTSample-', paste0(input$Overall.Dim, 'D'),
+                             paste0('F', input$Overall.Funcid), '.', input$RTSummary.Sample.Format)")
+FV_csv_name <- parse(text = "paste0('FVStats-', paste0(input$Overall.Dim, 'D'),
+                             paste0('F', input$Overall.Funcid), '.', input$FCESummary.Statistics.Format)")
+FV_overview_name <- parse(text = "paste0('FVOverview-', paste0(input$Overall.Dim, 'D'),
+                             paste0('F', input$Overall.Funcid), '.', input$FCESummary.Overview.Format)")
+FVSample_csv_name <- parse(text = "paste0('FVSample-', paste0(input$Overall.Dim, 'D'),
+                             paste0('F', input$Overall.Funcid), '.', input$FCESummary.Sample.FileFormat)")
+PAR_csv_name <- parse(text = "paste0('PARSummary-', paste0(input$Overall.Dim, 'D'),
+                             paste0('F', input$Overall.Funcid), '.', input$PAR.Summary.Format)")
+PARSample_csv_name <- parse(text = "paste0('PARSample-', paste0(input$Overall.Dim, 'D'),
+                             paste0('F', input$Overall.Funcid), '.', input$PAR.Sample.FileFormat)")
 
 max_samples <- 100
 

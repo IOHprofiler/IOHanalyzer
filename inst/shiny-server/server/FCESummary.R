@@ -3,20 +3,32 @@
 FCE_runtime_summary_condensed <- reactive({
   data <- DATA()
   fall <- get_funvals(data)
-  get_RT_overview(data, algorithm = input$FCESummary.Overview.Algid)
-})
-
-output$table_FV_overview <- renderTable({
-  req(input$FCESummary.Overview.Algid)
-  df <- FCE_runtime_summary_condensed()
-
+  df <- get_RT_overview(data, algorithm = input$FCESummary.Overview.Algid)
   df$"runs" %<>% as.integer
   df$"Budget" %<>% as.integer
   df$"miminal runtime" %<>% as.integer
   df$"maximal runtime" %<>% as.integer
-
+  
   df
 })
+
+output$table_FV_overview <- renderTable({
+  req(input$FCESummary.Overview.Algid)
+  FCE_runtime_summary_condensed()
+})
+
+output$FCESummary.Overview.Download <- downloadHandler(
+  filename = function() {
+    eval(FV_overview_name)
+  },
+  content = function(file) {
+    if (input$FCESummary.Overview.Format == 'csv')
+      write.csv(FCE_runtime_summary_condensed(), file, row.names = F)
+    else{
+      print(xtable(FCE_runtime_summary_condensed()), file = file)
+    }
+  }
+)
 
 get_FCE_summary <- reactive({
   req(input$FCESummary.Statistics.Min, input$FCESummary.Statistics.Max, input$FCESummary.Statistics.Step)
@@ -59,18 +71,16 @@ output$FCE_SUMMARY <- renderTable({
 })
 
 output$FCESummary.Statistics.Download <- downloadHandler(
-  filename = {
-    data <- DATA()
-    algId <- paste0(get_algId(data), collapse = ';')
-    rt_min <- input$FCESummary.Statistics.Min %>% as.integer %>% as.character
-    rt_max <- input$FCESummary.Statistics.Max %>% as.integer %>% as.character
-    rt_step <- input$FCESummary.Statistics.Step %>% as.integer %>% as.character
+  filename = function() {
     eval(FV_csv_name)
   },
   content = function(file) {
-    write.csv(get_FCE_summary(), file, row.names = F)
-  },
-  contentType = "text/csv"
+    if (input$RTSummary.Overview.Format == 'csv')
+      write.csv(get_FCE_summary(), file, row.names = F)
+    else{
+      print(xtable(get_FCE_summary()), file = file)
+    }
+  }
 )
 
 get_FCE <- reactive({
@@ -114,21 +124,19 @@ get_FCE <- reactive({
 })
 
 output$FCESummary.Sample.Download <- downloadHandler(
-  filename = {
-    data <- DATA()
-    algId <- paste0(get_algId(data), collapse = ';')
-    rt_min <- input$FCESummary.Statistics.Min %>% as.integer %>% as.character
-    rt_max <- input$RT_MAX %>% as.integer %>% as.character
-    rt_step <- input$RT_STEP %>% as.integer %>% as.character
+  filename = function() {
     eval(FVSample_csv_name)
   },
   content = function(file) {
-    write.csv(get_FCE(), file, row.names = F)
-  },
-  contentType = "text/csv"
+    if (input$FCESummary.Sample.FileFormat == 'csv')
+      write.csv(get_FCE(), file, row.names = F)
+    else
+      print(xtable(get_FCE()), file = file)
+  }
 )
 
 output$FCE_SAMPLE <- renderDataTable({
   df <- get_FCE()
   df[is.na(df)] <- 'NA'
-  df}, options = list(pageLength = 20, scrollX = T))
+  df}, options = list(pageLength = 20, scrollX = T)
+)

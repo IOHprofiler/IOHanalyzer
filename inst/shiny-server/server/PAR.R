@@ -121,27 +121,27 @@ output$table_PAR_summary <- renderTable({
 })
 
 output$PAR.Sample.Download <- downloadHandler(
-  filename = {
-    fstart <- format_FV(input$PAR.Sample.Min)
-    fstop <- format_FV(input$PAR.Sample.Max)
-    fstep <- format_FV(input$PAR.Sample.Step)
+  filename = function() {
     eval(PARSample_csv_name)
   },
   content = function(file) {
-    write.csv(parameter_sample(), file, row.names = F)
+    if (input$PAR.Sample.FileFormat == 'csv')
+      write.csv(parameter_sample(), file, row.names = F)
+    else
+      print(xtable(parameter_sample()), file = file)
   },
   contentType = "text/csv"
 )
 
 output$PAR.Summary.Download <- downloadHandler(
-  filename = {
-    fstart <- format_FV(input$PAR.Summary.Min)
-    fstop <- format_FV(input$PAR.Summary.Max)
-    fstep <- format_FV(input$PAR.Summary.Step)
+  filename = function() {
     eval(PAR_csv_name)
   },
   content = function(file) {
-    write.csv(parameter_summary(), file, row.names = F)
+    if (input$PAR.Summary.Format == 'csv')
+      write.csv(parameter_summary(), file, row.names = F)
+    else
+      print(xtable(parameter_summary()), file = file)
   },
   contentType = "text/csv"
 )

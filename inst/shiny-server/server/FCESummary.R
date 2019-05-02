@@ -12,10 +12,10 @@ FCE_runtime_summary_condensed <- reactive({
   df
 })
 
-output$table_FV_overview <- renderTable({
+output$table_FV_overview <- renderDataTable({
   req(input$FCESummary.Overview.Algid)
   FCE_runtime_summary_condensed()
-})
+}, options = list(pageLength = 20, scrollX = T))
 
 output$FCESummary.Overview.Download <- downloadHandler(
   filename = function() {
@@ -47,28 +47,28 @@ get_FCE_summary <- reactive({
   rt_seq <- seq_RT(rt, rt_min, rt_max, by = rt_step)
   req(rt_seq)
 
-  get_FV_summary(data, rt_seq, algorithm = input$FCESummary.Statistics.Algid)[
+  df <- get_FV_summary(data, rt_seq, algorithm = input$FCESummary.Statistics.Algid)[
     , c('DIM', 'funcId') := NULL
     ]
-})
-
-output$FCE_SUMMARY <- renderTable({
-  df <- get_FCE_summary()
   df$runs %<>% as.integer
   # df$runs.MaxFunvals %<>% as.integer
   df$median %<>% format(format = 'e', digits = 3)
   df$mean %<>% format(format = 'e', digits = 3)
   df$runtime %<>% as.integer
-
+  
   # TODO: make probs as a global option
   probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
-
+  
   # format the integers
   for (p in paste0(probs * 100, '%')) {
     df[[p]] %<>% format(format = 'e', digits = 3)
   }
   df
 })
+
+output$FCE_SUMMARY <- renderDataTable({
+  get_FCE_summary()
+}, options = list(pageLength = 20, scrollX = T))
 
 output$FCESummary.Statistics.Download <- downloadHandler(
   filename = function() {

@@ -69,7 +69,20 @@ parameter_summary <- reactive({
   fseq <- seq_FV(fall, fstart, fstop, by = fstep)
   req(fseq)
 
-  get_PAR_summary(data, fseq, input$PAR.Summary.Algid, input$PAR.Summary.Param)
+  dt <- get_PAR_summary(data, fseq, input$PAR.Summary.Algid, input$PAR.Summary.Param)
+  req(length(dt) != 0)
+  dt$runs %<>% as.integer
+  dt$mean %<>% format(digits = 2, nsmall = 2)
+  dt$median %<>% format(digits = 2, nsmall = 2)
+  
+  # TODO: make probs as a global option
+  probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
+  
+  # format the integers
+  # for (p in paste0(probs * 100, '%')) {
+  #   df[[p]] %<>% format(digits = 2, nsmall = 2)
+  # }
+  dt
 })
 
 parameter_sample <- reactive({
@@ -103,22 +116,9 @@ output$table_PAR_SAMPLE <- renderDataTable({
   dt[is.na(dt)] <- 'NA'
   dt}, options = list(pageLength = 20, scrollX = T))
 
-output$table_PAR_summary <- renderTable({
-  dt <- parameter_summary()
-  req(length(dt) != 0)
-  dt$runs %<>% as.integer
-  dt$mean %<>% format(digits = 2, nsmall = 2)
-  dt$median %<>% format(digits = 2, nsmall = 2)
-
-  # TODO: make probs as a global option
-  probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
-
-  # format the integers
-  # for (p in paste0(probs * 100, '%')) {
-  #   df[[p]] %<>% format(digits = 2, nsmall = 2)
-  # }
-  dt
-})
+output$table_PAR_summary <- renderDataTable({
+  parameter_summary()
+}, options = list(pageLength = 20, scrollX = T))
 
 output$PAR.Sample.Download <- downloadHandler(
   filename = function() {

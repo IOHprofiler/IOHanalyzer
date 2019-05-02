@@ -50,42 +50,6 @@ shinyServer(function(input, output, session) {
     source(f, local = TRUE)
   }
 
-  # Data summary for Fixed-Target Runtime (ERT)  --------------
-  runtime_summary <- reactive({
-    req(input$RTSummary.Statistics.Min,
-        input$RTSummary.Statistics.Max,
-        input$RTSummary.Statistics.Step)
 
-    fstart <- format_FV(input$RTSummary.Statistics.Min) %>% as.numeric
-    fstop <- format_FV(input$RTSummary.Statistics.Max) %>% as.numeric
-    fstep <- format_FV(input$RTSummary.Statistics.Step) %>% as.numeric
-    data <- DATA()
-
-    req(fstart <= fstop, fstep <= fstop - fstart, data)
-    fall <- get_funvals(data)
-
-    if (input$RTSummary.Statistics.Single)
-      fstop <- fstart
-
-    fseq <- seq_FV(fall, fstart, fstop, fstep)
-    req(fseq)
-
-    df <- get_RT_summary(data, fseq, algorithm = input$RTSummary.Statistics.Algid)
-    df[, c('DIM', 'funcId') := NULL]
-  })
-
-  output$table_RT_summary <- renderTable({
-    df <- runtime_summary()
-    df$runs %<>% as.integer
-    df$median %<>% as.integer
-    df$target <- format_FV(df$target)
-
-    # format the integers
-    probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
-    for (p in paste0(probs * 100, '%')) {
-      df[[p]] %<>% as.integer
-    }
-    df
-  })
 
 })

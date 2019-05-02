@@ -183,10 +183,10 @@ save_plotly <- function(p, file, format = 'svg', ...) {
   pwd <- tempdir()
   
   if (format %in% c('svg', 'png'))
-    withr::with_dir(pwd,orca(p, file, format = format, ...))
+    withr::with_dir(pwd, orca(p, file, format = format, ...))
   else {
     file_svg <- paste0(file, '.svg')
-    withr::with_dir(pwd,orca(p, file_svg, format = 'svg', ...))
+    withr::with_dir(pwd, orca(p, file_svg, format = 'svg', ...))
     invisible(
       system(
         paste('inkscape', file.path(pwd,file_svg), paste0('--export-', format, '=', file.path(pwd,file))),
@@ -196,5 +196,5 @@ save_plotly <- function(p, file, format = 'svg', ...) {
     # file.remove(file.path(pwd,file_svg))
   }
   
-  file.rename(file.path(pwd,file), file.path(des, file))
+  file.rename(file.path(pwd, file), file.path(des, file))
 }

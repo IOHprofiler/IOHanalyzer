@@ -135,6 +135,7 @@ update_ert_per_fct_axis <- observe({
 
 
 render_ert_per_fct <- reactive({
+  withProgress({
   req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
   selected_algs <- input$ERTPlot.Algs
   data <- subset(DATA(), algId %in% input$ERTPlot.Algs)
@@ -148,6 +149,9 @@ render_ert_per_fct <- reactive({
                      scale.xlog = isolate(input$ERTPlot.semilogx),
                      scale.ylog = isolate(input$ERTPlot.semilogy),
                      scale.reverse = (format == COCO || format == BIBOJ_COCO))
+  },
+  message = "Creating plot"
+  )
 })
 
 output$ERTPlot.Multi.Plot <- renderPlotly(
@@ -156,6 +160,7 @@ output$ERTPlot.Multi.Plot <- renderPlotly(
 
 render_ERTPlot_multi_plot <- eventReactive(input$ERTPlot.Multi.PlotButton, {
   req(input$ERTPlot.Multi.Algs)
+  withProgress({
   data <- subset(DATA_RAW(),
                  algId %in% input$ERTPlot.Multi.Algs,
                  DIM == input$Overall.Dim)
@@ -165,6 +170,8 @@ render_ERTPlot_multi_plot <- eventReactive(input$ERTPlot.Multi.PlotButton, {
                    scale.xlog = input$ERTPlot.Multi.Logx,
                    scale.ylog = input$ERTPlot.Multi.Logy,
                    scale.reverse = (format == COCO || format == BIBOJ_COCO))
+  },
+  message = "Creating plot")
 })
 
 output$ERTPlot.Multi.Download <- downloadHandler(
@@ -199,6 +206,7 @@ get_max_targets <- function(data, aggr_on, maximize){
 }
 
 render_ERTPlot_aggr_plot <- reactive({
+  withProgress({
   #TODO: figure out how to avoid plotting again when default targets are written to input
   data <- DATA_RAW()
   if (length(data) == 0) return(NULL)
@@ -214,6 +222,8 @@ render_ERTPlot_aggr_plot <- reactive({
                 maximize = !(format == COCO || format == BIBOJ_COCO),
                 use_rank = input$ERTPlot.Aggr.Ranking,
                 aggr_on = aggr_on, erts = erts)
+  },
+  message = "Creating plot")
 })
 
 output$ERTPlot.Aggr.Download <- downloadHandler(

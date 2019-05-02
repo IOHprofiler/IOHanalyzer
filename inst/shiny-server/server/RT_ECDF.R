@@ -4,11 +4,13 @@ output$RT_ECDF_MULT <- renderPlotly({
 })
 
 render_RT_ECDF_MULT <- reactive({
-
+  withProgress({
   dsList <- subset(DATA_RAW(), DIM == input$Overall.Dim)
   targets <- uploaded_RT_ECDF_targets()
 
   Plot.RT.ECDF_Multi_Func(dsList, targets = targets)
+  },
+  message = "Creating plot")
 })
 
 output$RTECDF.Aggr.Download <- downloadHandler(
@@ -24,6 +26,7 @@ output$RTECDF.Aggr.Download <- downloadHandler(
 )
 
 RT_ECDF_MULTI_TABLE <- reactive({
+  withProgress({
   targets <- uploaded_RT_ECDF_targets()
   funcId <- names(targets) %>% as.numeric
 
@@ -38,6 +41,8 @@ RT_ECDF_MULTI_TABLE <- reactive({
   })
 
   data.frame(funcId = funcId, target = unlist(targets))
+  },
+  message = "Creating plot")
 })
 
 output$RT_GRID_GENERATED <- renderTable({
@@ -112,7 +117,7 @@ output$RTECDF.Multi.Download <- downloadHandler(
 
 render_RT_ECDF_AGGR <- reactive({
   req(input$RTECDF.Multi.Min, input$RTECDF.Multi.Max, input$RTECDF.Multi.Step)
-
+  withProgress({
   fstart <- format_FV(input$RTECDF.Multi.Min) %>% as.numeric
   fstop <- format_FV(input$RTECDF.Multi.Max) %>% as.numeric
   fstep <- format_FV(input$RTECDF.Multi.Step) %>% as.numeric
@@ -122,6 +127,8 @@ render_RT_ECDF_AGGR <- reactive({
     show.per_target = input$RTECDF.Multi.Targets,
     scale.xlog = input$RTECDF.Multi.Logx
   )
+  },
+  message = "Creating plot")
 })
 
 # evaluation rake of all courses

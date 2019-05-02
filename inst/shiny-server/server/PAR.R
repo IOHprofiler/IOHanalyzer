@@ -1,7 +1,7 @@
 # Expected Evolution of parameters in the algorithm
 render_PAR_PER_FUN <- reactive({
   req(input$PAR.Plot.Min, input$PAR.Plot.Max)
-
+  withProgress({
   f_min <- format_FV(input$PAR.Plot.Min) %>% as.numeric
   f_max <- format_FV(input$PAR.Plot.Max) %>% as.numeric
   tryCatch(
@@ -15,6 +15,8 @@ render_PAR_PER_FUN <- reactive({
       shinyjs::alert("Not all algorithms contain the same parameters. Please select a single algorithm to plot instead.")
     }
   )
+  },
+  message = "Creating plot")
 })
 
 output$PAR.Plot.Download <- downloadHandler(

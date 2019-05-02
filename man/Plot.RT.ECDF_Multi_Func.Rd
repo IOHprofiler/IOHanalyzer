@@ -6,14 +6,17 @@
 \title{Plot the aggregated empirical cumulative distriburtion as a function of the running times of
 a DataSetList. Aggregated over multiple functions or dimensions.}
 \usage{
-Plot.RT.ECDF_Multi_Func(dsList, targets = NULL)
+Plot.RT.ECDF_Multi_Func(dsList, targets = NULL, scale.xlog = F)
 
-\method{Plot.RT.ECDF_Multi_Func}{DataSetList}(dsList, targets = NULL)
+\method{Plot.RT.ECDF_Multi_Func}{DataSetList}(dsList, targets = NULL,
+  scale.xlog = F)
 }
 \arguments{
 \item{dsList}{A DataSetList.}
 
-\item{targets}{The target function values. Specified in a data.frame, as can be generated
+\item{targets}{The target function values. Specified in a data.frame, as can be generated}
+
+\item{scale.xlog}{Whether or not to scale the x-axis logaritmically
 by the function 'get_default_ECDF_targets'}
 }
 \value{

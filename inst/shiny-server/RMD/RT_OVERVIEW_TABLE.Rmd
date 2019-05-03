@@ -1,0 +1,10 @@
+This table provides an overview on function values for all algorithms chosen on the left:
+
+  * worst recorded: the worst $f(x)$ value ever recorded across _all iterations_, 
+  * worst reached: the worst $f(x)$ value reached in the _last iterations_, 
+  * best reached: the best $f(x)$ value reached in the _last iterations_, 
+  * mean reached: the mean $f(x)$ value reached in the _last iterations_, 
+  * median reached: the median $f(x)$ value reached in the _last iterations_, 
+  * succ: the number of runs which successfully hit the best reached $f(x)$.
+
+

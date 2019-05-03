@@ -17,11 +17,10 @@ runtime_summary_condensed <- reactive({
   df
 })
 
-output$table_RT_overview <- renderDataTable({
+output$table_RT_overview <- renderTable({
   req(input$RTSummary.Overview.Algid)
   runtime_summary_condensed()
 }, options = list(pageLength = 20, scrollX = T))
-
 
 output$RTSummary.Overview.Download <- downloadHandler(
   filename = function() {

@@ -66,7 +66,7 @@ rt_pmf_box <- function(width = 12, collapsed = T, collapsible = T) {
         mainPanel(
           width = 10,
           column(width = 12, align = "center",
-                 HTML('<p class="alert alert-warning" align="left" style="font-size:120%;"><b>Warning! </b>The
+                 HTML('<p align="left" style="font-size:120%;"><b>Warning! </b>The
                       <b>probability mass function</b> of the runtime is approximated by the
                       treating the runtime as a <i>continuous</i> random variable and applying the <b>kernel estimation</b> (KDE):</p>'),
                  HTML('<p align="left" style="font-size:120%;">

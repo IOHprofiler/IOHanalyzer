@@ -4,14 +4,16 @@ runtime_summary_condensed <- reactive({
   req(data)
   fall <- get_funvals(data)
   df <- get_FV_overview(data, algorithm = input$RTSummary.Overview.Algid)
-  df$"Budget" %<>% as.integer
-  df$"runs" %<>% as.integer
-  df$"runs reached" %<>% as.integer
-  df$"Worst recorded f(x)" <- format_FV(df$"Worst recorded f(x)")
-  df$"Worst reached f(x)" <- format_FV(df$"Worst reached f(x)")
-  df$"mean reached f(x)" <- format_FV(df$"mean reached f(x)")
-  df$"median reached f(x)" <- format_FV(df$"median reached f(x)")
-  df$"Best reached f(x)" <- format_FV(df$"Best reached f(x)")
+  df$budget %<>% as.integer
+  df$runs %<>% as.integer
+  df$funcId %<>% as.integer
+  df$DIM %<>% as.integer
+  df$succ %<>% as.integer
+  df$"worst recorded" <- format_FV(df$"worst recorded")
+  df$"worst reached" <- format_FV(df$"worst reached")
+  df$"mean reached" <- format_FV(df$"mean reached")
+  df$"median reached" <- format_FV(df$"median reached")
+  df$"best reached" <- format_FV(df$"best reached")
   df
 })
 

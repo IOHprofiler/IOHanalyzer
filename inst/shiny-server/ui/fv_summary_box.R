@@ -14,7 +14,7 @@ fv_overview_box <- function(width = 12, collapsible = T, collapsed = T) {
 
       mainPanel(
         width = 9,
-        tableOutput('table_FV_overview')
+        dataTableOutput('table_FV_overview')
       )
   )
 }
@@ -43,7 +43,7 @@ fv_stats_box <- function(width = 12, collapsible = T, collapsed = T) {
         HTML(paste0('<div style="font-size:120%;">',
                     includeMarkdown('RMD/TAR_SUMMARY_TABLE.Rmd'),
                     '</div>')),
-        tableOutput('FCE_SUMMARY')
+        dataTableOutput('FCE_SUMMARY')
       )
     )
 }

@@ -68,7 +68,7 @@ par_summary_box <- function(width = 12, collapsible = T, collapsed = T) {
       width = 9,
       HTML(paste0('<div style="font-size:120%;">',
                   includeMarkdown('RMD/PAR_SUMMARY_TABLE.Rmd'), '</div>')),
-      tableOutput('table_PAR_summary')
+      dataTableOutput('table_PAR_summary')
     )
   )
 }

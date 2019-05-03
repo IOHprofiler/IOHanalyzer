@@ -4,6 +4,7 @@ runtime_summary_condensed <- reactive({
   req(data)
   fall <- get_funvals(data)
   df <- get_FV_overview(data, algorithm = input$RTSummary.Overview.Algid)
+<<<<<<< HEAD
   df$budget %<>% as.integer
   df$runs %<>% as.integer
   df$funcId %<>% as.integer
@@ -14,13 +15,23 @@ runtime_summary_condensed <- reactive({
   df$"mean reached" <- format_FV(df$"mean reached")
   df$"median reached" <- format_FV(df$"median reached")
   df$"best reached" <- format_FV(df$"best reached")
+=======
+  df$"budget" %<>% as.integer
+  df$"runs" %<>% as.integer
+  df$"succ" %<>% as.integer
+  # df$"Worst recorded f(x)" <- format_FV(df$"Worst recorded f(x)")
+  # df$"Worst reached f(x)" <- format_FV(df$"Worst reached f(x)")
+  # df$"mean reached f(x)" <- format_FV(df$"mean reached f(x)")
+  # df$"median reached f(x)" <- format_FV(df$"median reached f(x)")
+  # df$"Best reached f(x)" <- format_FV(df$"Best reached f(x)")
+>>>>>>> 72df3a7c07e51926b8c3fe9ea72fa3c0433f058c
   df
 })
 
-output$table_RT_overview <- renderTable({
+output$table_RT_overview <- renderDataTable({
   req(input$RTSummary.Overview.Algid)
   runtime_summary_condensed()
-})
+}, options = list(pageLength = 20, scrollX = T))
 
 
 output$RTSummary.Overview.Download <- downloadHandler(
@@ -35,6 +46,44 @@ output$RTSummary.Overview.Download <- downloadHandler(
     }
   }
 )
+
+  # Data summary for Fixed-Target Runtime (ERT)  --------------
+  runtime_summary <- reactive({
+    req(input$RTSummary.Statistics.Min,
+        input$RTSummary.Statistics.Max,
+        input$RTSummary.Statistics.Step)
+
+    fstart <- format_FV(input$RTSummary.Statistics.Min) %>% as.numeric
+    fstop <- format_FV(input$RTSummary.Statistics.Max) %>% as.numeric
+    fstep <- format_FV(input$RTSummary.Statistics.Step) %>% as.numeric
+    data <- DATA()
+
+    req(fstart <= fstop, fstep <= fstop - fstart, data)
+    fall <- get_funvals(data)
+
+    if (input$RTSummary.Statistics.Single)
+      fstop <- fstart
+
+    fseq <- seq_FV(fall, fstart, fstop, fstep)
+    req(fseq)
+
+    df <- get_RT_summary(data, fseq, algorithm = input$RTSummary.Statistics.Algid)
+    df <- df[, c('DIM', 'funcId') := NULL]
+    df$target <- format_FV(df$target)
+
+    # format the integers
+    probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
+    for (p in paste0(probs * 100, '%')) {
+      df[[p]] %<>% as.integer
+    }
+    df
+
+  })
+
+  output$table_RT_summary <- renderDataTable({
+    runtime_summary()
+    
+  }, options = list(pageLength = 20, scrollX = T))
 
 output$RTSummary.Statistics.Download <- downloadHandler(
   filename = function() {

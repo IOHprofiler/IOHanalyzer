@@ -21,7 +21,7 @@ rt_stats_box <- function(width = 12, collapsible = T, collapsed = T) {
       mainPanel(
         width = 9,
         HTML(paste0('<div style="font-size:120%;">', includeMarkdown('RMD/RT_SUMMARY_TABLE.Rmd'),'</div>')),
-        tableOutput('table_RT_summary')
+        dataTableOutput('table_RT_summary')
       )
   )
 }

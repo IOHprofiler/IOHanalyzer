@@ -2,7 +2,7 @@ Package: IOHanalyzer
 Type: Package
 Title: Data Analysis Part of 'IOHprofiler'
 Version: 0.1.0
-Author: Hao Wang [cre, aut], Diederick Vermetten [aut], Carola Doerr [aut], Thomas Bäck [aut]
+Author: Hao Wang [cre, aut], Diederick Vermetten [aut], Carola Doerr [aut], Thomas Bäck [aut], Leiden Institute for Advanced Computer Science [cph]
 Maintainer: Hao Wang <h.wang@liacs.leidenuniv.nl>
 Authors@R: c(
     person("Hao", "Wang", email = "h.wang@liacs.leidenuniv.nl", role = c("cre","aut")),

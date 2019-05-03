@@ -17,7 +17,7 @@ runtime_summary_condensed <- reactive({
   df
 })
 
-output$table_RT_overview <- renderTable({
+output$table_RT_overview <- renderDataTable({
   req(input$RTSummary.Overview.Algid)
   runtime_summary_condensed()
 }, options = list(pageLength = 20, scrollX = T))

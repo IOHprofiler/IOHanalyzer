@@ -41,21 +41,16 @@ After R environment is correctly installed on you machine, several R packages ar
 
 Error messages will be shown in your R console if there is any installation issue.
 
-To use the repository, the following additional packages are required
-```r
-install.packages(c('DBI','RMariaDB'))
-```
-
 To allow for downloading of plots, orca[https://github.com/plotly/orca] and inkscape[https://inkscape.org/release/inkscape-0.92.4/] are needed.
 
-Then, please clone (or downlaod) this repository into your own system. To clone the repository, please execute the following command in your __system console__ (terminal):
+Then, please clone (or downlaod) this repository into your own system. To clone the repository, please execute one of the the following commands in your __system console__ (terminal):
 
 ```Shell
-> git clone git@github.com:IOHprofiler/Post-Processing.git
+> git clone git@github.com:IOHprofiler/IOHanalyzer.git
 ```
 
 ```Shell
-> git clone https://github.com/IOHprofiler/Post-Processing.git
+> git clone https://github.com/IOHprofiler/IOHanalyzer.git
 ```
 
 To download, please click the green download button on this page.
@@ -223,11 +218,11 @@ Or output a wide format...
 1:     38     48     31     14     41     50     67     21     43     52     22     26     33     25
 ```
 
-* It is also possible to generate some diagnostic plots (using `ggplot2` or `plotly`) using the provided plotting functions. The functions currently available are: plot_RT_single_fct, plot_FV_line, plot_ERT_AGGR, plot_RT_all_fcts, plot_FCE_ECDF_PER_TARGET, plot_FCE_MULTI, plot_FCE_AGGR, plot_FV_AUC, plot_FV_ECDF_AGGR, plot_FV_HIST, plot_FV_PDF, plot_PAR_line, plot_RT_AUC, plot_RT_ECDF, plot_RT_ECDF_AGGR, plot_RT_ECDF_MULTI, plot_RT_HIST, plot_RT_PMF.
+* It is also possible to generate some diagnostic plots (using `ggplot2` or `plotly`) using the provided plotting functions. The available functions are in the following style: Plot.{RT/FV/PAR}.{Plot_type}
 
-For more information on these functions, use the command:
+For more information on these functions, use the documentation available by executing the following type of command:
 ```r
-?plot_RT_single_fct.DataSetList
+?Plot.RT.Histogram
 ```
 
 ## Contact

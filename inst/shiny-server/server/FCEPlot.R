@@ -17,11 +17,14 @@ output$FCEPlot.Download <- downloadHandler(
 )
 
 render_FV_PER_FUN <- reactive({
+  withProgress({
   rt_min <- input$FCEPlot.Min %>% as.integer
   rt_max <- input$FCEPlot.Max %>% as.integer
   Plot.FV.Single_Func(DATA(), RTstart = rt_min, RTstop = rt_max, show.CI = input$FCEPlot.show.CI,
                show.mean = input$FCEPlot.show.mean, show.median = input$FCEPlot.show.median,
                scale.xlog = input$FCEPlot.semilogx, scale.ylog = input$FCEPlot.semilogy)
+  },
+  message = "Creating plot")
 })
 
 
@@ -31,6 +34,7 @@ output$FCEPlot.Multi.Plot <- renderPlotly(
 
 render_FCEPlot_multi_plot <- eventReactive(input$FCEPlot.Multi.PlotButton, {
   req(input$FCEPlot.Multi.Algs)
+  withProgress({
   data <- subset(DATA_RAW(),
                  algId %in% input$FCEPlot.Multi.Algs,
                  DIM == input$Overall.Dim)
@@ -39,6 +43,8 @@ render_FCEPlot_multi_plot <- eventReactive(input$FCEPlot.Multi.PlotButton, {
   Plot.FV.Multi_Func(data,
                    scale.xlog = input$FCEPlot.Multi.Logx,
                    scale.ylog = input$FCEPlot.Multi.Logy)
+  },
+  message = "Creating plot")
 })
 
 output$FCEPlot.Multi.Download <- downloadHandler(
@@ -73,6 +79,7 @@ get_max_runtimes <- function(data, aggr_on){
 }
 
 render_FCEPlot_aggr_plot <- reactive({
+  withProgress({
   #TODO: figure out how to avoid plotting again when default targets are written to input
   data <- DATA_RAW()
   if(length(data) == 0) return(NULL)
@@ -111,7 +118,8 @@ render_FCEPlot_aggr_plot <- reactive({
                 scale.ylog = input$FCEPlot.Aggr.Logy,
                 use_rank = input$FCEPlot.Aggr.Ranking,
                 aggr_on = aggr_on, fvs = fvs)
-
+  },
+  message = "Creating plot")
 })
 
 output$FCEPlot.Aggr.Download <- downloadHandler(

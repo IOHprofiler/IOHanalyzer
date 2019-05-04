@@ -36,7 +36,8 @@ Imports:
   shinydashboard,
   markdown,
   DBI,
-  dbplyr
+  dbplyr,
+  withr
 LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 6.1.1

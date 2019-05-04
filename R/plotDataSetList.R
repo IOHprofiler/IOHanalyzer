@@ -270,6 +270,7 @@ Plot.Parameters <- function(dsList, f_min = NULL, f_max = NULL,
 #'
 #' @param dsList A DataSetList.
 #' @param targets The target function values. Specified in a data.frame, as can be generated
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
 #' by the function 'get_default_ECDF_targets'
 #'
 #' @return A plot of the empirical cumulative distriburtion as a function of
@@ -277,7 +278,7 @@ Plot.Parameters <- function(dsList, f_min = NULL, f_max = NULL,
 #' @export
 #' @examples 
 #' Plot.RT.ECDF_Multi_Func(dsl)
-Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = False) 
+Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = F) 
   UseMethod("Plot.RT.ECDF_Multi_Func", dsList)
 #' Plot ERT-plots for multiple functions or dimensions
 #'

@@ -162,8 +162,8 @@ color_palettes <- function(ncolor) {
 # function 'orca' always generates figures in the current folder
 
 #' Save plotly figure in multiple format
-#' 
-#' NOTE: This function requires orca to be installed, and for pdf and eps formats 
+#'
+#' NOTE: This function requires orca to be installed, and for pdf and eps formats
 #' inkscape is also needed.
 #'
 #' @param p plotly object. The plot to be saved
@@ -171,34 +171,30 @@ color_palettes <- function(ncolor) {
 #' @param format String. The format of the figure: 'svg', 'pdf', 'eps', 'png' are supported
 #' @param ... Additional arguments for orca
 #' @export
-#' @examples 
+#' @examples
 #' \donttest{
 #' p <- Plot.RT.Single_Func(dsl[1])
-#' save_plotly(p, 'example_file', format = 'png')
+#' save_plotly(p, 'example_file.png', format = 'png')
 #' }
 save_plotly <- function(p, file, format = 'svg', ...) {
-  pwd.calling <- getwd()
   des <- dirname(file)
   file <- basename(file)
-
-  pwd <- file.path(Sys.getenv('HOME'))
-  dir.create(pwd, showWarnings = FALSE)
-  setwd(pwd)
-
+  
+  pwd <- tempdir()
+  
   if (format %in% c('svg', 'png'))
-    orca(p, file, format = format, ...)
+    withr::with_dir(pwd, orca(p, file, format = format, ...))
   else {
     file_svg <- paste0(file, '.svg')
-    orca(p, file_svg, format = 'svg', ...)
+    withr::with_dir(pwd, orca(p, file_svg, format = 'svg', ...))
     invisible(
       system(
-        paste('inkscape', file_svg, paste0('--export-', format, '=', file)),
+        paste('inkscape', file.path(pwd,file_svg), paste0('--export-', format, '=', file.path(pwd,file))),
         intern = T
       )
     )
-    file.remove(file_svg)
+    # file.remove(file.path(pwd,file_svg))
   }
-
-  file.rename(file, file.path(des, file))
-  setwd(pwd.calling)
+  
+  file.rename(file.path(pwd, file), file.path(des, file))
 }

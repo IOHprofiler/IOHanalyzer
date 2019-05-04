@@ -16,9 +16,12 @@ output$RTPMF.Bar.Download <- downloadHandler(
 )
 
 render_RT_PMF <- reactive({
+  withProgress({
   ftarget <- input$RTPMF.Bar.Target %>% as.numeric
   Plot.RT.PMF(DATA(), ftarget, show.sample = input$RTPMF.Bar.Sample,
               scale.ylog = input$RTPMF.Bar.Logy)
+  },
+  message = "Creating plot")
 })
 
 # historgram of the running time
@@ -41,9 +44,12 @@ output$RTPMF.Hist.Download <- downloadHandler(
 
 render_RT_HIST <- reactive({
   req(input$RTPMF.Hist.Target)
+  withProgress({
   ftarget <- format_FV(input$RTPMF.Hist.Target) %>% as.numeric
   plot_mode <- input$RTPMF.Hist.Mode
 
   # TODO: remove 'DataSetList' in the future
   Plot.RT.Histogram(DATA(), ftarget, plot_mode = plot_mode)
+  },
+  message = "Creating plot")
 })

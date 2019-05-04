@@ -8,12 +8,13 @@ fv_overview_box <- function(width = 12, collapsible = T, collapsed = T) {
 
         selectInput('FCESummary.Overview.Algid', 'Algorithms', choices = NULL, selected = NULL),
         #TODO: implement this button
-        downloadButton("FCESummary.Overview.Download", "Save this table as csv")
+        selectInput('FCESummary.Overview.Format', 'Format', choices = c('csv','tex'), selected = 'csv'),
+        downloadButton("FCESummary.Overview.Download", "Save this table")
       ),
 
       mainPanel(
         width = 9,
-        tableOutput('table_FV_overview')
+        dataTableOutput('table_FV_overview')
       )
   )
 }
@@ -33,7 +34,8 @@ fv_stats_box <- function(width = 12, collapsible = T, collapsed = T) {
                                                            Once toggled, only \\(B_{\\text{min}}\\) is
                                                            used to generate the table on the right.</p>'), value = FALSE),
         selectInput('FCESummary.Statistics.Algid', 'Algorithms', choices = NULL, selected = NULL),
-        downloadButton("FCESummary.Statistics.Download", "Save this table as csv")
+        selectInput('FCESummary.Statistics.Format', 'Format', choices = c('csv','tex'), selected = 'csv'),
+        downloadButton("FCESummary.Statistics.Download", "Save this table")
       ),
 
       mainPanel(
@@ -41,7 +43,7 @@ fv_stats_box <- function(width = 12, collapsible = T, collapsed = T) {
         HTML(paste0('<div style="font-size:120%;">',
                     includeMarkdown('RMD/TAR_SUMMARY_TABLE.Rmd'),
                     '</div>')),
-        tableOutput('FCE_SUMMARY')
+        dataTableOutput('FCE_SUMMARY')
       )
     )
 }
@@ -65,9 +67,10 @@ fv_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
       selectInput('FCESummary.Sample.Algid', 'Algorithms',
                   choices = NULL, selected = NULL),
 
-      selectInput('FCESummary.Sample.Format', 'Format of the csv',
+      selectInput('FCESummary.Sample.Format', 'Format of the table',
                   choices = c('long', 'wide'), selected = 'wide'),
-      downloadButton("FCESummary.Sample.Download", "Save the aligned runtime samples as csv")
+      selectInput('FCESummary.Sample.FileFormat', 'File-Format', choices = c('csv','tex'), selected = 'csv'),
+      downloadButton("FCESummary.Sample.Download", "Save the aligned runtime samples")
     ),
 
     mainPanel(

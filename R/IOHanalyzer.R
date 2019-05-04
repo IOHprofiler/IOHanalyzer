@@ -14,6 +14,7 @@
 #' @importFrom ggplot2 scale_x_continuous scale_x_log10 facet_wrap theme_set theme_grey theme
 #' @importFrom shiny req
 #' @importFrom Rcpp sourceCpp
+#' @importFrom withr with_dir
 #' @useDynLib IOHanalyzer
 NULL
 #Ugly hack, but appears to be required to appease CRAN

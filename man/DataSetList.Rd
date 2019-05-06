@@ -17,7 +17,15 @@ the corresponding datafiles to create the DataSetList}
 
 \item{maximization}{Logical. Whether the underlying optimization algorithm performs a maximization?}
 
-\item{format}{A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL"}
+\item{format}{A character. The format of data source, options are:
+\itemize{
+\item'IOHProfiler'
+\item'COCO' 
+\item'TWO_COL'
+\item'COCO_BIOBJ'
+\item'NEVERGRAD'
+}
+These formats are specified in more detail in our github wiki.}
 
 \item{subsampling}{Logical. Whether *.cdat files are subsampled?}
 }

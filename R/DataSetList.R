@@ -26,7 +26,15 @@ read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
 #'  the corresponding datafiles to create the DataSetList
 #' @param verbose Logical.
 #' @param maximization Logical. Whether the underlying optimization algorithm performs a maximization?
-#' @param format A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL"
+#' @param format A character. The format of data source, options are:
+#'  \itemize{
+#'  \item'IOHProfiler'
+#'  \item'COCO' 
+#'  \item'TWO_COL'
+#'  \item'COCO_BIOBJ'
+#'  \item'NEVERGRAD'
+#'  }
+#'  These formats are specified in more detail in our github wiki.
 #' @param subsampling Logical. Whether *.cdat files are subsampled?
 #' @param print_fun Function used to print output when in verbose mode
 #'
@@ -39,74 +47,91 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
                         format = IOHprofiler, subsampling = FALSE) {
   if (is.null(path))
     return(structure(list(), class = c('DataSetList', 'list')))
-
+    
   path <- trimws(path)
-  indexFiles <- scan_IndexFile(path)
+  if (format == NEVERGRAD){
+    if (sub('[^\\.]*\\.', '', basename(path), perl = T) == "csv")
+      return(read_nevergrad(path))
+    else
+      indexFiles <- file.path(path, list.files(path, pattern = '.csv', recursive = T))
+  }
+  else
+    indexFiles <- scan_IndexFile(path)
 
   if (is.null(print_fun))
     print_fun <- cat
 
   object <- list()
+  class(object) %<>% c('DataSetList')
   DIM <- c()
   algId <- c()
   funcId <- c()
   i <- 1
 
   for (file in indexFiles) {
-    indexInfo <- read_IndexFile(file)
-
     if (verbose) {
       print_fun(paste('Processing', file, '...\n'))
-      print_fun(sprintf('   algorithm %s...\n', indexInfo[[1]]$algId))
     }
-
-    for (info in indexInfo) {
-      if (verbose) {
-        print_fun(sprintf('      %d instances on f%d %dD...\n',
-                          length(info$instance), info$funcId, info$DIM))
+    
+    if (format == NEVERGRAD){
+      dsl <- read_nevergrad(file)
+      object %<>% c(.,dsl)
+    }
+      
+    else{
+      indexInfo <- read_IndexFile(file)
+      if (verbose){
+        print_fun(sprintf('   algorithm %s...\n', indexInfo[[1]]$algId))
       }
 
-      copy_flag <- TRUE
-      data <- DataSet(info, maximization = maximization, format = format,
-                      subsampling = subsampling)
-      DIM[i] <- attr(data, 'DIM')
-      funcId[i] <- attr(data, 'funcId')
-      algId[i] <- attr(data, 'algId')
-      instance <- attr(data, 'instance')
-
-      # check for duplicated instances
-      if (length(object) != 0) {
-        idx <- sapply(object, function(obj) obj == data) %>% which
-        for (k in idx) {
-          instance_ <- attr(object[[k]], 'instance')
-          if (all(instance == instance_)) {
-            copy_flag <- FALSE
-            warning('duplicated instances!')
-            break
-          }
-
-          if (length(intersect(instance, instance_)) != 0) {
-            warning('duplicated instances!')
+      for (info in indexInfo) {
+        if (verbose) {
+          print_fun(sprintf('      %d instances on f%d %dD...\n',
+                            length(info$instance), info$funcId, info$DIM))
+        }
+  
+        copy_flag <- TRUE
+        data <- DataSet(info, maximization = maximization, format = format,
+                        subsampling = subsampling)
+        DIM[i] <- attr(data, 'DIM')
+        funcId[i] <- attr(data, 'funcId')
+        algId[i] <- attr(data, 'algId')
+        instance <- attr(data, 'instance')
+  
+        # check for duplicated instances
+        if (length(object) != 0) {
+          idx <- sapply(object, function(obj) obj == data) %>% which
+          for (k in idx) {
+            instance_ <- attr(object[[k]], 'instance')
+            if (all(instance == instance_)) {
+              copy_flag <- FALSE
+              warning('duplicated instances!')
+              break
+            }
+  
+            if (length(intersect(instance, instance_)) != 0) {
+              warning('duplicated instances!')
+            }
           }
         }
-      }
-
-      if (copy_flag) {
-        object[[i]] <- data
-        i <- i + 1
+  
+        if (copy_flag) {
+          object[[i]] <- data
+          i <- i + 1
+        }
       }
     }
-
     if (verbose) {
       print_fun("\n")
     }
   }
 
   # TODO: sort all DataSet by multiple attributes: algId, funcId and DIM
-  class(object) %<>% c('DataSetList')
-  attr(object, 'DIM') <- DIM
-  attr(object, 'funcId') <- funcId
-  attr(object, 'algId') <- algId
+  if (format != NEVERGRAD){
+    attr(object, 'DIM') <- DIM
+    attr(object, 'funcId') <- funcId
+    attr(object, 'algId') <- algId
+  }
   object
 }
 

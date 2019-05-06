@@ -20,7 +20,9 @@ NULL
 #Ugly hack, but appears to be required to appease CRAN
 utils::globalVariables(c(".","algId","run","ERT","RT","max_samples",
                          "DIM", "Fvalue", "lower", "upper", "target", "format",
-                         "runtime", "parId", "instance", "input", "funcId"))
+                         "runtime", "parId", "instance", "input", "funcId",
+                         "budget", "dimension", "loss", "name", "optimizer_name",
+                         "rescale"))
 
 options(shiny.port = 4242)
 
@@ -39,6 +41,7 @@ COCO <- 'COCO'
 BIBOJ_COCO <- 'BIBOJ_COCO'
 TWO_COL <- 'TWO_COL'
 AUTOMATIC <- 'AUTOMATIC'
+NEVERGRAD <- 'NEVERGRAD'
 
 max_samples <- 100
 

@@ -215,6 +215,9 @@ read_IndexFile_BIOBJ_COCO <- function(fname) {
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
 #' check_format(path)
 check_format <- function(path) {
+  if (sub('[^\\.]*\\.', '', basename(path), perl = T) == "csv")
+    return (NEVERGRAD)
+  
   index_files <- scan_IndexFile(path)
   info <- lapply(index_files, read_IndexFile) %>% unlist(recursive = F)
   datafile <- sapply(info, function(item) item$datafile)
@@ -230,7 +233,11 @@ check_format <- function(path) {
   }) %>%
     unlist %>%
     unique
-
+  
+  csv_files <- file.path(path, list.files(path, pattern = '.csv', recursive = T))
+  if (length(csv_files) > 0)
+    format %<>% c(NEVERGRAD)
+  
   if (length(format) > 1) {
     stop(
       paste(
@@ -241,7 +248,7 @@ check_format <- function(path) {
       )
   } else
     format
-  }
+}
 
 #' Read IOHProfiler *.dat files
 #'

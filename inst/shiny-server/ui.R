@@ -48,7 +48,21 @@ body <- dashboardBody(
                    elem.scrollTop = elem.scrollHeight;
                    }, 20);
   ')),
+  tags$head(tags$script(HTML("
+      Shiny.addCustomMessageHandler('manipulateMenuItem', function(message){
+        var aNodeList = document.getElementsByTagName('a');
 
+        for (var i = 0; i < aNodeList.length; i++) {
+          if(aNodeList[i].getAttribute('data-value') == message.tabName) {
+            if(message.action == 'hide'){
+              aNodeList[i].setAttribute('style', 'display: none;');
+            } else {
+              aNodeList[i].setAttribute('style', 'display: block;');
+            };
+          };
+        }
+      });
+    "))),
   tags$script(HTML('
        window.setInterval(function() {
                    var elem = document.getElementById("upload_data_promt");

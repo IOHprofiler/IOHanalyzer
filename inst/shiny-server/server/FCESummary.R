@@ -31,7 +31,7 @@ output$FCESummary.Overview.Download <- downloadHandler(
 )
 
 get_FCE_summary <- reactive({
-  req(input$FCESummary.Statistics.Min, input$FCESummary.Statistics.Max, input$FCESummary.Statistics.Step)
+  req(input$FCESummary.Statistics.Min, input$FCESummary.Statistics.Max, input$FCESummary.Statistics.Step, (length(DATA())>0))
 
   rt_min <- input$FCESummary.Statistics.Min %>% as.integer
   rt_max <- input$FCESummary.Statistics.Max %>% as.integer
@@ -84,7 +84,7 @@ output$FCESummary.Statistics.Download <- downloadHandler(
 )
 
 get_FCE <- reactive({
-  req(input$FCESummary.Sample.Min, input$FCESummary.Sample.Max, input$FCESummary.Sample.Step)
+  req(input$FCESummary.Sample.Min, input$FCESummary.Sample.Max, input$FCESummary.Sample.Step, (length(DATA())>0))
   rt_min <- input$FCESummary.Sample.Min %>% as.integer
   rt_max <- input$FCESummary.Sample.Max %>% as.integer
   rt_step <- input$FCESummary.Sample.Step %>% as.integer

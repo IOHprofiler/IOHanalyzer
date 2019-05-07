@@ -409,13 +409,23 @@ get_FV_overview.DataSet <- function(ds, ...) {
 #' @export
 #'
 get_RT_overview.DataSet <- function(ds, ...) {
-  data <- ds$RT
-  runs <- ncol(data)
-  budget <- max(attr(ds, 'maxRT'))
-
-  min_rt <- min(data, na.rm = T)
-  max_rt <- max(data, na.rm = T)
-
+  
+  if(!is.null(attr(ds,"format")) && attr(ds,"format") == NEVERGRAD){
+    data <- ds$FV
+    budget <- max(attr(ds, 'maxRT'))
+    runs <- ncol(data)
+    min_rt <- rownames(data) %>% as.integer %>% min
+    max_rt <- budget
+  }
+  
+  else{
+    data <- ds$RT
+    runs <- ncol(data)
+    budget <- max(attr(ds, 'maxRT'))
+    min_rt <- min(data, na.rm = T)
+    max_rt <- max(data, na.rm = T)
+  }
+  
   data.table(algId = attr(ds, 'algId'),
              DIM = attr(ds, 'DIM'),
              funcId = attr(ds, 'funcId'),

@@ -233,8 +233,13 @@ observe({
   funcIds <- get_funcId(data)
   DIMs <- get_dim(data)
 
-  updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = DIMs[1])
-  updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = funcIds[1])
+  selected_ds <- data[[1]]
+  selected_f <- attr(selected_ds,'funcId')
+  selected_dim <- attr(selected_ds, 'DIM')
+  selected_alg <- attr(selected_ds, 'algId')
+  
+  updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'FCESummary.Overview.Algid', choices = algIds, selected = 'all')
@@ -244,9 +249,9 @@ observe({
   updateSelectInput(session, 'FCESummary.Sample.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'PAR.Summary.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'PAR.Sample.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = algIds_, selected = algIds_[1])
+  updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = algIds_, selected = selected_alg)
   updateSelectInput(session, 'ERTPlot.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = algIds_, selected = algIds_[1])
+  updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = algIds_, selected = selected_alg)
   updateSelectInput(session, 'PAR.Summary.Param', choices = parIds, selected = 'all')
   updateSelectInput(session, 'PAR.Sample.Param', choices = parIds, selected = 'all')
 })
@@ -258,7 +263,11 @@ DATA <- reactive({
 
   if (length(DataList$data) == 0) return(NULL)
 
-  subset(DataList$data, DIM == dim, funcId == id)
+  d <- subset(DataList$data, DIM == dim, funcId == id)
+  if (length(d) == 0){
+    showNotification("There is no data available for this (dimension,function)-pair")
+  }
+  d
 })
 
 # TODO: give a different name for DATA and DATA_RAW

@@ -1,6 +1,6 @@
 # empirical p.d.f. of the target value
 render_FV_PDF <- reactive({
-  req(input$FCEPDF.Bar.Runtime)
+  req(input$FCEPDF.Bar.Runtime, (length(DATA())>0))
   withProgress({
   runtime <- input$FCEPDF.Bar.Runtime %>% as.integer
   Plot.FV.PDF(DATA(), runtime, show.sample = input$FCEPDF.Bar.Samples,
@@ -27,7 +27,7 @@ output$FCE_PDF <- renderPlotly({
 
 # historgram of the target values -----------
 render_FV_HIST <- reactive({
-  req(input$FCEPDF.Hist.Runtime != "")   # require non-empty input
+  req(input$FCEPDF.Hist.Runtime != "", (length(DATA())>0))   # require non-empty input
   withProgress({
   runtime <- input$FCEPDF.Hist.Runtime %>% as.integer
   Plot.FV.Histogram(DATA(), runtime, plot_mode = input$FCEPDF.Hist.Mode)

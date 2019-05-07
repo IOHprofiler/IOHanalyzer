@@ -91,6 +91,7 @@ COCO <- 'COCO'
 TWO_COL <- 'TWO_COL'
 AUTOMATIC <- 'AUTOMATIC'
 BIBOJ_COCO <- 'BIBOJ_COCO'
+NEVERGRAD <- 'NEVERGRAD'
 
 # directory where rds-data is stored
 get_repo_location <- function() {

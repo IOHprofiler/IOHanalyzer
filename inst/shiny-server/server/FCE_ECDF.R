@@ -9,7 +9,7 @@ output$FCE_ECDF_PER_TARGET <- renderPlotly({
 })
 
 output$FCE_RT_GRID <- renderPrint({
-  req(input$FCEECDF.Mult.Min, input$FCEECDF.Mult.Max, input$FCEECDF.Mult.Step)
+  req(input$FCEECDF.Mult.Min, input$FCEECDF.Mult.Max, input$FCEECDF.Mult.Step, (length(DATA())>0))
 
   rt_min <- input$FCEECDF.Mult.Min %>% as.integer
   rt_max <- input$FCEECDF.Mult.Max %>% as.integer
@@ -23,7 +23,7 @@ output$FCE_RT_GRID <- renderPrint({
 })
 
 render_FV_ECDF_AGGR <- reactive({
-  req(input$FCEECDF.Mult.Min, input$FCEECDF.Mult.Max, input$FCEECDF.Mult.Step)
+  req(input$FCEECDF.Mult.Min, input$FCEECDF.Mult.Max, input$FCEECDF.Mult.Step, (length(DATA())>0))
   withProgress({
   rt_min <- input$FCEECDF.Mult.Min %>% as.integer
   rt_max <- input$FCEECDF.Mult.Max %>% as.integer
@@ -55,7 +55,7 @@ output$FCE_ECDF_AGGR <- renderPlotly({
 
 # evaluation rake of all courses
 render_FV_AUC <- reactive({
-  req(input$FCEECDF.AUC.Min, input$FCEECDF.AUC.Max, input$FCEECDF.AUC.Step)
+  req(input$FCEECDF.AUC.Min, input$FCEECDF.AUC.Max, input$FCEECDF.AUC.Step, (length(DATA())>0))
   withProgress({
   rt_min <- input$FCEECDF.AUC.Min %>% as.integer
   rt_max <- input$FCEECDF.AUC.Max %>% as.integer

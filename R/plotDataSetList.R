@@ -987,6 +987,10 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
 
   rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step,
                    scale = ifelse(scale.xlog,'log','linear'))
+  
+  if(!attr(dsList[[1]],"maximization"))
+    rt_seq <- rev(rt_seq)
+  
   req(rt_seq)
 
   n_algorithm <- length(dsList)
@@ -994,10 +998,16 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
 
   funevals.max <- sapply(dsList, function(ds) max(ds$FV, na.rm = T)) %>% max
   funevals.min <- sapply(dsList, function(ds) min(ds$FV, na.rm = T)) %>% min
-
-  x <- seq(funevals.min, funevals.max, length.out = 40)
+  
+  if(!attr(dsList[[1]],"maximization"))
+    x <- seq(log10(funevals.max), log10(funevals.min), length.out = 40) %>% 10**.
+  else
+    x <- seq(funevals.min, funevals.max, length.out = 40)
+  
+  autorange <- ifelse(attr(dsList[[1]],"maximization"), T, 'reversed')
   p <- plot_ly_default(x.title = "target value",
-                       y.title = "Proportion of (run, budget) pairs")
+                       y.title = "Proportion of (run, budget) pairs") %>%
+                      layout(xaxis = list(autorange = autorange))
 
   for (k in seq_along(dsList)) {
     ds <- dsList[[k]]

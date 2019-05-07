@@ -13,9 +13,19 @@ The details on the experimentation and post-processing tool can be found on [arX
 
 ## <a name="package"></a> Using IOHprofiler as a R-package
 
-To install the IOHProfiler R-package, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/).
+To install the IOHProfiler R-package, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/). Please start up the __R console__, which can be done (in case you're not familiar with R) by either executing command `R` in your system terminal or open the R application. 
 
-After R environment is correctly installed on you machine, 'devtools' package is needed to install the sorftware. Please start up the __R console__, which can be done (in case you're not familiar with R) by either executing command `R` in your system terminal or open the R application. Once it is done, please copy-paste and execute the following command into the R console
+The IOHanalyzer is now available on CRAN!
+To use the CRAN version, simply use the command in your R console:
+```r
+install.packages('IOHanalyzer')
+```
+
+### Installing the developement version
+
+The CRAN version is a stable version of the IOHanalyzer, but since this package is under continuous developement, it might make sense to use a developement version instead. The version in the master-branch of this repository is updated relatively frequently, and might be more usefull than the CRAN version. However, this version is likely to be more prone to errors. Please don't hesitate to add such errors to the issues section on this github page.
+
+To use the developement version, 'devtools' package is needed to install the sorftware. To install this package, please copy-paste and execute the following command into the R console
 ```r
 install.packages('devtools')
 ```

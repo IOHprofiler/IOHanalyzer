@@ -303,6 +303,8 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
   
   dr <- get_RT_sample(dsList, Fseq)
   run.names <- grep('run', names(dr),  value = T)
+  
+  max_value = max(dr[,-c('algId', 'target', 'funcId', 'DIM')], na.rm = NA)
 
   if (backend == 'plotly') {
     p <- plot_ly_default(x.title = "best-so-far f(x)-value",
@@ -318,34 +320,7 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
       algId <- attr(dsList[[i]], 'algId')
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.2)')
-
-      if (show.CI)
-        p %<>%
-        add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-                  line = list(color = rgba_str, width = 0), legendgroup = legend,
-                  showlegend = F, name = 'mean +/- sd') %>%
-        add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
-                  fill = 'tonexty',  line = list(color = 'transparent'), legendgroup = legend,
-                  fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
-
-      if (show.ERT)
-        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
-                         name = paste0(legend, '.ERT'), mode = 'lines+markers',
-                         marker = list(color = rgb_str), legendgroup = legend,
-                         line = list(color = rgb_str))
-
-      if (show.mean)
-        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~mean, type = 'scatter',
-                         mode = 'lines+markers', name = paste0(algId, '.mean'),
-                         marker = list(color = rgb_str), legendgroup = legend,
-                         line = list(color = rgb_str, dash = 'dash'))
-
-      if (show.median)
-        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~median, type = 'scatter',
-                         name = paste0(legend, '.median'), mode = 'lines+markers',
-                         marker = list(color = rgb_str), legendgroup = legend,
-                         line = list(color = rgb_str, dash = 'dot'))
-
+      
       if (show.runs||show.grad) {
         
         dr_ERT <- dr[algId == attr(dsList[[i]], 'algId')&
@@ -361,37 +336,48 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
         index <- apply(!is.na(dr_ERT[, ..names_to_show]), 1, any)
         dr_ERT <- dr_ERT[index, ]
         best_parts <- apply(dr_ERT[, ..names_to_show], 1, . %>% min(na.rm = T))
+        worst_parts <- apply(dr_ERT[, ..names_to_show], 1, . %>% max(na.rm = T))
         mentioned <- FALSE
         
         if (show.grad) {
-          dr_ERT_ <- dr_ERT[complete.cases(dr_ERT)]
-          sorted_dr_ERT <- apply(dr_ERT_[, -c('algId', 'target', 'funcId', 'DIM')], 1, function(x){sort(x, decreasing = FALSE, na.last = T)})
-          
-          if (is.matrix(sorted_dr_ERT)) {
-            counter = 0
-            names_amount = length(all_names)
-            
-            for (counter in c(1:length(all_names))){
-              fill_density <- fill_density + grad_functions$fixed_edges(counter,names_amount,show.intensity)
-              rgba_str_m  <- generate_rbga(col2rgb(colors[i]),fill_density)
-              p %<>% add_trace(x = dr_ERT_[['target']], y = sorted_dr_ERT[counter,],
-                               type = 'scatter', mode = 'none',
-                               hoverinfo = 'none',
-                               showlegend = F,
-                               fill = 'tonexty',
-                               fillcolor = rgba_str_m
+          sorted_dr_ERT <- apply(dr_ERT[, -c('algId', 'target', 'funcId', 'DIM')], 1, function(x){sort(x, decreasing = FALSE, na.last = T)})
+          upper_border <- max_value
+          counter <- 0
+          names_amount = length(all_names)
+          inter_to_fill <- min(apply(sorted_dr_ERT, 1 , function (values){length(values[!is.na(values)])}))
+          apply(sorted_dr_ERT, 1, function(values){
+            counter <<- counter + 1
+            rgba_str_m  <- generate_rbga(col2rgb(colors[i]),fill_density)
+            fill_density <<- fill_density + grad_functions$fixed_edges(counter-1,names_amount,show.intensity)
+            y_value <- values[!is.na(values)]
+            x_value <- head(dr_ERT[['target']], length(y_value))
+            y_value <- c(y_value, upper_border)
+            x_value <- c(x_value, x_value[length(x_value)])#to make straight line
+            p <<- add_trace(p, x = x_value, y = y_value,
+                            type = 'scatter', mode = 'none',
+                            hoverinfo = 'none',
+                            showlegend = F,
+                            fill = 'tonexty',
+                            fillcolor = rgba_str_m
+            )
+            if (counter == names_amount){
+              #rgba_str_m  <- generate_rbga(col2rgb(colors[i]),1)
+              #p <<- add_trace(p, x = [['target']], y = worst_parts)
+              x_to_fill = dr_ERT[['target']][1:inter_to_fill]
+              y_to_fill = seq(upper_border, upper_border, length.out = length(x_to_fill))
+              p <<- add_trace(p, x = x_to_fill, y = y_to_fill,
+                              type = 'scatter', mode = 'none',
+                              hoverinfo = 'none',
+                              showlegend = F,
+                              fill = 'tonexty',
+                              fillcolor = rgba_str_m
               )
             }
-            rgba_str_m  <- generate_rbga(col2rgb(colors[i]),1)
-            upper_border <- max(sorted_dr_ERT, na.rm = T)
-            p %<>% add_trace(x = dr_ERT_[['target']], y = seq(upper_border, upper_border, length.out = length(dr_ERT_[['target']])),
-                             type = 'scatter', mode = 'none',
-                             hoverinfo = 'none',
-                             showlegend = F,
-                             fill = 'tonexty',
-                             fillcolor = rgba_str_m
-            )
+            
           }
+          )
+          
+          
         }
         if (show.runs){
           for (run_v in names_to_show) {
@@ -409,16 +395,14 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
               name = paste("runs of ", algId)
             )
             mentioned <- TRUE
-            # best_parts <-
-              # insert_best_parts(best_parts, dr_ERT[[run_v]], attr(dsList[[i]],"maximization"))
           }
           
           if (show.optimal) {
             mentioned <- FALSE
-            NonNAindex <- which(!is.na(best_parts))
-            target_idx <- max(NonNAindex)
+            target_idx <- min(which(best_parts == max(best_parts))) #min index with max value
             
             check_value <- best_parts[target_idx]
+            
             for (run_v in names_to_show){
               found_val <- dr_ERT[[run_v]][target_idx]
               
@@ -450,6 +434,33 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
           }
         }
       }
+
+      if (show.CI)
+        p %<>%
+        add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
+                  line = list(color = rgba_str, width = 0), legendgroup = legend,
+                  showlegend = F, name = 'mean +/- sd') %>%
+        add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
+                  fill = 'tonexty',  line = list(color = 'transparent'), legendgroup = legend,
+                  fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
+
+      if (show.ERT)
+        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
+                         name = paste0(legend, '.ERT'), mode = 'lines+markers',
+                         marker = list(color = rgb_str), legendgroup = legend,
+                         line = list(color = rgb_str))
+
+      if (show.mean)
+        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~mean, type = 'scatter',
+                         mode = 'lines+markers', name = paste0(algId, '.mean'),
+                         marker = list(color = rgb_str), legendgroup = legend,
+                         line = list(color = rgb_str, dash = 'dash'))
+
+      if (show.median)
+        p %<>% add_trace(data = ds_ERT, x = ~target, y = ~median, type = 'scatter',
+                         name = paste0(legend, '.median'), mode = 'lines+markers',
+                         marker = list(color = rgb_str), legendgroup = legend,
+                         line = list(color = rgb_str, dash = 'dot'))
     }
     p %<>%
       layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),

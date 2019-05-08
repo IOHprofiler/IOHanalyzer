@@ -56,8 +56,7 @@ get_FCE_summary <- reactive({
   df$mean %<>% format(format = 'e', digits = 3)
   df$runtime %<>% as.integer
   
-  # TODO: make probs as a global option
-  probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
+  probs <- get_property("probs")
   
   # format the integers
   for (p in paste0(probs * 100, '%')) {

@@ -60,7 +60,7 @@ runtime_summary <- reactive({
   df$target <- format_FV(df$target)
 
   # format the integers
-  probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
+  probs <- get_property("probs")
   for (p in paste0(probs * 100, '%')) {
     df[[p]] %<>% as.integer
   }

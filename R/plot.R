@@ -175,7 +175,7 @@ get_colorScheme <- function(n){
 
 # TODO: incoporate more colors
 color_palettes <- function(ncolor) {
-  if (ncolor < 5) return(IOHanalyzer_env$used_colorscheme(ncolor))
+  if (ncolor < 15) return(IOHanalyzer_env$used_colorscheme(ncolor))
 
   brewer <- function(n) {
     colors <- RColorBrewer::brewer.pal(n, 'Spectral')

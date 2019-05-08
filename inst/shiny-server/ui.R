@@ -210,7 +210,8 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                color_settings_box()
+                color_settings_box(),
+                general_settings_box()
               )
             )
     )

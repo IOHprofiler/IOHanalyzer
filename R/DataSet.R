@@ -503,7 +503,7 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
 
   if (1 < 2) {
     data <- data[matched, , drop = FALSE]
-    apply(data, 1, D_quantile) %>%
+    apply(data, 1, IOHanalyzer_env$D_quantile) %>%
       t %>%
       as.data.table %>%
       cbind(as.data.table(SP(data, maxRT))) %>%
@@ -512,7 +512,7 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
             apply(data, 1, .median),
             apply(data, 1, .sd), .) %>%
       set_colnames(c('algId', 'target', 'mean', 'median',
-                     'sd', paste0(probs * 100, '%'), 'ERT', 'runs', 'ps'))
+                     'sd', paste0(IOHanalyzer_env$probs * 100, '%'), 'ERT', 'runs', 'ps'))
   } else {# TODO: remove this case, deprecated...
     NAs <- is.na(matched)
     if (any(NAs)) {
@@ -584,14 +584,14 @@ get_FV_summary.DataSet <- function(ds, runtime, ...) {
   })
 
   data <- data[matched, , drop = FALSE]
-  apply(data, 1, C_quantile) %>%
+  apply(data, 1, IOHanalyzer_env$C_quantile) %>%
     t %>%
     as.data.table %>%
     cbind(algId, runtime, NC,
           apply(data, 1, .mean),
           apply(data, 1, .median),
           apply(data, 1, .sd), .) %>%
-    set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', 'sd', paste0(probs * 100, '%')))
+    set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', 'sd', paste0(IOHanalyzer_env$probs * 100, '%')))
 }
 
 #' @rdname get_FV_sample
@@ -664,7 +664,7 @@ get_PAR_summary.DataSet <- function(ds, ftarget, parId = 'all', ...) {
   lapply(par_name,
          function(par) {
            data <- ds[[par]][matched, , drop = FALSE]
-           apply(data, 1, C_quantile) %>%
+           apply(data, 1, IOHanalyzer_env$C_quantile) %>%
              t %>%
              as.data.table %>%
              cbind(algId, par, ftarget,
@@ -673,7 +673,7 @@ get_PAR_summary.DataSet <- function(ds, ftarget, parId = 'all', ...) {
                    apply(data, 1, .median),
                    apply(data, 1, .sd), .) %>%
              set_colnames(c('algId', 'parId', 'target', 'runs', 'mean', 'median', 'sd',
-                            paste0(probs * 100, '%')))
+                            paste0(IOHanalyzer_env$probs * 100, '%')))
          }) %>%
     rbindlist
 }

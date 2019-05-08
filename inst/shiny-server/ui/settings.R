@@ -25,3 +25,22 @@ color_settings_box <- function(width = 12, collapsible = T, collapsed = F) {
       )
   )
 }
+
+general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
+  box(title = HTML('<p style="font-size:120%;">Color Settings</p>'),
+      width = width, solidHeader = T, status = "primary",
+      collapsible = collapsible, collapsed = collapsed,
+      mainPanel(
+        width=12,
+        column(
+          width=3,
+          align = "Left",
+          HTML_P('Set the general properties'),
+          #TODO: get probabilities from get_probability and put them as default
+          textInput("Settings.General.Probs", label = "Probability-quantiles", value = "0.02,0.05,0.10,0.25,0.50,0.75,0.90,0.95,0.98"),
+          numericInput("Settings.General.Max_samples", label = "Maximum samples shown per algorithm", value = 100)
+        )
+      )
+         
+  )
+}

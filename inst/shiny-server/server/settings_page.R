@@ -30,7 +30,7 @@ plot_color_example <- function(ds){
   if(schemename == "Custom" && !is.null(input$Settings.Color.Upload)){
     schemename <- paste0(schemename, ": ", input$Settings.Color.Upload$datapath)
   }
-  p <- plot_ly_default(title = schemename)
+  p <- plot_ly() %>% layout(title = list(text = schemename))
 
   for (i in seq_along(algnames)){
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
@@ -58,4 +58,22 @@ selected_color_congfig <- observe({
       }
     )
   }
+})
+
+reactive({
+  updateTextInput(session, "Settings.General.Probs", get_property("probs"))
+  shinyjs::alert(get_property("probs"))
+  updateNumericInput(session, "Settings.General.Max_samples", get_property("max_samples"))
+})
+
+observe({
+ input$Settings.General.Probs %>% 
+    strsplit(.,',') %>% 
+    .[[1]] %>% 
+    as.numeric %>%
+    set_property("probs", .)
+})
+
+observe({
+  set_property("max_samples", input$Settings.General.Max_samples)
 })

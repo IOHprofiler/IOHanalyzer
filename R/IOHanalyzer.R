@@ -3,7 +3,7 @@
 #' @importFrom graphics hist
 #' @importFrom utils data head read.csv tail
 #' @importFrom dplyr %>% mutate
-#' @importFrom magrittr set_names set_rownames set_colnames %<>%
+#' @importFrom magrittr set_names set_rownames set_colnames %<>% mod
 #' @importFrom colorspace sequential_hcl
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom colorRamps primary.colors
@@ -25,6 +25,8 @@ utils::globalVariables(c(".","algId","run","ERT","RT","max_samples",
                          "rescale"))
 
 options(shiny.port = 4242)
+
+IOHanalyzer_env <- new.env(parent = emptyenv())
 
 probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
 

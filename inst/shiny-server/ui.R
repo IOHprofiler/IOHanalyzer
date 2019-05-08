@@ -204,6 +204,15 @@ body <- dashboardBody(
                 par_sample_box()
               )
             )
+    ),
+    
+    tabItem(tabName = 'Settings',
+            fluidRow(
+              column(
+                width = 12,
+                color_settings_box()
+              )
+            )
     )
   )
 )

@@ -115,6 +115,7 @@ gg_beanplot <- function(mapping, data, p = NULL, width = 3, fill = 'grey',
   p
 }
 
+
 Set1 <- function(n) colorspace::sequential_hcl(n, h = c(360, 40), c. = c(100, NA, 90), l = c(28, 90),
                                    power = c(1, 1.1), gamma = NULL, fixup = TRUE,
                                    alpha = 1)#, palette = NULL, rev = FALSE)
@@ -127,9 +128,54 @@ Set3 <- function(n) colorspace::sequential_hcl(n, c(-88, 59), c. = c(60, 75, 55)
                                    power = c(0.1, 1.2), gamma = NULL,
                                    fixup = TRUE, alpha = 1)#, palette = NULL, rev = FALSE)
 
+IOHanalyzer_env$used_colorscheme <- Set3
+
+#' Set the colorScheme of the IOHanalyzer plots
+#' 
+#' @param schemename Three default colorschemes are implemented:
+#' \itemize{
+#' \item Default
+#' \item Variant 1
+#' \item Variant 2
+#' }
+#' And it is also possible to select "Custom", which allows uploading of a custom set of colors
+#' @param path The path to the file containing the colors to use. Only used if 
+#' schemename is "Custom"
+#' 
+#' @export
+#' 
+#' @examples
+#' set_colorScheme("Default")
+set_colorScheme <- function(schemename, path = NULL){
+  if (schemename == "Default") IOHanalyzer_env$used_colorscheme <- Set3
+  else if (schemename == "Variant 1") IOHanalyzer_env$used_colorscheme <- Set2
+  else if (schemename == "Variant 2") IOHanalyzer_env$used_colorscheme <- Set1
+  else if (schemename == "Custom" && !is.null(path)){
+    colors <- fread(path, header = F)[[1]]
+    N <- length(colors)
+    custom_set <- function(n){
+      return(colors[mod(seq(n),N)+1])
+    }
+    IOHanalyzer_env$used_colorscheme <- custom_set
+  } 
+  
+}
+
+#' Get colors according to the current colorScheme of the IOHanalyzer
+#' 
+#' @param n Number of colors to get
+#' 
+#' @export
+#' 
+#' @examples
+#' get_colorScheme(5)
+get_colorScheme <- function(n){
+  IOHanalyzer_env$used_colorscheme(n)
+}
+
 # TODO: incoporate more colors
 color_palettes <- function(ncolor) {
-  if (ncolor < 5) return(Set3(ncolor)) #Was set2, which gave NAFF as color?
+  if (ncolor < 5) return(IOHanalyzer_env$used_colorscheme(ncolor))
 
   brewer <- function(n) {
     colors <- RColorBrewer::brewer.pal(n, 'Spectral')
@@ -137,7 +183,7 @@ color_palettes <- function(ncolor) {
     colors
   }
 
-  color_fcts <- c(colorRamps::primary.colors, Set3)
+  color_fcts <- c(colorRamps::primary.colors, IOHanalyzer_env$used_colorscheme)
 
   n <- min(11, ncolor)
   colors <- brewer(n)

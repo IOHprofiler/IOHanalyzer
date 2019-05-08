@@ -51,6 +51,15 @@ grad_functions <- c(
     else
       1/(2*(amount-color_center))
   }
+  ,
+  no_gradation = function(count, amount, intensity){
+    scale <- (intensity + 1)/2
+    if ((count-1<scale*amount) && count >=scale*amount){
+      0.75
+    }
+    else
+      0
+  }
 )
 
 #S3 generics
@@ -68,6 +77,7 @@ plot_RT_single_fct <- function(dsList, Fstart = NULL, Fstop = NULL,
                          show.grad = F, show.intensity = 0,
                          show.pareto = F, show.optimal = F,
                          show.median = F, backend = 'plotly',
+                         show.gradation = T,
                          scale.xlog = F, scale.ylog = F,
                          scale.reverse = F) UseMethod("plot_RT_single_fct", dsList)
 #' Plot lineplot of the expected function values of a DataSetList
@@ -82,6 +92,7 @@ plot_FV_line <- function(dsList, RTstart = NULL, RTstop = NULL,
                          show.runs = F, show.density = 50,
                          show.grad = F, show.intensity = 0,
                          show.pareto = F, show.optimal = F,
+                         show.gradation = T,
                          backend = 'plotly',
                          scale.xlog = F, scale.ylog = F,
                          scale.reverse = F) UseMethod("plot_FV_line", dsList)
@@ -271,6 +282,7 @@ plot_FV_all_fcts <- function(dsList, scale.xlog = F,
 #' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
 #' @param backend Which plotting library to use. Can be 'plotly' or 'ggplot2'
 #' @param show.grad Whether or not to show the run intensity
+#' @param show.gradation Whether or not to show the run intensity's gradation
 #' @param show.intensity Intensity to use when using show.grad
 #'
 #' @return A plot of ERT-values of the DataSetList
@@ -282,6 +294,7 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                            show.grad = F, show.intensity = 0,
                                            show.pareto = F, show.optimal = F,
                                            show.median = F, backend = 'plotly',
+                                           show.gradation = T,
                                            scale.xlog = F, scale.ylog = F,
                                            scale.reverse = F) {
 
@@ -340,6 +353,10 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
         mentioned <- FALSE
         
         if (show.grad) {
+          grad_function <- grad_functions$fixed_edges
+          if (!show.gradation)
+            grad_function <- grad_functions$no_gradation
+            
           sorted_dr_ERT <- apply(dr_ERT[, -c('algId', 'target', 'funcId', 'DIM')], 1, function(x){sort(x, decreasing = FALSE, na.last = T)})
           upper_border <- max_value
           counter <- 0
@@ -348,7 +365,7 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
           apply(sorted_dr_ERT, 1, function(values){
             counter <<- counter + 1
             rgba_str_m  <- generate_rbga(col2rgb(colors[i]),fill_density)
-            fill_density <<- fill_density + grad_functions$fixed_edges(counter-1,names_amount,show.intensity)
+            fill_density <<- fill_density + grad_function(counter-1,names_amount,show.intensity)
             y_value <- values[!is.na(values)]
             x_value <- head(dr_ERT[['target']], length(y_value))
             y_value <- c(y_value, upper_border)
@@ -514,6 +531,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
                                      show.runs = F, show.density = 50,
                                      show.grad = F, show.intensity = 0,
                                      show.pareto = F, show.optimal = F,
+                                     show.gradation = T,
                                      backend = 'plotly',
                                      scale.xlog = F, scale.ylog = F,
                                      scale.reverse = F) {
@@ -594,9 +612,13 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
           sorted_fce_runs_ERT <- apply((fce_runs_ERT[, -c('algId', 'runtime', 'funcId', 'DIM')]), 1, function(x){sort(x,decreasing = TRUE)})
           counter = 0
           names_amount = length(all_names)
+          grad_function <- grad_functions$fixed_edges
+          if (!show.gradation)
+            grad_function <- grad_functions$no_gradation
+            
           
           for (counter in c(1:length(all_names))) {
-            fill_density <- fill_density + grad_functions$fixed_edges(counter,names_amount,show.intensity)
+            fill_density <- fill_density + grad_function(counter,names_amount,show.intensity)
             rgba_str_m  <- generate_rbga(col2rgb(colors[i]),fill_density)
             p %<>% add_trace(x = fce_runs_ERT[['runtime']], y = sorted_fce_runs_ERT[counter,],
                              type = 'scatter', mode = 'none',
@@ -606,7 +628,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
                              fillcolor = rgba_str_m
             )
           }
-          rgba_str_m  <- generate_rbga(col2rgb(colors[i]),1)
+          rgba_str_m  <- generate_rbga(col2rgb(colors[i]),fill_density)
           lower_border <- min(sorted_fce_runs_ERT)
           p %<>% add_trace(x = fce_runs_ERT[['runtime']], y = seq(lower_border, lower_border, length.out = length(fce_runs_ERT[['runtime']])),
                            type = 'scatter', mode = 'none',

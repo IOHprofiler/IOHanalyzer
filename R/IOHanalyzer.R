@@ -18,7 +18,7 @@
 #' @useDynLib IOHanalyzer
 NULL
 #Ugly hack, but appears to be required to appease CRAN
-utils::globalVariables(c(".","algId","run","ERT","RT",
+utils::globalVariables(c(".", "algId", "run", "ERT", "RT", "group",
                          "DIM", "Fvalue", "lower", "upper", "target", "format",
                          "runtime", "parId", "instance", "input", "funcId",
                          "budget", "dimension", "loss", "name", "optimizer_name",

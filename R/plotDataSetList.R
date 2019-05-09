@@ -435,9 +435,9 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 
   } else if (backend == 'ggplot2') {
     dt[, 'group' := paste(algId, funcId, DIM, sep = '-')]
-    p <- ggplot(data = dt, aes(group = 'group', colour = 'group'))
+    p <- ggplot(data = dt, aes(group = `group`, colour = `group`))
 
-    if (show.CI) p <- p + geom_ribbon(aes(target, ymin = lower, ymax = upper, fill = 'group'),
+    if (show.CI) p <- p + geom_ribbon(aes(target, ymin = lower, ymax = upper, fill = `group`),
                                       alpha = 0.2, colour = NA)
     if (show.ERT) p <- p + geom_line(aes(target, ERT), size = 1.2)
     if (show.mean) p <- p + geom_line(aes(target, mean), linetype = 'dashed')
@@ -525,7 +525,7 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
       p %<>% layout(xaxis = list(autorange = "reversed"))
   } else if (backend == 'ggplot2') {
     fce[, 'group' := paste(algId, funcId, DIM, sep = '-')]
-    p <- ggplot(data = fce, aes(group = 'group', colour = 'group'))
+    p <- ggplot(data = fce, aes(group = `group`, colour = `group`))
 
     if (show.mean) p <- p + geom_line(aes(runtime, mean), linetype = 'dashed')
     if (show.median) p <- p + geom_line(aes(runtime, median), linetype = 'dotted')

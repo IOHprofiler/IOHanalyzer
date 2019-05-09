@@ -4,7 +4,7 @@
 \alias{get_property}
 \title{Get the value of some global IOHanalyzer properties}
 \usage{
-get_property(prop_name)
+get_property(prop_name, ...)
 }
 \arguments{
 \item{prop_name}{The property to get. Current options are:
@@ -12,6 +12,8 @@ get_property(prop_name)
 \item 'probs': The probabilities in the displayed quantiles (RT and FV summaries).
 \item 'max_samples': The maximum number of samples to generate for each algorithm.
 }}
+
+\item{...}{Arguments passed to underlying functions (i.e. number of colors to get colorscheme for)}
 }
 \description{
 Get the value of some global IOHanalyzer properties

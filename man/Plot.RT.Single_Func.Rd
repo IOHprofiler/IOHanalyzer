@@ -7,13 +7,13 @@
 \usage{
 Plot.RT.Single_Func(dsList, Fstart = NULL, Fstop = NULL,
   show.ERT = T, show.CI = F, show.mean = F, show.median = F,
-  backend = "plotly", scale.xlog = F, scale.ylog = F,
+  backend = NULL, scale.xlog = F, scale.ylog = F,
   scale.reverse = F)
 
 \method{Plot.RT.Single_Func}{DataSetList}(dsList, Fstart = NULL,
   Fstop = NULL, show.ERT = T, show.CI = T, show.mean = F,
-  show.median = F, backend = "plotly", scale.xlog = F,
-  scale.ylog = F, scale.reverse = F)
+  show.median = F, backend = NULL, scale.xlog = F, scale.ylog = F,
+  scale.reverse = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

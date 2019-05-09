@@ -46,6 +46,7 @@ AUTOMATIC <- 'AUTOMATIC'
 NEVERGRAD <- 'NEVERGRAD'
 
 IOHanalyzer_env$max_samples <- 100
+IOHanalyzer_env$default_backend <- 'plotly'
 
 is.wholenumber <-
   function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
@@ -74,6 +75,13 @@ set_property <- function(prop_name, value, ...){
         "max_samples" = {
             req(is.wholenumber(value))
             IOHanalyzer_env$max_samples <- value
+        },
+        "backend" = {
+          req(value %in% c('plotly', 'ggplot2'))
+          IOHanalyzer_env$default_backend <- value
+        },
+        "colorscheme" = {
+          set_colorScheme(value, ...)
         }
     )
 }
@@ -85,17 +93,24 @@ set_property <- function(prop_name, value, ...){
 #' \item 'probs': The probabilities in the displayed quantiles (RT and FV summaries).
 #' \item 'max_samples': The maximum number of samples to generate for each algorithm.
 #' }
+#' @param ... Arguments passed to underlying functions (i.e. number of colors to get colorscheme for)
 #' 
 #' @export
 #' @examples 
 #' get_property("probs")
-get_property <- function(prop_name){
+get_property <- function(prop_name, ...){
     switch(prop_name, 
         "probs" = {
             IOHanalyzer_env$probs
         },
         "max_samples" = {
             IOHanalyzer_env$max_samples
+        },
+        "backend" = {
+          IOHanalyzer_env$default_backend
+        },
+        "colorscheme" = {
+          IOHanalyzer_env$used_colorscheme(...)
         }
     )
 }

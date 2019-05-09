@@ -75,7 +75,7 @@ grad_functions <- c(
 #' Plot.RT.Single_Func(subset(dsl, funcId == 1))
 Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
                                show.ERT = T, show.CI = F, show.mean = F,
-                               show.median = F, backend = 'plotly',
+                               show.median = F, backend = NULL,
                                scale.xlog = F, scale.ylog = F,
                                scale.reverse = F) UseMethod("Plot.RT.Single_Func", dsList)
 #' Plot lineplot of the expected function values of a DataSetList
@@ -98,7 +98,7 @@ Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
 Plot.FV.Single_Func <- function(dsList, RTstart = NULL, RTstop = NULL,
                          show.CI = F,
                          show.mean = T, show.median = F,
-                         backend = 'plotly',
+                         backend = NULL,
                          scale.xlog = F, scale.ylog = F,
                          scale.reverse = F) UseMethod("Plot.FV.Single_Func", dsList)
 #' Plot probablity mass function of the runtimes of a DataSetList at a certain target function value
@@ -115,7 +115,7 @@ Plot.FV.Single_Func <- function(dsList, RTstart = NULL, RTstop = NULL,
 #' @examples 
 #' Plot.RT.PMF(subset(dsl, funcId == 1), 14)
 Plot.RT.PMF <- function(dsList, ftarget, show.sample = F,
-                        scale.ylog = F, backend = 'plotly') UseMethod("Plot.RT.PMF", dsList)
+                        scale.ylog = F, backend = NULL) UseMethod("Plot.RT.PMF", dsList)
 #' Plot histograms of the runtimes of a DataSetList at a certain target function value
 #'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
@@ -295,7 +295,7 @@ Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = F)
 Plot.RT.Multi_Func <- function(dsList, scale.xlog = F,
                              scale.ylog = F,
                              scale.reverse = F,
-                             backend = 'plotly') UseMethod("Plot.RT.Multi_Func", dsList)
+                             backend = NULL) UseMethod("Plot.RT.Multi_Func", dsList)
 #' Plot ERT-based comparison over multiple functions or dimensions
 #'
 #' @param dsList A DataSetList (should consist of only one function OR dimension).
@@ -351,7 +351,7 @@ Plot.FV.Aggregated <- function(dsList, aggr_on = 'funcId', runtimes = NULL,
 #' Plot.FV.Multi_Func(dsl)
 Plot.FV.Multi_Func <- function(dsList, scale.xlog = F,
                              scale.ylog = F,
-                             backend = 'plotly') UseMethod("Plot.FV.Multi_Func", dsList)
+                             backend = NULL) UseMethod("Plot.FV.Multi_Func", dsList)
 
 ##Implementations
 
@@ -359,10 +359,10 @@ Plot.FV.Multi_Func <- function(dsList, scale.xlog = F,
 #' @export
 Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                            show.ERT = T, show.CI = T, show.mean = F,
-                                           show.median = F, backend = 'plotly',
+                                           show.median = F, backend = NULL,
                                            scale.xlog = F, scale.ylog = F,
                                            scale.reverse = F) {
-
+  if (is.null(backend)) backend <- IOHanalyzer_env$default_backend
   Fall <- get_funvals(dsList)
   if (is.null(Fstart)) Fstart <- min(Fall)
   if (is.null(Fstop)) Fstop <- max(Fall)
@@ -455,10 +455,11 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
                                      show.CI = T,
                                      show.mean = F, show.median = F,
-                                     backend = 'plotly',
+                                     backend = NULL,
                                      scale.xlog = F, scale.ylog = F,
                                      scale.reverse = F) {
-
+  if (is.null(backend)) backend <- IOHanalyzer_env$default_backend
+  
   RTall <- get_runtimes(dsList)
   if (is.null(RTstart)) Fstart <- min(RTall)
   if (is.null(RTstop)) Fstop <- max(RTall)
@@ -541,8 +542,9 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
 #' @rdname Plot.RT.PMF
 #' @export
 Plot.RT.PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
-                                    scale.ylog = F, backend = 'plotly'){
-
+                                    scale.ylog = F, backend = NULL){
+  if (is.null(backend)) backend <- IOHanalyzer_env$default_backend
+  
   points <- ifelse(show.sample, 'all', FALSE)
 
   N <- length(dsList)
@@ -1242,7 +1244,9 @@ Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
 Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
                                          scale.ylog = F,
                                          scale.reverse = F,
-                                         backend = 'plotly') {
+                                         backend = NULL) {
+  if (is.null(backend)) backend <- IOHanalyzer_env$default_backend
+  
   xscale <- if (scale.xlog) 'log' else 'linear'
   yscale <- if (scale.ylog) 'log' else 'linear'
   funcIds <- get_funcId(dsList)
@@ -1331,7 +1335,9 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
 #' @export
 Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
                                          scale.ylog = F,
-                                         backend = 'plotly') {
+                                         backend = NULL) {
+  if (is.null(backend)) backend <- IOHanalyzer_env$default_backend
+  
   xscale <- if (scale.xlog) 'log' else 'linear'
   yscale <- if (scale.ylog) 'log' else 'linear'
   funcIds <- get_funcId(dsList)

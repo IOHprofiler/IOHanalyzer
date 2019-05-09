@@ -6,10 +6,10 @@
 \title{Plot FV-plots for multiple functions or dimensions}
 \usage{
 Plot.FV.Multi_Func(dsList, scale.xlog = F, scale.ylog = F,
-  backend = "plotly")
+  backend = NULL)
 
 \method{Plot.FV.Multi_Func}{DataSetList}(dsList, scale.xlog = F,
-  scale.ylog = F, backend = "plotly")
+  scale.ylog = F, backend = NULL)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function OR dimension).}

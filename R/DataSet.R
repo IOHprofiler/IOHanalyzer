@@ -512,7 +512,7 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
             apply(data, 1, .median),
             apply(data, 1, .sd), .) %>%
       set_colnames(c('algId', 'target', 'mean', 'median',
-                     'sd', paste0(IOHanalyzer_env$probs * 100, '%'), 'ERT', 'runs', 'ps'))
+                     'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%'), 'ERT', 'runs', 'ps'))
   } else {# TODO: remove this case, deprecated...
     NAs <- is.na(matched)
     if (any(NAs)) {
@@ -591,7 +591,7 @@ get_FV_summary.DataSet <- function(ds, runtime, ...) {
           apply(data, 1, .mean),
           apply(data, 1, .median),
           apply(data, 1, .sd), .) %>%
-    set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', 'sd', paste0(IOHanalyzer_env$probs * 100, '%')))
+    set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', 'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%')))
 }
 
 #' @rdname get_FV_sample
@@ -673,7 +673,7 @@ get_PAR_summary.DataSet <- function(ds, ftarget, parId = 'all', ...) {
                    apply(data, 1, .median),
                    apply(data, 1, .sd), .) %>%
              set_colnames(c('algId', 'parId', 'target', 'runs', 'mean', 'median', 'sd',
-                            paste0(IOHanalyzer_env$probs * 100, '%')))
+                            paste0(getOption("IOHanalyzer.quantiles") * 100, '%')))
          }) %>%
     rbindlist
 }

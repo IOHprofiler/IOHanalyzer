@@ -142,7 +142,7 @@ IOHanalyzer_env$used_colorscheme <- Set3
 #' @param path The path to the file containing the colors to use. Only used if 
 #' schemename is "Custom"
 #' 
-#' @noRd
+#' @export
 #' 
 #' @examples
 #' set_colorScheme("Default")
@@ -161,6 +161,17 @@ set_colorScheme <- function(schemename, path = NULL){
   
 }
 
+#' Get colors according to the current colorScheme of the IOHanalyzer
+#' 
+#' @param n Number of colors to get
+#' 
+#' @export
+#' 
+#' @examples
+#' get_colorScheme(5)
+get_colorScheme <- function(n){
+  IOHanalyzer_env$used_colorscheme(n)
+}
 
 # TODO: incoporate more colors
 color_palettes <- function(ncolor) {

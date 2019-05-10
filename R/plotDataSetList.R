@@ -362,7 +362,7 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                            show.median = F, backend = NULL,
                                            scale.xlog = F, scale.ylog = F,
                                            scale.reverse = F) {
-  if (is.null(backend)) backend <- options("IOHanalyzer.backend", default = 'plotly')
+  if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
   Fall <- get_funvals(dsList)
   if (is.null(Fstart)) Fstart <- min(Fall)
   if (is.null(Fstop)) Fstop <- max(Fall)
@@ -458,7 +458,7 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
                                      backend = NULL,
                                      scale.xlog = F, scale.ylog = F,
                                      scale.reverse = F) {
-  if (is.null(backend)) backend <- options("IOHanalyzer.backend", default = 'plotly')
+  if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
   
   RTall <- get_runtimes(dsList)
   if (is.null(RTstart)) Fstart <- min(RTall)
@@ -543,7 +543,7 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
 #' @export
 Plot.RT.PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
                                     scale.ylog = F, backend = NULL){
-  if (is.null(backend)) backend <- options("IOHanalyzer.backend", default = 'plotly')
+  if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
   
   points <- ifelse(show.sample, 'all', FALSE)
 
@@ -1245,7 +1245,7 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
                                          scale.ylog = F,
                                          scale.reverse = F,
                                          backend = NULL) {
-  if (is.null(backend)) backend <- options("IOHanalyzer.backend", default = 'plotly')
+  if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
   
   xscale <- if (scale.xlog) 'log' else 'linear'
   yscale <- if (scale.ylog) 'log' else 'linear'
@@ -1336,7 +1336,7 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
 Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
                                          scale.ylog = F,
                                          backend = NULL) {
-  if (is.null(backend)) backend <- options("IOHanalyzer.backend", default = 'plotly')
+  if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
   
   xscale <- if (scale.xlog) 'log' else 'linear'
   yscale <- if (scale.ylog) 'log' else 'linear'

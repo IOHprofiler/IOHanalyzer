@@ -69,10 +69,10 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
   #Avoid generating too many samples
   if(!is.null(by)){
     nr_samples_generated <- (to-from)/by
-    if (nr_samples_generated > options("IOHanalyzer.max_samples", default = 100)){
+    if (nr_samples_generated > getOption("IOHanalyzer.max_samples", default = 100)){
       by <- NULL
       if(is.null(length.out))
-        length.out <- options("IOHanalyzer.max_samples", default = 100)
+        length.out <- getOption("IOHanalyzer.max_samples", default = 100)
     }
   }
 
@@ -133,10 +133,10 @@ seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
   #Avoid generating too many samples
   if(!is.null(by)){
     nr_samples_generated <- (to-from)/by
-    if (nr_samples_generated > options("IOHanalyzer.max_samples", default = 100)){
+    if (nr_samples_generated > getOption("IOHanalyzer.max_samples", default = 100)){
       by <- NULL
       if(is.null(length.out))
-        length.out <- options("IOHanalyzer.max_samples", default = 100)
+        length.out <- getOption("IOHanalyzer.max_samples", default = 100)
     }
   }
 

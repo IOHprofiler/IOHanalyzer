@@ -60,7 +60,7 @@ runtime_summary <- reactive({
   df$target <- format_FV(df$target)
 
   # format the integers
-  probs <- get_property("probs")
+  probs <- getOption("IOHanalyzer.quantiles")
   for (p in paste0(probs * 100, '%')) {
     df[[p]] %<>% as.integer
   }

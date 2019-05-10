@@ -56,7 +56,7 @@ get_FCE_summary <- reactive({
   df$mean %<>% format(format = 'e', digits = 3)
   df$runtime %<>% as.integer
   
-  probs <- get_property("probs")
+  probs <- getOption("IOHanalyzer.quantiles")
   
   # format the integers
   for (p in paste0(probs * 100, '%')) {

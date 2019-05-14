@@ -45,12 +45,12 @@ RT_ECDF_MULTI_TABLE <- reactive({
   message = "Creating plot")
 })
 
-output$RT_GRID_GENERATED <- renderTable({
+output$RT_GRID_GENERATED <- renderDataTable({
   req(length(DATA_RAW()) > 0)
   df <- RT_ECDF_MULTI_TABLE()
   df$funcId <- as.integer(df$funcId)
   df
-})
+}, options = list(pageLength = 5, lengthMenu = c(5, 10, 25)))
 
 uploaded_RT_ECDF_targets <- reactive({
   if (!is.null(input$RTECDF.Aggr.Table.Upload)) {

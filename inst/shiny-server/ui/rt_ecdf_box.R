@@ -83,10 +83,11 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
     solidHeader = T, status = "primary",
     sidebarPanel(
       width = 3,
-
-      # checkboxInput("Aggregate_dim","Aggregate dimensions", value = F),
-      # checkboxInput("Aggregate_fun","Aggregate functions", value = T),
-
+      
+      checkboxInput("RTECDF.Aggr.Func", "Aggregate functions", value = T),
+      checkboxInput("RTECDF.Aggr.Dim", "Aggregate dimensions", value = F),
+      checkboxInput("RTECDF.Aggr.Logx", "Scale X-axis logaritmically", value = T),
+      
       HTML_P('Choose whether to upload a file containing the target-values for each (function, dimension)-pair
              or use the automatically generated targets (see table below the plot). Please consider keeping the file format when
              modifying the csv given below.'),

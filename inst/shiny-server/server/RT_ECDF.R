@@ -4,11 +4,18 @@ output$RT_ECDF_MULT <- renderPlotly({
 })
 
 render_RT_ECDF_MULT <- reactive({
+  req(input$RTECDF.Aggr.Func || input$RTECDF.Aggr.Dim)
   withProgress({
-  dsList <- subset(DATA_RAW(), DIM == input$Overall.Dim)
-  targets <- uploaded_RT_ECDF_targets()
-
-  Plot.RT.ECDF_Multi_Func(dsList, targets = targets)
+    dsList <- DATA_RAW()
+    if (!input$RTECDF.Aggr.Func){
+      dsList <- subset(dsList, funcId == input$Overall.Funcid)
+    }
+    if (!input$RTECDF.Aggr.Dim){
+      dsList <- subset(dsList, DIM == input$Overall.Dim)
+    }
+    targets <- uploaded_RT_ECDF_targets()
+  
+    Plot.RT.ECDF_Multi_Func(dsList, targets = targets, scale.xlog = input$RTECDF.Aggr.Logx)
   },
   message = "Creating plot")
 })

@@ -378,9 +378,9 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 
   dt <- get_RT_summary(dsList, ftarget = Fseq)
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
-
-  dr <- get_RT_sample(dsList, Fseq)
-  run.names <- grep('run', names(dr),  value = T)
+# 
+#   dr <- get_RT_sample(dsList, Fseq)
+#   run.names <- grep('run', names(dr),  value = T)
 
   if (backend == 'plotly') {
     p <- plot_ly_default(x.title = "best-so-far f(x)-value",
@@ -461,8 +461,8 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
   if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
   
   RTall <- get_runtimes(dsList)
-  if (is.null(RTstart)) Fstart <- min(RTall)
-  if (is.null(RTstop)) Fstop <- max(RTall)
+  if (is.null(RTstart)) RTstart <- min(RTall)
+  if (is.null(RTstop)) RTstop <- max(RTall)
 
 
   RTseq <- seq_RT(RTall, RTstart, RTstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
@@ -1215,7 +1215,7 @@ Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
                        y.title = "Proportion of (run, target, ...) pairs")
 
   rts <- get_runtimes(dsList)
-  x <- seq(min(rts), max(rts), length.out = 50)
+  x <- seq_RT(rts, length.out = 50, scale = ifelse(scale.xlog, "log", "linear"))
   colors <- color_palettes(length(algId))
 
   for (i in seq_along(algId)) {
@@ -1223,7 +1223,7 @@ Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
     data <- subset(dsList, algId == Id)
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
 
-    fun <- ECDF(data, ftarget = targets, funcId = as.integer(names(targets)))
+    fun <- ECDF(data, ftarget = targets)
     if (is.null(fun)) next
 
     df_plot <- data.frame(x = x, ecdf = fun(x))

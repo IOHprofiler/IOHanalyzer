@@ -145,8 +145,8 @@ IOHanalyzer_env$used_colorscheme <- Set3
 #' @export
 #' 
 #' @examples
-#' set_colorScheme("Default")
-set_colorScheme <- function(schemename, path = NULL){
+#' set_color_scheme("Default")
+set_color_scheme <- function(schemename, path = NULL){
   if (schemename == "Default") IOHanalyzer_env$used_colorscheme <- Set3
   else if (schemename == "Variant 1") IOHanalyzer_env$used_colorscheme <- Set2
   else if (schemename == "Variant 2") IOHanalyzer_env$used_colorscheme <- Set1
@@ -168,8 +168,8 @@ set_colorScheme <- function(schemename, path = NULL){
 #' @export
 #' 
 #' @examples
-#' get_colorScheme(5)
-get_colorScheme <- function(n){
+#' get_color_scheme(5)
+get_color_scheme <- function(n){
   IOHanalyzer_env$used_colorscheme(n)
 }
 

@@ -37,11 +37,5 @@ SystemRequirements: C++11
 RoxygenNote: 6.1.1
 Suggests: 
     testthat
-Enhances:
-    shinydashboard,
-    markdown,
-    reshape2,
-    shinyjs,
-    colourpicker
 Depends: R (>= 2.10)
 Date: 2019-04-29

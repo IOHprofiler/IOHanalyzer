@@ -134,7 +134,7 @@ observeEvent(selected_folders(), {
   else
     format <<- format_detected   # set the global data format
 
-  if(format == NEVERGRAD){
+  if (format == NEVERGRAD){
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_ECDF"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_convergence"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_data"))

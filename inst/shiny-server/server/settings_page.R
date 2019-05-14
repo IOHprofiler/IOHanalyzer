@@ -1,6 +1,6 @@
 observe({
   if (input$Settings.Color.Scheme != "Custom"){
-    set_colorScheme(input$Settings.Color.Scheme, NULL)
+    set_color_scheme(input$Settings.Color.Scheme, NULL)
   }
 })
 
@@ -12,7 +12,7 @@ output$Settings.Color.Example <- downloadHandler(
   content = function(file) {
     n <- length(DATA())
     if (n == 0) n <- 5
-    writeLines(get_colorScheme(n=n), file)
+    writeLines(get_color_scheme(n=n), file)
   }
 )
 
@@ -25,7 +25,7 @@ plot_color_example <- function(ds){
     algnames <- get_algId(ds)
   }
   else algnames <- c("Alg 1", "Alg 2", "Alg 3", "Alg 4", "Alg 5")
-  colors <- get_colorScheme(n=length(algnames))
+  colors <- get_color_scheme(n=length(algnames))
   schemename <- input$Settings.Color.Scheme
   if(schemename == "Custom" && !is.null(input$Settings.Color.Upload)){
     schemename <- paste0(schemename, ": ", input$Settings.Color.Upload$datapath)
@@ -48,7 +48,7 @@ selected_color_congfig <- observe({
     datapath <- input$Settings.Color.Upload$datapath
     tryCatch(
       expr = {
-        set_colorScheme("Custom", path=datapath)
+        set_color_scheme("Custom", path=datapath)
       },
       error = function(e) {
         shinyjs::alert("File could not be read, please upload a file in the same format as the example.")

@@ -984,13 +984,13 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
                                           show.per_target = F){
 
   rt <- get_runtimes(dsList)
-  if(is.null(rt_min)) rt_min <- min(rt)
-  if(is.null(rt_max)) rt_max <- max(rt)
+  if (is.null(rt_min)) rt_min <- min(rt)
+  if (is.null(rt_max)) rt_max <- max(rt)
 
   rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step,
                    scale = ifelse(scale.xlog,'log','linear'))
   
-  if(!attr(dsList[[1]],"maximization"))
+  if (!attr(dsList[[1]],"maximization"))
     rt_seq <- rev(rt_seq)
   
   req(rt_seq)
@@ -1001,8 +1001,8 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
   funevals.max <- sapply(dsList, function(ds) max(ds$FV, na.rm = T)) %>% max
   funevals.min <- sapply(dsList, function(ds) min(ds$FV, na.rm = T)) %>% min
   
-  if(!attr(dsList[[1]],"maximization"))
-    x <- seq(log10(funevals.max), log10(funevals.min), length.out = 40) %>% 10**.
+  if (!attr(dsList[[1]], "maximization"))
+    x <- 10 ** seq(log10(funevals.max), log10(funevals.min), length.out = 40)
   else
     x <- seq(funevals.min, funevals.max, length.out = 40)
   
@@ -1059,8 +1059,8 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
 #' @export
 Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, rt_step = NULL) {
   rt <- get_runtimes(dsList)
-  if(is.null(rt_min)) rt_min <- min(rt)
-  if(is.null(rt_max)) rt_max <- max(rt)
+  if (is.null(rt_min)) rt_min <- min(rt)
+  if (is.null(rt_max)) rt_max <- max(rt)
 
   rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step)
   req(rt_seq)
@@ -1126,8 +1126,8 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
   req(xor(show.mean,show.median))
 
   fall <- get_funvals(dsList)
-  if(is.null(f_min)) f_min <- min(fall)
-  if(is.null(f_max)) f_max <- max(fall)
+  if (is.null(f_min)) f_min <- min(fall)
+  if (is.null(f_max)) f_max <- max(fall)
 
   fseq <- seq_FV(fall, f_min, f_max, length.out = 50)
   req(fseq)
@@ -1439,15 +1439,15 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
   names(in_legend) <- get_algId(dsList)
   names(colors) <- get_algId(dsList)
 
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
-  if(!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
+  if (!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
 
-  second_aggr <- if(aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
-  if(length(second_aggr) >1 ) return(NULL)
+  second_aggr <- if (aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
+  if (length(second_aggr) >1 ) return(NULL)
 
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
 
-  p <- if(plot_mode == "radar")  plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
+  p <- if (plot_mode == "radar")  plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
   else plot_ly_default(title = plot_title)
 
   if (use_rank){
@@ -1467,7 +1467,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
     data <- dataert[,i]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
-    if(plot_mode == "radar"){
+    if (plot_mode == "radar"){
       p %<>%
         add_trace(type = 'scatterpolar', r = data,
                   theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
@@ -1521,7 +1521,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
     }
   }
   if (plot_mode == "radar"){
-    if(use_rank)
+    if (use_rank)
       p %<>%
       layout(polar = list(radialaxis = list(type = 'linear', visible=F, autorange = 'reversed')))
     else
@@ -1529,7 +1529,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
       layout(polar = list(radialaxis = list(type = 'log', visible=F, autorange = 'reverse')))
   }
   else{
-    if(use_rank)
+    if (use_rank)
       p %<>%
       layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
              xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
@@ -1558,15 +1558,15 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
   names(in_legend) <- get_algId(dsList)
   names(colors) <- get_algId(dsList)
 
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
-  if(!is.null(runtimes) && length(runtimes) != length(aggr_attr)) runtimes <- NULL
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
+  if (!is.null(runtimes) && length(runtimes) != length(aggr_attr)) runtimes <- NULL
 
-  second_aggr <- if(aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
-  if(length(second_aggr) >1 ) return(NULL)
+  second_aggr <- if (aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
+  if (length(second_aggr) >1 ) return(NULL)
 
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
 
-  p <- if(plot_mode == "radar")  plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
+  p <- if (plot_mode == "radar")  plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
   else plot_ly_default(title = plot_title)
 
   if (use_rank){
@@ -1588,7 +1588,7 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
     data <- dataert[,i]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
-    if(plot_mode == "radar"){
+    if (plot_mode == "radar"){
       p %<>%
         add_trace(type = 'scatterpolar', r = data,
                   theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
@@ -1625,7 +1625,7 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
     }
   }
   if (plot_mode == "radar"){
-    if(use_rank)
+    if (use_rank)
       p %<>%
       layout(polar = list(radialaxis = list(type = 'linear', visible=F, autorange='reversed')))
     else
@@ -1633,7 +1633,7 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
       layout(polar = list(radialaxis = list(type = 'log', visible=F)))
   }
   else{
-    if(use_rank)
+    if (use_rank)
       p %<>%
       layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
              xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))

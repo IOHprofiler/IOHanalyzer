@@ -410,7 +410,7 @@ get_FV_overview.DataSet <- function(ds, ...) {
 #'
 get_RT_overview.DataSet <- function(ds, ...) {
   
-  if(!is.null(attr(ds,"format")) && attr(ds,"format") == NEVERGRAD){
+  if(!is.null(attr(ds, "format")) && attr(ds, "format") == NEVERGRAD){
     data <- ds$FV
     budget <- max(attr(ds, 'maxRT'))
     runs <- ncol(data)

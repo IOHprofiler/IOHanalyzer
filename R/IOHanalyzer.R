@@ -31,7 +31,9 @@ options(shiny.port = 4242)
   op.IOHanalyzer <- list(
     IOHanalyzer.quantiles = c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.,
     IOHanalyzer.max_samples = 100,
-    IOHanalyzer.backend = 'plotly'
+    IOHanalyzer.backend = 'plotly',
+    IOHanalyzer.bgcolor = 'rgb(255,255,255)',
+    IOHanalyzer.gridcolor = 'rgb(229,229,229)'
   )
   toset <- !(names(op.IOHanalyzer) %in% names(op))
   if(any(toset)) options(op.IOHanalyzer[toset])

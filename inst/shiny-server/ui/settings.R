@@ -9,7 +9,10 @@ color_settings_box <- function(width = 12, collapsible = T, collapsed = F) {
           conditionalPanel(condition = 'input["Settings.Color.Scheme"] == "Custom"',
                            downloadButton("Settings.Color.Example","Download an example color settings file"),
                            fileInput("Settings.Color.Upload","Upload a color settings file")
-                           )
+                           ),
+          colourInput("Settings.Color.Bg", "Plot background colour", value = "#FFFFFF"),
+          colourInput("Settings.Color.Grid", "Plot gridline colour", value = "#E5E5E5")
+          
         ),
         mainPanel(
           width = 9,

@@ -30,7 +30,9 @@ plot_color_example <- function(ds){
   if(schemename == "Custom" && !is.null(input$Settings.Color.Upload)){
     schemename <- paste0(schemename, ": ", input$Settings.Color.Upload$datapath)
   }
-  p <- plot_ly() %>% layout(title = list(text = schemename))
+  p <- plot_ly() %>% layout(title = list(text = schemename), plot_bgcolor = input$Settings.Color.Bg,
+                            xaxis = list(gridcolor = input$Settings.Color.Grid),
+                            yaxis = list(gridcolor = input$Settings.Color.Grid))
 
   for (i in seq_along(algnames)){
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
@@ -69,4 +71,12 @@ observe({
 
 observe({
   options("IOHanalyzer.backend" = input$Settings.General.Backend)
+})
+
+observe({
+  options("IOHanalyzer.bgcolor" = input$Settings.Color.Bg)
+})
+
+observe({
+  options("IOHanalyzer.gridcolor" = input$Settings.Color.Grid)
 })

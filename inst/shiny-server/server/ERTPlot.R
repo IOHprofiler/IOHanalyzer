@@ -10,8 +10,7 @@ output$ERTPlot.Download <- downloadHandler(
   },
   content = function(file) {
     save_plotly(render_ert_per_fct(), file,
-                format = input$ERTPlot.Format,
-                width = fig_width2, height = fig_height)
+                format = input$ERTPlot.Format)
   },
   contentType = paste0('image/', input$ERTPlot.Format)
 )
@@ -72,8 +71,7 @@ output$ERTPlot.Multi.Download <- downloadHandler(
   },
   content = function(file) {
     save_plotly(render_ERTPlot_multi_plot(), file,
-                format = input$ERTPlot.Multi.Format,
-                width = fig_width2, height = fig_height)
+                format = input$ERTPlot.Multi.Format)
   },
   contentType = paste0('image/', input$ERTPlot.Multi.Format)
 )
@@ -132,8 +130,7 @@ output$ERTPlot.Aggr.Download <- downloadHandler(
   },
   content = function(file) {
     save_plotly(render_ERTPlot_aggr_plot(), file,
-                format = input$ERTPlot.Aggr.Format,
-                width = fig_width2, height = fig_height)
+                format = input$ERTPlot.Aggr.Format)
   },
   contentType = paste0('image/', input$ERTPlot.Aggr.Format)
 )

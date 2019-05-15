@@ -7,11 +7,12 @@
 a DataSetList.}
 \usage{
 Plot.FV.ECDF_Single_Func(dsList, rt_min = NULL, rt_max = NULL,
-  rt_step = NULL, scale.xlog = F, show.per_target = F)
+  rt_step = NULL, scale.xlog = F, show.per_target = F,
+  scale.reverse = F)
 
 \method{Plot.FV.ECDF_Single_Func}{DataSetList}(dsList, rt_min = NULL,
   rt_max = NULL, rt_step = NULL, scale.xlog = F,
-  show.per_target = F)
+  show.per_target = F, scale.reverse = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -25,6 +26,8 @@ Plot.FV.ECDF_Single_Func(dsList, rt_min = NULL, rt_max = NULL,
 \item{scale.xlog}{Whether or not to scale the x-axis logaritmically}
 
 \item{show.per_target}{Whether or not to show the individual ECDF-curves for each runtime}
+
+\item{scale.reverse}{Whether or not to reverse the x-axis (when using minimization)}
 }
 \value{
 A plot of the empirical cumulative distriburtion as a function of

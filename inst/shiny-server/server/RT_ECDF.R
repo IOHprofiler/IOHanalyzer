@@ -31,8 +31,7 @@ output$RTECDF.Aggr.Download <- downloadHandler(
   },
   content = function(file) {
     save_plotly(render_RT_ECDF_MULT(), file,
-                format = input$RTECDF.Aggr.Format,
-                width = fig_width2, height = fig_height)
+                format = input$RTECDF.Aggr.Format)
   },
   contentType = paste0('image/', input$RTECDF.Aggr.Format)
 )
@@ -66,7 +65,7 @@ output$RT_GRID_GENERATED <- renderDataTable({
 
 uploaded_RT_ECDF_targets <- reactive({
   if (!is.null(input$RTECDF.Aggr.Table.Upload)) {
-    df <- read.csv(input$RTECDF.Aggr.Table.Upload$datapath, header = T, sep = ';')
+    df <- read.csv(input$RTECDF.Aggr.Table.Upload$datapath, header = T, sep = ',')
     value <- as.character(df$target)
 
     lapply(value,
@@ -83,7 +82,7 @@ output$RTECDF.Aggr.Table.Download <- downloadHandler(
   filename = 'Example_ECDF_TARGETS.csv',
   content = function(file) {
     write.table(RT_ECDF_MULTI_TABLE(), file, row.names = F,
-                col.names = T, sep = ';')
+                col.names = T, sep = ',')
   },
   contentType = "text/csv"
 )
@@ -121,8 +120,7 @@ output$RTECDF.Multi.Download <- downloadHandler(
   },
   content = function(file) {
     save_plotly(render_RT_ECDF_AGGR(), file,
-                format = input$RTECDF.Multi.Format,
-                width = fig_width2, height = fig_height)
+                format = input$RTECDF.Multi.Format)
   },
   contentType = paste0('image/', input$RTECDF.Multi.Format)
 )
@@ -154,8 +152,7 @@ output$RTECDF.AUC.Download <- downloadHandler(
   },
   content = function(file) {
     save_plotly(render_RT_AUC(), file,
-                format = input$RTECDF.AUC.Format,
-                width = fig_width2, height = fig_height)
+                format = input$RTECDF.AUC.Format)
   },
   contentType = paste0('image/', input$RTECDF.AUC.Format)
 )

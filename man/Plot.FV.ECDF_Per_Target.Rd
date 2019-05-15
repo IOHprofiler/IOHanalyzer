@@ -6,10 +6,11 @@
 \title{Plot the empirical cumulative distriburtion as a function of the target values of
 a DataSetList at certain target runtimes}
 \usage{
-Plot.FV.ECDF_Per_Target(dsList, runtimes, scale.xlog = F)
+Plot.FV.ECDF_Per_Target(dsList, runtimes, scale.xlog = F,
+  scale.reverse = F)
 
 \method{Plot.FV.ECDF_Per_Target}{DataSetList}(dsList, runtimes,
-  scale.xlog = F)
+  scale.xlog = F, scale.reverse = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -17,6 +18,8 @@ Plot.FV.ECDF_Per_Target(dsList, runtimes, scale.xlog = F)
 \item{runtimes}{The target runtimes}
 
 \item{scale.xlog}{Whether or not to scale the x-axis logaritmically}
+
+\item{scale.reverse}{Whether or not to reverse the x-axis (when using minimization)}
 }
 \value{
 A plot of the empirical cumulative distriburtion as a function of

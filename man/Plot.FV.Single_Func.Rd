@@ -10,7 +10,7 @@ Plot.FV.Single_Func(dsList, RTstart = NULL, RTstop = NULL,
   scale.xlog = F, scale.ylog = F, scale.reverse = F)
 
 \method{Plot.FV.Single_Func}{DataSetList}(dsList, RTstart = NULL,
-  RTstop = NULL, show.CI = T, show.mean = F, show.median = F,
+  RTstop = NULL, show.CI = F, show.mean = T, show.median = F,
   backend = NULL, scale.xlog = F, scale.ylog = F,
   scale.reverse = F)
 }

@@ -80,3 +80,11 @@ observe({
 observe({
   options("IOHanalyzer.gridcolor" = input$Settings.Color.Grid)
 })
+
+observe({
+  options("IOHanalyzer.figure_width" = input$Settings.Download.Width)
+})
+
+observe({
+  options("IOHanalyzer.figure_height" = input$Settings.Download.Height)
+})

@@ -77,8 +77,7 @@ parameter_summary <- reactive({
   dt$mean %<>% format(digits = 2, nsmall = 2)
   dt$median %<>% format(digits = 2, nsmall = 2)
   
-  # TODO: make probs as a global option
-  probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
+  # probs <- get_property("probs")
   
   # format the integers
   # for (p in paste0(probs * 100, '%')) {

@@ -31,7 +31,7 @@ output$FCESummary.Overview.Download <- downloadHandler(
 )
 
 get_FCE_summary <- reactive({
-  req(input$FCESummary.Statistics.Min, input$FCESummary.Statistics.Max, input$FCESummary.Statistics.Step)
+  req(input$FCESummary.Statistics.Min, input$FCESummary.Statistics.Max, input$FCESummary.Statistics.Step, (length(DATA())>0))
 
   rt_min <- input$FCESummary.Statistics.Min %>% as.integer
   rt_max <- input$FCESummary.Statistics.Max %>% as.integer
@@ -56,8 +56,7 @@ get_FCE_summary <- reactive({
   df$mean %<>% format(format = 'e', digits = 3)
   df$runtime %<>% as.integer
   
-  # TODO: make probs as a global option
-  probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
+  probs <- getOption("IOHanalyzer.quantiles")
   
   # format the integers
   for (p in paste0(probs * 100, '%')) {
@@ -84,7 +83,7 @@ output$FCESummary.Statistics.Download <- downloadHandler(
 )
 
 get_FCE <- reactive({
-  req(input$FCESummary.Sample.Min, input$FCESummary.Sample.Max, input$FCESummary.Sample.Step)
+  req(input$FCESummary.Sample.Min, input$FCESummary.Sample.Max, input$FCESummary.Sample.Step, (length(DATA())>0))
   rt_min <- input$FCESummary.Sample.Min %>% as.integer
   rt_max <- input$FCESummary.Sample.Max %>% as.integer
   rt_step <- input$FCESummary.Sample.Step %>% as.integer

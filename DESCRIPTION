@@ -24,7 +24,6 @@ Imports:
   Rcpp,
   magrittr,
   dplyr,
-  reshape2,
   data.table,
   ggplot2,
   plotly,
@@ -32,12 +31,12 @@ Imports:
   colorRamps,
   RColorBrewer,
   shiny,
-  shinyjs,
+  withr,
   shinydashboard,
   markdown,
-  DBI,
-  dbplyr,
-  withr
+  reshape2,
+  shinyjs,
+  colourpicker
 LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 6.1.1

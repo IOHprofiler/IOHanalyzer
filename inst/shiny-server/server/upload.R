@@ -62,15 +62,21 @@ selected_folders <- reactive({
     for (i in seq(datapath)) {
       filetype <- sub('[^\\.]*\\.', '', basename(datapath[i]), perl = T)
 
+      if (filetype == 'csv'){
+        folders[i] <- datapath[[i]]
+        next
+      }
+      
       if (filetype == 'zip')
         unzip_fct <- unzip
       else if (filetype %in% c('bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz'))
         unzip_fct <- untar
-      else {
+      else{
         shinyjs::alert("This filetype is not (yet) supported.\n 
                         Please use a different format. \n
-                        We support the following formats: \n 
-                       'zip', 'bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz' and 'xz'.")
+                        We support the following compression formats: \n 
+                       'zip', 'bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz' and 'xz'.\n
+                       We also have limited support for csv-files (in Nevergrad format).")
         return(NULL)
       }
       if (filetype == 'zip')
@@ -81,8 +87,13 @@ selected_folders <- reactive({
       idx <- grep('*.info', files)[1]
       info <- files[idx]
 
-      if (is.null(info)) return(NULL)
-
+      if (is.null(info)){
+        idx <- grep('*.csv', files)[1]
+        info <- files[idx]
+        if (is.null(info))
+          return(NULL)
+      }
+      
       if (basename(info) == info) {
         folder <- Sys.time()  # generate a folder name here
         .exdir <- file.path(exdir, folder)
@@ -123,10 +134,30 @@ observeEvent(selected_folders(), {
   else
     format <<- format_detected   # set the global data format
 
+  if (format == NEVERGRAD){
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_ECDF"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_convergence"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_data"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_PMF"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "PARAMETER"))
+    
+    
+  }
+  else{
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_ECDF"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT_convergence"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT_data"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PMF"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "PARAMETER"))
+  }
+  
+  
   for (folder in folder_new) {
     indexFiles <- scan_IndexFile(folder)
 
-    if (length(indexFiles) == 0)
+    if (length(indexFiles) == 0 && format != NEVERGRAD)
       print_html(paste('<p style="color:red;">format', format_selected,
                        'is selected, however', format_detected,
                        'is detected...<br>using the detected one...</p>'))
@@ -142,7 +173,8 @@ observeEvent(selected_folders(), {
       }
 
       if (maximization == AUTOMATIC)
-        maximization <- ifelse((format == COCO || format == BIBOJ_COCO), FALSE, TRUE)
+        maximization <- ifelse((format == COCO || format == BIBOJ_COCO || format == NEVERGRAD)
+                               , FALSE, TRUE)
       else
         maximization <- ifelse((maximization == "MAXIMIZE"), TRUE, FALSE)
 
@@ -201,8 +233,13 @@ observe({
   funcIds <- get_funcId(data)
   DIMs <- get_dim(data)
 
-  updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = DIMs[1])
-  updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = funcIds[1])
+  selected_ds <- data[[1]]
+  selected_f <- attr(selected_ds,'funcId')
+  selected_dim <- attr(selected_ds, 'DIM')
+  selected_alg <- attr(selected_ds, 'algId')
+  
+  updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'FCESummary.Overview.Algid', choices = algIds, selected = 'all')
@@ -212,9 +249,9 @@ observe({
   updateSelectInput(session, 'FCESummary.Sample.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'PAR.Summary.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'PAR.Sample.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = algIds_, selected = algIds_[1])
+  updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = algIds_, selected = selected_alg)
   updateSelectInput(session, 'ERTPlot.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = algIds_, selected = algIds_[1])
+  updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = algIds_, selected = selected_alg)
   updateSelectInput(session, 'PAR.Summary.Param', choices = parIds, selected = 'all')
   updateSelectInput(session, 'PAR.Sample.Param', choices = parIds, selected = 'all')
 })
@@ -226,7 +263,11 @@ DATA <- reactive({
 
   if (length(DataList$data) == 0) return(NULL)
 
-  subset(DataList$data, DIM == dim, funcId == id)
+  d <- subset(DataList$data, DIM == dim, funcId == id)
+  if (length(d) == 0){
+    showNotification("There is no data available for this (dimension,function)-pair")
+  }
+  d
 })
 
 # TODO: give a different name for DATA and DATA_RAW

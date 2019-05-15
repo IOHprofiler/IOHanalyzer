@@ -6,10 +6,10 @@
 \title{Plot probablity mass function of the runtimes of a DataSetList at a certain target function value}
 \usage{
 Plot.RT.PMF(dsList, ftarget, show.sample = F, scale.ylog = F,
-  backend = "plotly")
+  backend = NULL)
 
 \method{Plot.RT.PMF}{DataSetList}(dsList, ftarget, show.sample = F,
-  scale.ylog = F, backend = "plotly")
+  scale.ylog = F, backend = NULL)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

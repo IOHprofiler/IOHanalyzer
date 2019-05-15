@@ -6,12 +6,12 @@
 \title{Plot lineplot of the expected function values of a DataSetList}
 \usage{
 Plot.FV.Single_Func(dsList, RTstart = NULL, RTstop = NULL,
-  show.CI = F, show.mean = T, show.median = F, backend = "plotly",
+  show.CI = F, show.mean = T, show.median = F, backend = NULL,
   scale.xlog = F, scale.ylog = F, scale.reverse = F)
 
 \method{Plot.FV.Single_Func}{DataSetList}(dsList, RTstart = NULL,
   RTstop = NULL, show.CI = T, show.mean = F, show.median = F,
-  backend = "plotly", scale.xlog = F, scale.ylog = F,
+  backend = NULL, scale.xlog = F, scale.ylog = F,
   scale.reverse = F)
 }
 \arguments{

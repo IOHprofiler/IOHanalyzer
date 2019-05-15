@@ -19,6 +19,8 @@ sidebar_menu <- function() {
 
               menuItem("Algorithm Parameters", tabName = "PARAMETER", icon = icon('file-text-o')),
               menuItem("ReadMe", tabName = "readme", icon = icon("mortar-board")),
-              menuItem("About", tabName = "about", icon = icon("question"))
+              menuItem("About", tabName = "about", icon = icon("question")),
+              menuItem("Settings", tabName = "Settings", icon = icon("cog"))
+              
   )
 }

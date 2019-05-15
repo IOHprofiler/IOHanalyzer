@@ -1,6 +1,6 @@
 # Expected Target Value Convergence
 output$FCE_PER_FUN <- renderPlotly({
-  req(input$FCEPlot.Min, input$FCEPlot.Max)
+  req(input$FCEPlot.Min, input$FCEPlot.Max, (length(DATA())>0))
   render_FV_PER_FUN()
 })
 

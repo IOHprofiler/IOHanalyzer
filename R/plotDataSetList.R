@@ -75,7 +75,7 @@ grad_functions <- c(
 #' Plot.RT.Single_Func(subset(dsl, funcId == 1))
 Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
                                show.ERT = T, show.CI = F, show.mean = F,
-                               show.median = F, backend = 'plotly',
+                               show.median = F, backend = NULL,
                                scale.xlog = F, scale.ylog = F,
                                scale.reverse = F) UseMethod("Plot.RT.Single_Func", dsList)
 #' Plot lineplot of the expected function values of a DataSetList
@@ -98,7 +98,7 @@ Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
 Plot.FV.Single_Func <- function(dsList, RTstart = NULL, RTstop = NULL,
                          show.CI = F,
                          show.mean = T, show.median = F,
-                         backend = 'plotly',
+                         backend = NULL,
                          scale.xlog = F, scale.ylog = F,
                          scale.reverse = F) UseMethod("Plot.FV.Single_Func", dsList)
 #' Plot probablity mass function of the runtimes of a DataSetList at a certain target function value
@@ -115,7 +115,7 @@ Plot.FV.Single_Func <- function(dsList, RTstart = NULL, RTstop = NULL,
 #' @examples 
 #' Plot.RT.PMF(subset(dsl, funcId == 1), 14)
 Plot.RT.PMF <- function(dsList, ftarget, show.sample = F,
-                        scale.ylog = F, backend = 'plotly') UseMethod("Plot.RT.PMF", dsList)
+                        scale.ylog = F, backend = NULL) UseMethod("Plot.RT.PMF", dsList)
 #' Plot histograms of the runtimes of a DataSetList at a certain target function value
 #'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
@@ -295,7 +295,7 @@ Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = F)
 Plot.RT.Multi_Func <- function(dsList, scale.xlog = F,
                              scale.ylog = F,
                              scale.reverse = F,
-                             backend = 'plotly') UseMethod("Plot.RT.Multi_Func", dsList)
+                             backend = NULL) UseMethod("Plot.RT.Multi_Func", dsList)
 #' Plot ERT-based comparison over multiple functions or dimensions
 #'
 #' @param dsList A DataSetList (should consist of only one function OR dimension).
@@ -351,7 +351,7 @@ Plot.FV.Aggregated <- function(dsList, aggr_on = 'funcId', runtimes = NULL,
 #' Plot.FV.Multi_Func(dsl)
 Plot.FV.Multi_Func <- function(dsList, scale.xlog = F,
                              scale.ylog = F,
-                             backend = 'plotly') UseMethod("Plot.FV.Multi_Func", dsList)
+                             backend = NULL) UseMethod("Plot.FV.Multi_Func", dsList)
 
 ##Implementations
 
@@ -359,10 +359,10 @@ Plot.FV.Multi_Func <- function(dsList, scale.xlog = F,
 #' @export
 Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                            show.ERT = T, show.CI = T, show.mean = F,
-                                           show.median = F, backend = 'plotly',
+                                           show.median = F, backend = NULL,
                                            scale.xlog = F, scale.ylog = F,
                                            scale.reverse = F) {
-
+  if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
   Fall <- get_funvals(dsList)
   if (is.null(Fstart)) Fstart <- min(Fall)
   if (is.null(Fstop)) Fstop <- max(Fall)
@@ -378,9 +378,9 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 
   dt <- get_RT_summary(dsList, ftarget = Fseq)
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
-
-  dr <- get_RT_sample(dsList, Fseq)
-  run.names <- grep('run', names(dr),  value = T)
+# 
+#   dr <- get_RT_sample(dsList, Fseq)
+#   run.names <- grep('run', names(dr),  value = T)
 
   if (backend == 'plotly') {
     p <- plot_ly_default(x.title = "best-so-far f(x)-value",
@@ -435,9 +435,9 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 
   } else if (backend == 'ggplot2') {
     dt[, 'group' := paste(algId, funcId, DIM, sep = '-')]
-    p <- ggplot(data = dt, aes(group = 'group', colour = 'group'))
+    p <- ggplot(data = dt, aes(group = `group`, colour = `group`))
 
-    if (show.CI) p <- p + geom_ribbon(aes(target, ymin = lower, ymax = upper, fill = 'group'),
+    if (show.CI) p <- p + geom_ribbon(aes(target, ymin = lower, ymax = upper, fill = `group`),
                                       alpha = 0.2, colour = NA)
     if (show.ERT) p <- p + geom_line(aes(target, ERT), size = 1.2)
     if (show.mean) p <- p + geom_line(aes(target, mean), linetype = 'dashed')
@@ -455,13 +455,14 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
                                      show.CI = T,
                                      show.mean = F, show.median = F,
-                                     backend = 'plotly',
+                                     backend = NULL,
                                      scale.xlog = F, scale.ylog = F,
                                      scale.reverse = F) {
-
+  if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
+  
   RTall <- get_runtimes(dsList)
-  if (is.null(RTstart)) Fstart <- min(RTall)
-  if (is.null(RTstop)) Fstop <- max(RTall)
+  if (is.null(RTstart)) RTstart <- min(RTall)
+  if (is.null(RTstop)) RTstop <- max(RTall)
 
 
   RTseq <- seq_RT(RTall, RTstart, RTstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
@@ -524,7 +525,7 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
       p %<>% layout(xaxis = list(autorange = "reversed"))
   } else if (backend == 'ggplot2') {
     fce[, 'group' := paste(algId, funcId, DIM, sep = '-')]
-    p <- ggplot(data = fce, aes(group = 'group', colour = 'group'))
+    p <- ggplot(data = fce, aes(group = `group`, colour = `group`))
 
     if (show.mean) p <- p + geom_line(aes(runtime, mean), linetype = 'dashed')
     if (show.median) p <- p + geom_line(aes(runtime, median), linetype = 'dotted')
@@ -541,8 +542,9 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
 #' @rdname Plot.RT.PMF
 #' @export
 Plot.RT.PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
-                                    scale.ylog = F, backend = 'plotly'){
-
+                                    scale.ylog = F, backend = NULL){
+  if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
+  
   points <- ifelse(show.sample, 'all', FALSE)
 
   N <- length(dsList)
@@ -982,11 +984,15 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
                                           show.per_target = F){
 
   rt <- get_runtimes(dsList)
-  if(is.null(rt_min)) rt_min <- min(rt)
-  if(is.null(rt_max)) rt_max <- max(rt)
+  if (is.null(rt_min)) rt_min <- min(rt)
+  if (is.null(rt_max)) rt_max <- max(rt)
 
   rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step,
                    scale = ifelse(scale.xlog,'log','linear'))
+  
+  if (!attr(dsList[[1]],"maximization"))
+    rt_seq <- rev(rt_seq)
+  
   req(rt_seq)
 
   n_algorithm <- length(dsList)
@@ -994,10 +1000,16 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
 
   funevals.max <- sapply(dsList, function(ds) max(ds$FV, na.rm = T)) %>% max
   funevals.min <- sapply(dsList, function(ds) min(ds$FV, na.rm = T)) %>% min
-
-  x <- seq(funevals.min, funevals.max, length.out = 40)
+  
+  if (!attr(dsList[[1]], "maximization"))
+    x <- 10 ** seq(log10(funevals.max), log10(funevals.min), length.out = 40)
+  else
+    x <- seq(funevals.min, funevals.max, length.out = 40)
+  
+  autorange <- ifelse(attr(dsList[[1]],"maximization"), T, 'reversed')
   p <- plot_ly_default(x.title = "target value",
-                       y.title = "Proportion of (run, budget) pairs")
+                       y.title = "Proportion of (run, budget) pairs") %>%
+                      layout(xaxis = list(autorange = autorange))
 
   for (k in seq_along(dsList)) {
     ds <- dsList[[k]]
@@ -1047,8 +1059,8 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
 #' @export
 Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, rt_step = NULL) {
   rt <- get_runtimes(dsList)
-  if(is.null(rt_min)) rt_min <- min(rt)
-  if(is.null(rt_max)) rt_max <- max(rt)
+  if (is.null(rt_min)) rt_min <- min(rt)
+  if (is.null(rt_max)) rt_max <- max(rt)
 
   rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step)
   req(rt_seq)
@@ -1114,8 +1126,8 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
   req(xor(show.mean,show.median))
 
   fall <- get_funvals(dsList)
-  if(is.null(f_min)) f_min <- min(fall)
-  if(is.null(f_max)) f_max <- max(fall)
+  if (is.null(f_min)) f_min <- min(fall)
+  if (is.null(f_max)) f_max <- max(fall)
 
   fseq <- seq_FV(fall, f_min, f_max, length.out = 50)
   req(fseq)
@@ -1203,7 +1215,7 @@ Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
                        y.title = "Proportion of (run, target, ...) pairs")
 
   rts <- get_runtimes(dsList)
-  x <- seq(min(rts), max(rts), length.out = 50)
+  x <- seq_RT(rts, length.out = 50, scale = ifelse(scale.xlog, "log", "linear"))
   colors <- color_palettes(length(algId))
 
   for (i in seq_along(algId)) {
@@ -1211,7 +1223,7 @@ Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
     data <- subset(dsList, algId == Id)
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
 
-    fun <- ECDF(data, ftarget = targets, funcId = as.integer(names(targets)))
+    fun <- ECDF(data, ftarget = targets)
     if (is.null(fun)) next
 
     df_plot <- data.frame(x = x, ecdf = fun(x))
@@ -1232,7 +1244,9 @@ Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
 Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
                                          scale.ylog = F,
                                          scale.reverse = F,
-                                         backend = 'plotly') {
+                                         backend = NULL) {
+  if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
+  
   xscale <- if (scale.xlog) 'log' else 'linear'
   yscale <- if (scale.ylog) 'log' else 'linear'
   funcIds <- get_funcId(dsList)
@@ -1321,7 +1335,9 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
 #' @export
 Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
                                          scale.ylog = F,
-                                         backend = 'plotly') {
+                                         backend = NULL) {
+  if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
+  
   xscale <- if (scale.xlog) 'log' else 'linear'
   yscale <- if (scale.ylog) 'log' else 'linear'
   funcIds <- get_funcId(dsList)
@@ -1423,15 +1439,15 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
   names(in_legend) <- get_algId(dsList)
   names(colors) <- get_algId(dsList)
 
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
-  if(!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
+  if (!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
 
-  second_aggr <- if(aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
-  if(length(second_aggr) >1 ) return(NULL)
+  second_aggr <- if (aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
+  if (length(second_aggr) >1 ) return(NULL)
 
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
 
-  p <- if(plot_mode == "radar")  plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
+  p <- if (plot_mode == "radar")  plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
   else plot_ly_default(title = plot_title)
 
   if (use_rank){
@@ -1451,7 +1467,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
     data <- dataert[,i]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
-    if(plot_mode == "radar"){
+    if (plot_mode == "radar"){
       p %<>%
         add_trace(type = 'scatterpolar', r = data,
                   theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
@@ -1505,7 +1521,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
     }
   }
   if (plot_mode == "radar"){
-    if(use_rank)
+    if (use_rank)
       p %<>%
       layout(polar = list(radialaxis = list(type = 'linear', visible=F, autorange = 'reversed')))
     else
@@ -1513,7 +1529,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
       layout(polar = list(radialaxis = list(type = 'log', visible=F, autorange = 'reverse')))
   }
   else{
-    if(use_rank)
+    if (use_rank)
       p %<>%
       layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
              xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
@@ -1542,15 +1558,15 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
   names(in_legend) <- get_algId(dsList)
   names(colors) <- get_algId(dsList)
 
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
-  if(!is.null(runtimes) && length(runtimes) != length(aggr_attr)) runtimes <- NULL
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
+  if (!is.null(runtimes) && length(runtimes) != length(aggr_attr)) runtimes <- NULL
 
-  second_aggr <- if(aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
-  if(length(second_aggr) >1 ) return(NULL)
+  second_aggr <- if (aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
+  if (length(second_aggr) >1 ) return(NULL)
 
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
 
-  p <- if(plot_mode == "radar")  plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
+  p <- if (plot_mode == "radar")  plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
   else plot_ly_default(title = plot_title)
 
   if (use_rank){
@@ -1572,7 +1588,7 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
     data <- dataert[,i]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
-    if(plot_mode == "radar"){
+    if (plot_mode == "radar"){
       p %<>%
         add_trace(type = 'scatterpolar', r = data,
                   theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
@@ -1609,7 +1625,7 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
     }
   }
   if (plot_mode == "radar"){
-    if(use_rank)
+    if (use_rank)
       p %<>%
       layout(polar = list(radialaxis = list(type = 'linear', visible=F, autorange='reversed')))
     else
@@ -1617,7 +1633,7 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
       layout(polar = list(radialaxis = list(type = 'log', visible=F)))
   }
   else{
-    if(use_rank)
+    if (use_rank)
       p %<>%
       layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
              xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))

@@ -4,11 +4,18 @@ output$RT_ECDF_MULT <- renderPlotly({
 })
 
 render_RT_ECDF_MULT <- reactive({
+  req(input$RTECDF.Aggr.Func || input$RTECDF.Aggr.Dim)
   withProgress({
-  dsList <- subset(DATA_RAW(), DIM == input$Overall.Dim)
-  targets <- uploaded_RT_ECDF_targets()
-
-  Plot.RT.ECDF_Multi_Func(dsList, targets = targets)
+    dsList <- DATA_RAW()
+    if (!input$RTECDF.Aggr.Func){
+      dsList <- subset(dsList, funcId == input$Overall.Funcid)
+    }
+    if (!input$RTECDF.Aggr.Dim){
+      dsList <- subset(dsList, DIM == input$Overall.Dim)
+    }
+    targets <- uploaded_RT_ECDF_targets()
+  
+    Plot.RT.ECDF_Multi_Func(dsList, targets = targets, scale.xlog = input$RTECDF.Aggr.Logx)
   },
   message = "Creating plot")
 })
@@ -45,12 +52,12 @@ RT_ECDF_MULTI_TABLE <- reactive({
   message = "Creating plot")
 })
 
-output$RT_GRID_GENERATED <- renderTable({
+output$RT_GRID_GENERATED <- renderDataTable({
   req(length(DATA_RAW()) > 0)
   df <- RT_ECDF_MULTI_TABLE()
   df$funcId <- as.integer(df$funcId)
   df
-})
+}, options = list(pageLength = 5, lengthMenu = c(5, 10, 25)))
 
 uploaded_RT_ECDF_targets <- reactive({
   if (!is.null(input$RTECDF.Aggr.Table.Upload)) {

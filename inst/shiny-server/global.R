@@ -7,6 +7,8 @@ suppressMessages(library(dplyr))
 suppressMessages(library(plotly))
 suppressMessages(library(shinydashboard))
 suppressMessages(library(xtable))
+suppressMessages(library(colourpicker))
+
 
 # global options
 options(datatable.print.nrows = 20)
@@ -91,6 +93,7 @@ COCO <- 'COCO'
 TWO_COL <- 'TWO_COL'
 AUTOMATIC <- 'AUTOMATIC'
 BIBOJ_COCO <- 'BIBOJ_COCO'
+NEVERGRAD <- 'NEVERGRAD'
 
 # directory where rds-data is stored
 get_repo_location <- function() {
@@ -120,7 +123,7 @@ PAR_csv_name <- parse(text = "paste0('PARSummary-', paste0(input$Overall.Dim, 'D
 PARSample_csv_name <- parse(text = "paste0('PARSample-', paste0(input$Overall.Dim, 'D'),
                              paste0('F', input$Overall.Funcid), '.', input$PAR.Sample.FileFormat)")
 
-max_samples <- 100
+# max_samples <- 100
 
 FIG_NAME_ERT_PER_FUN <- parse(text = "paste0('ERT-', Sys.Date(), '.', input$ERTPlot.Format)")
 FIG_NAME_ERT_PER_FUN_MULTI <- parse(text = "paste0('ERT_Mult-', Sys.Date(), '.', input$ERTPlot.Multi.Format)")

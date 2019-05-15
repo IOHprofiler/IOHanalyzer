@@ -10,7 +10,7 @@ ECDF(ds, ftarget, ...)
 
 \method{ECDF}{DataSet}(ds, ftarget, ...)
 
-\method{ECDF}{DataSetList}(ds, ftarget, funcId = NULL, ...)
+\method{ECDF}{DataSetList}(ds, ftarget, ...)
 }
 \arguments{
 \item{ds}{A DataSet or DataSetList object.}
@@ -18,8 +18,6 @@ ECDF(ds, ftarget, ...)
 \item{ftarget}{A Numerical vector. Function values at which runtime values are consumed}
 
 \item{...}{Arguments passed to other methods}
-
-\item{funcId}{Function Ids to use}
 }
 \value{
 a object of type 'ECDF'

@@ -69,10 +69,10 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
   #Avoid generating too many samples
   if(!is.null(by)){
     nr_samples_generated <- (to-from)/by
-    if (nr_samples_generated > max_samples){
+    if (nr_samples_generated > getOption("IOHanalyzer.max_samples", default = 100)){
       by <- NULL
       if(is.null(length.out))
-        length.out <- max_samples
+        length.out <- getOption("IOHanalyzer.max_samples", default = 100)
     }
   }
 
@@ -133,10 +133,10 @@ seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
   #Avoid generating too many samples
   if(!is.null(by)){
     nr_samples_generated <- (to-from)/by
-    if (nr_samples_generated > max_samples){
+    if (nr_samples_generated > getOption("IOHanalyzer.max_samples", default = 100)){
       by <- NULL
       if(is.null(length.out))
-        length.out <- max_samples
+        length.out <- getOption("IOHanalyzer.max_samples", default = 100)
     }
   }
 
@@ -187,21 +187,38 @@ ECDF.DataSet <- function(ds, ftarget, ...) {
 
   class(fun)[1] <- 'ECDF'
   attr(fun, 'min') <- min(runtime)
+  attr(fun, 'samples') <- length(runtime)
   attr(fun, 'max') <- max(runtime)  # the sample can be retrieved by knots(fun)
   fun
 }
 
+
 #TODO: better description of funcId parameter
 #' @rdname ECDF
-#' @param funcId Function Ids to use
 #' @export
-ECDF.DataSetList <- function(ds, ftarget, funcId = NULL, ...) {
+ECDF.DataSetList <- function(ds, ftarget, ...) {
   if (length(ds) == 0) return(NULL)
+
+  dims <- unique(get_dim(ds))
+  funcs <- unique(get_funcId(ds))
 
   if (is.list(ftarget)) {
     runtime <- sapply(seq_along(ftarget), function(i) {
-      Id <- funcId[i]
-      data <- subset(ds, funcId == Id)
+      if(length(dims) > 1 && length(funcs) >1){
+        names_temp <- names(ftarget[i])[[1]] %>% 
+          strsplit(., ';')
+        FuncId <- names_temp[[1]][[1]]
+        Dim <- names_temp[[1]][[2]]
+      }
+      else if(length(dims) > 1){
+        FuncId <- funcs[[1]]
+        Dim <- names(ftarget[i])[[1]]
+      }
+      else if(length(funcs) > 1){
+        FuncId <- names(ftarget[i])[[1]]
+        Dim <- dims[[1]]
+      }
+      data <- subset(ds, funcId == FuncId, DIM == Dim)
       if (length(data) == 0) return(NA)
       res <- get_RT_sample(data, ftarget[[i]], output = 'long')$RT
       res[is.na(res)] <- Inf
@@ -266,11 +283,12 @@ get_default_ECDF_targets <- function(data, format_func = as.integer){
   dims <- get_dim(data)
 
   targets <- list()
+  names <- list()
   for (i in seq_along(funcIds)) {
     Id <- funcIds[[i]]
     data_sub <- subset(data, funcId == Id)
     for (j in seq_along(dims)) {
-      dim <- dims
+      dim <- dims[[j]]
       data_subsub <- subset(data_sub, DIM == dim)
       fall <- get_funvals(data_subsub)
       #TODO: Account for minimization / maximization
@@ -278,10 +296,19 @@ get_default_ECDF_targets <- function(data, format_func = as.integer){
       fmax <- max(fall)
 
       fseq <- seq_FV(fall, fmin, fmax, length.out = 10) %>% format_func
-
+      
       targets <- append(targets, list(fseq))
+      if (length(funcIds) == 1){
+        names <- append(names, dim)
+      }
+      else if (length(dims) == 1){
+        names <- append(names, Id)
+      }
+      else
+        names <- append(names, paste0(Id, ";", dim))
     }
+
   }
-  targets %>% set_names(funcIds)
+  targets %>% set_names(names)
 }
 

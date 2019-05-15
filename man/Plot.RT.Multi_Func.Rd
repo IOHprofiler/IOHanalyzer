@@ -6,10 +6,10 @@
 \title{Plot ERT-plots for multiple functions or dimensions}
 \usage{
 Plot.RT.Multi_Func(dsList, scale.xlog = F, scale.ylog = F,
-  scale.reverse = F, backend = "plotly")
+  scale.reverse = F, backend = NULL)
 
 \method{Plot.RT.Multi_Func}{DataSetList}(dsList, scale.xlog = F,
-  scale.ylog = F, scale.reverse = F, backend = "plotly")
+  scale.ylog = F, scale.reverse = F, backend = NULL)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function OR dimension).}

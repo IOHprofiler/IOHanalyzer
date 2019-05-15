@@ -32,7 +32,8 @@ upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: fin
                 label = HTML('<p align="left" style="font-size:120%;">
                              Please choose a <i>zip file</i> containing the 
                              benchmark data</p>'),
-                multiple = TRUE, accept = c("Application/zip", ".zip")),
+                multiple = TRUE, accept = c("Application/zip", ".zip",
+                                            ".csv", 'bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz')),
 
       actionButton('upload.remove_data', 
                    label = HTML('<p align="center" style="font-size:120%;"><b> 

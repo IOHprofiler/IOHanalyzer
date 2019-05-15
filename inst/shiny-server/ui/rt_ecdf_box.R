@@ -83,15 +83,15 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
     solidHeader = T, status = "primary",
     sidebarPanel(
       width = 3,
-
-      # checkboxInput("Aggregate_dim","Aggregate dimensions", value = F),
-      # checkboxInput("Aggregate_fun","Aggregate functions", value = T),
-
+      
+      checkboxInput("RTECDF.Aggr.Func", "Aggregate functions", value = T),
+      checkboxInput("RTECDF.Aggr.Dim", "Aggregate dimensions", value = F),
+      checkboxInput("RTECDF.Aggr.Logx", "Scale X-axis logaritmically", value = T),
+      
       HTML_P('Choose whether to upload a file containing the target-values for each (function, dimension)-pair
-             or use the automatically generated targets (see below). Please consider keeping the file format when
+             or use the automatically generated targets (see table below the plot). Please consider keeping the file format when
              modifying the csv given below.'),
-      tableOutput('RT_GRID_GENERATED'),
-      downloadButton('RTECDF.Aggr.Table.Download', label = 'download this example'),
+      downloadButton('RTECDF.Aggr.Table.Download', label = 'download the example targets'),
 
       hr(),
       br(),
@@ -112,6 +112,7 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
       column(
         width = 12, align = "center",
         hr(),
+
         HTML_P('The fraction of (run,target value, ...)
                 pairs \\((i,v, ...)\\) satisfying that the best solution that the algorithm has
                 found in the \\(i\\)-th (run of function \\(f\\) in dimension \\(d\\)) within
@@ -122,7 +123,9 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
                 functions and dimension can be switched on or off using the checkboxes on
                 the left; when aggregation is off the selected function / dimension
                 is chosen according the the value in the bottom-left selection-box.'),
-        plotlyOutput.IOHanalyzer('RT_ECDF_MULT')
+        plotlyOutput.IOHanalyzer('RT_ECDF_MULT'),
+        HTML_P('The selected targets are:'),
+        dataTableOutput('RT_GRID_GENERATED')
       )
     )
   )

@@ -13,6 +13,11 @@ render_RT_ECDF_MULT <- reactive({
     if (!input$RTECDF.Aggr.Dim){
       dsList <- subset(dsList, DIM == input$Overall.Dim)
     }
+    if (length(dsList) <= 1){
+      shinyjs::alert("This is an invalid configuration for this plot. \n
+                     Please ensure that the dataset contains multiple functions / dimensions to aggregate over.")
+      return(NULL)
+    }
     targets <- uploaded_RT_ECDF_targets()
   
     Plot.RT.ECDF_Multi_Func(dsList, targets = targets, scale.xlog = input$RTECDF.Aggr.Logx)
@@ -53,7 +58,7 @@ RT_ECDF_MULTI_TABLE <- reactive({
 })
 
 output$RT_GRID_GENERATED <- renderDataTable({
-  req(length(DATA_RAW()) > 0)
+  req(DATA_RAW())
   df <- RT_ECDF_MULTI_TABLE()
   df$funcId <- as.integer(df$funcId)
   df

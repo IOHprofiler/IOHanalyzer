@@ -16,13 +16,21 @@ output$FCEPlot.Download <- downloadHandler(
   contentType = paste0('image/', input$FCEPlot.Format)
 )
 
+
+update_fv_per_fct_axis <- observe({
+  plotlyProxy("FCE_PER_FUN", session) %>%
+    plotlyProxyInvoke("relayout", list(xaxis = list(title = 'runtime', type = ifelse(input$FCEPlot.semilogx, 'log', 'linear')),
+                                       yaxis = list(title = 'best-so-far-f(x)-value', type = ifelse(input$FCEPlot.semilogy, 'log', 'linear'))))
+})
+
+
 render_FV_PER_FUN <- reactive({
   withProgress({
   rt_min <- input$FCEPlot.Min %>% as.integer
   rt_max <- input$FCEPlot.Max %>% as.integer
   Plot.FV.Single_Func(DATA(), RTstart = rt_min, RTstop = rt_max, show.CI = input$FCEPlot.show.CI,
                show.mean = input$FCEPlot.show.mean, show.median = input$FCEPlot.show.median,
-               scale.xlog = input$FCEPlot.semilogx, scale.ylog = input$FCEPlot.semilogy)
+               scale.xlog = isolate(input$FCEPlot.semilogx), scale.ylog = isolate(input$FCEPlot.semilogy))
   },
   message = "Creating plot")
 })
@@ -39,7 +47,10 @@ render_FCEPlot_multi_plot <- eventReactive(input$FCEPlot.Multi.PlotButton, {
                  algId %in% input$FCEPlot.Multi.Algs,
                  DIM == input$Overall.Dim)
   req(data)
-
+  if (length(unique(get_funcId(data))) == 1){
+    shinyjs::alert("This plot is only available when the dataset contains multiple functions for the selected dimension.")
+    return(NULL)
+  }
   Plot.FV.Multi_Func(data,
                    scale.xlog = input$FCEPlot.Multi.Logx,
                    scale.ylog = input$FCEPlot.Multi.Logy)
@@ -90,6 +101,14 @@ render_FCEPlot_aggr_plot <- reactive({
   else{
     data <- subset(data, funcId==input$Overall.Funcid)
     fvs <- MEAN_FVALS_DIM()
+  }
+  if (length(unique(get_funcId(data))) == 1){
+    shinyjs::alert("This plot is only available when the dataset contains multiple functions for the selected dimension.")
+    return(NULL)
+  }
+  if (length(unique(get_algId(data))) == 1){
+    shinyjs::alert("This plot is only available when the dataset contains multiple algorithms for the selected dimension.")
+    return(NULL)
   }
   aggr_on = ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
   aggr_attr <- if(aggr_on == 'funcId') get_funcId(data) else get_dim(data)

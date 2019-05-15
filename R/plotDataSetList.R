@@ -453,8 +453,8 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 #' @rdname Plot.FV.Single_Func
 #' @export
 Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
-                                     show.CI = T,
-                                     show.mean = F, show.median = F,
+                                     show.CI = F,
+                                     show.mean = T, show.median = F,
                                      backend = NULL,
                                      scale.xlog = F, scale.ylog = F,
                                      scale.reverse = F) {

@@ -13,7 +13,8 @@
 #'
 #' @param info A List. Contains a set of in a *.info file.
 #' @param verbose Logical.
-#' @param maximization Logical. Whether the underlying optimization algorithm performs a maximization?
+#' @param maximization Logical. Whether the underlying optimization algorithm performs a maximization? 
+#' Set to NULL to determine automatically based on format
 #' @param format A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL"
 #' @param subsampling Logical. Whether *.cdat files are subsampled?
 #' @return A S3 object 'DataSet'
@@ -22,7 +23,7 @@
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
 #' info <- read_IndexFile(file.path(path,"IOHprofiler_f1_i1.info"))
 #' DataSet(info[[1]])
-DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler,
+DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler,
                     subsampling = FALSE) {
   if (!is.null(info)) {
     datFile <- info$datafile
@@ -70,13 +71,14 @@ DataSet <- function(info, verbose = F, maximization = TRUE, format = IOHprofiler
     if (format != TWO_COL)
       stopifnot(length(dat) == length(cdat))
 
-    if (format == IOHprofiler || format == TWO_COL)
-      maximization <- TRUE
-    else if (format == COCO)
-      maximization <- FALSE
-
+    if (is.null(maximization)){
+      if (format == IOHprofiler || format == TWO_COL)
+        maximization <- TRUE
+      else if (format == COCO)
+        maximization <- FALSE
+    }
     # RT <- align_by_target(dat, maximization = maximization, format = format) # runtime
-    RT <- align_runtime(dat, format = format)
+    RT <- align_runtime(dat, format = format, maximization = maximization)
 
     #TODO: check if this works correctly without CDAT-file
     if (format == TWO_COL)

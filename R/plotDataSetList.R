@@ -208,13 +208,14 @@ Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay') UseMethod("P
 #' @param dsList A DataSetList (should consist of only one function and dimension).
 #' @param runtimes The target runtimes
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param scale.reverse Whether or not to reverse the x-axis (when using minimization)
 #'
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the fucntion values of the DataSetList at the target runtimes
 #' @export
 #' @examples 
 #' Plot.FV.ECDF_Per_Target(subset(dsl, funcId == 1), 10)
-Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F) UseMethod("Plot.FV.ECDF_Per_Target", dsList)
+Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F, scale.reverse = F) UseMethod("Plot.FV.ECDF_Per_Target", dsList)
 #' Plot the aggregated empirical cumulative distriburtion as a function of the function values of
 #' a DataSetList.
 #'
@@ -224,7 +225,8 @@ Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F) UseMethod(
 #' @param rt_step The spacing between starting and final runtimes
 #' @param show.per_target Whether or not to show the individual ECDF-curves for each runtime
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
-#'
+#' @param scale.reverse Whether or not to reverse the x-axis (when using minimization)
+#' 
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the function values of the DataSetList
 #' @export
@@ -232,7 +234,7 @@ Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F) UseMethod(
 #' Plot.FV.ECDF_Single_Func(subset(dsl, funcId == 1))
 Plot.FV.ECDF_Single_Func <- function(dsList, rt_min = NULL, rt_max = NULL,
                               rt_step = NULL, scale.xlog = F,
-                              show.per_target = F) UseMethod("Plot.FV.ECDF_Single_Func", dsList)
+                              show.per_target = F, scale.reverse = F) UseMethod("Plot.FV.ECDF_Single_Func", dsList)
 #' Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
 #'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
@@ -453,8 +455,8 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 #' @rdname Plot.FV.Single_Func
 #' @export
 Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
-                                     show.CI = T,
-                                     show.mean = F, show.median = F,
+                                     show.CI = F,
+                                     show.mean = T, show.median = F,
                                      backend = NULL,
                                      scale.xlog = F, scale.ylog = F,
                                      scale.reverse = F) {
@@ -928,7 +930,7 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay'){
 
 #' @rdname Plot.FV.ECDF_Per_Target
 #' @export
-Plot.FV.ECDF_Per_Target.DataSetList <- function(dsList, runtimes, scale.xlog = F){
+Plot.FV.ECDF_Per_Target.DataSetList <- function(dsList, runtimes, scale.xlog = F, scale.reverse = F){
   #TODO: Fvals in legend need to be formatted properly
   runtimes <- runtimes[!is.na(runtimes)]
   req(length(runtimes) != 0)
@@ -973,7 +975,7 @@ Plot.FV.ECDF_Per_Target.DataSetList <- function(dsList, runtimes, scale.xlog = F
   }
 
   p %<>%
-    layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')))
+    layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear'), autorange = ifelse(scale.reverse, 'reversed', T)))
   p
 }
 
@@ -981,7 +983,7 @@ Plot.FV.ECDF_Per_Target.DataSetList <- function(dsList, runtimes, scale.xlog = F
 #' @export
 Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
                                           rt_step = NULL, scale.xlog = F,
-                                          show.per_target = F){
+                                          show.per_target = F, scale.reverse = F){
 
   rt <- get_runtimes(dsList)
   if (is.null(rt_min)) rt_min <- min(rt)
@@ -1051,7 +1053,7 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
   }
 
   p %<>%
-    layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')))
+    layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear'), autorange = ifelse(scale.reverse, 'reversed', T)))
   p
 }
 

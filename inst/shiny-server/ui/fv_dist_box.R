@@ -7,7 +7,8 @@ fv_histgram_box <- function(width = 12, collapsible = T, collapsed = T) {
         width = 2,
         textInput('FCEPDF.Hist.Runtime', label = HTML('Select the budget value'),
                   value = ''),
-
+        selectInput('FCEPDF.Hist.Algs', label = 'Select which algorithms to plot:',
+                    multiple = T, selected = NULL, choices = NULL),
         HTML('Choose whether the histograms are <b>overlaid</b> in one plot
                                 or <b>separated</b> in several subplots:'),
         selectInput('FCEPDF.Hist.Mode', '',
@@ -51,6 +52,8 @@ fv_pdf_box <- function(width = 12, collapsible = T, collapsed = T) {
         HTML('Select the budget for which the distribution of best-so-far function values is shown'),
 
         textInput('FCEPDF.Bar.Runtime', label = '', value = ''),
+        selectInput('FCEPDF.Bar.Algs', label = 'Select which algorithms to plot:',
+                    multiple = T, selected = NULL, choices = NULL),
         checkboxInput('FCEPDF.Bar.Samples', label = 'show runtime samples', value = T),
         checkboxInput('FCEPDF.Bar.Logy', label = 'scale y axis log10', value = T),
 

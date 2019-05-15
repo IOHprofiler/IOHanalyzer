@@ -3,7 +3,8 @@ output$FCE_ECDF_PER_TARGET <- renderPlotly({
   withProgress({
   req(input$FCEECDF.Single.Target)
   runtimes <- as.integer(input$FCEECDF.Single.Target)
-  Plot.FV.ECDF_Per_Target(DATA(),runtimes, scale.xlog = input$FCEECDF.Single.Logx)
+  Plot.FV.ECDF_Per_Target(DATA(),runtimes, scale.xlog = input$FCEECDF.Single.Logx,
+                          scale.reverse = !attr(DATA()[[1]],'maximization'))
   },
   message = "Creating plot")
 })
@@ -32,7 +33,8 @@ render_FV_ECDF_AGGR <- reactive({
   Plot.FV.ECDF_Single_Func(DATA(),rt_min = rt_min,
                     rt_max = rt_max, rt_step = rt_step,
                     scale.xlog = input$FCEECDF.Mult.Logx,
-                    show.per_target = input$FCEECDF.Mult.Targets)
+                    show.per_target = input$FCEECDF.Mult.Targets,
+                    scale.reverse = !attr(DATA()[[1]],'maximization'))
   },
   message = "Creating plot")
 })

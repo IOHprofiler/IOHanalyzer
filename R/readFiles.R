@@ -369,19 +369,15 @@ n_data_column <- 5
 #' @param format Whether the data is form IOHprofiler or COCO.
 #' @noRd
 #' @return Data aligned by runtime
-align_runtime <- function(data, format = IOHprofiler) {
+align_runtime <- function(data, format = IOHprofiler, maximization = TRUE) {
   if (format == IOHprofiler) {
-    maximization <- TRUE
     idxTarget <- 3
   } else if (format == COCO) {
-    maximization <- FALSE
     idxTarget <- 3
   } else if (format == BIBOJ_COCO) {
-    maximization <- FALSE
     n_data_column <- 3
     idxTarget <- 2
   } else if (format == TWO_COL) {
-    maximization <- TRUE
     n_data_column <- 2
     idxTarget <- 2
   }

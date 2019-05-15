@@ -131,9 +131,13 @@ observeEvent(selected_folders(), {
                      format_detected,
                      'is detected in the uploaded data set... skip the uploaded data'))
 
-  else
-    format <<- format_detected   # set the global data format
-
+  else {
+    if (format_detected == IOHprofiler && format_selected == TWO_COL){
+      format <<- TWO_COL
+    }
+    else
+      format <<- format_detected   # set the global data format
+  }
   if (format == NEVERGRAD){
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_ECDF"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_convergence"))
@@ -164,7 +168,7 @@ observeEvent(selected_folders(), {
     else {
       folderList$data <- c(folderList$data, folder)
 
-      if (format_selected == AUTOMATIC) {
+      if (format_selected == AUTOMATIC || (format_detected == IOHprofiler && format_selected == TWO_COL)) {
         set_format_func(format)
       } else if (format_detected != format) {
         print_html(paste('<p style="color:red;">format', format_selected,
@@ -252,6 +256,10 @@ observe({
   updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = algIds_, selected = selected_alg)
   updateSelectInput(session, 'ERTPlot.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = algIds_, selected = selected_alg)
+  updateSelectInput(session, 'FCEPDF.Bar.Algs', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FCEPDF.Hist.Algs', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RTPMF.Bar.Algs', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RTPMF.Hist.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'PAR.Summary.Param', choices = parIds, selected = 'all')
   updateSelectInput(session, 'PAR.Sample.Param', choices = parIds, selected = 'all')
 })

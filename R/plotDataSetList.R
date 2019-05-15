@@ -1069,8 +1069,9 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
 
   n_algorithm <- length(dsList)
   colors <- color_palettes(n_algorithm)
-
+  
   funevals.max <- sapply(dsList, function(ds) max(attr(ds, 'finalFV'))) %>% max
+  funevals.min <- sapply(dsList, function(ds) min(attr(ds, 'finalFV'))) %>% min
   p <- plot_ly_default()
 
   for (k in seq_along(dsList)) {
@@ -1087,6 +1088,7 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
         else  {
           f <- ecdf(.)
           attr(f, 'min') <- min(.)
+          attr(f, 'max') <- max(.)
           f
         }
       }
@@ -1095,8 +1097,14 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
     auc <- sapply(funs,
                   function(fun) {
                     if (is.null(fun)) 0
-                    else integrate(fun, lower = attr(fun, 'min') - 1, upper = funevals.max,
+                    else{ 
+                      if (attr(df, 'maximization'))
+                          integrate(fun, lower = attr(fun, 'min') - 1, upper = funevals.max,
                                    subdivisions = 1e3) %>% {'$'(., 'value') / funevals.max}
+                      else 
+                        integrate(fun, lower =  funevals.min, upper = attr(fun, 'max') + 1,
+                                  subdivisions = 1e3) %>% {'$'(., 'value') / funevals.min}
+                    }
                   })
 
     p %<>%

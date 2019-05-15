@@ -6,7 +6,8 @@ rt_histogram_box <- function(width = 12, collapsed = T, collapsible = T) {
         width = 2,
         textInput('RTPMF.Hist.Target', label = HTML('Select the target value'),
                   value = ''),
-
+        selectInput('RTPMF.Hist.Algs', label = 'Select which algorithms to plot:',
+                    multiple = T, selected = NULL, choices = NULL),
         HTML('Choose whether the histograms are <b>overlaid</b> in one plot
              or <b>separated</b> in several subplots:'),
         selectInput('RTPMF.Hist.Mode', '',
@@ -47,6 +48,8 @@ rt_pmf_box <- function(width = 12, collapsed = T, collapsible = T) {
           HTML('Select the target value for which the runtime distribution is shown'),
 
           textInput('RTPMF.Bar.Target', label = '', value = ''),
+          selectInput('RTPMF.Bar.Algs', label = 'Select which algorithms to plot:',
+                      multiple = T, selected = NULL, choices = NULL),
           checkboxInput('RTPMF.Bar.Sample', label = 'show runtime for each run', value = T),
           checkboxInput('RTPMF.Bar.Logy', label = 'scale y axis log10', value = F),
 

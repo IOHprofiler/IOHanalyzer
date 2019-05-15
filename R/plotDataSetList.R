@@ -380,9 +380,6 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 
   dt <- get_RT_summary(dsList, ftarget = Fseq)
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
-# 
-#   dr <- get_RT_sample(dsList, Fseq)
-#   run.names <- grep('run', names(dr),  value = T)
 
   if (backend == 'plotly') {
     p <- plot_ly_default(x.title = "best-so-far f(x)-value",

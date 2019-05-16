@@ -39,7 +39,8 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         font = list(size = 16, family = 'Old Standard TT, serif')),
            autosize = T, hovermode = 'compare',
            legend = legend_right,
-           paper_bgcolor = 'rgb(255,255,255)', plot_bgcolor = getOption('IOHanalyzer.bgcolor'),
+           paper_bgcolor = 'rgb(255,255,255)',
+           plot_bgcolor = getOption('IOHanalyzer.bgcolor'),
            font = list(size = 16, family = 'Old Standard TT, serif'),
            autosize = T,
            showlegend = T, 
@@ -50,7 +51,7 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         showgrid = TRUE,
                         showline = FALSE,
                         showticklabels = TRUE,
-                        tickcolor = 'rgb(127,127,127)',
+                        tickcolor = getOption('IOHanalyzer.tickcolor'),
                         ticks = 'outside',
                         ticklen = 9,
                         tickfont = f3,
@@ -63,7 +64,7 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         showgrid = TRUE,
                         showline = FALSE,
                         showticklabels = TRUE,
-                        tickcolor = 'rgb(127,127,127)',
+                        tickcolor = getOption('IOHanalyzer.tickcolor'),
                         ticks = 'outside',
                         ticklen = 9,
                         tickfont = f3,
@@ -150,15 +151,14 @@ set_color_scheme <- function(schemename, path = NULL){
   if (schemename == "Default") IOHanalyzer_env$used_colorscheme <- Set3
   else if (schemename == "Variant 1") IOHanalyzer_env$used_colorscheme <- Set2
   else if (schemename == "Variant 2") IOHanalyzer_env$used_colorscheme <- Set1
-  else if (schemename == "Custom" && !is.null(path)){
+  else if (schemename == "Custom" && !is.null(path)) {
     colors <- fread(path, header = F)[[1]]
     N <- length(colors)
-    custom_set <- function(n){
-      return(colors[mod(seq(n),N)+1])
+    custom_set <- function(n) {
+      return(colors[mod(seq(n), N) + 1])
     }
     IOHanalyzer_env$used_colorscheme <- custom_set
   } 
-  
 }
 
 #' Get colors according to the current colorScheme of the IOHanalyzer
@@ -175,7 +175,8 @@ get_color_scheme <- function(n){
 
 # TODO: incoporate more colors
 color_palettes <- function(ncolor) {
-  if (ncolor < 15) return(IOHanalyzer_env$used_colorscheme(ncolor))
+  # TODO: FIX IT!
+  if (ncolor < 5) return(IOHanalyzer_env$used_colorscheme(ncolor))
 
   brewer <- function(n) {
     colors <- RColorBrewer::brewer.pal(n, 'Spectral')
@@ -237,12 +238,13 @@ save_plotly <- function(p, file, format = 'svg', ...) {
     withr::with_dir(pwd, orca(p, file_svg, format = 'svg', width = width, height = height, ...))
     invisible(
       system(
-        paste('inkscape', file.path(pwd,file_svg), paste0('--export-', format, '=', file.path(pwd,file))),
+        paste(
+          'inkscape', file.path(pwd,file_svg),
+          paste0('--export-', format, ' ', file.path(pwd, file))
+        ),
         intern = T
       )
     )
-    # file.remove(file.path(pwd,file_svg))
   }
-  
   file.rename(file.path(pwd, file), file.path(des, file))
 }

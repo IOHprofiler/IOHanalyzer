@@ -15,10 +15,10 @@ fv_histgram_box <- function(width = 12, collapsible = T, collapsed = T) {
                     choices = c("overlay", "subplot"),
                     selected = 'subplot'),
 
-        selectInput('FCEPDF.Hist.Format', label = 'select the figure format',
+        selectInput('FCEPDF.Hist.Format', label = 'Select the figure format',
                     choices = supported_fig_format, selected = 'pdf'),
 
-        downloadButton('FCEPDF.Hist.Download', label = 'download the figure')
+        downloadButton('FCEPDF.Hist.Download', label = 'Download the figure')
 
       ),
 
@@ -54,13 +54,13 @@ fv_pdf_box <- function(width = 12, collapsible = T, collapsed = T) {
         textInput('FCEPDF.Bar.Runtime', label = '', value = ''),
         selectInput('FCEPDF.Bar.Algs', label = 'Select which algorithms to plot:',
                     multiple = T, selected = NULL, choices = NULL),
-        checkboxInput('FCEPDF.Bar.Samples', label = 'show runtime samples', value = T),
-        checkboxInput('FCEPDF.Bar.Logy', label = 'scale y axis log10', value = T),
+        checkboxInput('FCEPDF.Bar.Samples', label = 'Show runtime samples', value = T),
+        checkboxInput('FCEPDF.Bar.Logy', label = 'Scale y axis log10', value = T),
 
-        selectInput('FCEPDF.Bar.Format', label = 'select the figure format',
+        selectInput('FCEPDF.Bar.Format', label = 'Select the figure format',
                     choices = supported_fig_format, selected = 'pdf'),
 
-        downloadButton('FCEPDF.Bar.Download', label = 'download the figure')
+        downloadButton('FCEPDF.Bar.Download', label = 'Download the figure')
       ),
 
       mainPanel(

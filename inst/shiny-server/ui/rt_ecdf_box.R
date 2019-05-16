@@ -11,7 +11,7 @@ rt_ecdf_single_target_box <- function(width = 12, collapsible = T, collapsed = T
           textInput('RTECDF.Single.Target', label = HTML('<p>\\(f_{target}\\)</p>'),
                     value = ''),
 
-          checkboxInput('RTECDF.Single.Logx', label = 'scale x axis log10', value = F)
+          checkboxInput('RTECDF.Single.Logx', label = 'Scale x axis log10', value = F)
         ),
 
         mainPanel(
@@ -49,13 +49,13 @@ rt_ecdf_agg_targets_box <- function(width = 12, collapsible = T, collapsed = T) 
       textInput('RTECDF.Multi.Max', label = F_MAX_LABEL, value = ''),
       textInput('RTECDF.Multi.Step', label = F_STEP_LABEL, value = ''),
       checkboxInput('RTECDF.Multi.Targets',
-                    label = 'show ECDFs for each target',
+                    label = 'Show ECDFs for each target',
                     value = F),
       checkboxInput('RTECDF.Multi.Logx',
-                    label = 'scale x axis log10',
+                    label = 'Scale x axis log10',
                     value = F),
 
-      selectInput('RTECDF.Multi.Format', label = 'select the figure format',
+      selectInput('RTECDF.Multi.Format', label = 'Select the figure format',
                   choices = supported_fig_format, selected = 'pdf'),
 
       downloadButton('RTECDF.Multi.Download', label = 'download the figure')
@@ -96,7 +96,7 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
       HTML_P('Choose whether to upload a file containing the target-values for each (function, dimension)-pair
              or use the automatically generated targets (see table below the plot). Please consider keeping the file format when
              modifying the csv given below.'),
-      downloadButton('RTECDF.Aggr.Table.Download', label = 'download the example targets'),
+      downloadButton('RTECDF.Aggr.Table.Download', label = 'Download the example targets'),
 
       hr(),
       br(),
@@ -105,10 +105,10 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
                   "text/csv",
                   "text/comma-separated-values,text/plain",
                   ".csv")),
-      selectInput('RTECDF.Aggr.Format', label = 'select the figure format',
+      selectInput('RTECDF.Aggr.Format', label = 'Select the figure format',
                   choices = supported_fig_format, selected = 'pdf'),
 
-      downloadButton('RTECDF.Aggr.Download', label = 'download the figure')
+      downloadButton('RTECDF.Aggr.Download', label = 'Download the figure')
 
       ),
 
@@ -151,9 +151,9 @@ rt_ecdf_auc_box <- function(width = 12, collapsible = T, collapsed = T) {
       textInput('RTECDF.AUC.Max', label = F_MAX_LABEL, value = ''),
       textInput('RTECDF.AUC.Step', label = F_STEP_LABEL, value = ''),
 
-      selectInput('RTECDF.AUC.Format', label = 'select the figure format',
+      selectInput('RTECDF.AUC.Format', label = 'Select the figure format',
                   choices = supported_fig_format, selected = 'pdf'),
-      downloadButton('RTECDF.AUC.Download', label = 'download the figure')
+      downloadButton('RTECDF.AUC.Download', label = 'Download the figure')
       ),
 
     mainPanel(

@@ -16,16 +16,16 @@ par_expected_value_box <- function(width = 12, collapsible = T, collapsed = T) {
                   selected = 'mean'),
 
       checkboxInput('PAR.Plot.Logx',
-                    label = 'scale x axis log10',
+                    label = 'Scale x axis log10',
                     value = T),
 
       checkboxInput('PAR.Plot.Logy',
-                    label = 'scale y axis log10',
+                    label = 'Scale y axis log10',
                     value = T),
 
-      selectInput('PAR.Plot.Format', label = 'select the figure format',
+      selectInput('PAR.Plot.Format', label = 'Select the figure format',
                   choices = supported_fig_format, selected = 'pdf'),
-      downloadButton('PAR.Plot.Download', label = 'download the figure')
+      downloadButton('PAR.Plot.Download', label = 'Download the figure')
     ),
 
     mainPanel(

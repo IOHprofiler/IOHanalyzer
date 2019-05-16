@@ -14,10 +14,10 @@ rt_histogram_box <- function(width = 12, collapsed = T, collapsible = T) {
                     choices = c("overlay", "subplot"),
                     selected = 'subplot'),
 
-        selectInput('RTPMF.Hist.Format', label = 'select the figure format',
+        selectInput('RTPMF.Hist.Format', label = 'Select the figure format',
                     choices = supported_fig_format, selected = 'pdf'),
 
-        downloadButton('RTPMF.Hist.Download', label = 'download the figure')
+        downloadButton('RTPMF.Hist.Download', label = 'Download the figure')
       ),
 
       mainPanel(
@@ -50,13 +50,13 @@ rt_pmf_box <- function(width = 12, collapsed = T, collapsible = T) {
           textInput('RTPMF.Bar.Target', label = '', value = ''),
           selectInput('RTPMF.Bar.Algs', label = 'Select which algorithms to plot:',
                       multiple = T, selected = NULL, choices = NULL),
-          checkboxInput('RTPMF.Bar.Sample', label = 'show runtime for each run', value = T),
-          checkboxInput('RTPMF.Bar.Logy', label = 'scale y axis log10', value = F),
+          checkboxInput('RTPMF.Bar.Sample', label = 'Show runtime for each run', value = T),
+          checkboxInput('RTPMF.Bar.Logy', label = 'Scale y axis log10', value = F),
 
-          selectInput('RTPMF.Bar.Format', label = 'select the figure format',
+          selectInput('RTPMF.Bar.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = 'pdf'),
 
-          downloadButton('RTPMF.Bar.Download', label = 'download the figure')
+          downloadButton('RTPMF.Bar.Download', label = 'Download the figure')
 
           # HTML('Kernel density estimation uses the following <b>kernel function</b>:'),
           # selectInput('RT_PMF_KER', '',

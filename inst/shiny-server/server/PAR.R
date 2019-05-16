@@ -25,8 +25,7 @@ output$PAR.Plot.Download <- downloadHandler(
   },
   content = function(file) {
     save_plotly(render_PAR_PER_FUN(), file,
-                format = input$PAR.Plot.Format,
-                width = fig_width2, height = fig_height)
+                format = input$PAR.Plot.Format)
   },
   contentType = paste0('image/', input$PAR.Plot.Format)
 )

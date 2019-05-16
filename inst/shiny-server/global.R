@@ -76,11 +76,11 @@ symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
 
 # ploting settings for UI ---------------------
 # TODO: those should be deprecated. Verify and delete those
-aspect_ratio <-  4 / 3
-fig_height <- 1100
-fig_height2 <- 1100
-fig_width <- fig_height * aspect_ratio
-fig_width2 <- fig_height * (16 / 10)
+# aspect_ratio <-  4 / 3
+# fig_height <- 1100
+# fig_height2 <- 1100
+# fig_width <- fig_height * aspect_ratio
+# fig_width2 <- fig_height * (16 / 10)
 
 plotly_height <- "auto"
 plotly_width <- "auto"

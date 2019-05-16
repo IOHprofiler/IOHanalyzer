@@ -228,12 +228,14 @@ save_plotly <- function(p, file, format = 'svg', ...) {
   file <- basename(file)
   
   pwd <- tempdir()
+  width <- getOption("IOHanalyzer.figure_width", default = NULL)
+  height <- getOption("IOHanalyzer.figure_height", default = NULL)
   
   if (format %in% c('svg', 'png'))
-    withr::with_dir(pwd, orca(p, file, format = format, ...))
+    withr::with_dir(pwd, orca(p, file, format = format, width = width, height = height, ...))
   else {
     file_svg <- paste0(file, '.svg')
-    withr::with_dir(pwd, orca(p, file_svg, format = 'svg', ...))
+    withr::with_dir(pwd, orca(p, file_svg, format = 'svg', width = width, height = height, ...))
     invisible(
       system(
         paste(

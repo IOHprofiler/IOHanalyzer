@@ -10,8 +10,7 @@ output$FCEPlot.Download <- downloadHandler(
   },
   content = function(file) {
     save_plotly(render_FV_PER_FUN(), file,
-                format = input$FCEPlot.Format,
-                width = fig_width2, height = fig_height)
+                format = input$FCEPlot.Format)
   },
   contentType = paste0('image/', input$FCEPlot.Format)
 )
@@ -64,8 +63,7 @@ output$FCEPlot.Multi.Download <- downloadHandler(
   },
   content = function(file) {
     save_plotly(render_FCEPlot_multi_plot(), file,
-                format = input$FCEPlot.Multi.Format,
-                width = fig_width2, height = fig_height)
+                format = input$FCEPlot.Multi.Format)
   },
   contentType = paste0('image/', input$FCEPlot.Multi.Format)
 )
@@ -76,10 +74,10 @@ output$FCEPlot.Aggr.Plot <- renderPlotly(
 
 get_max_runtimes <- function(data, aggr_on){
   runtimes <- c()
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(data) else get_dim(data)
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_dim(data)
 
   for (j in seq_along(aggr_attr)) {
-    dsList_filetered <- if(aggr_on == 'funcId') subset(data,funcId==aggr_attr[[j]])
+    dsList_filetered <- if (aggr_on == 'funcId') subset(data,funcId==aggr_attr[[j]])
     else subset(data, DIM==aggr_attr[[j]])
 
     RTall <- get_runtimes(dsList_filetered)
@@ -93,8 +91,8 @@ render_FCEPlot_aggr_plot <- reactive({
   withProgress({
   #TODO: figure out how to avoid plotting again when default targets are written to input
   data <- DATA_RAW()
-  if(length(data) == 0) return(NULL)
-  if(input$FCEPlot.Aggr.Aggregator == 'Functions'){
+  if (length(data) == 0) return(NULL)
+  if (input$FCEPlot.Aggr.Aggregator == 'Functions'){
     data <- subset(data, DIM==input$Overall.Dim)
     fvs <- MEAN_FVALS_FUNC()
   }
@@ -111,27 +109,27 @@ render_FCEPlot_aggr_plot <- reactive({
     return(NULL)
   }
   aggr_on = ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(data) else get_dim(data)
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_dim(data)
   update_targets <- F
   update_data <- T
-  if(input$FCEPlot.Aggr.Targets == ""){
+  if (input$FCEPlot.Aggr.Targets == ""){
     update_targets <- T
   }
   else{
     runtimes <- as.numeric(unlist(strsplit(input$FCEPlot.Aggr.Targets,",")))
     runtimes2 <- get_max_runtimes(data, aggr_on)
-    if(runtimes == runtimes2)
+    if (all(runtimes == runtimes2))
       update_data <- F
-    if(length(runtimes) != length(aggr_attr)){
+    if (length(runtimes) != length(aggr_attr)){
       update_targets <- T
     }
   }
-  if(update_targets){
+  if (update_targets){
     runtimes <- get_max_runtimes(data, aggr_on)
     updateTextInput(session, 'FCEPlot.Aggr.Targets', value = runtimes %>% toString)
     return(NULL)
   }
-  if(update_data)
+  if (update_data)
     fvs <- mean_FVs(data, aggr_on, runtimes)
   Plot.FV.Aggregated(data, plot_mode = input$FCEPlot.Aggr.Mode, runtimes = runtimes,
                 scale.ylog = input$FCEPlot.Aggr.Logy,
@@ -147,8 +145,7 @@ output$FCEPlot.Aggr.Download <- downloadHandler(
   },
   content = function(file) {
     save_plotly(render_FCEPlot_aggr_plot(), file,
-                format = input$ERTPlot.Aggr.Format,
-                width = fig_width2, height = fig_height)
+                format = input$ERTPlot.Aggr.Format)
   },
   contentType = paste0('image/', input$FCEPlot.Aggr.Format)
 )

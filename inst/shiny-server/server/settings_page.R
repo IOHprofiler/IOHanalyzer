@@ -24,7 +24,11 @@ plot_color_example <- function(ds){
   curr_settings <- c(input$Settings.Color.Bg,
                      input$Settings.Color.Grid,
                      input$Settings.Color.Tick,
-                     input$Settings.Legend.Location)
+                     input$Settings.Legend.Location,
+                     input$Settings.Font.Title,
+                     input$Settings.Font.Legend,
+                     input$Settings.Font.Label,
+                     input$Settings.Font.Tick)
   if (any(is.null(curr_settings))) return (NULL)
   if (length(ds) > 0){
     algnames <- get_algId(ds)
@@ -35,7 +39,7 @@ plot_color_example <- function(ds){
   if(schemename == "Custom" && !is.null(input$Settings.Color.Upload)){
     schemename <- paste0(schemename, ": ", input$Settings.Color.Upload$datapath)
   }
-  p <- IOH_plot_ly_default(schemename)
+  p <- IOH_plot_ly_default(schemename, "X-axis label", "Y-axis label")
 
   for (i in seq_along(algnames)){
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
@@ -104,3 +108,20 @@ observe({
   
   options("IOHanalyzer.legend_location" = legend_loc_str)
 })
+
+observe({
+  options("IOHanalyzer.tick_fontsize" = input$Settings.Font.Tick)
+})
+
+observe({
+  options("IOHanalyzer.legend_fontsize" = input$Settings.Font.Legend)
+})
+
+observe({
+  options("IOHanalyzer.title_fontsize" = input$Settings.Font.Title)
+})
+
+observe({
+  options("IOHanalyzer.label_fontsize" = input$Settings.Font.Label)
+})
+

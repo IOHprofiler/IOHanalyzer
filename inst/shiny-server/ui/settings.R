@@ -51,6 +51,15 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
           HTML_P('Set the figure download properties'),
           numericInput("Settings.Download.Width", label = "Image width (px)", value = NULL, min = 100, max = 4096),
           numericInput("Settings.Download.Height", label = "Image height (px)", value = NULL, min = 100, max = 4096)
+        ),
+        column(
+          width=3,
+          align = "Left",
+          HTML_P('Set the figure fontsizes'),
+          numericInput("Settings.Font.Title", label = "Title", value = 16, min = 8, max = 100),
+          numericInput("Settings.Font.Label", label = "Axis labels", value = 16, min = 8, max = 100),
+          numericInput("Settings.Font.Legend", label = "Legend", value = 13, min = 8, max = 100),
+          numericInput("Settings.Font.Tick", label = "Ticks", value = 16, min = 8, max = 100)
         )
       )
          

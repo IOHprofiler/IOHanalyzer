@@ -5,6 +5,8 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
       sidebarLayout(
         sidebarPanel(
             width = 2,
+            selectInput('ERTPlot.Aggr.Algs', label = 'Select which algorithms to plot:',
+                        multiple = T, selected = NULL, choices = NULL),
             selectInput('ERTPlot.Aggr.Mode', label = 'Select the plotting mode',
                         choices = c('radar', 'line'), selected = 'radar'),
             

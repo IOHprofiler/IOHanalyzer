@@ -9,7 +9,8 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
 
       textInput('FCEPlot.Min', label = RT_MIN_LABEL, value = ''),
       textInput('FCEPlot.Max', label = RT_MAX_LABEL, value = ''),
-
+      selectInput('FCEPlot.Algs', label = 'Select which algorithms to plot:',
+                  multiple = T, selected = NULL, choices = NULL),
       checkboxInput('FCEPlot.show.mean',
                     label = 'show/hide mean',
                     value = T),
@@ -56,7 +57,7 @@ fv_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed 
       sidebarLayout(
         sidebarPanel(
           width = 2,
-          selectInput('FCEPlot.Multi.Algs', label = 'add more algorithms:',
+          selectInput('FCEPlot.Multi.Algs', label = 'Select which algorithms to plot:',
                       multiple = T, selected = NULL, choices = NULL),
 
           checkboxInput('FCEPlot.Multi.Logx',
@@ -93,6 +94,8 @@ fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
       sidebarLayout(
         sidebarPanel(
           width = 3,
+          selectInput('FCEPlot.Aggr.Algs', label = 'Select which algorithms to plot:',
+                      multiple = T, selected = NULL, choices = NULL),
           selectInput('FCEPlot.Aggr.Mode', label = 'Select the plotting mode',
                       choices = c('radar','line'), selected = 'radar'),
 

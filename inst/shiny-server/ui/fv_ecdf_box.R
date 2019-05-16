@@ -7,6 +7,8 @@ fv_ecdf_single_budget_box <- function(width = 12, collapsible = T, collapsed = T
     sidebarLayout(
       sidebarPanel(
         width = 3,
+        selectInput('FCEECDF.Single.Algs', label = 'Select which algorithms to plot:',
+                    multiple = T, selected = NULL, choices = NULL),
         HTML('Select the budgets for which EDCF curves are displayed '),
         textInput('FCEECDF.Single.Target', label = HTML('<p>\\(B_1\\)</p>'), value = ''),
         checkboxInput('FCEECDF.Single.Logx', label = 'scale x axis log10', value = F)
@@ -36,6 +38,8 @@ fv_ecdf_agg_budgets_box <- function(width = 12, collapsible = T, collapsed = T) 
     solidHeader = T, status = "primary",
     sidebarPanel(
       width = 3,
+      selectInput('FCEECDF.Mult.Algs', label = 'Select which algorithms to plot:',
+                  multiple = T, selected = NULL, choices = NULL),
       HTML('<p align="justify">Set the range and the granularity of the budgets
            taken into account in the ECDF curve. The plot will show the ECDF curves
            for evenly spaced budgets.</p>'),
@@ -82,6 +86,8 @@ fv_ecdf_auc_box <- function(width = 12, collapsible = T, collapsed = T) {
     solidHeader = T, status = "primary",
     sidebarPanel(
       width = 3,
+      selectInput('FCEECDF.AUC.Algs', label = 'Select which algorithms to plot:',
+                  multiple = T, selected = NULL, choices = NULL),      
       HTML('<p align="justify">Set the range and the granularity of the evenly spaced budgets.</p>'),
       textInput('FCEECDF.AUC.Min', label = RT_MIN_LABEL, value = ''),
       textInput('FCEECDF.AUC.Max', label = RT_MAX_LABEL, value = ''),

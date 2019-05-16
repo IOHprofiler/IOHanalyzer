@@ -6,7 +6,7 @@ output$RT_ECDF_MULT <- renderPlotly({
 render_RT_ECDF_MULT <- reactive({
   req(input$RTECDF.Aggr.Func || input$RTECDF.Aggr.Dim)
   withProgress({
-    dsList <- DATA_RAW()
+    dsList <- subset(DATA_RAW(), algId %in% input$RTECDF.Aggr.Algs)
     if (!input$RTECDF.Aggr.Func){
       dsList <- subset(dsList, funcId == input$Overall.Funcid)
     }
@@ -42,16 +42,21 @@ RT_ECDF_MULTI_TABLE <- reactive({
   funcId <- names(targets) %>% as.numeric
 
   if (is.null(targets)) {
-    data <- subset(DATA_RAW(), DIM == input$Overall.Dim)
-    targets <- get_default_ECDF_targets(data)
-    funcId <- unique(attr(data, 'funcId')) %>% sort
+    dsList <- subset(DATA_RAW(), algId %in% input$RTECDF.Aggr.Algs)
+    if (!input$RTECDF.Aggr.Func){
+      dsList <- subset(dsList, funcId == input$Overall.Funcid)
+    }
+    if (!input$RTECDF.Aggr.Dim){
+      dsList <- subset(dsList, DIM == input$Overall.Dim)
+    }    
+    targets <- get_default_ECDF_targets(dsList)
   }
 
   targets <- lapply(targets, function(t) {
     paste0(as.character(t), collapse = ',')
   })
 
-  data.frame(funcId = funcId, target = unlist(targets))
+  data.frame(names = names(targets), target = unlist(targets))
   },
   message = "Creating plot")
 })
@@ -59,7 +64,7 @@ RT_ECDF_MULTI_TABLE <- reactive({
 output$RT_GRID_GENERATED <- renderDataTable({
   req(DATA_RAW())
   df <- RT_ECDF_MULTI_TABLE()
-  df$funcId <- as.integer(df$funcId)
+  # df$funcId <- as.integer(df$funcId)
   df
 }, options = list(pageLength = 5, lengthMenu = c(5, 10, 25)))
 
@@ -91,8 +96,8 @@ output$RTECDF.Aggr.Table.Download <- downloadHandler(
 output$RT_ECDF <- renderPlotly({
   req(input$RTECDF.Single.Target)
   ftargets <- as.numeric(format_FV(input$RTECDF.Single.Target))
-
-  Plot.RT.ECDF_Per_Target(DATA(), ftargets, scale.xlog = input$RTECDF.Single.Logx)
+  data <- subset(DATA(), algId %in% input$RTECDF.Single.Algs)
+  Plot.RT.ECDF_Per_Target(data, ftargets, scale.xlog = input$RTECDF.Single.Logx)
 
 })
 
@@ -131,9 +136,10 @@ render_RT_ECDF_AGGR <- reactive({
   fstart <- format_FV(input$RTECDF.Multi.Min) %>% as.numeric
   fstop <- format_FV(input$RTECDF.Multi.Max) %>% as.numeric
   fstep <- format_FV(input$RTECDF.Multi.Step) %>% as.numeric
-
+  data <- subset(DATA(), algId %in% input$RTECDF.Multi.Algs)
+  
   Plot.RT.ECDF_Single_Func(
-    DATA(), fstart, fstop, fstep,
+    data, fstart, fstop, fstep,
     show.per_target = input$RTECDF.Multi.Targets,
     scale.xlog = input$RTECDF.Multi.Logx
   )
@@ -163,8 +169,9 @@ render_RT_AUC <- reactive({
   fstart <- format_FV(input$RTECDF.AUC.Min) %>% as.numeric
   fstop <- format_FV(input$RTECDF.AUC.Max) %>% as.numeric
   fstep <- format_FV(input$RTECDF.AUC.Step) %>% as.numeric
-
+  data <- subset(DATA(), algId %in% input$RTECDF.AUC.Algs)
+  
   Plot.RT.ECDF_AUC(
-    DATA(), fstart, fstop, fstep, fval_formatter = format_FV
+    data, fstart, fstop, fstep, fval_formatter = format_FV
   )
 })

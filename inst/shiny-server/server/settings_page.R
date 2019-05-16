@@ -105,7 +105,7 @@ observe({
   if (legend_loc == "Outside, right") legend_loc_str <- "outside_right"
   else if (legend_loc == "Inside, right") legend_loc_str <- "inside_right"
   else if (legend_loc == "Inside, left") legend_loc_str <- "inside_left"
-  
+  else if (legend_loc == "Below") legend_loc_str <- "below"
   options("IOHanalyzer.legend_location" = legend_loc_str)
 })
 

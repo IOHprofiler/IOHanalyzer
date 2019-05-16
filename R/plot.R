@@ -29,18 +29,24 @@ legend_right <- function(){
 
 legend_inside <- function () {
   list(x = .01, y = 1, orientation = 'v',
-       bgcolor = 'rgba(255, 255, 255, 0)',
-       bordercolor = 'rgba(255, 255, 255, 0)',
+       bgcolor = 'rgba(255, 255, 255, 0.5)',
+       bordercolor = 'rgba(255, 255, 255, 0.8)',
        font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 16), 
                    family = 'Old Standard TT, serif'))
 }
 
 legend_inside2 <- function() { 
   list(x = 0.7, y = 0.1, orientation = 'v',
-       bgcolor = 'rgba(255, 255, 255, 0)',
-       bordercolor = 'rgba(255, 255, 255, 0)',
+       bgcolor = 'rgba(255, 255, 255, 0.5)',
+       bordercolor = 'rgba(255, 255, 255, 0.8)',
        font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 16), 
                   family = 'Old Standard TT, serif'))
+}
+
+legend_below <- function() { 
+  list(orientation = 'h',
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 16), 
+                   family = 'Old Standard TT, serif'))
 }
 
 legend_location <- function(){
@@ -48,6 +54,7 @@ legend_location <- function(){
   if (opt == 'outside_right') return(legend_right())
   else if (opt == 'inside_left') return(legend_inside())
   else if (opt == 'inside_right') return(legend_inside2())
+  else if (opt == 'below') return(legend_below())
   else warning("The selected legend option is not implemented")
 }
 

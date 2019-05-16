@@ -37,17 +37,17 @@ body <- dashboardBody(
               document.body.innerText = color;
               });
               "),
-  tags$script("Shiny.addCustomMessageHandler('set_trace_input', function(color) {
-                Shiny.setInputValue('ERTPlot_Traces', document.getElementById('ERT_PER_FUN').data.map(trace => trace.visible != 'legendonly'));
-                document.body.style.backgroundColor = color;
-                document.body.innerText = color;
-              });"),
-  tags$script(HTML('
-       window.setInterval(function() {
-        var elem = document.getElementById("process_data_promt");
-                   elem.scrollTop = elem.scrollHeight;
-                   }, 20);
-  ')),
+  # tags$script("Shiny.addCustomMessageHandler('set_trace_input', function(color) {
+  #               Shiny.setInputValue('ERTPlot_Traces', document.getElementById('ERT_PER_FUN').data.map(trace => trace.visible != 'legendonly'));
+  #               document.body.style.backgroundColor = color;
+  #               document.body.innerText = color;
+  #             });"),
+  # tags$script(HTML('
+  #      window.setInterval(function() {
+  #       var elem = document.getElementById("process_data_promt");
+  #                  elem.scrollTop = elem.scrollHeight;
+  #                  }, 20);
+  # ')),
   tags$head(tags$script(HTML("
       Shiny.addCustomMessageHandler('manipulateMenuItem', function(message){
         var aNodeList = document.getElementsByTagName('a');

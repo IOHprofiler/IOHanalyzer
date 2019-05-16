@@ -696,16 +696,14 @@ Plot.RT.ECDF_Single_Func.DataSetList <- function(dsList, fstart = NULL, fstop = 
   if (is.null(fstart)) fstart <- min(fall)
   if (is.null(fstop)) fstop <- max(fall)
 
-  fseq <- seq_FV(fall, fstart, fstop, fstep,
-                 scale = ifelse(scale.xlog, 'log', 'linear'))
+  fseq <- seq_FV(fall, fstart, fstop, fstep)
   req(fseq)
 
   N <- length(dsList)
   colors <- color_palettes(N)
 
-  RT.max <- sapply(dsList, function(ds) max(ds$RT, na.rm = T)) %>% max
-  RT.min <- sapply(dsList, function(ds) min(ds$RT, na.rm = T)) %>% min
-  x <- seq(RT.min, RT.max, length.out = 50)
+  RT <- get_runtimes(dsList)
+  x <- seq_RT(RT, length.out = 50, scale = ifelse(scale.xlog, 'log', 'linear'))
   p <- IOH_plot_ly_default(x.title = "function evaluations",
                        y.title = "Proportion of (run, target) pairs")
 
@@ -752,12 +750,12 @@ Plot.RT.ECDF_Single_Func.DataSetList <- function(dsList, fstart = NULL, fstop = 
         if (all(is.na(rt)))
           next
         else{
-          ecdf <- ECDF(df, f)
-          v <- ecdf(rt)
+          ecdf_temp <- ECDF(df, f)
+          v <- ecdf_temp(rt)
         }
         p %<>%
           add_trace(x = rt, y = v, type = 'scatter',
-                    mode = 'lines', name = algId, showlegend = F,
+                    mode = 'lines', name = algId, showlegend = F, legendgroup = paste0(k),
                     line = list(color = rgba_str2, width = 1, dash = 'dot'))
       }
     }

@@ -32,13 +32,31 @@ legend_inside2 <- list(x = 0.7, y = 0.1, orientation = 'v',
                       bordercolor = 'rgba(255, 255, 255, 0)',
                       font = list(size = 16, family = 'Old Standard TT, serif'))
 
+legend_location <- function(){
+  opt <- getOption('IOHanalyzer.legend_location', default = 'outside_right')
+  if (opt == 'outside_right') return(legend_right)
+  else if (opt == 'inside_left') return(legend_inside)
+  else if (opt == 'inside_right') return(legend_inside2)
+  else warning("The selected legend option is not implemented")
+}
+
 # TODO: create font object as above for title, axis...
-plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
+
+#' Template for creating plots in the IOHanalyzer-style
+#' 
+#' @param title Title for the plot
+#' @param x.title X-axis label
+#' @param y.title Y-axis label
+#' 
+#' @export
+#' @examples 
+#' IOH_plot_ly_default("Example plot","x-axis","y-axis") 
+IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
   plot_ly() %>%
     layout(title = list(text = title, 
                         font = list(size = 16, family = 'Old Standard TT, serif')),
            autosize = T, hovermode = 'compare',
-           legend = legend_right,
+           legend = legend_location(),
            paper_bgcolor = 'rgb(255,255,255)',
            plot_bgcolor = getOption('IOHanalyzer.bgcolor'),
            font = list(size = 16, family = 'Old Standard TT, serif'),

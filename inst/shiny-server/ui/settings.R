@@ -11,8 +11,9 @@ color_settings_box <- function(width = 12, collapsible = T, collapsed = F) {
                            fileInput("Settings.Color.Upload","Upload a color settings file")
                            ),
           colourInput("Settings.Color.Bg", "Plot background colour", value = "#FFFFFF"),
-          colourInput("Settings.Color.Grid", "Plot gridline colour", value = "#E5E5E5")
-          
+          colourInput("Settings.Color.Grid", "Plot gridline colour", value = "#E5E5E5"),
+          colourInput("Settings.Color.Tick", "Plot ticks colour", value = "#7F7F7F"),
+          selectInput("Settings.Legend.Location", "Legend location", c("Outside, right", "Inside, right", "Inside, left"), "Outside, right")
         ),
         mainPanel(
           width = 9,

@@ -21,6 +21,11 @@ output$Settings.Color.Plot <- renderPlotly({
 })
 
 plot_color_example <- function(ds){
+  curr_settings <- c(input$Settings.Color.Bg,
+                     input$Settings.Color.Grid,
+                     input$Settings.Color.Tick,
+                     input$Settings.Legend.Location)
+  if (any(is.null(curr_settings))) return (NULL)
   if (length(ds) > 0){
     algnames <- get_algId(ds)
   }
@@ -30,9 +35,7 @@ plot_color_example <- function(ds){
   if(schemename == "Custom" && !is.null(input$Settings.Color.Upload)){
     schemename <- paste0(schemename, ": ", input$Settings.Color.Upload$datapath)
   }
-  p <- plot_ly() %>% layout(title = list(text = schemename), plot_bgcolor = input$Settings.Color.Bg,
-                            xaxis = list(gridcolor = input$Settings.Color.Grid),
-                            yaxis = list(gridcolor = input$Settings.Color.Grid))
+  p <- IOH_plot_ly_default(schemename)
 
   for (i in seq_along(algnames)){
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
@@ -82,9 +85,22 @@ observe({
 })
 
 observe({
+  options("IOHanalyzer.tickcolor" = input$Settings.Color.Tick)
+})
+
+observe({
   options("IOHanalyzer.figure_width" = input$Settings.Download.Width)
 })
 
 observe({
   options("IOHanalyzer.figure_height" = input$Settings.Download.Height)
+})
+
+observe({
+  legend_loc <- input$Settings.Legend.Location
+  if (legend_loc == "Outside, right") legend_loc_str <- "outside_right"
+  else if (legend_loc == "Inside, right") legend_loc_str <- "inside_right"
+  else if (legend_loc == "Inside, left") legend_loc_str <- "inside_left"
+  
+  options("IOHanalyzer.legend_location" = legend_loc_str)
 })

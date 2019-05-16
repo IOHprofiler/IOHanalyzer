@@ -34,9 +34,10 @@ options(shiny.port = 4242)
     IOHanalyzer.backend = 'plotly',
     IOHanalyzer.bgcolor = 'rgb(229,229,229)',
     IOHanalyzer.gridcolor = 'rgb(255,255,255)',
-    IOHanalyzer.tickcolor = 'rgb(127,127,127)'
+    IOHanalyzer.tickcolor = 'rgb(127,127,127)',
     IOHanalyzer.figure_width = NULL,
-    IOHanalyzer.figure_height = NULL
+    IOHanalyzer.figure_height = NULL,
+    IOHanalyzer.legend_location = 'outside_right'
   )
   toset <- !(names(op.IOHanalyzer) %in% names(op))
   if (any(toset)) options(op.IOHanalyzer[toset])

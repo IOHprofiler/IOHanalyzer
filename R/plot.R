@@ -13,35 +13,73 @@ f2 <- list(
 )
 
 # font No. 3...
-f3 <- list(
-  family = 'Old Standard TT, serif',
-  size = 16,
-  color = 'black'
-)
+f3 <- function() {
+  list(
+    family = 'Old Standard TT, serif',
+    size = getOption("IOHanalyzer.tick_fontsize", default = 16), 
+    color = 'black'
+  )
+}
 
-legend_right <- list(x = 1.01, y = 0.9, orientation = 'v',
-                     font = list(size = 13, family = 'Old Standard TT, serif'))
+legend_right <- function(){
+  list(x = 1.01, y = 0.9, orientation = 'v',
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 16), 
+                   family = 'Old Standard TT, serif'))
+}
 
-legend_inside <- list(x = .01, y = 1, orientation = 'v',
-                      bgcolor = 'rgba(255, 255, 255, 0)',
-                      bordercolor = 'rgba(255, 255, 255, 0)',
-                      font = list(size = 16, family = 'Old Standard TT, serif'))
+legend_inside <- function () {
+  list(x = .01, y = 1, orientation = 'v',
+       bgcolor = 'rgba(255, 255, 255, 0.5)',
+       bordercolor = 'rgba(255, 255, 255, 0.8)',
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 16), 
+                   family = 'Old Standard TT, serif'))
+}
 
-legend_inside2 <- list(x = 0.7, y = 0.1, orientation = 'v',
-                      bgcolor = 'rgba(255, 255, 255, 0)',
-                      bordercolor = 'rgba(255, 255, 255, 0)',
-                      font = list(size = 16, family = 'Old Standard TT, serif'))
+legend_inside2 <- function() { 
+  list(x = 0.7, y = 0.1, orientation = 'v',
+       bgcolor = 'rgba(255, 255, 255, 0.5)',
+       bordercolor = 'rgba(255, 255, 255, 0.8)',
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 16), 
+                  family = 'Old Standard TT, serif'))
+}
+
+legend_below <- function() { 
+  list(orientation = 'h',
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 16), 
+                   family = 'Old Standard TT, serif'))
+}
+
+legend_location <- function(){
+  opt <- getOption('IOHanalyzer.legend_location', default = 'outside_right')
+  if (opt == 'outside_right') return(legend_right())
+  else if (opt == 'inside_left') return(legend_inside())
+  else if (opt == 'inside_right') return(legend_inside2())
+  else if (opt == 'below') return(legend_below())
+  else warning("The selected legend option is not implemented")
+}
 
 # TODO: create font object as above for title, axis...
-plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
+
+#' Template for creating plots in the IOHanalyzer-style
+#' 
+#' @param title Title for the plot
+#' @param x.title X-axis label
+#' @param y.title Y-axis label
+#' 
+#' @export
+#' @examples 
+#' IOH_plot_ly_default("Example plot","x-axis","y-axis") 
+IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
   plot_ly() %>%
     layout(title = list(text = title, 
-                        font = list(size = 16, family = 'Old Standard TT, serif')),
+                        font = list(size = getOption("IOHanalyzer.title_fontsize", default = 16),
+                                    family = 'Old Standard TT, serif')),
            autosize = T, hovermode = 'compare',
-           legend = legend_right,
+           legend = legend_location(),
            paper_bgcolor = 'rgb(255,255,255)',
            plot_bgcolor = getOption('IOHanalyzer.bgcolor'),
-           font = list(size = 16, family = 'Old Standard TT, serif'),
+           font = list(size = getOption("IOHanalyzer.label_fontsize", default = 16),
+                       family = 'Old Standard TT, serif'),
            autosize = T,
            showlegend = T, 
            xaxis = list(
@@ -54,7 +92,7 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickcolor = getOption('IOHanalyzer.tickcolor'),
                         ticks = 'outside',
                         ticklen = 9,
-                        tickfont = f3,
+                        tickfont = f3(),
                         exponentformat = 'E',
                         zeroline = F),
            yaxis = list(
@@ -67,7 +105,7 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickcolor = getOption('IOHanalyzer.tickcolor'),
                         ticks = 'outside',
                         ticklen = 9,
-                        tickfont = f3,
+                        tickfont = f3(),
                         exponentformat = 'E',
                         zeroline = F))
 }

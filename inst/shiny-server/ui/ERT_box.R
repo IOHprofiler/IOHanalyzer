@@ -18,33 +18,33 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
                     value = ''),
 
           checkboxInput('ERTPlot.show.ERT',
-                        label = 'show/hide ERT',
+                        label = 'Show/hide ERT',
                         value = T),
 
           checkboxInput('ERTPlot.show.mean',
-                        label = 'show/hide mean',
+                        label = 'Show/hide mean',
                         value = F),
 
           checkboxInput('ERTPlot.show.CI',
-                        label = 'show/hide mean +/- sd',
+                        label = 'Show/hide mean +/- sd',
                         value = F),
 
           checkboxInput('ERTPlot.show.median',
-                        label = 'show/hide median',
+                        label = 'Show/hide median',
                         value = F),
 
           checkboxInput('ERTPlot.semilogx',
-                        label = 'scale x axis log10',
+                        label = 'Scale x axis log10',
                         value = T),
 
           checkboxInput('ERTPlot.semilogy',
-                        label = 'scale y axis log10',
+                        label = 'Scale y axis log10',
                         value = T),
 
-          selectInput('ERTPlot.Format', label = 'select the figure format',
+          selectInput('ERTPlot.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = 'pdf'),
 
-          downloadButton('ERTPlot.Download', label = 'download the figure')
+          downloadButton('ERTPlot.Download', label = 'Download the figure')
 
         ),
 

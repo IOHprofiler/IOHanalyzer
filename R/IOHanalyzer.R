@@ -36,7 +36,12 @@ options(shiny.port = 4242)
     IOHanalyzer.gridcolor = 'rgb(255,255,255)',
     IOHanalyzer.tickcolor = 'rgb(127,127,127)',
     IOHanalyzer.figure_width = NULL,
-    IOHanalyzer.figure_height = NULL
+    IOHanalyzer.figure_height = NULL,
+    IOHanalyzer.legend_location = 'outside_right',
+    IOHanalyzer.legend_fontsize = 13,
+    IOHanalyzer.label_fontsize = 16,
+    IOHanalyzer.title_fontsize = 16,
+    IOHanalyzer.tick_fontsize = 16
   )
   toset <- !(names(op.IOHanalyzer) %in% names(op))
   if (any(toset)) options(op.IOHanalyzer[toset])

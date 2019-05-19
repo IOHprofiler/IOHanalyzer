@@ -1,4 +1,4 @@
-# IOHprofiler: Post-Processing
+# IOHprofiler: IOHanalyzer
 
 [This is](https://github.com/IOHprofiler/Post-Processing) the post-processing tool of the project __Iterative Optimization Heuristics Profiler__ (IOHprofiler). This tool provides a web-based interface to analyze and visualization the benchmark data, collected from previous experiments. Importantly, we __do support__ the widely used [COCO](https://github.com/numbbo/coco) data format (aka. Black-Box Optimization Benchmarking).
 

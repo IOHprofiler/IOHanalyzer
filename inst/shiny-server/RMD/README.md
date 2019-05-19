@@ -1,4 +1,4 @@
-# IOHprofiler: Post-Processing
+# IOHanalyzer
 
 [This is](https://github.com/IOHprofiler/Post-Processing) the post-processing tool of the project __Iterative Optimization Heuristics Profiler__ (IOHprofiler). This tool provides a web-based interface to analyze and visualization the benchmark data, collected from previous experiments. Importantly, we __do support__ the widely used [COCO](https://github.com/numbbo/coco) data format (aka. Black-Box Optimization Benchmarking).
 
@@ -13,9 +13,19 @@ The details on the experimentation and post-processing tool can be found on [arX
 
 ## <a name="package"></a> Using IOHprofiler as a R-package
 
-To install the IOHProfiler R-package, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/).
+To install the IOHProfiler R-package, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/). Please start up the __R console__, which can be done (in case you're not familiar with R) by either executing command `R` in your system terminal or open the R application. 
 
-After R environment is correctly installed on you machine, 'devtools' package is needed to install the sorftware. Please start up the __R console__, which can be done (in case you're not familiar with R) by either executing command `R` in your system terminal or open the R application. Once it is done, please copy-paste and execute the following command into the R console
+The IOHanalyzer is now available on CRAN!
+To use the CRAN version, simply use the command in your R console:
+```r
+install.packages('IOHanalyzer')
+```
+
+### Installing the developement version
+
+The CRAN version is a stable version of the IOHanalyzer, but since this package is under continuous developement, it might make sense to use a developement version instead. The version in the master-branch of this repository is updated relatively frequently, and might be more usefull than the CRAN version. However, this version is likely to be more prone to errors. Please don't hesitate to add such errors to the issues section on this github page.
+
+To use the developement version, 'devtools' package is needed to install the sorftware. To install this package, please copy-paste and execute the following command into the R console
 ```r
 install.packages('devtools')
 ```
@@ -41,21 +51,16 @@ After R environment is correctly installed on you machine, several R packages ar
 
 Error messages will be shown in your R console if there is any installation issue.
 
-To use the repository, the following additional packages are required
-```r
-install.packages(c('DBI','RMariaDB'))
-```
-
 To allow for downloading of plots, orca[https://github.com/plotly/orca] and inkscape[https://inkscape.org/release/inkscape-0.92.4/] are needed.
 
-Then, please clone (or downlaod) this repository into your own system. To clone the repository, please execute the following command in your __system console__ (terminal):
+Then, please clone (or downlaod) this repository into your own system. To clone the repository, please execute one of the the following commands in your __system console__ (terminal):
 
 ```Shell
-> git clone git@github.com:IOHprofiler/Post-Processing.git
+> git clone git@github.com:IOHprofiler/IOHanalyzer.git
 ```
 
 ```Shell
-> git clone https://github.com/IOHprofiler/Post-Processing.git
+> git clone https://github.com/IOHprofiler/IOHanalyzer.git
 ```
 
 To download, please click the green download button on this page.
@@ -223,11 +228,11 @@ Or output a wide format...
 1:     38     48     31     14     41     50     67     21     43     52     22     26     33     25
 ```
 
-* It is also possible to generate some diagnostic plots (using `ggplot2` or `plotly`) using the provided plotting functions. The functions currently available are: plot_RT_single_fct, plot_FV_line, plot_ERT_AGGR, plot_RT_all_fcts, plot_FCE_ECDF_PER_TARGET, plot_FCE_MULTI, plot_FCE_AGGR, plot_FV_AUC, plot_FV_ECDF_AGGR, plot_FV_HIST, plot_FV_PDF, plot_PAR_line, plot_RT_AUC, plot_RT_ECDF, plot_RT_ECDF_AGGR, plot_RT_ECDF_MULTI, plot_RT_HIST, plot_RT_PMF.
+* It is also possible to generate some diagnostic plots (using `ggplot2` or `plotly`) using the provided plotting functions. The available functions are in the following style: Plot.{RT/FV/PAR}.{Plot_type}
 
-For more information on these functions, use the command:
+For more information on these functions, use the documentation available by executing the following type of command:
 ```r
-?plot_RT_single_fct.DataSetList
+?Plot.RT.Histogram
 ```
 
 ## Contact

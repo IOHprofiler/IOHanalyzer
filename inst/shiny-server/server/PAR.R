@@ -4,12 +4,14 @@ render_PAR_PER_FUN <- reactive({
   withProgress({
   f_min <- format_FV(input$PAR.Plot.Min) %>% as.numeric
   f_max <- format_FV(input$PAR.Plot.Max) %>% as.numeric
-  tryCatch(
-    Plot.Parameters(DATA(),f_min,f_max,algids = input$PAR.Plot.Algid,
+  tryCatch({
+    data <- subset(DATA(), algId %in% input$PAR.Plot.Algs)
+    Plot.Parameters(data,f_min,f_max,
                   show.mean = (input$PAR.Plot.show.mean == 'mean'),
                   show.median = (input$PAR.Plot.show.mean == 'median'),
                   scale.xlog = input$PAR.Plot.Logx,
-                  scale.ylog = input$PAR.Plot.Logy),
+                  scale.ylog = input$PAR.Plot.Logy)
+    },
     error = function(e) {
       #TODO: more robust error handling; don't assume this causes the error
       shinyjs::alert("Not all algorithms contain the same parameters. Please select a single algorithm to plot instead.")

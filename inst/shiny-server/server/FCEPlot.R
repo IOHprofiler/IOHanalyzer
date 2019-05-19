@@ -27,7 +27,8 @@ render_FV_PER_FUN <- reactive({
   withProgress({
   rt_min <- input$FCEPlot.Min %>% as.integer
   rt_max <- input$FCEPlot.Max %>% as.integer
-  Plot.FV.Single_Func(DATA(), RTstart = rt_min, RTstop = rt_max, show.CI = input$FCEPlot.show.CI,
+  data <- subset(DATA(), algId %in% input$FCEPlot.Algs)
+  Plot.FV.Single_Func(data, RTstart = rt_min, RTstop = rt_max, show.CI = input$FCEPlot.show.CI,
                show.mean = input$FCEPlot.show.mean, show.median = input$FCEPlot.show.median,
                scale.xlog = isolate(input$FCEPlot.semilogx), scale.ylog = isolate(input$FCEPlot.semilogy))
   },
@@ -90,7 +91,7 @@ get_max_runtimes <- function(data, aggr_on){
 render_FCEPlot_aggr_plot <- reactive({
   withProgress({
   #TODO: figure out how to avoid plotting again when default targets are written to input
-  data <- DATA_RAW()
+  data <- subset(DATA_RAW(), algId %in% input$FCEPlot.Aggr.Algs)
   if (length(data) == 0) return(NULL)
   if (input$FCEPlot.Aggr.Aggregator == 'Functions'){
     data <- subset(data, DIM==input$Overall.Dim)

@@ -3,7 +3,9 @@ output$FCE_ECDF_PER_TARGET <- renderPlotly({
   withProgress({
   req(input$FCEECDF.Single.Target)
   runtimes <- as.integer(input$FCEECDF.Single.Target)
-  Plot.FV.ECDF_Per_Target(DATA(),runtimes, scale.xlog = input$FCEECDF.Single.Logx,
+  data <- subset(DATA(), algId %in% input$FCEECDF.Single.Algs)
+  
+  Plot.FV.ECDF_Per_Target(data,runtimes, scale.xlog = input$FCEECDF.Single.Logx,
                           scale.reverse = !attr(DATA()[[1]],'maximization'))
   },
   message = "Creating plot")
@@ -29,8 +31,9 @@ render_FV_ECDF_AGGR <- reactive({
   rt_min <- input$FCEECDF.Mult.Min %>% as.integer
   rt_max <- input$FCEECDF.Mult.Max %>% as.integer
   rt_step <- input$FCEECDF.Mult.Step %>% as.integer
-
-  Plot.FV.ECDF_Single_Func(DATA(),rt_min = rt_min,
+  data <- subset(DATA(), algId %in% input$FCEECDF.Mult.Algs)
+  
+  Plot.FV.ECDF_Single_Func(data,rt_min = rt_min,
                     rt_max = rt_max, rt_step = rt_step,
                     scale.xlog = input$FCEECDF.Mult.Logx,
                     show.per_target = input$FCEECDF.Mult.Targets,
@@ -61,7 +64,9 @@ render_FV_AUC <- reactive({
   rt_min <- input$FCEECDF.AUC.Min %>% as.integer
   rt_max <- input$FCEECDF.AUC.Max %>% as.integer
   rt_step <- input$FCEECDF.AUC.Step %>% as.integer
-  Plot.FV.ECDF_AUC(DATA(), rt_min = rt_min,
+  data <- subset(DATA(), algId %in% input$FCEECDF.AUC.Algs)
+  
+  Plot.FV.ECDF_AUC(data, rt_min = rt_min,
               rt_max = rt_max, rt_step = rt_step)
   },
   message = "Creating plot")

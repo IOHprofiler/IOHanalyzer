@@ -9,30 +9,31 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
 
       textInput('FCEPlot.Min', label = RT_MIN_LABEL, value = ''),
       textInput('FCEPlot.Max', label = RT_MAX_LABEL, value = ''),
-
+      selectInput('FCEPlot.Algs', label = 'Select which algorithms to plot:',
+                  multiple = T, selected = NULL, choices = NULL),
       checkboxInput('FCEPlot.show.mean',
-                    label = 'show/hide mean',
+                    label = 'Show/hide mean',
                     value = T),
 
       checkboxInput('FCEPlot.show.median',
-                    label = 'show/hide median',
+                    label = 'Show/hide median',
                     value = F),
       checkboxInput('FCEPlot.show.CI',
-                    label = 'show/hide mean +/- sd',
+                    label = 'Show/hide mean +/- sd',
                     value = F),
 
       checkboxInput('FCEPlot.semilogx',
-                    label = 'scale x axis log10',
+                    label = 'Scale x axis log10',
                     value = T),
 
       checkboxInput('FCEPlot.semilogy',
-                    label = 'scale y axis log10',
+                    label = 'Scale y axis log10',
                     value = T),
 
-      selectInput('FCEPlot.Format', label = 'select the figure format',
+      selectInput('FCEPlot.Format', label = 'Select the figure format',
                   choices = supported_fig_format, selected = 'pdf'),
 
-      downloadButton('FCEPlot.Download', label = 'download the figure')
+      downloadButton('FCEPlot.Download', label = 'Download the figure')
     ),
 
     mainPanel(
@@ -56,18 +57,18 @@ fv_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed 
       sidebarLayout(
         sidebarPanel(
           width = 2,
-          selectInput('FCEPlot.Multi.Algs', label = 'add more algorithms:',
+          selectInput('FCEPlot.Multi.Algs', label = 'Select which algorithms to plot:',
                       multiple = T, selected = NULL, choices = NULL),
 
           checkboxInput('FCEPlot.Multi.Logx',
-                        label = 'scale x axis log10',
+                        label = 'Scale x axis log10',
                         value = T),
 
           checkboxInput('FCEPlot.Multi.Logy',
-                        label = 'scale y axis log10',
+                        label = 'Scale y axis log10',
                         value = T),
 
-          actionButton('FCEPlot.Multi.PlotButton', label = 'refresh the figure'),
+          actionButton('FCEPlot.Multi.PlotButton', label = 'Refresh the figure'),
           hr(),
           selectInput('FCEPlot.Multi.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = 'pdf'),
@@ -93,6 +94,8 @@ fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
       sidebarLayout(
         sidebarPanel(
           width = 3,
+          selectInput('FCEPlot.Aggr.Algs', label = 'Select which algorithms to plot:',
+                      multiple = T, selected = NULL, choices = NULL),
           selectInput('FCEPlot.Aggr.Mode', label = 'Select the plotting mode',
                       choices = c('radar','line'), selected = 'radar'),
 
@@ -104,10 +107,10 @@ fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
                         value = T),
 
           checkboxInput('FCEPlot.Aggr.Logy',
-                        label = 'scale y axis log10',
+                        label = 'Scale y axis log10',
                         value = F),
 
-          textInput('FCEPlot.Aggr.Targets', label = 'choose the runtimes (comma-separated)'),
+          textInput('FCEPlot.Aggr.Targets', label = 'Choose the runtimes (comma-separated)'),
           selectInput('FCEPlot.Aggr.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = 'pdf'),
 

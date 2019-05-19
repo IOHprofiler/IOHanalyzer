@@ -11,8 +11,9 @@ color_settings_box <- function(width = 12, collapsible = T, collapsed = F) {
                            fileInput("Settings.Color.Upload","Upload a color settings file")
                            ),
           colourInput("Settings.Color.Bg", "Plot background colour", value = "#FFFFFF"),
-          colourInput("Settings.Color.Grid", "Plot gridline colour", value = "#E5E5E5")
-          
+          colourInput("Settings.Color.Grid", "Plot gridline colour", value = "#E5E5E5"),
+          colourInput("Settings.Color.Tick", "Plot ticks colour", value = "#7F7F7F"),
+          selectInput("Settings.Legend.Location", "Legend location", c("Outside, right", "Inside, right", "Inside, left", "Below"), "Outside, right")
         ),
         mainPanel(
           width = 9,
@@ -42,7 +43,7 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
           #TODO: get probabilities from get_probability and put them as default
           textInput("Settings.General.Probs", label = "Probability-quantiles", value = "0.02,0.05,0.10,0.25,0.50,0.75,0.90,0.95,0.98"),
           numericInput("Settings.General.Max_samples", label = "Maximum samples shown per algorithm", value = 100),
-          selectInput("Settings.General.Backend","Plotting backend",c('plotly','ggplot2'),'plotly')
+          selectInput("Settings.General.Backend", "Plotting backend", c('plotly','ggplot2'),'plotly')
         ),
         column(
           width=3,
@@ -50,6 +51,15 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
           HTML_P('Set the figure download properties'),
           numericInput("Settings.Download.Width", label = "Image width (px)", value = NULL, min = 100, max = 4096),
           numericInput("Settings.Download.Height", label = "Image height (px)", value = NULL, min = 100, max = 4096)
+        ),
+        column(
+          width=3,
+          align = "Left",
+          HTML_P('Set the figure fontsizes'),
+          numericInput("Settings.Font.Title", label = "Title", value = 16, min = 8, max = 100),
+          numericInput("Settings.Font.Label", label = "Axis labels", value = 16, min = 8, max = 100),
+          numericInput("Settings.Font.Legend", label = "Legend", value = 13, min = 8, max = 100),
+          numericInput("Settings.Font.Tick", label = "Ticks", value = 16, min = 8, max = 100)
         )
       )
          

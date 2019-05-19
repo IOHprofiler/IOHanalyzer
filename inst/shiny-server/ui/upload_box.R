@@ -37,7 +37,7 @@ upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: fin
                                             ".csv", 'bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz')),
 
       actionButton('upload.remove_data', 
-                   label = HTML('<p align="center" style="font-size:120%;"><b> 
+                   label = HTML('<p align="center" style="font-size:120%; margin-bottom:0;"><b> 
                    Remove all the data</b></p>'))
       )
     )

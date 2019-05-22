@@ -1,6 +1,6 @@
 # empirical p.d.f. of the target value
 render_FV_PDF <- reactive({
-  req(input$FCEPDF.Bar.Runtime, (length(DATA())>0))
+  req(input$FCEPDF.Bar.Runtime, length(DATA()) > 0)
   withProgress({
   runtime <- input$FCEPDF.Bar.Runtime %>% as.integer
   data <- subset(DATA(), algId %in% input$FCEPDF.Bar.Algs)
@@ -27,7 +27,7 @@ output$FCE_PDF <- renderPlotly({
 
 # historgram of the target values -----------
 render_FV_HIST <- reactive({
-  req(input$FCEPDF.Hist.Runtime != "", DATA())   # require non-empty input
+  req(input$FCEPDF.Hist.Runtime != "", length(DATA()) > 0)   # require non-empty input
   withProgress({
   runtime <- input$FCEPDF.Hist.Runtime %>% as.integer
   data <- subset(DATA(), algId %in% input$FCEPDF.Hist.Algs)

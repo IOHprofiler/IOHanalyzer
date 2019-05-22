@@ -24,7 +24,7 @@ update_ert_per_fct_axis <- observe({
 
 render_ert_per_fct <- reactive({
   withProgress({
-  req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
+  req(input$ERTPlot.Min, input$ERTPlot.Max, length(DATA()) > 0)
   selected_algs <- input$ERTPlot.Algs
   data <- subset(DATA(), algId %in% input$ERTPlot.Algs)
   fstart <- input$ERTPlot.Min %>% as.numeric
@@ -52,7 +52,7 @@ render_ERTPlot_multi_plot <- eventReactive(input$ERTPlot.Multi.PlotButton, {
   data <- subset(DATA_RAW(),
                  algId %in% input$ERTPlot.Multi.Algs,
                  DIM == input$Overall.Dim)
-  req(data)
+  req(length(data) > 0)
   if (length(unique(get_funcId(data))) == 1){
     shinyjs::alert("This plot is only available when the dataset contains multiple functions  for the selected dimension.")
     return(NULL)

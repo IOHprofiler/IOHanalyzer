@@ -1,6 +1,6 @@
 # Expected Target Value Convergence
 output$FCE_PER_FUN <- renderPlotly({
-  req(input$FCEPlot.Min, input$FCEPlot.Max, (length(DATA())>0))
+  req(input$FCEPlot.Min, input$FCEPlot.Max, length(DATA()) > 0)
   render_FV_PER_FUN()
 })
 
@@ -46,7 +46,7 @@ render_FCEPlot_multi_plot <- eventReactive(input$FCEPlot.Multi.PlotButton, {
   data <- subset(DATA_RAW(),
                  algId %in% input$FCEPlot.Multi.Algs,
                  DIM == input$Overall.Dim)
-  req(data)
+  req(length(data) > 0)
   if (length(unique(get_funcId(data))) == 1){
     shinyjs::alert("This plot is only available when the dataset contains multiple functions for the selected dimension.")
     return(NULL)

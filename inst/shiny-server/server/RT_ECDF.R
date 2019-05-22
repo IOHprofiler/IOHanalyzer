@@ -62,7 +62,7 @@ RT_ECDF_MULTI_TABLE <- reactive({
 })
 
 output$RT_GRID_GENERATED <- renderDataTable({
-  req(DATA_RAW())
+  req(length(DATA_RAW()) > 0)
   df <- RT_ECDF_MULTI_TABLE()
   # df$funcId <- as.integer(df$funcId)
   df

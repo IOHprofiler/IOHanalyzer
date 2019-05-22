@@ -1,7 +1,7 @@
 # Data summary for Fixed-Target Runtime (ERT)  --------------
 runtime_summary_condensed <- reactive({
   data <- DATA()
-  req(data)
+  req(length(data) > 0)
   fall <- get_funvals(data)
   df <- get_FV_overview(data, algorithm = input$RTSummary.Overview.Algid)
   df$budget %<>% as.integer
@@ -46,7 +46,7 @@ runtime_summary <- reactive({
   fstep <- format_FV(input$RTSummary.Statistics.Step) %>% as.numeric
   data <- DATA()
 
-  req(fstart <= fstop, fstep <= fstop - fstart, data)
+  req(fstart <= fstop, fstep <= fstop - fstart, length(data) > 0)
   fall <- get_funvals(data)
 
   if (input$RTSummary.Statistics.Single)
@@ -95,7 +95,7 @@ get_RT <- reactive({
   fstep <- format_FV(input$RTSummary.Sample.Step) %>% as.numeric
   data <- DATA()
 
-  req(fstart <= fstop, fstep <= fstop - fstart, data)
+  req(fstart <= fstop, fstep <= fstop - fstart, length(data) > 0)
   fall <- get_funvals(data)
 
   if (input$RTSummary.Sample.Single)

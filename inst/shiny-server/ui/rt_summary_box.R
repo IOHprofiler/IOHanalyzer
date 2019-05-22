@@ -21,7 +21,7 @@ rt_stats_box <- function(width = 12, collapsible = T, collapsed = T) {
       mainPanel(
         width = 9,
         HTML(paste0('<div style="font-size:120%;">', includeMarkdown('RMD/RT_SUMMARY_TABLE.Rmd'),'</div>')),
-        dataTableOutput('table_RT_summary')
+        DT::dataTableOutput('table_RT_summary')
       )
   )
 }
@@ -63,7 +63,7 @@ rt_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
              the number \\(T(A,f(x),r)\\) of evaluations performed by the
              algorithm until it evaluated for the first time a solution of
              quality at least \\(f(x)\\).</p>'),
-        dataTableOutput('table_RT_sample')
+        DT::dataTableOutput('table_RT_sample')
         )
       )
 }
@@ -84,7 +84,7 @@ rt_overview_box <- function(width = 12, collapsible = T, collapsed = T) {
       mainPanel(
         width = 9,
         HTML(paste0('<div style="font-size:120%;">', includeMarkdown('RMD/RT_OVERVIEW_TABLE.Rmd'), '</div>')),
-        dataTableOutput('table_RT_overview')
+        DT::dataTableOutput('table_RT_overview')
       )
   )
 }

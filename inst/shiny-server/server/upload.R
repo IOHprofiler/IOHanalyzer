@@ -180,7 +180,7 @@ observeEvent(selected_folders(), {
         maximization <- ifelse((format == COCO || format == BIBOJ_COCO || format == NEVERGRAD)
                                , FALSE, TRUE)
       else
-        maximization <- ifelse((maximization == "MAXIMIZE"), TRUE, FALSE)
+        maximization <- ifelse((maximization == "MAXIMIZE" || maximization == TRUE), TRUE, FALSE)
 
       # read the data set and handle potential errors
       new_data <- tryCatch(

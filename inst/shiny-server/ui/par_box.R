@@ -9,18 +9,19 @@ par_expected_value_box <- function(width = 12, collapsible = T, collapsed = T) {
 
       textInput('PAR.Plot.Min', label = F_MIN_LABEL, value = ''),
       textInput('PAR.Plot.Max', label = F_MAX_LABEL, value = ''),
-
+      selectInput('PAR.Plot.Params', 'Parameters', choices = NULL, selected = NULL, multiple = T),
+      
       selectInput('PAR.Plot.Algs', 'Algorithms', choices = NULL, selected = NULL, multiple = T),
       selectInput('PAR.Plot.show.mean', label = 'Mean/median',
                   choices = c('mean', 'median'),
                   selected = 'mean'),
-
+      checkboxInput('PAR.Plot.CI', "Show standard deviations", value = T),
       checkboxInput('PAR.Plot.Logx',
-                    label = 'Scale x axis log10',
+                    label = 'Scale x axis \\(\\log_{10}\\)',
                     value = T),
 
       checkboxInput('PAR.Plot.Logy',
-                    label = 'Scale y axis log10',
+                    label = 'Scale y axis \\(\\log_{10}\\)',
                     value = T),
 
       selectInput('PAR.Plot.Format', label = 'Select the figure format',

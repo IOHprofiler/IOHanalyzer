@@ -15,7 +15,7 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
                           value = T),
             
             checkboxInput('ERTPlot.Aggr.Logy', 
-                          label = 'Scale y axis log10',
+                          label = 'Scale y axis \\(\\log_{10}\\)',
                           value = F),
             
             selectInput('ERTPlot.Aggr.Format', label = 'Select the figure format',

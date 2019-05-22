@@ -51,7 +51,7 @@ rt_pmf_box <- function(width = 12, collapsed = T, collapsible = T) {
           selectInput('RTPMF.Bar.Algs', label = 'Select which algorithms to plot:',
                       multiple = T, selected = NULL, choices = NULL),
           checkboxInput('RTPMF.Bar.Sample', label = 'Show runtime for each run', value = T),
-          checkboxInput('RTPMF.Bar.Logy', label = 'Scale y axis log10', value = F),
+          checkboxInput('RTPMF.Bar.Logy', label = 'Scale y axis \\(\\log_{10}\\)', value = F),
 
           selectInput('RTPMF.Bar.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = 'pdf'),

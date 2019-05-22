@@ -233,7 +233,8 @@ observe({
   # TODO: create reactive values for them
   algIds_ <- get_algId(data)
   algIds <- c(algIds_, 'all')
-  parIds <- c(get_parId(data), 'all')
+  parIds_ <- get_parId(data)
+  parIds <- c(parIds_, 'all')
   funcIds <- get_funcId(data)
   DIMs <- get_dim(data)
 
@@ -272,6 +273,7 @@ observe({
   updateSelectInput(session, 'FCEECDF.Single.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCEECDF.Mult.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCEECDF.AUC.Algs', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'PAR.Plot.Params', choices = parIds_, selected = parIds_)
 })
 
 # update (filter) according to users selection DataSets

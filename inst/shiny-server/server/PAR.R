@@ -10,7 +10,9 @@ render_PAR_PER_FUN <- reactive({
                   show.mean = (input$PAR.Plot.show.mean == 'mean'),
                   show.median = (input$PAR.Plot.show.mean == 'median'),
                   scale.xlog = input$PAR.Plot.Logx,
-                  scale.ylog = input$PAR.Plot.Logy)
+                  scale.ylog = input$PAR.Plot.Logy, 
+                  show.CI = input$PAR.Plot.CI,
+                  par_name = input$PAR.Plot.Params)
     },
     error = function(e) {
       #TODO: more robust error handling; don't assume this causes the error

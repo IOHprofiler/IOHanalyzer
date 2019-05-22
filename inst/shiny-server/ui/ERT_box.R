@@ -34,11 +34,11 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
                         value = F),
 
           checkboxInput('ERTPlot.semilogx',
-                        label = 'Scale x axis log10',
+                        label = 'Scale x axis \\(\\log_{10}\\)',
                         value = T),
 
           checkboxInput('ERTPlot.semilogy',
-                        label = 'Scale y axis log10',
+                        label = 'Scale y axis \\(\\log_{10}\\)',
                         value = T),
 
           selectInput('ERTPlot.Format', label = 'Select the figure format',

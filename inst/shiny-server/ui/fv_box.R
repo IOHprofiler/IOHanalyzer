@@ -23,11 +23,11 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
                     value = F),
 
       checkboxInput('FCEPlot.semilogx',
-                    label = 'Scale x axis log10',
+                    label = 'Scale x axis \\(\\log_{10}\\)',
                     value = T),
 
       checkboxInput('FCEPlot.semilogy',
-                    label = 'Scale y axis log10',
+                    label = 'Scale y axis \\(\\log_{10}\\)',
                     value = T),
 
       selectInput('FCEPlot.Format', label = 'Select the figure format',
@@ -61,11 +61,11 @@ fv_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed 
                       multiple = T, selected = NULL, choices = NULL),
 
           checkboxInput('FCEPlot.Multi.Logx',
-                        label = 'Scale x axis log10',
+                        label = 'Scale x axis \\(\\log_{10}\\)',
                         value = T),
 
           checkboxInput('FCEPlot.Multi.Logy',
-                        label = 'Scale y axis log10',
+                        label = 'Scale y axis \\(\\log_{10}\\)',
                         value = T),
 
           actionButton('FCEPlot.Multi.PlotButton', label = 'Refresh the figure'),
@@ -107,7 +107,7 @@ fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
                         value = T),
 
           checkboxInput('FCEPlot.Aggr.Logy',
-                        label = 'Scale y axis log10',
+                        label = 'Scale y axis \\(\\log_{10}\\)',
                         value = F),
 
           textInput('FCEPlot.Aggr.Targets', label = 'Choose the runtimes (comma-separated)'),

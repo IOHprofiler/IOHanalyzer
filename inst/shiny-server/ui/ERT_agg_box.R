@@ -11,11 +11,11 @@ ERT_agg_box <- function(width = 12, height = '600px', collapsible = T,
                     multiple = T, selected = NULL, choices = NULL),
         
         checkboxInput('ERTPlot.Multi.Logx', 
-                      label = 'Scale x axis log10',
+                      label = 'Scale x axis \\(\\log_{10}\\)',
                       value = T),
         
         checkboxInput('ERTPlot.Multi.Logy', 
-                      label = 'Scale y axis log10',
+                      label = 'Scale y axis \\(\\log_{10}\\)',
                       value = T),
         
         actionButton('ERTPlot.Multi.PlotButton', label = 'Refresh the figure'),

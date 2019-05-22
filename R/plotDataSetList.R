@@ -258,15 +258,18 @@ Plot.FV.ECDF_AUC <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
 #' @param scale.ylog Whether or not to scale the y-axis logaritmically
 #' @param algids Which algorithms from dsList to use
+#' @param par_name Which parameters to create plots for
+#' @param show.CI Whether or not to show the standard deviation
 #'
 #' @return A plot of for every recorded parameter in the DataSetList
 #' @export
 #' @examples 
 #' Plot.Parameters(subset(dsl, funcId == 1))
 Plot.Parameters <- function(dsList, f_min = NULL, f_max = NULL,
-                          algids = 'all',
+                          algids = 'all', par_name = NULL,
                           scale.xlog = F, scale.ylog = F,
-                          show.mean = T, show.median = F) UseMethod("Plot.Parameters", dsList)
+                          show.mean = T, show.median = F,
+                          show.CI = F) UseMethod("Plot.Parameters", dsList)
 #' Plot the aggregated empirical cumulative distriburtion as a function of the running times of
 #' a DataSetList. Aggregated over multiple functions or dimensions.
 #'
@@ -1124,9 +1127,10 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
 #' @rdname Plot.Parameters
 #' @export
 Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
-                                      algids = 'all',
+                                      algids = 'all', par_name = NULL,
                                       scale.xlog = F, scale.ylog = F,
-                                      show.mean = T, show.median = F){
+                                      show.mean = T, show.median = F,
+                                      show.CI = F){
   #TODO: clean this up
   req(xor(show.mean,show.median))
 
@@ -1141,7 +1145,7 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
   req(length(dt) != 0)
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
 
-  par_name <- dt[, parId] %>% unique
+  if (is.null(par_name)) par_name <- dt[, parId] %>% unique
   n_param <- length(par_name)
 
   algorithms <- dt[, algId] %>% unique
@@ -1170,7 +1174,8 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
       dt_plot <- dt[parId == name & algId == alg]
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
-
+      
+      if (show.CI){
       p[[j]] %<>%
         add_trace(data = dt_plot, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
                   line = list(color = rgba_str, width = 0),
@@ -1179,6 +1184,7 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
                   fill = 'tonexty',  line = list(color = 'transparent'),
                   fillcolor = rgba_str, showlegend = F, legendgroup = ~algId,
                   name = 'mean +/- sd')
+      }
 
       if (show.mean)
         p[[j]] %<>% add_trace(data = dt_plot, x = ~target, y = ~mean,

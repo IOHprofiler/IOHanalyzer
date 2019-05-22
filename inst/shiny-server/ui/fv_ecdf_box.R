@@ -11,7 +11,7 @@ fv_ecdf_single_budget_box <- function(width = 12, collapsible = T, collapsed = T
                     multiple = T, selected = NULL, choices = NULL),
         HTML('Select the budgets for which EDCF curves are displayed '),
         textInput('FCEECDF.Single.Target', label = HTML('<p>\\(B_1\\)</p>'), value = ''),
-        checkboxInput('FCEECDF.Single.Logx', label = 'Scale x axis log10', value = F)
+        checkboxInput('FCEECDF.Single.Logx', label = 'Scale x axis \\(\\log_{10}\\)', value = F)
       ),
 
       mainPanel(
@@ -46,13 +46,13 @@ fv_ecdf_agg_budgets_box <- function(width = 12, collapsible = T, collapsed = T) 
       textInput('FCEECDF.Mult.Min', label = RT_MIN_LABEL, value = ''),
       textInput('FCEECDF.Mult.Max', label = RT_MAX_LABEL, value = ''),
       textInput('FCEECDF.Mult.Step', label = RT_STEP_LABEL, value = ''),
-
-      checkboxInput('FCEECDF.Mult.Targets',
-                    label = 'Show ECDF for each budget',
-                    value = F),
+# 
+#       checkboxInput('FCEECDF.Mult.Targets',
+#                     label = 'Show ECDF for each budget',
+#                     value = F),
 
       checkboxInput('FCEECDF.Mult.Logx',
-                    label = 'Scale x axis log10',
+                    label = 'Scale x axis \\(\\log_{10}\\)',
                     value = F),
       selectInput('FCEECDF.Mult.Format', label = 'Select the figure format',
                   choices = supported_fig_format, selected = 'pdf'),

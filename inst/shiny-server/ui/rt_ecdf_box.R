@@ -11,7 +11,7 @@ rt_ecdf_single_target_box <- function(width = 12, collapsible = T, collapsed = T
           textInput('RTECDF.Single.Target', label = HTML('<p>\\(f_{target}\\)</p>'),
                     value = ''),
 
-          checkboxInput('RTECDF.Single.Logx', label = 'Scale x axis log10', value = F)
+          checkboxInput('RTECDF.Single.Logx', label = 'Scale x axis \\(\\log_{10}\\)', value = F)
         ),
 
         mainPanel(
@@ -52,7 +52,7 @@ rt_ecdf_agg_targets_box <- function(width = 12, collapsible = T, collapsed = T) 
                     label = 'Show ECDFs for each target',
                     value = F),
       checkboxInput('RTECDF.Multi.Logx',
-                    label = 'Scale x axis log10',
+                    label = 'Scale x axis \\(\\log_{10}\\)',
                     value = F),
 
       selectInput('RTECDF.Multi.Format', label = 'Select the figure format',
@@ -91,7 +91,7 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
                   multiple = T, selected = NULL, choices = NULL),        
       checkboxInput("RTECDF.Aggr.Func", "Aggregate functions", value = T),
       checkboxInput("RTECDF.Aggr.Dim", "Aggregate dimensions", value = F),
-      checkboxInput("RTECDF.Aggr.Logx", "Scale X-axis logaritmically", value = T),
+      checkboxInput("RTECDF.Aggr.Logx", "Scale x axis \\(\\log_{10}\\)", value = T),
       
       HTML_P('Choose whether to upload a file containing the target-values for each (function, dimension)-pair
              or use the automatically generated targets (see table below the plot). Please consider keeping the file format when

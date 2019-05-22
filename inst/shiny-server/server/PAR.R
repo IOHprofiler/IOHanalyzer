@@ -79,13 +79,14 @@ parameter_summary <- reactive({
   dt$runs %<>% as.integer
   dt$mean %<>% format(digits = 2, nsmall = 2)
   dt$median %<>% format(digits = 2, nsmall = 2)
+  dt$sd %<>% format(digits = 2, nsmall = 2)
   
-  # probs <- get_property("probs")
-  
+  probs <- getOption("IOHanalyzer.quantiles")
+
   # format the integers
-  # for (p in paste0(probs * 100, '%')) {
-  #   df[[p]] %<>% format(digits = 2, nsmall = 2)
-  # }
+  for (p in paste0(probs * 100, '%')) {
+    dt[[p]] %<>% format(digits = 2, nsmall = 2)
+  }
   dt
 })
 
@@ -108,31 +109,40 @@ parameter_sample <- reactive({
   fseq <- seq_FV(fall, fstart, fstop, by = fstep)
   req(fseq)
 
-  get_PAR_sample(data, ftarget = fseq,
+  df <- get_PAR_sample(data, ftarget = fseq,
                  algorithm = input$PAR.Sample.Algid,
                  parId = input$PAR.Sample.Param,
                  output = input$PAR.Sample.Format)
+  for (p in paste0('run.', seq(ncol(data[[1]]$FV)))) {
+    df[[p]] %<>% format(digits = 2, nsmall = 2)
+  }
+  df
 })
 
-output$table_PAR_SAMPLE <- renderDataTable({
+output$table_PAR_SAMPLE <- DT::renderDataTable({
   dt <- parameter_sample()
   req(length(dt) != 0)
   dt[is.na(dt)] <- 'NA'
-  dt}, options = list(pageLength = 20, scrollX = T))
+  dt
+}, filter = list(position = 'top', clear = FALSE),
+options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
 
-output$table_PAR_summary <- renderDataTable({
+output$table_PAR_summary <- DT::renderDataTable({
   parameter_summary()
-}, options = list(pageLength = 20, scrollX = T))
+}, filter = list(position = 'top', clear = FALSE),
+options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T, digits = 2))
 
 output$PAR.Sample.Download <- downloadHandler(
   filename = function() {
     eval(PARSample_csv_name)
   },
   content = function(file) {
+    df <- parameter_sample()
+    df <- df[input[["table_PAR_SAMPLE_rows_all"]]]
     if (input$PAR.Sample.FileFormat == 'csv')
-      write.csv(parameter_sample(), file, row.names = F)
+      write.csv(df, file, row.names = F)
     else
-      print(xtable(parameter_sample()), file = file)
+      print(xtable(df), file = file)
   },
   contentType = "text/csv"
 )
@@ -142,10 +152,12 @@ output$PAR.Summary.Download <- downloadHandler(
     eval(PAR_csv_name)
   },
   content = function(file) {
+    df <- parameter_summary()
+    df <- df[input[["table_PAR_summary_rows_all"]]]
     if (input$PAR.Summary.Format == 'csv')
-      write.csv(parameter_summary(), file, row.names = F)
+      write.csv(df, file, row.names = F)
     else
-      print(xtable(parameter_summary()), file = file)
+      print(xtable(df), file = file)
   },
   contentType = "text/csv"
 )

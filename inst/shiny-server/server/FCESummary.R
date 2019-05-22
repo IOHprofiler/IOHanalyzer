@@ -12,20 +12,23 @@ FCE_runtime_summary_condensed <- reactive({
   df
 })
 
-output$table_FV_overview <- renderDataTable({
+output$table_FV_overview <- DT::renderDataTable({
   req(input$FCESummary.Overview.Algid)
   FCE_runtime_summary_condensed()
-}, options = list(pageLength = 20, scrollX = T))
+}, filter = list(position = 'top', clear = FALSE),
+options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
 
 output$FCESummary.Overview.Download <- downloadHandler(
   filename = function() {
     eval(FV_overview_name)
   },
   content = function(file) {
+    df <- FCE_runtime_summary_condensed()
+    df <- df[input[["FCE_SAMPLE_rows_all"]]]
     if (input$FCESummary.Overview.Format == 'csv')
-      write.csv(FCE_runtime_summary_condensed(), file, row.names = F)
+      write.csv(df, file, row.names = F)
     else{
-      print(xtable(FCE_runtime_summary_condensed()), file = file)
+      print(xtable(df), file = file)
     }
   }
 )
@@ -62,22 +65,26 @@ get_FCE_summary <- reactive({
   for (p in paste0(probs * 100, '%')) {
     df[[p]] %<>% format(format = 'e', digits = 3)
   }
+  df$sd <- round(df$sd, 2)
   df
 })
 
-output$FCE_SUMMARY <- renderDataTable({
+output$FCE_SUMMARY <- DT::renderDataTable({
   get_FCE_summary()
-}, options = list(pageLength = 20, scrollX = T))
+}, filter = list(position = 'top', clear = FALSE),
+options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
 
 output$FCESummary.Statistics.Download <- downloadHandler(
   filename = function() {
     eval(FV_csv_name)
   },
   content = function(file) {
+    df <- get_FCE_summary()
+    df <- df[input[["FCE_SAMPLE_rows_all"]]]
     if (input$RTSummary.Overview.Format == 'csv')
-      write.csv(get_FCE_summary(), file, row.names = F)
+      write.csv(df, file, row.names = F)
     else{
-      print(xtable(get_FCE_summary()), file = file)
+      print(xtable(df), file = file)
     }
   }
 )
@@ -127,15 +134,18 @@ output$FCESummary.Sample.Download <- downloadHandler(
     eval(FVSample_csv_name)
   },
   content = function(file) {
+    df <- get_FCE()
+    df <- df[input[["FCE_SAMPLE_rows_all"]]]
     if (input$FCESummary.Sample.FileFormat == 'csv')
-      write.csv(get_FCE(), file, row.names = F)
+      write.csv(df, file, row.names = F)
     else
-      print(xtable(get_FCE()), file = file)
+      print(xtable(df), file = file)
   }
 )
 
-output$FCE_SAMPLE <- renderDataTable({
+output$FCE_SAMPLE <- DT::renderDataTable({
   df <- get_FCE()
   df[is.na(df)] <- 'NA'
-  df}, options = list(pageLength = 20, scrollX = T)
-)
+  df
+}, filter = list(position = 'top', clear = FALSE),
+options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))

@@ -69,7 +69,7 @@ par_summary_box <- function(width = 12, collapsible = T, collapsed = T) {
       width = 9,
       HTML(paste0('<div style="font-size:120%;">',
                   includeMarkdown('RMD/PAR_SUMMARY_TABLE.Rmd'), '</div>')),
-      dataTableOutput('table_PAR_summary')
+      DT::dataTableOutput('table_PAR_summary')
     )
   )
 }
@@ -103,7 +103,7 @@ par_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
       HTML('<p style="font-size:120%;">This table shows for each selected algorithm \\(A\\),
            each selected target value \\(f(x)\\), and each run \\(r\\) the parameter value
            observed when the target value \\(f(x)\\) is reached for the first time.</p>'),
-      dataTableOutput('table_PAR_SAMPLE')
+      DT::dataTableOutput('table_PAR_SAMPLE')
     )
   )
 }

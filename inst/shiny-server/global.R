@@ -8,6 +8,7 @@ suppressMessages(library(plotly))
 suppressMessages(library(shinydashboard))
 suppressMessages(library(xtable))
 suppressMessages(library(colourpicker))
+suppressMessages(library(dashboardthemes))
 
 # global options
 options(datatable.print.nrows = 20)

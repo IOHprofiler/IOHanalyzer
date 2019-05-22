@@ -25,7 +25,9 @@ body <- dashboardBody(
         color: white;
       }
     '))),
-
+  shinyDashboardThemes(
+    theme = "poor_mans_flatly"
+  ),
   tags$script(HTML('
       $(document).ready(function() {
         $("header").find("nav").append(\'<span class="myClass">Performance Evaluation for Iterative Optimization Heuristics</span>\');
@@ -165,7 +167,7 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                fv_per_fct_box(),
+                fv_per_fct_box(collapsed = F),
                 fv_agg_box(),
                 fv_comparison_box()
                )
@@ -187,7 +189,7 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                fv_ecdf_single_budget_box(),
+                fv_ecdf_single_budget_box(collapsed = F),
                 fv_ecdf_agg_budgets_box(),
                 fv_ecdf_auc_box()
               )
@@ -199,7 +201,7 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                par_expected_value_box(),
+                par_expected_value_box(collapsed = F),
                 par_summary_box(),
                 par_sample_box()
               )

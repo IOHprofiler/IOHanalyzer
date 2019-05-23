@@ -125,3 +125,20 @@ observe({
   options("IOHanalyzer.label_fontsize" = input$Settings.Font.Label)
 })
 
+output$Settings.Download <- downloadHandler(
+  filename = "IOHanalyzer_settings.rds",
+  content = function(file){
+    curr_opts <- options()
+    IOH_opts <- curr_opts[grep(names(curr_opts), pattern = "IOH")]
+    saveRDS(IOH_opts, file)
+  },
+  contentType = "rds"
+)
+
+observe({
+  if (!is.null(input$Settings.Upload)){
+    file <- input$Settings.Upload$datapath
+    IOH_opts <- readRDS(file)
+    options(IOH_opts[grep(names(IOH_opts), pattern = "IOH")]) #Ensure no other options get changed by the user
+  }
+})

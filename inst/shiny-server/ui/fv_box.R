@@ -109,8 +109,8 @@ fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
           checkboxInput('FCEPlot.Aggr.Logy',
                         label = 'Scale y axis \\(\\log_{10}\\)',
                         value = F),
-
-          textInput('FCEPlot.Aggr.Targets', label = 'Choose the runtimes (comma-separated)'),
+          actionButton("FCEPlot.Aggr.Refresh", "Refresh the figure"),
+          # textInput('FCEPlot.Aggr.Targets', label = 'Choose the runtimes (comma-separated)'),
           selectInput('FCEPlot.Aggr.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = 'pdf'),
 
@@ -121,7 +121,8 @@ fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
           width = 9,
           column(
             width = 12, align = "center",
-            plotlyOutput.IOHanalyzer('FCEPlot.Aggr.Plot')
+            plotlyOutput.IOHanalyzer('FCEPlot.Aggr.Plot'),
+            DT::dataTableOutput("FCEPlot.Aggr.Targets")
           )
         )
       )

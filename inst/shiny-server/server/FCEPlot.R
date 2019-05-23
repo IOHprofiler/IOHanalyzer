@@ -40,11 +40,12 @@ output$FCEPlot.Multi.Plot <- renderPlotly(
   render_FCEPlot_multi_plot()
 )
 
-render_FCEPlot_multi_plot <- eventReactive(input$FCEPlot.Multi.PlotButton, {
+render_FCEPlot_multi_plot <- reactive({
   req(input$FCEPlot.Multi.Algs)
+  input$FCEPlot.Multi.PlotButton
   withProgress({
   data <- subset(DATA_RAW(),
-                 algId %in% input$FCEPlot.Multi.Algs,
+                 algId %in% isolate(input$FCEPlot.Multi.Algs),
                  DIM == input$Overall.Dim)
   req(length(data) > 0)
   if (length(unique(get_funcId(data))) == 1){

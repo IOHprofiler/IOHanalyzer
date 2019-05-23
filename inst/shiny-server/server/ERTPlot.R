@@ -46,11 +46,12 @@ output$ERTPlot.Multi.Plot <- renderPlotly(
   render_ERTPlot_multi_plot()
 )
 
-render_ERTPlot_multi_plot <- eventReactive(input$ERTPlot.Multi.PlotButton, {
+render_ERTPlot_multi_plot <- reactive({
   req(input$ERTPlot.Multi.Algs)
+  input$ERTPlot.Multi.PlotButton
   withProgress({
   data <- subset(DATA_RAW(),
-                 algId %in% input$ERTPlot.Multi.Algs,
+                 algId %in% isolate(input$ERTPlot.Multi.Algs),
                  DIM == input$Overall.Dim)
   req(length(data) > 0)
   if (length(unique(get_funcId(data))) == 1){

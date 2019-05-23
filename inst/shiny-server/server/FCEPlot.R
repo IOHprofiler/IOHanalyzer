@@ -41,7 +41,7 @@ output$FCEPlot.Multi.Plot <- renderPlotly(
 )
 
 render_FCEPlot_multi_plot <- reactive({
-  req(input$FCEPlot.Multi.Algs)
+  req(isolate(input$FCEPlot.Multi.Algs))
   input$FCEPlot.Multi.PlotButton
   withProgress({
   data <- subset(DATA_RAW(),

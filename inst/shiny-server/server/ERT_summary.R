@@ -48,16 +48,16 @@ runtime_summary <- reactive({
   fstop <- format_FV(input$RTSummary.Statistics.Max) %>% as.numeric
   fstep <- format_FV(input$RTSummary.Statistics.Step) %>% as.numeric
   data <- DATA()
-
-  req(fstart <= fstop, fstep <= fstop - fstart, length(data) > 0)
-  fall <- get_funvals(data)
-
-  if (input$RTSummary.Statistics.Single)
-    fstop <- fstart
-
-  fseq <- seq_FV(fall, fstart, fstop, fstep)
-  req(fseq)
-
+  
+  if (!input$RTSummary.Statistics.Single){
+    req(fstart <= fstop, fstep <= fstop - fstart, length(data) > 0)
+    fall <- get_funvals(data)
+    fseq <- seq_FV(fall, fstart, fstop, fstep)
+    req(fseq)
+  }
+  else{
+    fseq <- fstart
+  }
   df <- get_RT_summary(data, fseq, algorithm = input$RTSummary.Statistics.Algid)
   df <- df[, c('DIM', 'funcId') := NULL]
   df$target <- format_FV(df$target) %>% as.numeric

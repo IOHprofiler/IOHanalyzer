@@ -7,7 +7,7 @@ ERT_agg_box <- function(width = 12, height = '600px', collapsible = T,
     sidebarLayout(
       sidebarPanel(
         width = 2,
-        selectInput('ERTPlot.Multi.Algs', label = 'Add more algorithms:', 
+        selectInput('ERTPlot.Multi.Algs', label = 'Select which algorithms to plot:', 
                     multiple = T, selected = NULL, choices = NULL),
         
         checkboxInput('ERTPlot.Multi.Logx', 

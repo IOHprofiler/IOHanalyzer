@@ -13,7 +13,7 @@ rt_histogram_box <- function(width = 12, collapsed = T, collapsible = T) {
         selectInput('RTPMF.Hist.Mode', '',
                     choices = c("overlay", "subplot"),
                     selected = 'subplot'),
-
+        checkboxInput("RTPMF.Hist.Equal", "Use equal bins for all algorithms", F),
         selectInput('RTPMF.Hist.Format', label = 'Select the figure format',
                     choices = supported_fig_format, selected = 'pdf'),
 

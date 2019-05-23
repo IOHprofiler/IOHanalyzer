@@ -47,7 +47,7 @@ output$ERTPlot.Multi.Plot <- renderPlotly(
 )
 
 render_ERTPlot_multi_plot <- reactive({
-  req(input$ERTPlot.Multi.Algs)
+  req(isolate(input$ERTPlot.Multi.Algs))
   input$ERTPlot.Multi.PlotButton
   withProgress({
   data <- subset(DATA_RAW(),

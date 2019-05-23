@@ -122,13 +122,14 @@ Plot.RT.PMF <- function(dsList, ftarget, show.sample = F,
 #' @param ftarget The target function value.
 #' @param plot_mode How to plot the different hisograms for each algorithm. Can be either
 #'  'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.
+#' @param use.equal.bins Whether to determine one bin size for all plots or have individual bin sizes for each algorithm
 #'
 #' @return A plot of the histograms of the runtimes at a the
 #'         target function value of the DataSetList
 #' @export
 #' @examples 
 #' Plot.RT.Histogram(subset(dsl, funcId == 1), 14)
-Plot.RT.Histogram <- function(dsList, ftarget, plot_mode = 'overlay') UseMethod("Plot.RT.Histogram", dsList)
+Plot.RT.Histogram <- function(dsList, ftarget, plot_mode = 'overlay', use.equal.bins = F) UseMethod("Plot.RT.Histogram", dsList)
 #' Plot the empirical cumulative distriburtion as a function of the running times of
 #' a DataSetList at certain target function values
 #'
@@ -585,7 +586,7 @@ Plot.RT.PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
 
 #' @rdname Plot.RT.Histogram
 #' @export
-Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'){
+Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay', use.equal.bins = F){
 
   N <- length(dsList)
   colors <- color_palettes(N)
@@ -601,7 +602,10 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
       IOH_plot_ly_default(x.title = "function evaluations", y.title = "runs")
     })
   }
-
+  if (use.equal.bins){
+    res1 <- hist(get_RT_sample(dsList, ftarget, output = 'long')$RT, breaks = nclass.FD, plot = F)
+  }
+  
   for (i in seq_along(dsList)) {
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.35)')
@@ -613,9 +617,11 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
     # skip if all runtime samples are NA
     if (sum(!is.na(rt$RT)) < 2)
       next
-
-    res <- hist(rt$RT, breaks = nclass.FD, plot = F)
+    if (use.equal.bins) breaks <- res1$breaks
+    else breaks <- nclass.FD
+    res <- hist(rt$RT, breaks = breaks, plot = F)
     breaks <- res$breaks
+    
     plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
                             text = paste0('<b>count</b>: ', res$counts, '<br><b>breaks</b>: [',
                                           breaks[-length(breaks)], ',', breaks[-1], ']'))

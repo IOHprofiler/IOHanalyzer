@@ -105,6 +105,7 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
                   "text/csv",
                   "text/comma-separated-values,text/plain",
                   ".csv")),
+      actionButton("RTECDF.Aggr.Refresh", "Refresh the figure"),
       selectInput('RTECDF.Aggr.Format', label = 'Select the figure format',
                   choices = supported_fig_format, selected = 'pdf'),
 
@@ -130,7 +131,7 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
                 is chosen according the the value in the bottom-left selection-box.'),
         plotlyOutput.IOHanalyzer('RT_ECDF_MULT'),
         HTML_P('The selected targets are:'),
-        dataTableOutput('RT_GRID_GENERATED')
+        DT::dataTableOutput('RT_GRID_GENERATED')
       )
     )
   )

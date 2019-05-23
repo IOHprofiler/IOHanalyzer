@@ -202,7 +202,34 @@ ECDF.DataSetList <- function(ds, ftarget, ...) {
   dims <- unique(get_dim(ds))
   funcs <- unique(get_funcId(ds))
 
-  if (is.list(ftarget)) {
+  if (is.data.table(ftarget)) {
+    runtime <- sapply(seq(nrow(ftarget)), function(i) {
+      if(length(dims) > 1 && length(funcs) >1){
+        names_temp <- ftarget[i][[1]] %>% 
+          strsplit(., ';')
+        FuncId <- names_temp[[1]][[1]]
+        Dim <- names_temp[[1]][[2]]
+      }
+      else if(length(dims) > 1){
+        FuncId <- funcs[[1]]
+        Dim <- ftarget[i][[1]]
+      }
+      else if(length(funcs) > 1){
+        FuncId <- ftarget[i][[1]]
+        Dim <- dims[[1]]
+      }
+      data <- subset(ds, funcId == FuncId, DIM == Dim)
+      if (length(data) == 0) return(NA)
+      temp_targets <- ftarget[i] %>% 
+        unlist %>%
+        as.numeric
+      names(temp_targets) <- NULL
+      res <- get_RT_sample(data, temp_targets[2:11], output = 'long')$RT
+      res[is.na(res)] <- Inf
+      res
+    }) %>%
+      unlist
+  } else if (is.list(ftarget)) {
     runtime <- sapply(seq_along(ftarget), function(i) {
       if(length(dims) > 1 && length(funcs) >1){
         names_temp <- names(ftarget[i])[[1]] %>% 

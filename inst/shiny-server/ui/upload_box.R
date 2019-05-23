@@ -8,7 +8,7 @@ upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: fin
       width = 12,
       selectInput('upload.data_format', 
                   label = HTML('<p align="left" style="font-size:120%;">
-                               Please choose the format of your data sets</p>'),
+                               Please choose the format of your datasets</p>'),
                   choices = c(AUTOMATIC,IOHprofiler, COCO, TWO_COL), 
                   selected = AUTOMATIC, width = '50%'),
       
@@ -19,9 +19,9 @@ upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: fin
                   selected = AUTOMATIC, width = '50%'),
       HTML_P("<b>Note</b>: when using two-column format, please select the format and maximization manually."),
       
-      HTML('<p align="justify" style="font-size:120%;">When the data set is huge, 
+      HTML('<p align="justify" style="font-size:120%;">When the dataset is huge, 
            the alignment can take a very long time. In this case, you could toggle 
-           the efficient mode to subsample the data set. However, 
+           the efficient mode to subsample the dataset. However, 
            the precision of data will be compromised.</p>'),
       
       checkboxInput('upload.subsampling', 

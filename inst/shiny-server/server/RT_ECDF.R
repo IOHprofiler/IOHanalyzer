@@ -167,7 +167,7 @@ render_RT_ECDF_AGGR <- reactive({
   
   Plot.RT.ECDF_Single_Func(
     data, fstart, fstop, fstep,
-    show.per_target = input$RTECDF.Multi.Targets,
+    # show.per_target = input$RTECDF.Multi.Targets,
     scale.xlog = input$RTECDF.Multi.Logx
   )
   },

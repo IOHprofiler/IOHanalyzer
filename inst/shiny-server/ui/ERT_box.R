@@ -59,10 +59,9 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
           column(
             width = 12,
             align = "center",
-            HTML_P('The <b><i>mean, median
-                 and standard deviation</i></b> of the runtime samples
+            HTML_P('The <b><i>mean, median, standard deviation and ERT</i></b> of the runtime samples
                  are depicted against the best objective values.
-                 The displayed elements (mean, median, standard deviations)
+                 The displayed elements (mean, median, standard deviations and ERT)
                  can be switched on and off by clicking on the legend on the right.
                  A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
             plotlyOutput.IOHanalyzer('ERT_PER_FUN')

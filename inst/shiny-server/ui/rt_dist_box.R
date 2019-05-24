@@ -7,7 +7,13 @@ rt_histogram_box <- function(width = 12, collapsed = T, collapsible = T) {
         textInput('RTPMF.Hist.Target', label = HTML('Select the target value'),
                   value = ''),
         selectInput('RTPMF.Hist.Algs', label = 'Select which algorithms to plot:',
-                    multiple = T, selected = NULL, choices = NULL),
+                    multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                      custom_icon() %>%
+                        bs_embed_popover(
+                          title = "Algorithm selection", content = alg_select_info, 
+                          placement = "auto"
+                        )
+                    ),
         HTML('Choose whether the histograms are <b>overlaid</b> in one plot
              or <b>separated</b> in several subplots:'),
         selectInput('RTPMF.Hist.Mode', '',
@@ -49,7 +55,13 @@ rt_pmf_box <- function(width = 12, collapsed = T, collapsible = T) {
 
           textInput('RTPMF.Bar.Target', label = '', value = ''),
           selectInput('RTPMF.Bar.Algs', label = 'Select which algorithms to plot:',
-                      multiple = T, selected = NULL, choices = NULL),
+                      multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                        custom_icon() %>%
+                          bs_embed_popover(
+                            title = "Algorithm selection", content = alg_select_info, 
+                            placement = "auto"
+                          )
+                      ),
           checkboxInput('RTPMF.Bar.Sample', label = 'Show runtime for each run', value = T),
           checkboxInput('RTPMF.Bar.Logy', label = 'Scale y axis \\(\\log_{10}\\)', value = F),
 

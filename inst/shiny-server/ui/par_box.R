@@ -11,7 +11,13 @@ par_expected_value_box <- function(width = 12, collapsible = T, collapsed = T) {
       textInput('PAR.Plot.Max', label = F_MAX_LABEL, value = ''),
       selectInput('PAR.Plot.Params', 'Parameters', choices = NULL, selected = NULL, multiple = T),
       
-      selectInput('PAR.Plot.Algs', 'Algorithms', choices = NULL, selected = NULL, multiple = T),
+      selectInput('PAR.Plot.Algs', 'Select which algorithms to plot:', choices = NULL, selected = NULL, multiple = T) %>% shinyInput_label_embed(
+        custom_icon() %>%
+          bs_embed_popover(
+            title = "Algorithm selection", content = alg_select_info, 
+            placement = "auto"
+          )
+      ),
       selectInput('PAR.Plot.show.mean', label = 'Mean/median',
                   choices = c('mean', 'median'),
                   selected = 'mean'),

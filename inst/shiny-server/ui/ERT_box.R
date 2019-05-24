@@ -8,7 +8,13 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
           HTML('<p style="font-size:120%;">Range of the displayed target values</p>'),
 
           selectInput('ERTPlot.Algs', label = 'Select which algorithms to plot:',
-                      multiple = T, selected = NULL, choices = NULL),
+                      multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                        custom_icon() %>%
+                          bs_embed_popover(
+                            title = "Algorithm selection", content = alg_select_info, 
+                            placement = "auto"
+                          )
+                      ),
 
           textInput('ERTPlot.Min',
                     label = F_MIN_LABEL,

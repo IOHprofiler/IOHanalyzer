@@ -6,7 +6,13 @@ rt_ecdf_single_target_box <- function(width = 12, collapsible = T, collapsed = T
         sidebarPanel(
           width = 3,
           selectInput('RTECDF.Single.Algs', label = 'Select which algorithms to plot:',
-                      multiple = T, selected = NULL, choices = NULL),   
+                      multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                        custom_icon() %>%
+                          bs_embed_popover(
+                            title = "Algorithm selection", content = alg_select_info, 
+                            placement = "auto"
+                          )
+                      ),   
           HTML('Select the target values for which EDCF curves are displayed'),
           textInput('RTECDF.Single.Target', label = HTML('<p>\\(f_{target}\\)</p>'),
                     value = ''),
@@ -41,7 +47,13 @@ rt_ecdf_agg_targets_box <- function(width = 12, collapsible = T, collapsed = T) 
     sidebarPanel(
       width = 3,
       selectInput('RTECDF.Multi.Algs', label = 'Select which algorithms to plot:',
-                  multiple = T, selected = NULL, choices = NULL),   
+                  multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                    custom_icon() %>%
+                      bs_embed_popover(
+                        title = "Algorithm selection", content = alg_select_info, 
+                        placement = "auto"
+                      )
+                  ),   
       HTML('<p align="justify">Set the range and the granularity
            of the quality targets taken into account in the ECDF curve.
            The plot will show the ECDF curves for evenly spaced target values.</p>'),
@@ -88,7 +100,13 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
     sidebarPanel(
       width = 3,
       selectInput('RTECDF.Aggr.Algs', label = 'Select which algorithms to plot:',
-                  multiple = T, selected = NULL, choices = NULL),        
+                  multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                    custom_icon() %>%
+                      bs_embed_popover(
+                        title = "Algorithm selection", content = alg_select_info, 
+                        placement = "auto"
+                      )
+                  ),        
       checkboxInput("RTECDF.Aggr.Func", "Aggregate functions", value = T),
       checkboxInput("RTECDF.Aggr.Dim", "Aggregate dimensions", value = F),
       checkboxInput("RTECDF.Aggr.Logx", "Scale x axis \\(\\log_{10}\\)", value = T),
@@ -145,7 +163,13 @@ rt_ecdf_auc_box <- function(width = 12, collapsible = T, collapsed = T) {
     sidebarPanel(
       width = 3,
       selectInput('RTECDF.AUC.Algs', label = 'Select which algorithms to plot:',
-                  multiple = T, selected = NULL, choices = NULL),     
+                  multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                    custom_icon() %>%
+                      bs_embed_popover(
+                        title = "Algorithm selection", content = alg_select_info, 
+                        placement = "auto"
+                      )
+                  ),     
       HTML('<p align="justify">Set the range and the granularity of
            the evenly spaced quality targets taken into account in the plot.</p>'),
       textInput('RTECDF.AUC.Min', label = F_MIN_LABEL, value = ''),

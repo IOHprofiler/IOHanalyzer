@@ -8,7 +8,13 @@ ERT_agg_box <- function(width = 12, height = '600px', collapsible = T,
       sidebarPanel(
         width = 2,
         selectInput('ERTPlot.Multi.Algs', label = 'Select which algorithms to plot:', 
-                    multiple = T, selected = NULL, choices = NULL),
+                    multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                      custom_icon() %>%
+                        bs_embed_popover(
+                          title = "Algorithm selection", content = alg_select_info, 
+                          placement = "auto"
+                        )
+                    ),
         
         checkboxInput('ERTPlot.Multi.Logx', 
                       label = 'Scale x axis \\(\\log_{10}\\)',

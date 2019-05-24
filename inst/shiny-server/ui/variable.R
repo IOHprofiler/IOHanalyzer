@@ -13,3 +13,12 @@ F_STEP_LABEL <- HTML('<p>\\(\\Delta f:\\) Granularity (step size)</p>')
 header <- dashboardHeader(title = HTML('<div align="center"><b>IOHanalyzer</b></div>'))
 
 HTML_P <- function(s) HTML(paste0('<p align="left" style="font-size:120%;">', s, '</p>'))
+
+alg_select_info <- "Use this option to select which algorithms to plot. 
+      This will hava an effect the dowloaded plot, 
+      as opposed to using the legend-entries to show or hide algorithms "
+
+custom_icon <- function(name = NULL){
+  if (is.null(name)) name <- "info-circle"
+  htmltools::tags$a(shiny::icon(name = name), href = "javascript:void(0);")
+}

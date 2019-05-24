@@ -12,6 +12,10 @@ sidebar <- dashboardSidebar(
 )
 
 body <- dashboardBody(
+  tags$style(HTML('.popover-title {color:black;}
+                   .popover-content {color:black;}
+                   .main-sidebar {z-index:auto;}')
+  ),
   # javascript, headers ----------------------
   # to show text on the header (heading banner)
   tags$head(tags$style(HTML(
@@ -25,6 +29,12 @@ body <- dashboardBody(
         color: white;
       }
     '))),
+  tags$head(
+    tags$style(HTML(
+      "label { font-size:120%; }"
+    ))
+  ),
+  
   shinyDashboardThemes(
     theme = "poor_mans_flatly"
   ),
@@ -75,7 +85,8 @@ body <- dashboardBody(
   # using MathJax
   HTML("<head><script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML'
        async></script></head>"),
-
+  use_bs_tooltip(),
+  use_bs_popover(),
   # tabitems ----------------------
   tabItems(
     tabItem(tabName = 'about', includeMarkdown('RMD/about.Rmd')),

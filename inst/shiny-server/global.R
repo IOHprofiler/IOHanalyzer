@@ -9,6 +9,7 @@ suppressMessages(library(shinydashboard))
 suppressMessages(library(xtable))
 suppressMessages(library(colourpicker))
 suppressMessages(library(dashboardthemes))
+suppressMessages(library(bsplus))
 
 # global options
 options(datatable.print.nrows = 20)

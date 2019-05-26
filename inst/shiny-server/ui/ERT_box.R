@@ -44,12 +44,17 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
 
           conditionalPanel(
             condition = 'input["ERTPlot.show.grad"] == true',
-            column(
+            fluidRow(column(
               width = 11, offset = 1,
-              sliderInput('ERTPlot.show.intensity', label = "Runs intensity(%)",
-                          min = -1, max = 1, value = 0, step = 0.1)
+              checkboxInput('ERTPlot.show.gradation',
+                            label = 'show gradation',
+                            value = T),
+              sliderInput('ERTPlot.show.intensity', label = "Intensity of runs(%)",
+                          #min = -1, max = 1, value = 0, step = 0.1)
+                          min = 0, max = 100, value = 50, step = 5)
+              
             )
-          ),
+          )),
 
           checkboxInput('ERTPlot.show_all',
                         label = 'show/hide multiple runs',

@@ -8,7 +8,8 @@ plot_RT_single_fct(dsList, Fstart = NULL, Fstop = NULL, show.ERT = T,
   show.CI = T, show.mean = F, show.runs = F, show.density = 50,
   show.grad = F, show.intensity = 0, show.pareto = F,
   show.optimal = F, show.median = F, backend = "plotly",
-  scale.xlog = F, scale.ylog = F, scale.reverse = F)
+  show.gradation = T, scale.xlog = F, scale.ylog = F,
+  scale.reverse = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -38,6 +39,8 @@ plot_RT_single_fct(dsList, Fstart = NULL, Fstop = NULL, show.ERT = T,
 \item{show.median}{Whether or not to show the median hitting times}
 
 \item{backend}{Which plotting library to use. Can be 'plotly' or 'ggplot2'}
+
+\item{show.gradation}{Whether or not to show the run intensity's gradation}
 
 \item{scale.xlog}{Whether or not to scale the x-axis logaritmically}
 

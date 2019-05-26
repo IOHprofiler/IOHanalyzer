@@ -262,6 +262,16 @@ plot_FV_all_fcts <- function(dsList, scale.xlog = F,
                              scale.ylog = F,
                              backend = 'plotly') UseMethod("plot_FV_all_fcts", dsList)
 
+#' Plot surfaceplot of the expected function values of a DataSetList
+#'
+#' @inheritParams plot_FV_line.DataSetList
+#'
+#' @return A 3dimentional plot of Fixed-Target, Fixed-Budget intersections of the DataSetList
+#' @export
+plot_FV_RT_surface <- function(dsList,
+                               Fstart = NULL, Fstop = NULL, RTstart = NULL, RTstop = NULL, surfaces = NULL
+                         ) UseMethod("plot_FV_RT_surface", dsList)
+
 ##Implementations
 
 #' Plot lineplot of the ERTs of a DataSetList
@@ -291,12 +301,13 @@ plot_FV_all_fcts <- function(dsList, scale.xlog = F,
 plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                            show.ERT = T, show.CI = T, show.mean = F,
                                            show.runs = F, show.density = 50,
-                                           show.grad = F, show.intensity = 0,
+                                           show.grad = F, show.intensity = 50,
                                            show.pareto = F, show.optimal = F,
                                            show.median = F, backend = 'plotly',
                                            show.gradation = T,
                                            scale.xlog = F, scale.ylog = F,
                                            scale.reverse = F) {
+  show.intensity <- (show.intensity - 50)/50
 
   Fall <- get_funvals(dsList)
   if (is.null(Fstart)) Fstart <- min(Fall)
@@ -535,6 +546,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
                                      backend = 'plotly',
                                      scale.xlog = F, scale.ylog = F,
                                      scale.reverse = F) {
+  show.intensity <- (show.intensity - 50)/50
 
   RTall <- get_runtimes(dsList)
   if (is.null(RTstart)) Fstart <- min(RTall)
@@ -715,6 +727,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
   }
   return(p)
 }
+
 
 #' Plot probablity mass function of the runtimes of a DataSetList at a certain target function value
 #'
@@ -1964,5 +1977,84 @@ plot_FCE_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NUL
       layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
              xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
   }
+  p
+}
+
+plot_FV_RT_surface.DataSetList <- function(dsList,
+                                           Fstart = NULL, Fstop = NULL,  RTstart = NULL, RTstop = NULL,
+                                           surfaces = NULL
+                                           ) {
+  print ("plot_FV_RT_surface")
+  scale.xlog = FALSE
+  scale.ylog = FALSE
+  
+  RTall <- get_runtimes(dsList)
+  if (is.null(RTstart)) Fstart <- min(RTall)
+  if (is.null(RTstop)) Fstop <- max(RTall)
+  
+  
+  RTseq <- seq_RT(RTall, RTstart, RTstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
+  if (length(RTseq) == 0) return(NULL)
+  
+  fce <- get_FV_summary(dsList, RTseq)
+  fce[, `:=`(upper = mean + sd, lower = mean - sd)]
+  
+  fcr <- get_FV_sample(dsList, RTseq)
+  
+  
+  #another one
+  
+  Fall <- get_funvals(dsList)
+  if (is.null(Fstart)) Fstart <- min(Fall)
+  if (is.null(Fstop)) Fstop <- max(Fall)
+  
+  Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 60, 
+                 scale = ifelse(scale.ylog, 'log', 'linear'))
+  if (length(Fseq) == 0) return(NULL)
+  
+
+  
+  dt <- get_RT_summary(dsList, ftarget = Fseq)
+  dt[, `:=`(upper = mean + sd, lower = mean - sd)]
+  
+  dr <- get_RT_sample(dsList, Fseq)
+  run.names <- grep('run', names(dr),  value = T)
+  
+  #afterall 
+  
+  distributions = get_FV_RT_cross_sample(dsList, RTseq, Fseq)
+  
+  
+  
+  N <- length(distributions)
+  colors <- color_palettes(N)
+
+  p <- plot_ly_3D(x.title = "budget", y.title = "value", z.title = "probability")
+  
+  i <- 0
+  for (distribution in distributions){
+    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
+    dm <- distribution$matrix
+    to_show <- list(x = as.numeric(as.character(colnames(dm))), y = as.numeric(as.character(rownames(dm))), z = matrix(as.numeric(as.character(c(dm))),nrow = length(rownames(dm))))
+    #View(to_show[["z"]])
+    some = list(c(0,1), c("tan", "blue"))
+    if (i==1){
+      some = list(c(0,1), c("darkgrey", "ligthgrey"))
+    }
+    View (to_show$z)
+    probability <- to_show$z
+    #temp <- to_show$z + 10
+    p %<>% add_surface(to_show, x = ~to_show$x, y = ~to_show$y, z = ~probability, colorscale = some)#, opacity  = 0.98)
+    #
+    i <- i + 1
+  }
+  #p %<>% add_surface(z = ~temp, colorscale = list(c(0,1), c("tan", "blue")), opacity = 0.98)
+  View(surfaces)
+  print(surfaces)
+  if (is.null(surfaces))
+    for (surface in surfaces){
+      View(surface)
+      #p %<>% add_trace(data = surface, x = ~surface$x, y = ~surface$y, z = ~surface$z, type = "mesh3d")
+    }
   p
 }

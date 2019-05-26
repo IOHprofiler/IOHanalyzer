@@ -252,6 +252,7 @@ get_RT_summary.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
 #' @export
 #'
 get_RT_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
+  
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
 
@@ -590,4 +591,15 @@ mean_FVs.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NULL) {
     erts <- rbind(erts, ert[get_algId(dsList)])
   }
   return(erts[-1,])
+}
+
+get_FV_RT_cross_sample.DataSetList <- function(ds, runtime, ftarget, algorithm = 'all', ...) {
+  if (algorithm != 'all')
+    ds <- subset(ds, algId == algorithm)
+  
+  lapply(ds, function(ds){
+    res <- get_FV_RT_cross_sample(ds,runtime, ftarget, ...)
+    list(algId = attr(ds, 'algId'), DIM = attr(ds, 'DIM'), funcId = attr(ds, 'funcId'), matrix = res)
+    #cbind( attr(ds, 'algId'), attr(ds, 'DIM'), attr(ds, 'funcId'), res)%>%set_colnames(c('algId','DIM', 'funcId',colnames(res)))
+  })
 }

@@ -150,7 +150,8 @@ body <- dashboardBody(
                 width = 12,
                 fv_per_fct_box(),
                 fv_agg_box(),
-                fv_comparison_box()
+                fv_comparison_box(),
+                fv_rt_3d_box()
                )
             )
     ),

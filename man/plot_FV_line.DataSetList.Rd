@@ -8,8 +8,8 @@
   RTstop = NULL, show.CI = T, show.mean = F, show.median = F,
   show.runs = F, show.density = 50, show.grad = F,
   show.intensity = 0, show.pareto = F, show.optimal = F,
-  backend = "plotly", scale.xlog = F, scale.ylog = F,
-  scale.reverse = F)
+  show.gradation = T, backend = "plotly", scale.xlog = F,
+  scale.ylog = F, scale.reverse = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

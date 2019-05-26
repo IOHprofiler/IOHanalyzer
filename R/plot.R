@@ -60,6 +60,21 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         zeroline = F))
 }
 
+plot_ly_3D <- function(title = NULL, x.title = NULL, y.title = NULL, z.title = NULL) {
+  print ("plot_ly_3D started")
+  p <- plot_ly(showscale = TRUE)
+
+  p %<>%
+    layout(scene = list(
+            xaxis = list(title = x.title),
+            yaxis = list(title = y.title),
+            zaxis = list(title = z.title)
+            )
+    )
+  p
+}
+
+
 t <- theme_grey() +
   theme(text = element_text(size = 15),
         plot.title = element_text(hjust = 0.5)

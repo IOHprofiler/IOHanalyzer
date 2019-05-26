@@ -427,6 +427,18 @@ get_FV_sample <- function(ds, ...) UseMethod("get_FV_sample", ds)
 #' @export
 #'
 get_FV_summary <- function(ds, ...) UseMethod("get_FV_summary", ds)
+
+#' Get Function Value and Time Cross Sample
+#'
+#' @param ds A DataSet or DataSetList object
+#' @param ... Arguments passed to other methods
+#'
+#' @return A data.table containing the function runs amount statistics for each provided
+#' target runtime and target value
+#' @export
+#'
+get_FV_RT_cross_sample <- function(ds, ...) UseMethod("get_FV_RT_cross_sample", ds)
+
 #' Get Parameter Value Samples
 #'
 #' @param ds A DataSet or DataSetList object
@@ -659,6 +671,8 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
 #'
 get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide', ...) {
   data <- ds$RT
+  
+  
   N <- ncol(data)
   algId <- attr(ds, 'algId')
   maximization <- attr(ds, 'maximization')
@@ -879,3 +893,70 @@ get_PAR_sample.DataSet <- function(ds, ftarget, parId = 'all', output = 'wide', 
   }
   res
 }
+
+get_FV_RT_cross_sample.DataSet <- function(ds, runtime, ftarget, ...) {
+  #print ("inside get_FV_RT_cross started")
+  #stepping by RT (time) and  evaluating  mod "P" RT[i]++
+  
+  dataRT <- ds$RT
+  dataFV <- ds$FV
+  
+  N <- ncol(dataRT)
+  
+  val_amount <- nrow(dataRT)
+  time_amount <- nrow(dataFV)
+  
+  algId <- attr(ds, 'algId')
+  maximization <- attr(ds, 'maximization')
+  
+  runtime <- c(runtime) %>% unique %>% as.numeric %>% sort
+  RT <- rownames(dataFV) %>% as.numeric
+  idx <- seq_along(RT)
+  
+  RT_matched <- sapply(runtime, function(r) {
+    res <- idx[RT >= r][1]
+    ifelse(is.na(res), time_amount, res)
+  })
+  if (RT_matched[1]!=0)
+    RT_matched = c(0, RT_matched) #to handle all runs
+  
+  ftarget <- c(ftarget) %>% unique %>% as.double %>% sort(decreasing = !maximization)
+  FValues <- rownames(dataRT) %>% as.double
+  idx <- seq_along(FValues)
+  op <- ifelse(maximization, `>=`, `<=`)
+  
+  
+  FV_matched <- sapply(ftarget,function(f) {
+      idx[`op`(FValues, f)][1]
+    })
+  
+  to_answ <- list()
+  reducedFV <- dataFV[RT_matched, , drop = FALSE]
+  reducedRT <- dataRT[FV_matched, , drop = FALSE]
+  
+
+  
+  for (i in 1:length(FV_matched)){#value
+    vec <- rep(0, length(RT_matched))
+    names(vec) <- RT_matched
+
+    for (j in 1 : ncol(reducedRT)){#runs
+      #print (c(reducedFV[i,][j], "--", RT_matched[RT_matched<=reducedFV[i,][j]], "--",  RT_matched))
+      place = which.max(RT_matched[RT_matched<=reducedRT[i,][j]])#closest RT val to current
+      #print (c(i, j, reducedFV[i,][j],place))
+      vec[place] <- vec[place] + 1
+    }
+    counter <- 0 
+    vec <- sapply(vec, function(amount){
+      counter <<- (counter + amount)
+      (counter)
+    })
+    to_answ <- rbind(to_answ, vec)
+  }
+  rownames(to_answ) <- FV_matched
+
+  #print (to_answ)
+  #print ("inside cross ended")
+  to_answ
+}
+

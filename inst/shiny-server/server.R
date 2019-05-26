@@ -55,6 +55,10 @@ shinyServer(function(input, output, session) {
   # shared reactive variables
   folderList <- reactiveValues(data = list())
   DataList <- reactiveValues(data = DataSetList())
+  
+  #shared surface
+  
+  surface3d <- reactiveValues(data =list())
 
   # set up the global variable
   observe({
@@ -565,6 +569,7 @@ shinyServer(function(input, output, session) {
                  scale.xlog = input$ERTPlot.semilogx,
                  scale.ylog = input$ERTPlot.semilogy,
                  show.grad = input$ERTPlot.show.grad,
+                 show.gradation = input$ERTPlot.show.gradation,
                  show.intensity = input$ERTPlot.show.intensity,
                  scale.reverse = (format == COCO || format == BIBOJ_COCO))
   })
@@ -992,6 +997,11 @@ shinyServer(function(input, output, session) {
     req(input$FCEPlot.Min, input$FCEPlot.Max)
     render_FV_PER_FUN()
   })
+  
+  output$FCE_RT_FUN <-renderPlotly({
+    req(input$FCE_RTPlot.RTMin, input$FCE_RTPlot.RTMax, input$FCE_RTPlot.FVMin, input$FCE_RTPlot.FVMax)
+    render_FV_RT_3D()
+  })
 
   output$FCEPlot.Download <- downloadHandler(
     filename = function() {
@@ -1013,7 +1023,59 @@ shinyServer(function(input, output, session) {
                  show.density = input$FCEPlot.show.density, show.pareto = input$FCEPlot.show.pareto_optima,
                  show.runs = input$FCEPlot.show.all, show.optimal = input$FCEPlot.show.best_of_all,
                  show.mean = input$FCEPlot.show.mean, show.median = input$FCEPlot.show.median,
+                 show.gradation = input$FCEPlot.show.gradation,
                  scale.xlog = input$FCEPlot.semilogx, scale.ylog = input$FCEPlot.semilogy)
+  })
+  
+  # add surface from csv uploading
+  selected_datapath_for_surfaces <- reactive({
+    if (!is.null(input$upload.surface_zip)) {
+      datapath <- input$upload.surface_zip$datapath
+      datapath
+    } else
+      NULL
+  })
+  
+  observeEvent(selected_datapath_for_surfaces(), {
+    datapaths <- selected_datapath_for_surfaces()
+    
+    req(length(datapaths) != 0)
+    
+    if (length(surface3d$data) == 0)
+      datapath_new <- datapaths
+    else
+      datapath_new <- setdiff(datapaths, intersect(surfaces3d$data, datapaths))
+    
+    req(length(datapath_new) != 0)
+    for (datapath in datapath_new) {
+      new_surface <- tryCatch(
+        read.csv(datapath),
+        error = function(e){
+          print_html(paste("Error while reading csv file occured"))
+        }
+      )
+      surface3d$data <- c(surface3d$data, new_surface)
+      print (surface3d$data)
+    }
+  })
+  
+  SURFACES <- reactive({
+    
+    if (length(surface3d$data) == 0) return(NULL)
+    
+    surface3d$data
+  })
+  #ened
+  
+  render_FV_RT_3D <- reactive({
+    rt_min <- input$FCE_RTPlot.RTMin %>% as.integer
+    rt_max <- input$FCE_RTPlot.RTMax %>% as.integer
+    
+    fv_min <- input$FCE_RTPlot.FVMin %>% as.integer
+    fv_max <- input$FCE_RTPlot.FVMax %>% as.integer
+    
+    
+    plot_FV_RT_surface(DATA(),Fstart = fv_min, Fstop = fv_max,  RTstart = rt_min, RTstop = rt_max, surfaces = SURFACES())
   })
 
 
@@ -1391,4 +1453,5 @@ shinyServer(function(input, output, session) {
     },
     contentType = "text/csv"
   )
+  
 })

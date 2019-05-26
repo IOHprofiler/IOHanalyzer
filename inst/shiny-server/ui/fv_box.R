@@ -35,12 +35,16 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
 
       conditionalPanel(
         condition = 'input["FCEPlot.show.grad"] == true',
-        column(
+        fluidRow(column(
           width = 11, offset = 1,
-          sliderInput('FCEPlot.show.intensity', label = "Runs intensity(%)",
-                      min = -1, max = 1, value = 0, step = 0.1)
+          checkboxInput('FCEPlot.show.gradation',
+                        label = 'show gradation',
+                        value = T),
+          sliderInput('FCEPlot.show.intensity', label = "Intensity of Runs (%)",
+                      #min = -1, max = 1, value = 0, step = 0.1)
+                      min = 0, max = 100, value = 50, step = 5)
         )
-      ),
+      )),
 
       checkboxInput('FCEPlot.show.all',
                     label = 'show/hide multiple runs',
@@ -156,3 +160,59 @@ fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
       )
   )
 }
+
+fv_rt_3d_box <- function(width = 12, collapsible = T, collapsed = T) {
+  box(
+    title = HTML('<p style="font-size:120%;">Target, Value, Probability Plot</p>'),
+    width = width, collapsible = collapsible, collapsed = collapsed,
+    solidHeader = TRUE, status = "primary",
+    sidebarPanel(
+      width = 3,
+      HTML('<p style="font-size:120%;">Range of the displayed budget values</p>'),
+      
+      textInput('FCE_RTPlot.RTMin', label = RT_MIN_LABEL, value = '1'),
+      textInput('FCE_RTPlot.RTMax', label = RT_MAX_LABEL, value = ''),
+      textInput('FCE_RTPlot.FVMin', label = F_MIN_LABEL, value = '1'),
+      textInput('FCE_RTPlot.FVMax', label = F_MAX_LABEL, value = '100'),
+      
+      
+      #checkboxInput('FCE_RTPlot.semilogx',
+        #            label = 'scale x axis log10',
+         #           value = T),
+      
+      #checkboxInput('FCE_RTPlot.semilogy',
+       #             label = 'scale y axis log10',
+        #            value = T),
+  
+      
+      selectInput('FCE_RTPlot.Format', label = 'select the figure format',
+                  choices = supported_fig_format, selected = 'pdf'),
+      
+      downloadButton('FCE_RTPlot.Download', label = 'download the surface'),
+      
+      fileInput("upload.surface_zip", 
+                label = HTML('<p align="left" style="font-size:120%;">
+                             Please choose a <i>zip file</i> containing the 
+                             surface data</p>'),
+                multiple = TRUE, accept = c("Application/zip", ".zip")),
+      
+      actionButton('upload.remove_surface', 
+                   label = HTML('<p align="center" style="font-size:120%;"><b> 
+                   Remove all surfaces</b></p>'))
+    ),
+    
+    mainPanel(
+      width = 9,
+      column(
+        width = 12, align = "center",
+        HTML_P('The <b><i>mean, median and standard deviation</i></b> of the best function values
+                found with a fixed-budget of evaluations are depicted against the budget.
+                The displayed elements can be switched on and off by clicking on the legend on the right.
+                A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
+        plotlyOutput.IOHanalyzer('FCE_RT_FUN')
+      )
+    )
+  )
+}
+
+

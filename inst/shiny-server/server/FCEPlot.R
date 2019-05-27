@@ -25,8 +25,8 @@ update_fv_per_fct_axis <- observe({
 
 render_FV_PER_FUN <- reactive({
   withProgress({
-  rt_min <- input$FCEPlot.Min %>% as.integer
-  rt_max <- input$FCEPlot.Max %>% as.integer
+  rt_min <- input$FCEPlot.Min %>% as.numeric
+  rt_max <- input$FCEPlot.Max %>% as.numeric
   data <- subset(DATA(), algId %in% input$FCEPlot.Algs)
   Plot.FV.Single_Func(data, RTstart = rt_min, RTstop = rt_max, show.CI = input$FCEPlot.show.CI,
                show.mean = input$FCEPlot.show.mean, show.median = input$FCEPlot.show.median,

@@ -4,7 +4,7 @@ runtime_summary_condensed <- reactive({
   req(length(data) > 0)
   fall <- get_funvals(data)
   df <- get_FV_overview(data, algorithm = input$RTSummary.Overview.Algid)
-  df$budget %<>% as.integer
+  df$budget %<>% as.numeric
   df$runs %<>% as.integer
   df$funcId %<>% as.integer
   df$DIM %<>% as.integer

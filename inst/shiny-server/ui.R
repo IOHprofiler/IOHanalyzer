@@ -36,7 +36,7 @@ body <- dashboardBody(
   ),
   
   shinyDashboardThemes(
-    theme = "poor_mans_flatly"
+    theme = "grey_light"
   ),
   tags$script(HTML('
       $(document).ready(function() {

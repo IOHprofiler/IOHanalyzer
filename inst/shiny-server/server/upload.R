@@ -284,7 +284,7 @@ DATA <- reactive({
   if (length(DataList$data) == 0) return(NULL)
 
   d <- subset(DataList$data, DIM == dim, funcId == id)
-  if (length(d) == 0){
+  if (length(d) == 0 && dim != "" && id != ""){
     showNotification("There is no data available for this (dimension,function)-pair")
   }
   d
@@ -398,10 +398,9 @@ observe({
   if (length(v) == 0) return()
 
   # TODO: this part should be made generic!!!
-  v <- as.integer(v)
   q <- quantile(v, probs = c(.25, .5, .75), names = F, type = 3)
 
-  grid <- seq(min(v), max(v), length.out = 10) %>% as.integer
+  grid <- seq(min(v), max(v), length.out = 10)
   step <- max(1, min(grid[-1] - grid[-length(grid)]))
 
   start <- min(v)

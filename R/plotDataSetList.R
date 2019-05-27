@@ -1114,7 +1114,7 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
                                    subdivisions = 1e3) %>% {'$'(., 'value') / funevals.max}
                       else 
                         integrate(fun, lower =  funevals.min, upper = attr(fun, 'max') + 1,
-                                  subdivisions = 1e3) %>% {'$'(., 'value') / funevals.min}
+                                  subdivisions = 1e3) %>% {'$'(., 'value') / funevals.max}
                     }
                   })
 

@@ -2,7 +2,7 @@
 render_FV_PDF <- reactive({
   req(input$FCEPDF.Bar.Runtime, length(DATA()) > 0)
   withProgress({
-  runtime <- input$FCEPDF.Bar.Runtime %>% as.integer
+  runtime <- input$FCEPDF.Bar.Runtime %>% as.numeric
   data <- subset(DATA(), algId %in% input$FCEPDF.Bar.Algs)
   Plot.FV.PDF(data, runtime, show.sample = input$FCEPDF.Bar.Samples,
               scale.ylog = input$FCEPDF.Bar.Logy )
@@ -29,7 +29,7 @@ output$FCE_PDF <- renderPlotly({
 render_FV_HIST <- reactive({
   req(input$FCEPDF.Hist.Runtime != "", length(DATA()) > 0)   # require non-empty input
   withProgress({
-  runtime <- input$FCEPDF.Hist.Runtime %>% as.integer
+  runtime <- input$FCEPDF.Hist.Runtime %>% as.numeric
   data <- subset(DATA(), algId %in% input$FCEPDF.Hist.Algs)
   Plot.FV.Histogram(data, runtime, plot_mode = input$FCEPDF.Hist.Mode, use.equal.bins = input$FCEPDF.Hist.Equal)
   },

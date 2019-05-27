@@ -5,9 +5,9 @@ FCE_runtime_summary_condensed <- reactive({
   fall <- get_funvals(data)
   df <- get_RT_overview(data, algorithm = input$FCESummary.Overview.Algid)
   df$"runs" %<>% as.integer
-  df$"Budget" %<>% as.integer
-  df$"miminal runtime" %<>% as.integer
-  df$"maximal runtime" %<>% as.integer
+  df$"Budget" %<>% as.numeric
+  df$"miminal runtime" %<>% as.numeric
+  df$"maximal runtime" %<>% as.numeric
   
   df
 })
@@ -36,9 +36,9 @@ output$FCESummary.Overview.Download <- downloadHandler(
 get_FCE_summary <- reactive({
   req(input$FCESummary.Statistics.Min, input$FCESummary.Statistics.Max, input$FCESummary.Statistics.Step, length(DATA()) > 0)
 
-  rt_min <- input$FCESummary.Statistics.Min %>% as.integer
-  rt_max <- input$FCESummary.Statistics.Max %>% as.integer
-  rt_step <- input$FCESummary.Statistics.Step %>% as.integer
+  rt_min <- input$FCESummary.Statistics.Min %>% as.numeric
+  rt_max <- input$FCESummary.Statistics.Max %>% as.numeric
+  rt_step <- input$FCESummary.Statistics.Step %>% as.numeric
 
   req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
   data <- DATA()
@@ -57,7 +57,7 @@ get_FCE_summary <- reactive({
   # df$runs.MaxFunvals %<>% as.integer
   df$median %<>% format(format = 'e', digits = 3)
   df$mean %<>% format(format = 'e', digits = 3)
-  df$runtime %<>% as.integer
+  df$runtime %<>% as.numeric
   
   probs <- getOption("IOHanalyzer.quantiles")
   
@@ -91,9 +91,9 @@ output$FCESummary.Statistics.Download <- downloadHandler(
 
 get_FCE <- reactive({
   req(input$FCESummary.Sample.Min, input$FCESummary.Sample.Max, input$FCESummary.Sample.Step, length(DATA()) > 0)
-  rt_min <- input$FCESummary.Sample.Min %>% as.integer
-  rt_max <- input$FCESummary.Sample.Max %>% as.integer
-  rt_step <- input$FCESummary.Sample.Step %>% as.integer
+  rt_min <- input$FCESummary.Sample.Min %>% as.numeric
+  rt_max <- input$FCESummary.Sample.Max %>% as.numeric
+  rt_step <- input$FCESummary.Sample.Step %>% as.numeric
 
   req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
   data <- DATA()

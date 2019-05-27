@@ -31,7 +31,7 @@ render_FV_HIST <- reactive({
   withProgress({
   runtime <- input$FCEPDF.Hist.Runtime %>% as.integer
   data <- subset(DATA(), algId %in% input$FCEPDF.Hist.Algs)
-  Plot.FV.Histogram(data, runtime, plot_mode = input$FCEPDF.Hist.Mode)
+  Plot.FV.Histogram(data, runtime, plot_mode = input$FCEPDF.Hist.Mode, use.equal.bins = input$FCEPDF.Hist.Equal)
   },
   message = "Creating plot")
 })

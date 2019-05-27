@@ -99,6 +99,7 @@ get_max_targets <- function(data, aggr_on, maximize){
 render_ERTPlot_aggr_plot <- reactive({
   withProgress({
   #TODO: figure out how to avoid plotting again when default targets are written to input
+  req(length(DATA_RAW()) > 0)
   data <- subset(DATA_RAW(), algId %in% input$ERTPlot.Aggr.Algs)
   if (length(data) == 0) return(NULL)
   data <- subset(data, DIM == input$Overall.Dim)
@@ -111,7 +112,7 @@ render_ERTPlot_aggr_plot <- reactive({
     return(NULL)
   }
   erts <- MAX_ERTS_FUNC()
-  aggr_on = 'funcId'
+  aggr_on <- 'funcId'
   aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
   targets <- get_max_targets(data, aggr_on, maximize = !(format == COCO || format == BIBOJ_COCO))
   erts <- max_ERTs(data, aggr_on, targets, maximize = !(format == COCO || format == BIBOJ_COCO))

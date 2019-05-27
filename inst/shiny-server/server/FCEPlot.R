@@ -97,7 +97,7 @@ render_FCEPlot_aggr_plot <- reactive({
   req(length(DATA_RAW()) > 0)
   data <- FCEPlot.Aggr.data()
   if (is.null(data)) return(NULL)
-  aggr_on = ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
+  aggr_on <- ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
   aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_dim(data)
 
   runtimes <- FCEPlot.Aggr.Targets_obj
@@ -140,7 +140,7 @@ FCEPlot.Aggr.data <- function() {
 default_runtimes_table <- reactive({
   data <- FCEPlot.Aggr.data()
   if (is.null(data)) return(NULL)
-  aggr_on = ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
+  aggr_on <- ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
   get_max_runtimes(data, aggr_on) %>% t %>% as.data.table(keep.rownames = F)
 })
 
@@ -167,13 +167,13 @@ output$FCEPlot.Aggr.Download <- downloadHandler(
 )
 
 observeEvent(input$FCEPlot.Aggr.Targets_cell_edit, {
-  info = input$FCEPlot.Aggr.Targets_cell_edit
-  i = info$row
-  j = info$col + 1
-  v = info$value
+  info <- input$FCEPlot.Aggr.Targets_cell_edit
+  i <- info$row
+  j <- info$col + 1
+  v <- info$value
   data <- FCEPlot.Aggr.data()
   if (is.null(data)) return(NULL)
-  aggr_on = ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
+  aggr_on <- ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
   aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_dim(data)
   suppressWarnings(FCEPlot.Aggr.Targets_obj[i, paste0(aggr_attr[[j]])] <<- DT::coerceValue(v, FCEPlot.Aggr.Targets_obj[i, paste0(aggr_attr[[j]])]))
   replaceData(proxy, FCEPlot.Aggr.Targets_obj, resetPaging = FALSE, rownames = FALSE)

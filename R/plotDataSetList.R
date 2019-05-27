@@ -196,13 +196,14 @@ Plot.FV.PDF <- function(dsList, runtime, show.sample = F, scale.ylog = F) UseMet
 #' @param runtime The target runtime
 #' @param plot_mode How to plot the different hisograms for each algorithm. Can be either
 #'  'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.
-#'
+#' @param use.equal.bins Whether to determine one bin size for all plots or have individual bin sizes for each algorithm
+#' 
 #' @return A plot of the histograms of the function values at a the
 #'         target runtime of the DataSetList
 #' @export
 #' @examples 
 #' Plot.FV.Histogram(subset(dsl, funcId == 1), 100)
-Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay') UseMethod("Plot.FV.Histogram", dsList)
+Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay', use.equal.bins = F) UseMethod("Plot.FV.Histogram", dsList)
 #' Plot the empirical cumulative distriburtion as a function of the target values of
 #' a DataSetList at certain target runtimes
 #'
@@ -876,7 +877,7 @@ Plot.FV.PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
 
 #' @rdname Plot.FV.Histogram
 #' @export
-Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay'){
+Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', use.equal.bins = F){
   n_algorithm <- length(dsList)
   colors <- color_palettes(n_algorithm)
   if (n_algorithm <= 10)
@@ -892,7 +893,10 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay'){
       IOH_plot_ly_default(x.title = "target values", y.title = "runs")
     })
   }
-
+  if (use.equal.bins){
+    res1 <- hist(get_FV_sample(dsList, runtime, output = 'long')$'f(x)', breaks = nclass.FD, plot = F)
+  }
+  
   for (i in seq_along(dsList)) {
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.35)')
@@ -903,9 +907,12 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay'){
     # skip if all target samples are NA
     if (sum(!is.na(fce$'f(x)')) < 2)
       next
-
-    res <- hist(fce$'f(x)', breaks = nclass.FD, plot = F)
+    
+    if (use.equal.bins) breaks <- res1$breaks
+    else breaks <- nclass.FD
+    res <- hist(fce$'f(x)', breaks = breaks, plot = F)
     breaks <- res$breaks
+    
     plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
                             text = paste0('<b>count</b>: ', res$counts,
                                           '<br><b>breaks</b>: [',
@@ -1225,7 +1232,7 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
 Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
                                                 scale.xlog = F) {
   if (is.null(targets))
-    targets <- get_default_ECDF_targets(dsList)
+    targets <- get_default_ECDF_targets(dsList, as.numeric)
 
   algId <- unique(attr(dsList, 'algId'))
   p <- IOH_plot_ly_default(x.title = "function evaluations",

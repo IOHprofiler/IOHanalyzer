@@ -20,7 +20,7 @@ render_RT_ECDF_MULT <- reactive({
       return(NULL)
     }
     targets <- RT_ECDF_MULTI_TABLE_obj
-  
+
     Plot.RT.ECDF_Multi_Func(dsList, targets = targets, scale.xlog = input$RTECDF.Aggr.Logx)
   },
   message = "Creating plot")
@@ -40,6 +40,7 @@ output$RTECDF.Aggr.Download <- downloadHandler(
 RT_ECDF_MULTI_TABLE_obj <- NULL
 
 RT_ECDF_MULTI_TABLE <- reactive({
+  req(length(DATA_RAW()) > 0)
   withProgress({
   # targets <- uploaded_RT_ECDF_targets()
   # funcId <- names(targets) %>% as.numeric
@@ -52,7 +53,7 @@ RT_ECDF_MULTI_TABLE <- reactive({
   if (!input$RTECDF.Aggr.Dim){
     dsList <- subset(dsList, DIM == input$Overall.Dim)
   }    
-  targets <- get_default_ECDF_targets(dsList)
+  targets <- get_default_ECDF_targets(dsList, format_FV)
   # }
 
   # targets <- lapply(targets, function(t) {
@@ -82,13 +83,13 @@ output$RT_GRID_GENERATED <- DT::renderDataTable({
 }, editable = TRUE, rownames = FALSE,
 options = list(pageLength = 5, lengthMenu = c(5, 10, 25, -1), scrollX = T, server = T))
 
-proxy = dataTableProxy('RT_GRID_GENERATED')
+proxy <- dataTableProxy('RT_GRID_GENERATED')
 
 observeEvent(input$RT_GRID_GENERATED_cell_edit, {
-  info = input$RT_GRID_GENERATED_cell_edit
-  i = info$row
-  j = info$col
-  v = info$value
+  info <- input$RT_GRID_GENERATED_cell_edit
+  i <- info$row
+  j <- info$col
+  v <- info$value
   suppressWarnings(RT_ECDF_MULTI_TABLE_obj[i, paste0('target.', j)] <<- DT::coerceValue(v, RT_ECDF_MULTI_TABLE_obj[i, paste0('target.', j)]))
   replaceData(proxy, RT_ECDF_MULTI_TABLE_obj, resetPaging = FALSE, rownames = FALSE)
 })

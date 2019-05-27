@@ -54,12 +54,12 @@ body <- dashboardBody(
   #               document.body.style.backgroundColor = color;
   #               document.body.innerText = color;
   #             });"),
-  # tags$script(HTML('
-  #      window.setInterval(function() {
-  #       var elem = document.getElementById("process_data_promt");
-  #                  elem.scrollTop = elem.scrollHeight;
-  #                  }, 20);
-  # ')),
+  tags$script(HTML('
+       window.setInterval(function() {
+        var elem = document.getElementById("process_data_promt");
+        if (typeof elem !== "undefined" && elem !== null) elem.scrollTop = elem.scrollHeight;
+       }, 20);
+  ')),
   tags$head(tags$script(HTML("
       Shiny.addCustomMessageHandler('manipulateMenuItem', function(message){
         var aNodeList = document.getElementsByTagName('a');
@@ -77,9 +77,9 @@ body <- dashboardBody(
     "))),
   tags$script(HTML('
        window.setInterval(function() {
-                   var elem = document.getElementById("upload_data_promt");
-                   elem.scrollTop = elem.scrollHeight;
-                   }, 20);
+         var elem = document.getElementById("upload_data_promt");
+         if (typeof elem !== "undefined" && elem !== null) elem.scrollTop = elem.scrollHeight;
+       }, 20);
   ')),
 
   # using MathJax

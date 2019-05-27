@@ -1075,7 +1075,7 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
   if (is.null(rt_min)) rt_min <- min(rt)
   if (is.null(rt_max)) rt_max <- max(rt)
 
-  rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step)
+  rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step) %>% round
   req(rt_seq)
 
   n_algorithm <- length(dsList)
@@ -1114,13 +1114,13 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
                                    subdivisions = 1e3) %>% {'$'(., 'value') / funevals.max}
                       else 
                         integrate(fun, lower =  funevals.min, upper = attr(fun, 'max') + 1,
-                                  subdivisions = 1e3) %>% {'$'(., 'value') / funevals.max}
+                                  subdivisions = 1e3) %>% {'$'(., 'value') / (attr(fun, 'max') + 1)}
                     }
                   })
 
     p %<>%
       add_trace(type = 'scatterpolar', r = auc,
-                theta = paste0('B:', as.integer(rt_seq)),
+                theta = paste0('B:', rt_seq),
                 fill = 'toself', fillcolor = rgba_str,
                 marker = list(color = rgb_str), hoverinfo = 'text',
                 text = paste0('area: ', format(auc, digits = 2, nsmall = 2)),

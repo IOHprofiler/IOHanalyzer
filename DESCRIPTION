@@ -36,7 +36,9 @@ Imports:
   markdown,
   reshape2,
   shinyjs,
-  colourpicker
+  colourpicker,
+  dashboardthemes,
+  bsplus
 LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 6.1.1

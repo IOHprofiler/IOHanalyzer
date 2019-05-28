@@ -252,7 +252,7 @@ get_RT_summary.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
 #' @export
 #'
 get_RT_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
-  
+ 
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
 

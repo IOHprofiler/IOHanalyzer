@@ -1980,11 +1980,12 @@ plot_FCE_AGGR.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NUL
   p
 }
 
+
+  
 plot_FV_RT_surface.DataSetList <- function(dsList,
                                            Fstart = NULL, Fstop = NULL,  RTstart = NULL, RTstop = NULL,
                                            surfaces = NULL
                                            ) {
-  print ("plot_FV_RT_surface")
   scale.xlog = FALSE
   scale.ylog = FALSE
   
@@ -2025,36 +2026,35 @@ plot_FV_RT_surface.DataSetList <- function(dsList,
   distributions = get_FV_RT_cross_sample(dsList, RTseq, Fseq)
   
   
-  
   N <- length(distributions)
   colors <- color_palettes(N)
 
-  p <- plot_ly_3D(x.title = "budget", y.title = "value", z.title = "probability")
+  p <- plot_ly_3D(x.title = "budget", y.title = "value", z.title = "probability", TRUE)
   
-  i <- 0
+  i <- 1
   for (distribution in distributions){
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
+    print(rgb_str)
     dm <- distribution$matrix
-    to_show <- list(x = as.numeric(as.character(colnames(dm))), y = as.numeric(as.character(rownames(dm))), z = matrix(as.numeric(as.character(c(dm))),nrow = length(rownames(dm))))
-    #View(to_show[["z"]])
-    some = list(c(0,1), c("tan", "blue"))
-    if (i==1){
-      some = list(c(0,1), c("darkgrey", "ligthgrey"))
-    }
-    View (to_show$z)
-    probability <- to_show$z
-    #temp <- to_show$z + 10
-    p %<>% add_surface(to_show, x = ~to_show$x, y = ~to_show$y, z = ~probability, colorscale = some)#, opacity  = 0.98)
-    #
+    to_show <- list(x = as.numeric(as.character(colnames(dm))), y = as.numeric(as.character(rownames(dm))), z = as.numeric(as.character(c(dm))))
+    
+    probability = to_show$z
+
+    dim(probability) = c(length(to_show$y), length(to_show$x))
+    
+    color_pattern = list(c(0,1), c(rgb_str, rgb_str))
+    opac = 0.98
+    if (i==1)
+      opac = 1
+    
+    p <- p %>% add_surface(x = to_show$x, y = to_show$y, z = probability, colorscale = color_pattern, opacity  = opac)
     i <- i + 1
   }
-  #p %<>% add_surface(z = ~temp, colorscale = list(c(0,1), c("tan", "blue")), opacity = 0.98)
-  View(surfaces)
-  print(surfaces)
+
   if (is.null(surfaces))
     for (surface in surfaces){
-      View(surface)
-      #p %<>% add_trace(data = surface, x = ~surface$x, y = ~surface$y, z = ~surface$z, type = "mesh3d")
+      #View(surface)
+      p %<>% add_surface(data = surface, x = ~surface$x, y = ~surface$y, z = ~surface$z, opacity = 0.98)
     }
   p
 }

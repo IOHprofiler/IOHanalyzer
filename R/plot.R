@@ -60,15 +60,27 @@ plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         zeroline = F))
 }
 
-plot_ly_3D <- function(title = NULL, x.title = NULL, y.title = NULL, z.title = NULL) {
-  print ("plot_ly_3D started")
-  p <- plot_ly(showscale = TRUE)
+plot_ly_3D <- function(title = NULL, x.title = NULL, y.title = NULL, z.title = NULL, scale = FALSE) {
+  
+  p <- plot_ly(showscale = scale)
 
   p %<>%
     layout(scene = list(
-            xaxis = list(title = x.title),
-            yaxis = list(title = y.title),
-            zaxis = list(title = z.title)
+            xaxis = list(title = x.title,
+                         tickcolor = 'rgb(127,127,127)',
+                         ticks = 'outside',
+                         ticklen = 9
+                         ),
+            yaxis = list(title = y.title,
+                         tickcolor = 'rgb(127,127,127)',
+                         ticks = 'outside',
+                         ticklen = 9
+                         ),
+            zaxis = list(title = z.title,
+                         tickcolor = 'rgb(127,127,127)',
+                         ticks = 'outside',
+                         ticklen = 9
+                         )
             )
     )
   p

@@ -37,7 +37,6 @@ Imports:
   reshape2,
   shinyjs,
   colourpicker,
-  dashboardthemes,
   bsplus
 LinkingTo: Rcpp
 SystemRequirements: C++11

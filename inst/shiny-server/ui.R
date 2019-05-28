@@ -34,10 +34,11 @@ body <- dashboardBody(
       "label { font-size:120%; }"
     ))
   ),
-  
-  shinyDashboardThemes(
-    theme = "grey_light"
-  ),
+  if (require("dashboardthemes")){
+    shinyDashboardThemes(
+      theme = "grey_light"
+    )
+  },
   tags$script(HTML('
       $(document).ready(function() {
         $("header").find("nav").append(\'<span class="myClass">Performance Evaluation for Iterative Optimization Heuristics</span>\');

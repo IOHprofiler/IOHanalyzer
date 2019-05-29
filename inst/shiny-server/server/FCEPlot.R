@@ -1,6 +1,6 @@
 # Expected Target Value Convergence
 output$FCE_PER_FUN <- renderPlotly({
-  req(input$FCEPlot.Min, input$FCEPlot.Max, (length(DATA())>0))
+  req(input$FCEPlot.Min, input$FCEPlot.Max, length(DATA()) > 0)
   render_FV_PER_FUN()
 })
 
@@ -25,8 +25,8 @@ update_fv_per_fct_axis <- observe({
 
 render_FV_PER_FUN <- reactive({
   withProgress({
-  rt_min <- input$FCEPlot.Min %>% as.integer
-  rt_max <- input$FCEPlot.Max %>% as.integer
+  rt_min <- input$FCEPlot.Min %>% as.numeric
+  rt_max <- input$FCEPlot.Max %>% as.numeric
   data <- subset(DATA(), algId %in% input$FCEPlot.Algs)
   Plot.FV.Single_Func(data, RTstart = rt_min, RTstop = rt_max, show.CI = input$FCEPlot.show.CI,
                show.mean = input$FCEPlot.show.mean, show.median = input$FCEPlot.show.median,
@@ -40,13 +40,14 @@ output$FCEPlot.Multi.Plot <- renderPlotly(
   render_FCEPlot_multi_plot()
 )
 
-render_FCEPlot_multi_plot <- eventReactive(input$FCEPlot.Multi.PlotButton, {
-  req(input$FCEPlot.Multi.Algs)
+render_FCEPlot_multi_plot <- reactive({
+  req(isolate(input$FCEPlot.Multi.Algs))
+  input$FCEPlot.Multi.PlotButton
   withProgress({
   data <- subset(DATA_RAW(),
-                 algId %in% input$FCEPlot.Multi.Algs,
+                 algId %in% isolate(input$FCEPlot.Multi.Algs),
                  DIM == input$Overall.Dim)
-  req(data)
+  req(length(data) > 0)
   if (length(unique(get_funcId(data))) == 1){
     shinyjs::alert("This plot is only available when the dataset contains multiple functions for the selected dimension.")
     return(NULL)
@@ -85,53 +86,23 @@ get_max_runtimes <- function(data, aggr_on){
     RTval <- max(RTall)
     runtimes <- c(runtimes,RTval)
   }
+  names(runtimes) <- aggr_attr
   runtimes
 }
 
 render_FCEPlot_aggr_plot <- reactive({
+  input$FCEPlot.Aggr.Refresh
   withProgress({
   #TODO: figure out how to avoid plotting again when default targets are written to input
-  data <- subset(DATA_RAW(), algId %in% input$FCEPlot.Aggr.Algs)
-  if (length(data) == 0) return(NULL)
-  if (input$FCEPlot.Aggr.Aggregator == 'Functions'){
-    data <- subset(data, DIM==input$Overall.Dim)
-    fvs <- MEAN_FVALS_FUNC()
-  }
-  else{
-    data <- subset(data, funcId==input$Overall.Funcid)
-    fvs <- MEAN_FVALS_DIM()
-  }
-  if (length(unique(get_funcId(data))) == 1){
-    shinyjs::alert("This plot is only available when the dataset contains multiple functions for the selected dimension.")
-    return(NULL)
-  }
-  if (length(unique(get_algId(data))) == 1){
-    shinyjs::alert("This plot is only available when the dataset contains multiple algorithms for the selected dimension.")
-    return(NULL)
-  }
-  aggr_on = ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
+  req(length(DATA_RAW()) > 0)
+  data <- FCEPlot.Aggr.data()
+  if (is.null(data)) return(NULL)
+  aggr_on <- ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
   aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_dim(data)
-  update_targets <- F
-  update_data <- T
-  if (input$FCEPlot.Aggr.Targets == ""){
-    update_targets <- T
-  }
-  else{
-    runtimes <- as.numeric(unlist(strsplit(input$FCEPlot.Aggr.Targets,",")))
-    runtimes2 <- get_max_runtimes(data, aggr_on)
-    if (all(runtimes == runtimes2))
-      update_data <- F
-    if (length(runtimes) != length(aggr_attr)){
-      update_targets <- T
-    }
-  }
-  if (update_targets){
-    runtimes <- get_max_runtimes(data, aggr_on)
-    updateTextInput(session, 'FCEPlot.Aggr.Targets', value = runtimes %>% toString)
-    return(NULL)
-  }
-  if (update_data)
-    fvs <- mean_FVs(data, aggr_on, runtimes)
+
+  runtimes <- FCEPlot.Aggr.Targets_obj
+  names(runtimes) <- NULL
+  fvs <- mean_FVs(data, aggr_on, runtimes)
   Plot.FV.Aggregated(data, plot_mode = input$FCEPlot.Aggr.Mode, runtimes = runtimes,
                 scale.ylog = input$FCEPlot.Aggr.Logy,
                 use_rank = input$FCEPlot.Aggr.Ranking,
@@ -139,6 +110,50 @@ render_FCEPlot_aggr_plot <- reactive({
   },
   message = "Creating plot")
 })
+
+FCEPlot.Aggr.data <- function() {
+  data <- subset(DATA_RAW(), algId %in% isolate(input$FCEPlot.Aggr.Algs))
+  if (length(data) == 0) return(NULL)
+  if (input$FCEPlot.Aggr.Aggregator == 'Functions'){
+    data <- subset(data, DIM==input$Overall.Dim)
+    if (length(unique(get_funcId(data))) == 1){
+      shinyjs::alert("This plot is only available when the dataset contains multiple functions for the selected dimension.")
+      return(NULL)
+    }
+    fvs <- MEAN_FVALS_FUNC()
+  }
+  else{
+    data <- subset(data, funcId==input$Overall.Funcid)
+    if (length(unique(get_dim(data))) == 1){
+      shinyjs::alert("This plot is only available when the dataset contains multiple dimensions for the selected function")
+      return(NULL)
+    }
+    fvs <- MEAN_FVALS_DIM()
+  }
+  if (length(unique(get_algId(data))) == 1){
+    shinyjs::alert("This plot is only available when the dataset contains multiple algorithms for the selected dimension.")
+    return(NULL)
+  }
+  data
+}
+
+default_runtimes_table <- reactive({
+  data <- FCEPlot.Aggr.data()
+  if (is.null(data)) return(NULL)
+  aggr_on <- ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
+  get_max_runtimes(data, aggr_on) %>% t %>% as.data.table(keep.rownames = F)
+})
+
+FCEPlot.Aggr.Targets_obj <- NULL
+
+proxy_FCEPlot.Aggr.Targets <- dataTableProxy('FCEPlot.Aggr.Targets')
+
+output$FCEPlot.Aggr.Targets <- DT::renderDataTable({
+  req(length(DATA_RAW()) > 0)
+  FCEPlot.Aggr.Targets_obj <<- default_runtimes_table()
+  FCEPlot.Aggr.Targets_obj
+}, editable = TRUE, rownames = FALSE,
+options = list(pageLength = 5, lengthMenu = c(5, 10, 25, -1), scrollX = T, server = T))
 
 output$FCEPlot.Aggr.Download <- downloadHandler(
   filename = function() {
@@ -150,3 +165,16 @@ output$FCEPlot.Aggr.Download <- downloadHandler(
   },
   contentType = paste0('image/', input$FCEPlot.Aggr.Format)
 )
+
+observeEvent(input$FCEPlot.Aggr.Targets_cell_edit, {
+  info <- input$FCEPlot.Aggr.Targets_cell_edit
+  i <- info$row
+  j <- info$col + 1
+  v <- info$value
+  data <- FCEPlot.Aggr.data()
+  if (is.null(data)) return(NULL)
+  aggr_on <- ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_dim(data)
+  suppressWarnings(FCEPlot.Aggr.Targets_obj[i, paste0(aggr_attr[[j]])] <<- DT::coerceValue(v, FCEPlot.Aggr.Targets_obj[i, paste0(aggr_attr[[j]])]))
+  replaceData(proxy, FCEPlot.Aggr.Targets_obj, resetPaging = FALSE, rownames = FALSE)
+})

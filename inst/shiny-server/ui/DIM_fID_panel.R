@@ -1,6 +1,6 @@
 DIM_fID_panel <- function() {
   conditionalPanel(
-    "input.tabs!='upload' && input.tabs!='readme' && input.tabs!='about'",
+    "input.tabs!='upload' && input.tabs!='readme' && input.tabs!='about' && input.tabs!='Settings'",
     fluidRow(
       column(
         width = 11,

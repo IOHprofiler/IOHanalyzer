@@ -50,7 +50,7 @@ render_RT_HIST <- reactive({
   # TODO: remove 'DataSetList' in the future
   data <- subset(DATA(), algId %in% input$RTPMF.Hist.Algs)
   
-  Plot.RT.Histogram(data, ftarget, plot_mode = plot_mode)
+  Plot.RT.Histogram(data, ftarget, plot_mode = plot_mode, use.equal.bins = input$RTPMF.Hist.Equal)
   },
   message = "Creating plot")
 })

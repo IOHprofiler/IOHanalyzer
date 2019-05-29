@@ -122,13 +122,14 @@ Plot.RT.PMF <- function(dsList, ftarget, show.sample = F,
 #' @param ftarget The target function value.
 #' @param plot_mode How to plot the different hisograms for each algorithm. Can be either
 #'  'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.
+#' @param use.equal.bins Whether to determine one bin size for all plots or have individual bin sizes for each algorithm
 #'
 #' @return A plot of the histograms of the runtimes at a the
 #'         target function value of the DataSetList
 #' @export
 #' @examples 
 #' Plot.RT.Histogram(subset(dsl, funcId == 1), 14)
-Plot.RT.Histogram <- function(dsList, ftarget, plot_mode = 'overlay') UseMethod("Plot.RT.Histogram", dsList)
+Plot.RT.Histogram <- function(dsList, ftarget, plot_mode = 'overlay', use.equal.bins = F) UseMethod("Plot.RT.Histogram", dsList)
 #' Plot the empirical cumulative distriburtion as a function of the running times of
 #' a DataSetList at certain target function values
 #'
@@ -195,13 +196,14 @@ Plot.FV.PDF <- function(dsList, runtime, show.sample = F, scale.ylog = F) UseMet
 #' @param runtime The target runtime
 #' @param plot_mode How to plot the different hisograms for each algorithm. Can be either
 #'  'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.
-#'
+#' @param use.equal.bins Whether to determine one bin size for all plots or have individual bin sizes for each algorithm
+#' 
 #' @return A plot of the histograms of the function values at a the
 #'         target runtime of the DataSetList
 #' @export
 #' @examples 
 #' Plot.FV.Histogram(subset(dsl, funcId == 1), 100)
-Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay') UseMethod("Plot.FV.Histogram", dsList)
+Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay', use.equal.bins = F) UseMethod("Plot.FV.Histogram", dsList)
 #' Plot the empirical cumulative distriburtion as a function of the target values of
 #' a DataSetList at certain target runtimes
 #'
@@ -258,15 +260,18 @@ Plot.FV.ECDF_AUC <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
 #' @param scale.ylog Whether or not to scale the y-axis logaritmically
 #' @param algids Which algorithms from dsList to use
+#' @param par_name Which parameters to create plots for; set to NULL to use all parameters found in dsList.
+#' @param show.CI Whether or not to show the standard deviation
 #'
 #' @return A plot of for every recorded parameter in the DataSetList
 #' @export
 #' @examples 
 #' Plot.Parameters(subset(dsl, funcId == 1))
 Plot.Parameters <- function(dsList, f_min = NULL, f_max = NULL,
-                          algids = 'all',
+                          algids = 'all', par_name = NULL,
                           scale.xlog = F, scale.ylog = F,
-                          show.mean = T, show.median = F) UseMethod("Plot.Parameters", dsList)
+                          show.mean = T, show.median = F,
+                          show.CI = F) UseMethod("Plot.Parameters", dsList)
 #' Plot the aggregated empirical cumulative distriburtion as a function of the running times of
 #' a DataSetList. Aggregated over multiple functions or dimensions.
 #'
@@ -582,7 +587,7 @@ Plot.RT.PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
 
 #' @rdname Plot.RT.Histogram
 #' @export
-Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'){
+Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay', use.equal.bins = F){
 
   N <- length(dsList)
   colors <- color_palettes(N)
@@ -598,7 +603,10 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
       IOH_plot_ly_default(x.title = "function evaluations", y.title = "runs")
     })
   }
-
+  if (use.equal.bins){
+    res1 <- hist(get_RT_sample(dsList, ftarget, output = 'long')$RT, breaks = nclass.FD, plot = F)
+  }
+  
   for (i in seq_along(dsList)) {
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.35)')
@@ -610,9 +618,11 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
     # skip if all runtime samples are NA
     if (sum(!is.na(rt$RT)) < 2)
       next
-
-    res <- hist(rt$RT, breaks = nclass.FD, plot = F)
+    if (use.equal.bins) breaks <- res1$breaks
+    else breaks <- nclass.FD
+    res <- hist(rt$RT, breaks = breaks, plot = F)
     breaks <- res$breaks
+    
     plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
                             text = paste0('<b>count</b>: ', res$counts, '<br><b>breaks</b>: [',
                                           breaks[-length(breaks)], ',', breaks[-1], ']'))
@@ -867,7 +877,7 @@ Plot.FV.PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
 
 #' @rdname Plot.FV.Histogram
 #' @export
-Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay'){
+Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', use.equal.bins = F){
   n_algorithm <- length(dsList)
   colors <- color_palettes(n_algorithm)
   if (n_algorithm <= 10)
@@ -883,7 +893,10 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay'){
       IOH_plot_ly_default(x.title = "target values", y.title = "runs")
     })
   }
-
+  if (use.equal.bins){
+    res1 <- hist(get_FV_sample(dsList, runtime, output = 'long')$'f(x)', breaks = nclass.FD, plot = F)
+  }
+  
   for (i in seq_along(dsList)) {
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.35)')
@@ -894,9 +907,12 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay'){
     # skip if all target samples are NA
     if (sum(!is.na(fce$'f(x)')) < 2)
       next
-
-    res <- hist(fce$'f(x)', breaks = nclass.FD, plot = F)
+    
+    if (use.equal.bins) breaks <- res1$breaks
+    else breaks <- nclass.FD
+    res <- hist(fce$'f(x)', breaks = breaks, plot = F)
     breaks <- res$breaks
+    
     plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
                             text = paste0('<b>count</b>: ', res$counts,
                                           '<br><b>breaks</b>: [',
@@ -1098,13 +1114,13 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
                                    subdivisions = 1e3) %>% {'$'(., 'value') / funevals.max}
                       else 
                         integrate(fun, lower =  funevals.min, upper = attr(fun, 'max') + 1,
-                                  subdivisions = 1e3) %>% {'$'(., 'value') / funevals.min}
+                                  subdivisions = 1e3) %>% {'$'(., 'value') / (attr(fun, 'max') + 1)}
                     }
                   })
 
     p %<>%
       add_trace(type = 'scatterpolar', r = auc,
-                theta = paste0('B:', as.integer(rt_seq)),
+                theta = paste0('B:', rt_seq),
                 fill = 'toself', fillcolor = rgba_str,
                 marker = list(color = rgb_str), hoverinfo = 'text',
                 text = paste0('area: ', format(auc, digits = 2, nsmall = 2)),
@@ -1124,9 +1140,10 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
 #' @rdname Plot.Parameters
 #' @export
 Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
-                                      algids = 'all',
+                                      algids = 'all', par_name = NULL,
                                       scale.xlog = F, scale.ylog = F,
-                                      show.mean = T, show.median = F){
+                                      show.mean = T, show.median = F,
+                                      show.CI = F){
   #TODO: clean this up
   req(xor(show.mean,show.median))
 
@@ -1141,7 +1158,7 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
   req(length(dt) != 0)
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
 
-  par_name <- dt[, parId] %>% unique
+  if (is.null(par_name)) par_name <- dt[, parId] %>% unique
   n_param <- length(par_name)
 
   algorithms <- dt[, algId] %>% unique
@@ -1170,7 +1187,8 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
       dt_plot <- dt[parId == name & algId == alg]
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
-
+      
+      if (show.CI){
       p[[j]] %<>%
         add_trace(data = dt_plot, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
                   line = list(color = rgba_str, width = 0),
@@ -1179,6 +1197,7 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
                   fill = 'tonexty',  line = list(color = 'transparent'),
                   fillcolor = rgba_str, showlegend = F, legendgroup = ~algId,
                   name = 'mean +/- sd')
+      }
 
       if (show.mean)
         p[[j]] %<>% add_trace(data = dt_plot, x = ~target, y = ~mean,
@@ -1213,7 +1232,7 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
 Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
                                                 scale.xlog = F) {
   if (is.null(targets))
-    targets <- get_default_ECDF_targets(dsList)
+    targets <- get_default_ECDF_targets(dsList, as.numeric)
 
   algId <- unique(attr(dsList, 'algId'))
   p <- IOH_plot_ly_default(x.title = "function evaluations",

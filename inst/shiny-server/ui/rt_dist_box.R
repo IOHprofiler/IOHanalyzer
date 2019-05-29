@@ -7,13 +7,19 @@ rt_histogram_box <- function(width = 12, collapsed = T, collapsible = T) {
         textInput('RTPMF.Hist.Target', label = HTML('Select the target value'),
                   value = ''),
         selectInput('RTPMF.Hist.Algs', label = 'Select which algorithms to plot:',
-                    multiple = T, selected = NULL, choices = NULL),
+                    multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                      custom_icon() %>%
+                        bs_embed_popover(
+                          title = "Algorithm selection", content = alg_select_info, 
+                          placement = "auto"
+                        )
+                    ),
         HTML('Choose whether the histograms are <b>overlaid</b> in one plot
              or <b>separated</b> in several subplots:'),
         selectInput('RTPMF.Hist.Mode', '',
                     choices = c("overlay", "subplot"),
                     selected = 'subplot'),
-
+        checkboxInput("RTPMF.Hist.Equal", "Use equal bins for all algorithms", F),
         selectInput('RTPMF.Hist.Format', label = 'Select the figure format',
                     choices = supported_fig_format, selected = 'pdf'),
 
@@ -49,9 +55,15 @@ rt_pmf_box <- function(width = 12, collapsed = T, collapsible = T) {
 
           textInput('RTPMF.Bar.Target', label = '', value = ''),
           selectInput('RTPMF.Bar.Algs', label = 'Select which algorithms to plot:',
-                      multiple = T, selected = NULL, choices = NULL),
+                      multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                        custom_icon() %>%
+                          bs_embed_popover(
+                            title = "Algorithm selection", content = alg_select_info, 
+                            placement = "auto"
+                          )
+                      ),
           checkboxInput('RTPMF.Bar.Sample', label = 'Show runtime for each run', value = T),
-          checkboxInput('RTPMF.Bar.Logy', label = 'Scale y axis log10', value = F),
+          checkboxInput('RTPMF.Bar.Logy', label = 'Scale y axis \\(\\log_{10}\\)', value = F),
 
           selectInput('RTPMF.Bar.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = 'pdf'),

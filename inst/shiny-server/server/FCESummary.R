@@ -5,47 +5,53 @@ FCE_runtime_summary_condensed <- reactive({
   fall <- get_funvals(data)
   df <- get_RT_overview(data, algorithm = input$FCESummary.Overview.Algid)
   df$"runs" %<>% as.integer
-  df$"Budget" %<>% as.integer
-  df$"miminal runtime" %<>% as.integer
-  df$"maximal runtime" %<>% as.integer
+  df$"Budget" %<>% as.numeric
+  df$"miminal runtime" %<>% as.numeric
+  df$"maximal runtime" %<>% as.numeric
   
   df
 })
 
-output$table_FV_overview <- renderDataTable({
+output$table_FV_overview <- DT::renderDataTable({
   req(input$FCESummary.Overview.Algid)
   FCE_runtime_summary_condensed()
-}, options = list(pageLength = 20, scrollX = T))
+}, filter = list(position = 'top', clear = FALSE),
+options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
 
 output$FCESummary.Overview.Download <- downloadHandler(
   filename = function() {
     eval(FV_overview_name)
   },
   content = function(file) {
+    df <- FCE_runtime_summary_condensed()
+    df <- df[input[["FCE_SAMPLE_rows_all"]]]
     if (input$FCESummary.Overview.Format == 'csv')
-      write.csv(FCE_runtime_summary_condensed(), file, row.names = F)
+      write.csv(df, file, row.names = F)
     else{
-      print(xtable(FCE_runtime_summary_condensed()), file = file)
+      print(xtable(df), file = file)
     }
   }
 )
 
 get_FCE_summary <- reactive({
-  req(input$FCESummary.Statistics.Min, input$FCESummary.Statistics.Max, input$FCESummary.Statistics.Step, (length(DATA())>0))
+  req(input$FCESummary.Statistics.Min, input$FCESummary.Statistics.Max, input$FCESummary.Statistics.Step, length(DATA()) > 0)
 
-  rt_min <- input$FCESummary.Statistics.Min %>% as.integer
-  rt_max <- input$FCESummary.Statistics.Max %>% as.integer
-  rt_step <- input$FCESummary.Statistics.Step %>% as.integer
+  rt_min <- input$FCESummary.Statistics.Min %>% as.numeric
+  rt_max <- input$FCESummary.Statistics.Max %>% as.numeric
+  rt_step <- input$FCESummary.Statistics.Step %>% as.numeric
 
-  req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
   data <- DATA()
-  rt <- get_runtimes(data)
-
-  if (input$FCESummary.Statistics.Single)
-    rt_max <- rt_min
-
-  rt_seq <- seq_RT(rt, rt_min, rt_max, by = rt_step)
-  req(rt_seq)
+  
+  
+  if (!input$FCESummary.Statistics.Single){
+    req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
+    rt <- get_runtimes(data)
+    rt_seq <- seq_RT(rt, rt_min, rt_max, by = rt_step)
+    req(rt_seq)
+  }
+  else{
+    rt_seq <- rt_min
+  }
 
   df <- get_FV_summary(data, rt_seq, algorithm = input$FCESummary.Statistics.Algid)[
     , c('DIM', 'funcId') := NULL
@@ -54,7 +60,7 @@ get_FCE_summary <- reactive({
   # df$runs.MaxFunvals %<>% as.integer
   df$median %<>% format(format = 'e', digits = 3)
   df$mean %<>% format(format = 'e', digits = 3)
-  df$runtime %<>% as.integer
+  df$runtime %<>% as.numeric
   
   probs <- getOption("IOHanalyzer.quantiles")
   
@@ -62,41 +68,47 @@ get_FCE_summary <- reactive({
   for (p in paste0(probs * 100, '%')) {
     df[[p]] %<>% format(format = 'e', digits = 3)
   }
+  df$sd <- round(df$sd, 2)
   df
 })
 
-output$FCE_SUMMARY <- renderDataTable({
+output$FCE_SUMMARY <- DT::renderDataTable({
   get_FCE_summary()
-}, options = list(pageLength = 20, scrollX = T))
+}, filter = list(position = 'top', clear = FALSE),
+options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
 
 output$FCESummary.Statistics.Download <- downloadHandler(
   filename = function() {
     eval(FV_csv_name)
   },
   content = function(file) {
+    df <- get_FCE_summary()
+    df <- df[input[["FCE_SAMPLE_rows_all"]]]
     if (input$RTSummary.Overview.Format == 'csv')
-      write.csv(get_FCE_summary(), file, row.names = F)
+      write.csv(df, file, row.names = F)
     else{
-      print(xtable(get_FCE_summary()), file = file)
+      print(xtable(df), file = file)
     }
   }
 )
 
 get_FCE <- reactive({
-  req(input$FCESummary.Sample.Min, input$FCESummary.Sample.Max, input$FCESummary.Sample.Step, (length(DATA())>0))
-  rt_min <- input$FCESummary.Sample.Min %>% as.integer
-  rt_max <- input$FCESummary.Sample.Max %>% as.integer
-  rt_step <- input$FCESummary.Sample.Step %>% as.integer
+  req(input$FCESummary.Sample.Min, input$FCESummary.Sample.Max, input$FCESummary.Sample.Step, length(DATA()) > 0)
+  rt_min <- input$FCESummary.Sample.Min %>% as.numeric
+  rt_max <- input$FCESummary.Sample.Max %>% as.numeric
+  rt_step <- input$FCESummary.Sample.Step %>% as.numeric
 
-  req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
   data <- DATA()
-  rt <- get_runtimes(data)
-
-  if (input$FCESummary.Sample.Single)
-    rt_max <- rt_min
-
-  rt_seq <- seq_RT(rt, rt_min, rt_max, by = rt_step)
-  req(rt_seq)
+  
+  if (!input$FCESummary.Sample.Single){
+    req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
+    rt <- get_runtimes(data)
+    rt_seq <- seq_RT(rt, rt_min, rt_max, by = rt_step)
+    req(rt_seq)
+  }
+  else{
+    rt_seq <- rt_min
+  }
 
   get_FV_sample(data, rt_seq, algorithm = input$FCESummary.Sample.Algid,
                 output = input$FCESummary.Sample.Format)
@@ -127,15 +139,18 @@ output$FCESummary.Sample.Download <- downloadHandler(
     eval(FVSample_csv_name)
   },
   content = function(file) {
+    df <- get_FCE()
+    df <- df[input[["FCE_SAMPLE_rows_all"]]]
     if (input$FCESummary.Sample.FileFormat == 'csv')
-      write.csv(get_FCE(), file, row.names = F)
+      write.csv(df, file, row.names = F)
     else
-      print(xtable(get_FCE()), file = file)
+      print(xtable(df), file = file)
   }
 )
 
-output$FCE_SAMPLE <- renderDataTable({
+output$FCE_SAMPLE <- DT::renderDataTable({
   df <- get_FCE()
   df[is.na(df)] <- 'NA'
-  df}, options = list(pageLength = 20, scrollX = T)
-)
+  df
+}, filter = list(position = 'top', clear = FALSE),
+options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))

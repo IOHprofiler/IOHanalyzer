@@ -24,7 +24,7 @@ update_ert_per_fct_axis <- observe({
 
 render_ert_per_fct <- reactive({
   withProgress({
-  req(input$ERTPlot.Min, input$ERTPlot.Max, DATA())
+  req(input$ERTPlot.Min, input$ERTPlot.Max, length(DATA()) > 0)
   selected_algs <- input$ERTPlot.Algs
   data <- subset(DATA(), algId %in% input$ERTPlot.Algs)
   fstart <- input$ERTPlot.Min %>% as.numeric
@@ -46,13 +46,14 @@ output$ERTPlot.Multi.Plot <- renderPlotly(
   render_ERTPlot_multi_plot()
 )
 
-render_ERTPlot_multi_plot <- eventReactive(input$ERTPlot.Multi.PlotButton, {
-  req(input$ERTPlot.Multi.Algs)
+render_ERTPlot_multi_plot <- reactive({
+  req(isolate(input$ERTPlot.Multi.Algs))
+  input$ERTPlot.Multi.PlotButton
   withProgress({
   data <- subset(DATA_RAW(),
-                 algId %in% input$ERTPlot.Multi.Algs,
+                 algId %in% isolate(input$ERTPlot.Multi.Algs),
                  DIM == input$Overall.Dim)
-  req(data)
+  req(length(data) > 0)
   if (length(unique(get_funcId(data))) == 1){
     shinyjs::alert("This plot is only available when the dataset contains multiple functions  for the selected dimension.")
     return(NULL)
@@ -98,6 +99,7 @@ get_max_targets <- function(data, aggr_on, maximize){
 render_ERTPlot_aggr_plot <- reactive({
   withProgress({
   #TODO: figure out how to avoid plotting again when default targets are written to input
+  req(length(DATA_RAW()) > 0)
   data <- subset(DATA_RAW(), algId %in% input$ERTPlot.Aggr.Algs)
   if (length(data) == 0) return(NULL)
   data <- subset(data, DIM == input$Overall.Dim)
@@ -110,7 +112,7 @@ render_ERTPlot_aggr_plot <- reactive({
     return(NULL)
   }
   erts <- MAX_ERTS_FUNC()
-  aggr_on = 'funcId'
+  aggr_on <- 'funcId'
   aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_DIM(data)
   targets <- get_max_targets(data, aggr_on, maximize = !(format == COCO || format == BIBOJ_COCO))
   erts <- max_ERTs(data, aggr_on, targets, maximize = !(format == COCO || format == BIBOJ_COCO))

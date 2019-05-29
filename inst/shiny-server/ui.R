@@ -12,6 +12,10 @@ sidebar <- dashboardSidebar(
 )
 
 body <- dashboardBody(
+  tags$style(HTML('.popover-title {color:black;}
+                   .popover-content {color:black;}
+                   .main-sidebar {z-index:auto;}')
+  ),
   # javascript, headers ----------------------
   # to show text on the header (heading banner)
   tags$head(tags$style(HTML(
@@ -25,7 +29,16 @@ body <- dashboardBody(
         color: white;
       }
     '))),
-
+  tags$head(
+    tags$style(HTML(
+      "label { font-size:120%; }"
+    ))
+  ),
+  if (require("dashboardthemes")){
+    shinyDashboardThemes(
+      theme = "grey_light"
+    )
+  },
   tags$script(HTML('
       $(document).ready(function() {
         $("header").find("nav").append(\'<span class="myClass">Performance Evaluation for Iterative Optimization Heuristics</span>\');
@@ -42,12 +55,12 @@ body <- dashboardBody(
   #               document.body.style.backgroundColor = color;
   #               document.body.innerText = color;
   #             });"),
-  # tags$script(HTML('
-  #      window.setInterval(function() {
-  #       var elem = document.getElementById("process_data_promt");
-  #                  elem.scrollTop = elem.scrollHeight;
-  #                  }, 20);
-  # ')),
+  tags$script(HTML('
+       window.setInterval(function() {
+        var elem = document.getElementById("process_data_promt");
+        if (typeof elem !== "undefined" && elem !== null) elem.scrollTop = elem.scrollHeight;
+       }, 20);
+  ')),
   tags$head(tags$script(HTML("
       Shiny.addCustomMessageHandler('manipulateMenuItem', function(message){
         var aNodeList = document.getElementsByTagName('a');
@@ -65,15 +78,16 @@ body <- dashboardBody(
     "))),
   tags$script(HTML('
        window.setInterval(function() {
-                   var elem = document.getElementById("upload_data_promt");
-                   elem.scrollTop = elem.scrollHeight;
-                   }, 20);
+         var elem = document.getElementById("upload_data_promt");
+         if (typeof elem !== "undefined" && elem !== null) elem.scrollTop = elem.scrollHeight;
+       }, 20);
   ')),
 
   # using MathJax
   HTML("<head><script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML'
        async></script></head>"),
-
+  use_bs_tooltip(),
+  use_bs_popover(),
   # tabitems ----------------------
   tabItems(
     tabItem(tabName = 'about', includeMarkdown('RMD/about.Rmd')),
@@ -165,7 +179,7 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                fv_per_fct_box(),
+                fv_per_fct_box(collapsed = F),
                 fv_agg_box(),
                 fv_comparison_box()
                )
@@ -187,7 +201,7 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                fv_ecdf_single_budget_box(),
+                fv_ecdf_single_budget_box(collapsed = F),
                 fv_ecdf_agg_budgets_box(),
                 fv_ecdf_auc_box()
               )
@@ -199,7 +213,7 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                par_expected_value_box(),
+                par_expected_value_box(collapsed = F),
                 par_summary_box(),
                 par_sample_box()
               )

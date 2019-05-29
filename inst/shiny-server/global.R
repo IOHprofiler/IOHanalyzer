@@ -8,11 +8,14 @@ suppressMessages(library(plotly))
 suppressMessages(library(shinydashboard))
 suppressMessages(library(xtable))
 suppressMessages(library(colourpicker))
+suppressMessages(library(dashboardthemes))
+suppressMessages(library(bsplus))
 
 # global options
 options(datatable.print.nrows = 20)
 options(width = 80)
-options(shiny.maxRequestSize = 200 * 1024 ^ 2)   # maximal number of requests, this is too many...
+# maximal number of requests, this is too many...
+options(shiny.maxRequestSize = 200 * 1024 ^ 2)   
 
 # for customized 'plotlyOutput' function -----
 widget_html <- function(name, package, id, style, class, inline = FALSE, ...) {
@@ -66,7 +69,7 @@ plotlyOutput.IOHanalyzer <- function(outputId, width = '100%', aspect_ratio = 16
                                 else ""), 
                 width = width, height = 0)
   )
-  dependencies = widget_dependencies('plotly', 'plotly')
+  dependencies <- widget_dependencies('plotly', 'plotly')
   htmltools::attachDependencies(html, dependencies)
 }
 

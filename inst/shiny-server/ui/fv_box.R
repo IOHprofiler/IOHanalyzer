@@ -10,7 +10,13 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
       textInput('FCEPlot.Min', label = RT_MIN_LABEL, value = ''),
       textInput('FCEPlot.Max', label = RT_MAX_LABEL, value = ''),
       selectInput('FCEPlot.Algs', label = 'Select which algorithms to plot:',
-                  multiple = T, selected = NULL, choices = NULL),
+                  multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                    custom_icon() %>%
+                      bs_embed_popover(
+                        title = "Algorithm selection", content = alg_select_info, 
+                        placement = "auto"
+                      )
+                  ),
       checkboxInput('FCEPlot.show.mean',
                     label = 'Show/hide mean',
                     value = T),
@@ -23,11 +29,11 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
                     value = F),
 
       checkboxInput('FCEPlot.semilogx',
-                    label = 'Scale x axis log10',
+                    label = 'Scale x axis \\(\\log_{10}\\)',
                     value = T),
 
       checkboxInput('FCEPlot.semilogy',
-                    label = 'Scale y axis log10',
+                    label = 'Scale y axis \\(\\log_{10}\\)',
                     value = T),
 
       selectInput('FCEPlot.Format', label = 'Select the figure format',
@@ -58,14 +64,20 @@ fv_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed 
         sidebarPanel(
           width = 2,
           selectInput('FCEPlot.Multi.Algs', label = 'Select which algorithms to plot:',
-                      multiple = T, selected = NULL, choices = NULL),
+                      multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                        custom_icon() %>%
+                          bs_embed_popover(
+                            title = "Algorithm selection", content = alg_select_info, 
+                            placement = "auto"
+                          )
+                      ),
 
           checkboxInput('FCEPlot.Multi.Logx',
-                        label = 'Scale x axis log10',
+                        label = 'Scale x axis \\(\\log_{10}\\)',
                         value = T),
 
           checkboxInput('FCEPlot.Multi.Logy',
-                        label = 'Scale y axis log10',
+                        label = 'Scale y axis \\(\\log_{10}\\)',
                         value = T),
 
           actionButton('FCEPlot.Multi.PlotButton', label = 'Refresh the figure'),
@@ -95,7 +107,13 @@ fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
         sidebarPanel(
           width = 3,
           selectInput('FCEPlot.Aggr.Algs', label = 'Select which algorithms to plot:',
-                      multiple = T, selected = NULL, choices = NULL),
+                      multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                        custom_icon() %>%
+                          bs_embed_popover(
+                            title = "Algorithm selection", content = alg_select_info, 
+                            placement = "auto"
+                          )
+                      ),
           selectInput('FCEPlot.Aggr.Mode', label = 'Select the plotting mode',
                       choices = c('radar','line'), selected = 'radar'),
 
@@ -107,10 +125,10 @@ fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
                         value = T),
 
           checkboxInput('FCEPlot.Aggr.Logy',
-                        label = 'Scale y axis log10',
+                        label = 'Scale y axis \\(\\log_{10}\\)',
                         value = F),
-
-          textInput('FCEPlot.Aggr.Targets', label = 'Choose the runtimes (comma-separated)'),
+          actionButton("FCEPlot.Aggr.Refresh", "Refresh the figure"),
+          # textInput('FCEPlot.Aggr.Targets', label = 'Choose the runtimes (comma-separated)'),
           selectInput('FCEPlot.Aggr.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = 'pdf'),
 
@@ -121,7 +139,8 @@ fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
           width = 9,
           column(
             width = 12, align = "center",
-            plotlyOutput.IOHanalyzer('FCEPlot.Aggr.Plot')
+            plotlyOutput.IOHanalyzer('FCEPlot.Aggr.Plot'),
+            DT::dataTableOutput("FCEPlot.Aggr.Targets")
           )
         )
       )

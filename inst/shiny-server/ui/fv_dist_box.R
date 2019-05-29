@@ -8,13 +8,20 @@ fv_histgram_box <- function(width = 12, collapsible = T, collapsed = T) {
         textInput('FCEPDF.Hist.Runtime', label = HTML('Select the budget value'),
                   value = ''),
         selectInput('FCEPDF.Hist.Algs', label = 'Select which algorithms to plot:',
-                    multiple = T, selected = NULL, choices = NULL),
+                    multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                      custom_icon() %>%
+                        bs_embed_popover(
+                          title = "Algorithm selection", content = alg_select_info, 
+                          placement = "auto"
+                        )
+                    ),
         HTML('Choose whether the histograms are <b>overlaid</b> in one plot
                                 or <b>separated</b> in several subplots:'),
         selectInput('FCEPDF.Hist.Mode', '',
                     choices = c("overlay", "subplot"),
                     selected = 'subplot'),
-
+        checkboxInput("FCEPDF.Hist.Equal", "Use equal bins for all algorithms", F),
+        
         selectInput('FCEPDF.Hist.Format', label = 'Select the figure format',
                     choices = supported_fig_format, selected = 'pdf'),
 
@@ -53,10 +60,16 @@ fv_pdf_box <- function(width = 12, collapsible = T, collapsed = T) {
 
         textInput('FCEPDF.Bar.Runtime', label = '', value = ''),
         selectInput('FCEPDF.Bar.Algs', label = 'Select which algorithms to plot:',
-                    multiple = T, selected = NULL, choices = NULL),
+                    multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                      custom_icon() %>%
+                        bs_embed_popover(
+                          title = "Algorithm selection", content = alg_select_info, 
+                          placement = "auto"
+                        )
+                    ),
         checkboxInput('FCEPDF.Bar.Samples', label = 'Show runtime samples', value = T),
-        checkboxInput('FCEPDF.Bar.Logy', label = 'Scale y axis log10', value = T),
-
+        checkboxInput('FCEPDF.Bar.Logy', label = 'Scale y axis \\(\\log_{10}\\)', value = T),
+        
         selectInput('FCEPDF.Bar.Format', label = 'Select the figure format',
                     choices = supported_fig_format, selected = 'pdf'),
 

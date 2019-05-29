@@ -14,7 +14,7 @@ fv_overview_box <- function(width = 12, collapsible = T, collapsed = T) {
 
       mainPanel(
         width = 9,
-        dataTableOutput('table_FV_overview')
+        DT::dataTableOutput('table_FV_overview')
       )
   )
 }
@@ -43,7 +43,7 @@ fv_stats_box <- function(width = 12, collapsible = T, collapsed = T) {
         HTML(paste0('<div style="font-size:120%;">',
                     includeMarkdown('RMD/TAR_SUMMARY_TABLE.Rmd'),
                     '</div>')),
-        dataTableOutput('FCE_SUMMARY')
+        DT::dataTableOutput('FCE_SUMMARY')
       )
     )
 }
@@ -81,7 +81,7 @@ fv_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
            algorithm until it evaluated for the first time a solution of
            quality at least \\(f(x)\\).</div>"),
       br(),
-      dataTableOutput('FCE_SAMPLE')
+      DT::dataTableOutput('FCE_SAMPLE')
     )
   )
 }

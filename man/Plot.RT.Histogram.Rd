@@ -5,10 +5,11 @@
 \alias{Plot.RT.Histogram.DataSetList}
 \title{Plot histograms of the runtimes of a DataSetList at a certain target function value}
 \usage{
-Plot.RT.Histogram(dsList, ftarget, plot_mode = "overlay")
+Plot.RT.Histogram(dsList, ftarget, plot_mode = "overlay",
+  use.equal.bins = F)
 
 \method{Plot.RT.Histogram}{DataSetList}(dsList, ftarget,
-  plot_mode = "overlay")
+  plot_mode = "overlay", use.equal.bins = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -17,6 +18,8 @@ Plot.RT.Histogram(dsList, ftarget, plot_mode = "overlay")
 
 \item{plot_mode}{How to plot the different hisograms for each algorithm. Can be either
 'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.}
+
+\item{use.equal.bins}{Whether to determine one bin size for all plots or have individual bin sizes for each algorithm}
 }
 \value{
 A plot of the histograms of the runtimes at a the

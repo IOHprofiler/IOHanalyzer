@@ -7,7 +7,7 @@
 #' @importFrom colorspace sequential_hcl
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom colorRamps primary.colors
-#' @importFrom data.table as.data.table rbindlist data.table fread := melt
+#' @importFrom data.table as.data.table rbindlist data.table fread := melt is.data.table
 #' @importFrom plotly add_annotations add_trace orca plot_ly rename_ subplot layout
 #' @importFrom ggplot2 aes geom_jitter geom_line geom_ribbon geom_violin ggplot element_text
 #' @importFrom ggplot2 guides scale_color_manual scale_colour_manual scale_fill_manual
@@ -52,8 +52,6 @@ options(shiny.port = 4242)
 
 IOHanalyzer_env <- new.env(parent = emptyenv())
 
-# IOHanalyzer_env$probs <- c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.
-
 .mean <- function(x) mean(x, na.rm = T)
 .median <- function(x) median(x, na.rm = T)
 .sd <- function(x) sd(x, na.rm = T)
@@ -74,76 +72,6 @@ BIBOJ_COCO <- 'BIBOJ_COCO'
 TWO_COL <- 'TWO_COL'
 AUTOMATIC <- 'AUTOMATIC'
 NEVERGRAD <- 'NEVERGRAD'
-
-# IOHanalyzer_env$max_samples <- 100
-# IOHanalyzer_env$default_backend <- 'plotly'
-
-#' is.wholenumber <-
-#'   function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
-#' 
-#' #' Set the value of some global IOHanalyzer properties
-#' #' 
-#' #' @param prop_name The property to set. Current options are:
-#' #' \itemize{
-#' #' \item 'probs': The probabilities in the displayed quantiles (RT and FV summaries). Needs a vector of probabilities
-#' #' \item 'max_samples': The maximum number of samples to generate for each algorithm. Needs a single integer
-#' #' }
-#' #' @param value The value to set the property to
-#' #' @param ... Addition arguments
-#' #' 
-#' #' @export
-#' #' @examples 
-#' #' set_property("probs",c(0.1,0.25,0.5,0.75,0.9))
-#' set_property <- function(prop_name, value, ...){
-#'     switch(prop_name, 
-#'         "probs" = {
-#'             req(length(value) > 0 && !any(value >= 1 | value <= 0))
-#'             IOHanalyzer_env$probs <- value
-#'             IOHanalyzer_env$D_quantile <- function(x, pct = IOHanalyzer_env$probs) quantile(x, pct, names = F, type = 3, na.rm = T)
-#'             IOHanalyzer_env$C_quantile <- function(x, pct = IOHanalyzer_env$probs) quantile(x, pct, names = F, na.rm = T)
-#'         },
-#'         "max_samples" = {
-#'             req(is.wholenumber(value))
-#'             IOHanalyzer_env$max_samples <- value
-#'         },
-#'         "backend" = {
-#'           req(value %in% c('plotly', 'ggplot2'))
-#'           IOHanalyzer_env$default_backend <- value
-#'         },
-#'         "colorscheme" = {
-#'           set_colorScheme(value, ...)
-#'         }
-#'     )
-#' }
-#' 
-#' #' Get the value of some global IOHanalyzer properties
-#' #' 
-#' #' @param prop_name The property to get. Current options are:
-#' #' \itemize{
-#' #' \item 'probs': The probabilities in the displayed quantiles (RT and FV summaries).
-#' #' \item 'max_samples': The maximum number of samples to generate for each algorithm.
-#' #' }
-#' #' @param ... Arguments passed to underlying functions (i.e. number of colors to get colorscheme for)
-#' #' 
-#' #' @export
-#' #' @examples 
-#' #' get_property("probs")
-#' get_property <- function(prop_name, ...){
-#'     switch(prop_name, 
-#'         "probs" = {
-#'             IOHanalyzer_env$probs
-#'         },
-#'         "max_samples" = {
-#'             IOHanalyzer_env$max_samples
-#'         },
-#'         "backend" = {
-#'           IOHanalyzer_env$default_backend
-#'         },
-#'         "colorscheme" = {
-#'           IOHanalyzer_env$used_colorscheme(...)
-#'         }
-#'     )
-#' }
 
 #' IOHanalyzer: Data Analysis Part of IOHprofiler
 #'

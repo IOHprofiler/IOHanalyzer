@@ -542,7 +542,7 @@ read_nevergrad <- function(path){
       if( 'transform' %in% colnames(dt))
         colnames(dt)[colnames(dt) == "transform"] <- "rescale"
       else{
-        dt$rescale = NA
+        dt$rescale <- NA
       }
     }
     

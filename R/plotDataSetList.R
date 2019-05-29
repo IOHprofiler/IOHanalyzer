@@ -260,7 +260,7 @@ Plot.FV.ECDF_AUC <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
 #' @param scale.ylog Whether or not to scale the y-axis logaritmically
 #' @param algids Which algorithms from dsList to use
-#' @param par_name Which parameters to create plots for
+#' @param par_name Which parameters to create plots for; set to NULL to use all parameters found in dsList.
 #' @param show.CI Whether or not to show the standard deviation
 #'
 #' @return A plot of for every recorded parameter in the DataSetList
@@ -1075,7 +1075,7 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
   if (is.null(rt_min)) rt_min <- min(rt)
   if (is.null(rt_max)) rt_max <- max(rt)
 
-  rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step) %>% round
+  rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step)
   req(rt_seq)
 
   n_algorithm <- length(dsList)

@@ -153,7 +153,8 @@ seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
   do.call(seq, args) %>%
     c(from, ., to) %>%    # always include the starting / ending value
     unique %>%
-    rev_trans
+    rev_trans %>%
+    round
 }
 
 # TODO: implement the empirical p.m.f. for runtime

@@ -109,14 +109,15 @@ get_RT <- reactive({
   fstep <- format_FV(input$RTSummary.Sample.Step) %>% as.numeric
   data <- DATA()
 
-  req(fstart <= fstop, fstep <= fstop - fstart, length(data) > 0)
-  fall <- get_funvals(data)
-
-  if (input$RTSummary.Sample.Single)
-    fstop <- fstart
-
-  fseq <- seq_FV(fall, fstart, fstop, fstep)
-  req(fseq)
+  if (!input$RTSummary.Sample.Single){
+    req(fstart <= fstop, fstep <= fstop - fstart, length(data) > 0)
+    fall <- get_funvals(data)
+    fseq <- seq_FV(fall, fstart, fstop, fstep)
+    req(fseq)
+  }
+  else{
+    fseq <- fstart
+  }
 
   df <- get_RT_sample(data, ftarget = fseq, algorithm = input$RTSummary.Sample.Algid,
                 output = input$RTSummary.Sample.DownloadFormat)

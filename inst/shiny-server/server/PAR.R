@@ -64,15 +64,17 @@ parameter_summary <- reactive({
   fstop <- format_FV(input$PAR.Summary.Max) %>% as.numeric
   fstep <- format_FV(input$PAR.Summary.Step) %>% as.numeric
 
-  req(fstart <= fstop, fstep <= fstop - fstart)
   data <- DATA()
-  fall <- get_funvals(data)
-
-  if (input$PAR.Summary.Single)
-    fstop <- fstart
-
-  fseq <- seq_FV(fall, fstart, fstop, by = fstep)
-  req(fseq)
+  
+  if (!input$PAR.Summary.Single){
+    req(fstart <= fstop, fstep <= fstop - fstart)
+    fall <- get_funvals(data)
+    fseq <- seq_FV(fall, fstart, fstop, by = fstep)
+    req(fseq)
+  }
+  else{
+    fseq <- fstart
+  }
 
   dt <- get_PAR_summary(data, fseq, input$PAR.Summary.Algid, input$PAR.Summary.Param)
   req(length(dt) != 0)
@@ -99,15 +101,17 @@ parameter_sample <- reactive({
   fstop <- format_FV(input$PAR.Sample.Max) %>% as.numeric
   fstep <- format_FV(input$PAR.Sample.Step) %>% as.numeric
 
-  req(fstart <= fstop, fstep <= fstop - fstart)
   data <- DATA()
-  fall <- get_funvals(data)
-
-  if (input$PAR.Sample.Single)
-    fstop <- fstart
-
-  fseq <- seq_FV(fall, fstart, fstop, by = fstep)
-  req(fseq)
+  
+  if (!input$PAR.Sample.Single){
+    req(fstart <= fstop, fstep <= fstop - fstart)
+    fall <- get_funvals(data)
+    fseq <- seq_FV(fall, fstart, fstop, by = fstep)
+    req(fseq)
+  }
+  else{
+    fseq <- fstart
+  }
 
   df <- get_PAR_sample(data, ftarget = fseq,
                  algorithm = input$PAR.Sample.Algid,

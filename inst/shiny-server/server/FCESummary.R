@@ -40,15 +40,18 @@ get_FCE_summary <- reactive({
   rt_max <- input$FCESummary.Statistics.Max %>% as.numeric
   rt_step <- input$FCESummary.Statistics.Step %>% as.numeric
 
-  req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
   data <- DATA()
-  rt <- get_runtimes(data)
-
-  if (input$FCESummary.Statistics.Single)
-    rt_max <- rt_min
-
-  rt_seq <- seq_RT(rt, rt_min, rt_max, by = rt_step)
-  req(rt_seq)
+  
+  
+  if (!input$FCESummary.Statistics.Single){
+    req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
+    rt <- get_runtimes(data)
+    rt_seq <- seq_RT(rt, rt_min, rt_max, by = rt_step)
+    req(rt_seq)
+  }
+  else{
+    rt_seq <- rt_min
+  }
 
   df <- get_FV_summary(data, rt_seq, algorithm = input$FCESummary.Statistics.Algid)[
     , c('DIM', 'funcId') := NULL
@@ -95,15 +98,17 @@ get_FCE <- reactive({
   rt_max <- input$FCESummary.Sample.Max %>% as.numeric
   rt_step <- input$FCESummary.Sample.Step %>% as.numeric
 
-  req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
   data <- DATA()
-  rt <- get_runtimes(data)
-
-  if (input$FCESummary.Sample.Single)
-    rt_max <- rt_min
-
-  rt_seq <- seq_RT(rt, rt_min, rt_max, by = rt_step)
-  req(rt_seq)
+  
+  if (!input$FCESummary.Sample.Single){
+    req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
+    rt <- get_runtimes(data)
+    rt_seq <- seq_RT(rt, rt_min, rt_max, by = rt_step)
+    req(rt_seq)
+  }
+  else{
+    rt_seq <- rt_min
+  }
 
   get_FV_sample(data, rt_seq, algorithm = input$FCESummary.Sample.Algid,
                 output = input$FCESummary.Sample.Format)

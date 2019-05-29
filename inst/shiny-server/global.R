@@ -10,6 +10,7 @@ suppressMessages(library(xtable))
 suppressMessages(library(colourpicker))
 # suppressMessages(library(dashboardthemes))
 suppressMessages(library(bsplus))
+suppressMessages(library(DT))
 
 # global options
 options(datatable.print.nrows = 20)

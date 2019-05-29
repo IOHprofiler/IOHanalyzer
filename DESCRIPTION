@@ -37,7 +37,8 @@ Imports:
   reshape2,
   shinyjs,
   colourpicker,
-  bsplus
+  bsplus,
+  DT
 LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 6.1.1

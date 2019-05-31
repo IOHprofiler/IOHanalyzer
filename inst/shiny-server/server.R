@@ -20,9 +20,8 @@ setTextInput <- function(session, id, name, alternative) {
 
 #TODO: this function could be made more clear
 set_format_func <- function(format){
-  format_FV <<- ifelse((format == COCO || format == BIBOJ_COCO),
-                       function(v) format(v, format = 'e', digits = 3, nsmall = 2),
-                       function(v) format(v, digits = 2, nsmall = 2))
+  format_FV <<- if(format == COCO || format == BIBOJ_COCO) format(v, format = 'e', digits = 3, nsmall = 2)
+                else  function(v) format(v, digits = 2, nsmall = 2)
 }
 
 # register previous text inputs, which is used to restore those values

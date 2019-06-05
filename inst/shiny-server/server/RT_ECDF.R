@@ -8,13 +8,13 @@ render_RT_ECDF_MULT <- reactive({
   input$RTECDF.Aggr.Refresh
   withProgress({
     dsList <- subset(DATA_RAW(), algId %in% input$RTECDF.Aggr.Algs)
-    if (!input$RTECDF.Aggr.Func){
+    if (!input$RTECDF.Aggr.Func) {
       dsList <- subset(dsList, funcId == input$Overall.Funcid)
     }
-    if (!input$RTECDF.Aggr.Dim){
+    if (!input$RTECDF.Aggr.Dim) {
       dsList <- subset(dsList, DIM == input$Overall.Dim)
     }
-    if (length(dsList) <= 1){
+    if (length(dsList) <= 1) {
       shinyjs::alert("This is an invalid configuration for this plot. \n
                      Please ensure that the dataset contains multiple functions / dimensions to aggregate over.")
       return(NULL)
@@ -47,12 +47,14 @@ RT_ECDF_MULTI_TABLE <- reactive({
 
   # if (is.null(targets)) {
   dsList <- subset(DATA_RAW(), algId %in% input$RTECDF.Aggr.Algs)
-  if (!input$RTECDF.Aggr.Func){
+  if (!input$RTECDF.Aggr.Func) {
     dsList <- subset(dsList, funcId == input$Overall.Funcid)
   }
-  if (!input$RTECDF.Aggr.Dim){
+  
+  if (!input$RTECDF.Aggr.Dim) {
     dsList <- subset(dsList, DIM == input$Overall.Dim)
   }    
+  
   targets <- get_default_ECDF_targets(dsList, format_FV)
   # }
 
@@ -64,6 +66,7 @@ RT_ECDF_MULTI_TABLE <- reactive({
   rownames(df) <- names(targets)
   colnames(df) <- paste0("target.", seq(10))
   dt <- as.data.table(df, keep.rownames = T)
+  
   if (!input$RTECDF.Aggr.Func)
     colnames(dt)[[1]] <- "Dim"
   else if (!input$RTECDF.Aggr.Dim)

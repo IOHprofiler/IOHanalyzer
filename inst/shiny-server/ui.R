@@ -34,7 +34,7 @@ body <- dashboardBody(
       "label { font-size:120%; }"
     ))
   ),
-  if (require("dashboardthemes")){
+  if (suppressWarnings(require("dashboardthemes", quietly = T))){
     shinyDashboardThemes(
       theme = "grey_light"
     )

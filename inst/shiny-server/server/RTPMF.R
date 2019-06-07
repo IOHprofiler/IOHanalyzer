@@ -43,14 +43,16 @@ output$RTPMF.Hist.Download <- downloadHandler(
 
 render_RT_HIST <- reactive({
   req(input$RTPMF.Hist.Target)
-  withProgress({
-  ftarget <- format_FV(input$RTPMF.Hist.Target) %>% as.numeric
-  plot_mode <- input$RTPMF.Hist.Mode
-
-  # TODO: remove 'DataSetList' in the future
-  data <- subset(DATA(), algId %in% input$RTPMF.Hist.Algs)
   
-  Plot.RT.Histogram(data, ftarget, plot_mode = plot_mode, use.equal.bins = input$RTPMF.Hist.Equal)
+  withProgress({
+    ftarget <- format_FV(input$RTPMF.Hist.Target) %>% as.numeric
+    plot_mode <- input$RTPMF.Hist.Mode
+
+    # TODO: remove 'DataSetList' in the future
+    data <- subset(DATA(), algId %in% input$RTPMF.Hist.Algs)
+  
+    Plot.RT.Histogram(data, ftarget, plot_mode = plot_mode, 
+                      use.equal.bins = input$RTPMF.Hist.Equal)
   },
   message = "Creating plot")
 })

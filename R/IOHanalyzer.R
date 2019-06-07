@@ -17,7 +17,7 @@
 #' @importFrom withr with_dir
 #' @useDynLib IOHanalyzer
 NULL
-#Ugly hack, but appears to be required to appease CRAN
+# Ugly hack, but appears to be required to appease CRAN
 utils::globalVariables(c(".", "algId", "run", "ERT", "RT", "group",
                          "DIM", "Fvalue", "lower", "upper", "target", "format",
                          "runtime", "parId", "instance", "input", "funcId",

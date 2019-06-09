@@ -120,7 +120,7 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
       br(),
       actionButton(
         "RTECDF.Aggr.Refresh", 
-        label = HTML('<b><p align="left" style="font-size:100%;">Refresh the figure</p></b>')
+        label = HTML('<p align="left" style="font-size:100%;">Refresh the figure</p>')
       ),
       
       hr(),
@@ -149,8 +149,7 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
                   choices = supported_fig_format, selected = 'pdf'),
 
       downloadButton('RTECDF.Aggr.Download', label = 'Download the figure')
-
-      ),
+    ),
 
     mainPanel(
       width = 9,

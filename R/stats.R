@@ -306,7 +306,7 @@ AUC.ECDF <- function(fun, from = NULL, to = NULL) {
 #' @export
 #' @examples 
 #' get_default_ECDF_targets(dsl)
-get_default_ECDF_targets <- function(data, format_func = as.integer){
+get_default_ECDF_targets <- function(data, format_func = as.integer) {
   funcIds <- get_funcId(data)
   dims <- get_dim(data)
 
@@ -315,6 +315,7 @@ get_default_ECDF_targets <- function(data, format_func = as.integer){
   for (i in seq_along(funcIds)) {
     Id <- funcIds[[i]]
     data_sub <- subset(data, funcId == Id)
+
     for (j in seq_along(dims)) {
       dim <- dims[[j]]
       data_subsub <- subset(data_sub, DIM == dim)
@@ -323,19 +324,17 @@ get_default_ECDF_targets <- function(data, format_func = as.integer){
       fmin <- min(fall)
       fmax <- max(fall)
 
-      fseq <- seq_FV(fall, fmin, fmax, length.out = 10) %>% format_func
-      
+      fseq <- seq_FV(fall, fmin, fmax, length.out = 10) %>% 
+        sapply(format_func)
       targets <- append(targets, list(fseq))
-      if (length(funcIds) == 1){
+      
+      if (length(funcIds) == 1) {
         names <- append(names, dim)
-      }
-      else if (length(dims) == 1){
+      } else if (length(dims) == 1) {
         names <- append(names, Id)
-      }
-      else
+      } else
         names <- append(names, paste0(Id, ";", dim))
     }
-
   }
   targets %>% set_names(names)
 }

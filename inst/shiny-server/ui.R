@@ -11,9 +11,6 @@ sidebar <- dashboardSidebar(
   DIM_fID_panel()
 )
 
-
-
-
 body <- dashboardBody(
   tags$style(HTML('.popover-title {color:black;}
                    .popover-content {color:black;}
@@ -48,9 +45,10 @@ body <- dashboardBody(
       "label { font-size:120%; }"
     ))
   ),
-  if (suppressWarnings(require("dashboardthemes", quietly = T))){
-    source("theme.R")
-    theme_grey_light
+  if (suppressWarnings(require("dashboardthemes", quietly = T))) {
+    shinyDashboardThemes(
+      theme = "grey_light"
+      )
   },
   tags$script(HTML('
       $(document).ready(function() {

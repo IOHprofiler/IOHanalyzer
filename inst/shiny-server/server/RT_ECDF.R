@@ -97,9 +97,9 @@ observeEvent(input$RT_GRID_GENERATED_cell_edit, {
   replaceData(proxy, RT_ECDF_MULTI_TABLE_obj, resetPaging = FALSE, rownames = FALSE)
 })
 
-uploaded_RT_ECDF_targets <- reactive({
+observeEvent(input$RTECDF.Aggr.Table.Upload, {
   if (!is.null(input$RTECDF.Aggr.Table.Upload)) {
-    df <- read.csv(input$RTECDF.Aggr.Table.Upload$datapath, sep = ',', row.names = F)
+    df <- read.csv(input$RTECDF.Aggr.Table.Upload$datapath, sep = ',') %>% as.data.table
     RT_ECDF_MULTI_TABLE_obj <<- df
     replaceData(proxy, RT_ECDF_MULTI_TABLE_obj, resetPaging = FALSE, rownames = FALSE)
     

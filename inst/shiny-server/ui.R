@@ -11,6 +11,9 @@ sidebar <- dashboardSidebar(
   DIM_fID_panel()
 )
 
+
+
+
 body <- dashboardBody(
   tags$style(HTML('.popover-title {color:black;}
                    .popover-content {color:black;}
@@ -29,15 +32,25 @@ body <- dashboardBody(
         color: white;
       }
     '))),
+  tags$head(tags$style(HTML(
+    '.box-title {
+        font-size: 20px;
+        line-height: 50px;
+        text-align: left;
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        padding: 0 15px;
+        overflow: hidden;
+        color: white;
+      }
+    '))),
   tags$head(
     tags$style(HTML(
       "label { font-size:120%; }"
     ))
   ),
   if (suppressWarnings(require("dashboardthemes", quietly = T))){
-    shinyDashboardThemes(
-      theme = "grey_light"
-    )
+    source("theme.R")
+    theme_grey_light
   },
   tags$script(HTML('
       $(document).ready(function() {

@@ -47,6 +47,7 @@ output$RTECDF.Aggr.Download <- downloadHandler(
 
 RT_ECDF_MULTI_TABLE <- reactiveVal(NULL)
 trigger_renderDT <- reactiveVal(NULL)
+proxy <- dataTableProxy('RT_GRID_GENERATED')
 
 observe({
   req(length(DATA_RAW()) > 0)
@@ -85,11 +86,7 @@ observe({
 output$RT_GRID_GENERATED <- DT::renderDataTable({
   req(length(DATA_RAW()) > 0)
   trigger_renderDT()
-  
-  isolate({
-    RT_ECDF_MULTI_TABLE()
-  })
-  
+  isolate({RT_ECDF_MULTI_TABLE()})
   }, 
   editable = TRUE, 
   rownames = FALSE,
@@ -106,8 +103,6 @@ output$RT_GRID_GENERATED <- DT::renderDataTable({
   )
 )
 
-proxy <- dataTableProxy('RT_GRID_GENERATED')
-
 observeEvent(input$RT_GRID_GENERATED_cell_edit, {
   info <- input$RT_GRID_GENERATED_cell_edit
   i <- info$row
@@ -118,8 +113,7 @@ observeEvent(input$RT_GRID_GENERATED_cell_edit, {
     df <- RT_ECDF_MULTI_TABLE()
     set(df, i, j, coerceValue(v, as.numeric(df[i, ..j])))
     RT_ECDF_MULTI_TABLE(df)
-    }
-  )
+  })
   replaceData(proxy, RT_ECDF_MULTI_TABLE(), 
               resetPaging = FALSE, rownames = FALSE)
 })
@@ -172,7 +166,7 @@ output$RT_GRID <- renderPrint({
   data <- DATA()
   fall <- get_funvals(data)
 
-  seq_FV(fall, fstart, fstop, by = fstep) %>% cat
+  cat(seq_FV(fall, fstart, fstop, by = fstep))
 })
 
 output$RT_ECDF_AGGR <- renderPlotly({
@@ -200,7 +194,6 @@ render_RT_ECDF_AGGR <- reactive({
   
   Plot.RT.ECDF_Single_Func(
     data, fstart, fstop, fstep,
-    # show.per_target = input$RTECDF.Multi.Targets,
     scale.xlog = input$RTECDF.Multi.Logx
   )
   },

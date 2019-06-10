@@ -6,22 +6,30 @@ output$RT_ECDF_MULT <- renderPlotly({
 render_RT_ECDF_MULT <- reactive({
   req(input$RTECDF.Aggr.Func || input$RTECDF.Aggr.Dim)
   input$RTECDF.Aggr.Refresh
+  
   withProgress({
     dsList <- subset(DATA_RAW(), algId %in% input$RTECDF.Aggr.Algs)
-    if (!input$RTECDF.Aggr.Func) {
+    
+    if (!input$RTECDF.Aggr.Func) 
       dsList <- subset(dsList, funcId == input$Overall.Funcid)
-    }
-    if (!input$RTECDF.Aggr.Dim) {
+    
+    if (!input$RTECDF.Aggr.Dim) 
       dsList <- subset(dsList, DIM == input$Overall.Dim)
-    }
+    
     if (length(dsList) <= 1) {
       shinyjs::alert("This is an invalid configuration for this plot. \n
-                     Please ensure that the dataset contains multiple functions / dimensions to aggregate over.")
+                     Please ensure that the dataset contains multiple functions / 
+                     dimensions to aggregate over.")
       return(NULL)
     }
-    targets <- RT_ECDF_MULTI_TABLE_obj
-
-    Plot.RT.ECDF_Multi_Func(dsList, targets = targets, scale.xlog = input$RTECDF.Aggr.Logx)
+    
+    isolate({
+      targets <- RT_ECDF_MULTI_TABLE()
+    })
+  
+    Plot.RT.ECDF_Multi_Func(dsList, 
+                            targets = targets, 
+                            scale.xlog = input$RTECDF.Aggr.Logx)
   },
   message = "Creating plot")
 })
@@ -37,42 +45,51 @@ output$RTECDF.Aggr.Download <- downloadHandler(
   contentType = paste0('image/', input$RTECDF.Aggr.Format)
 )
 
-RT_ECDF_MULTI_TABLE_obj <- NULL
+RT_ECDF_MULTI_TABLE <- reactiveVal(NULL)
+trigger_renderDT <- reactiveVal(NULL)
 
-RT_ECDF_MULTI_TABLE <- reactive({
+observe({
   req(length(DATA_RAW()) > 0)
-  withProgress({
-    dsList <- subset(DATA_RAW(), algId %in% input$RTECDF.Aggr.Algs)
-    if (!input$RTECDF.Aggr.Func) {
-      dsList <- subset(dsList, funcId == input$Overall.Funcid)
-    }
-    
-    if (!input$RTECDF.Aggr.Dim) {
-      dsList <- subset(dsList, DIM == input$Overall.Dim)
-    }    
-    
-    targets <- get_default_ECDF_targets(dsList, format_FV)
-    
-    df <- t(data.frame(targets))
-    rownames(df) <- names(targets)
-    colnames(df) <- paste0("target.", seq(10))
-    dt <- as.data.table(df, keep.rownames = T)
-    
-    if (!input$RTECDF.Aggr.Func)
-      colnames(dt)[[1]] <- "Dim"
-    else if (!input$RTECDF.Aggr.Dim)
-      colnames(dt)[[1]] <- "Func"
-    else
-      colnames(dt)[[1]] <- "Func; Dim"
-    dt
-    },
-  message = "Creating plot")
+  req(input$RTECDF.Aggr.Algs)
+  req(input$Overall.Funcid)
+  req(input$Overall.Dim)
+  
+  dsList <- subset(DATA_RAW(), algId %in% input$RTECDF.Aggr.Algs)
+  
+  if (!input$RTECDF.Aggr.Func) 
+    dsList <- subset(dsList, funcId == input$Overall.Funcid)
+  
+  if (!input$RTECDF.Aggr.Dim) 
+    dsList <- subset(dsList, DIM == input$Overall.Dim)
+  
+  if (length(dsList) == 0) return(NULL)
+  
+  targets <- get_default_ECDF_targets(dsList, format_FV)
+  
+  df <- t(data.frame(targets))
+  rownames(df) <- names(targets)
+  colnames(df) <- paste0("target.", seq(10))
+  dt <- as.data.table(df, keep.rownames = T)
+  
+  if (!input$RTECDF.Aggr.Func)
+    colnames(dt)[[1]] <- "Dim"
+  else if (!input$RTECDF.Aggr.Dim)
+    colnames(dt)[[1]] <- "Func"
+  else
+    colnames(dt)[[1]] <- "Func; Dim"
+  
+  RT_ECDF_MULTI_TABLE(dt)
+  trigger_renderDT(rnorm(1))
 })
 
 output$RT_GRID_GENERATED <- DT::renderDataTable({
   req(length(DATA_RAW()) > 0)
-  RT_ECDF_MULTI_TABLE_obj <<- RT_ECDF_MULTI_TABLE()
-  RT_ECDF_MULTI_TABLE_obj
+  trigger_renderDT()
+  
+  isolate({
+    RT_ECDF_MULTI_TABLE()
+  })
+  
   }, 
   editable = TRUE, 
   rownames = FALSE,
@@ -94,21 +111,35 @@ proxy <- dataTableProxy('RT_GRID_GENERATED')
 observeEvent(input$RT_GRID_GENERATED_cell_edit, {
   info <- input$RT_GRID_GENERATED_cell_edit
   i <- info$row
-  j <- info$col
+  j <- info$col + 1
   v <- info$value
-  suppressWarnings(RT_ECDF_MULTI_TABLE_obj[i, paste0('target.', j)] <<- DT::coerceValue(v, RT_ECDF_MULTI_TABLE_obj[i, paste0('target.', j)]))
-  replaceData(proxy, RT_ECDF_MULTI_TABLE_obj, resetPaging = FALSE, rownames = FALSE)
+  
+  suppressWarnings({
+    df <- RT_ECDF_MULTI_TABLE()
+    set(df, i, j, coerceValue(v, as.numeric(df[i, ..j])))
+    RT_ECDF_MULTI_TABLE(df)
+    }
+  )
+  replaceData(proxy, RT_ECDF_MULTI_TABLE(), 
+              resetPaging = FALSE, rownames = FALSE)
 })
 
 observeEvent(input$RTECDF.Aggr.Table.Upload, {
   if (!is.null(input$RTECDF.Aggr.Table.Upload)) {
-    df <- read.csv(input$RTECDF.Aggr.Table.Upload$datapath, sep = ',') %>%
+    df <- read.csv(input$RTECDF.Aggr.Table.Upload$datapath, 
+                   sep = ',', header = F) %>%
+      set_colnames(c('Func', paste0('target.', seq(ncol(.) - 1)))) %>% 
       as.data.table
     
-    RT_ECDF_MULTI_TABLE_obj <<- df
-    replaceData(proxy, RT_ECDF_MULTI_TABLE_obj, 
-                resetPaging = FALSE, 
-                rownames = FALSE)
+    if (ncol(df) == ncol(RT_ECDF_MULTI_TABLE())) {
+      RT_ECDF_MULTI_TABLE(df)
+      replaceData(proxy, RT_ECDF_MULTI_TABLE(), 
+                  resetPaging = FALSE, 
+                  rownames = FALSE)
+    } else {
+      RT_ECDF_MULTI_TABLE(df)
+      trigger_renderDT(rnorm(1))
+    }
   } else
     NULL
 })
@@ -116,7 +147,8 @@ observeEvent(input$RTECDF.Aggr.Table.Upload, {
 output$RTECDF.Aggr.Table.Download <- downloadHandler(
   filename = 'Example_ECDF_TARGETS.csv',
   content = function(file) {
-    write.table(RT_ECDF_MULTI_TABLE_obj, file, sep = ',', row.names = F)
+    write.table(RT_ECDF_MULTI_TABLE(), file, 
+                sep = ',', col.names = F, row.names = F)
   },
   contentType = "text/csv"
 )

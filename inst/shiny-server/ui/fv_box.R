@@ -170,10 +170,10 @@ fv_rt_3d_box <- function(width = 12, collapsible = T, collapsed = T) {
       width = 3,
       HTML('<p style="font-size:120%;">Range of the displayed budget values</p>'),
       
-      textInput('FCE_RTPlot.RTMin', label = RT_MIN_LABEL, value = '1'),
+      textInput('FCE_RTPlot.RTMin', label = RT_MIN_LABEL, value = ''),
       textInput('FCE_RTPlot.RTMax', label = RT_MAX_LABEL, value = ''),
-      textInput('FCE_RTPlot.FVMin', label = F_MIN_LABEL, value = '1'),
-      textInput('FCE_RTPlot.FVMax', label = F_MAX_LABEL, value = '100'),
+      textInput('FCE_RTPlot.FVMin', label = F_MIN_LABEL, value = ''),
+      textInput('FCE_RTPlot.FVMax', label = F_MAX_LABEL, value = ''),
       
       
       #checkboxInput('FCE_RTPlot.semilogx',
@@ -185,14 +185,14 @@ fv_rt_3d_box <- function(width = 12, collapsible = T, collapsed = T) {
         #            value = T),
   
       
-      selectInput('FCE_RTPlot.Format', label = 'select the figure format',
-                  choices = supported_fig_format, selected = 'pdf'),
+      #selectInput('FCE_RTPlot.Format', label = 'select the figure format',
+       #           choices = supported_fig_format, selected = 'pdf'),
       
-      downloadButton('FCE_RTPlot.Download', label = 'download the surface'),
+      #downloadButton('FCE_RTPlot.Download', label = 'download the surface'),
       
       fileInput("upload.surface_zip", 
                 label = HTML('<p align="left" style="font-size:120%;">
-                             Please choose a <i>zip file</i> containing the 
+                             Please choose a <i>csv file</i> containing the 
                              surface data</p>'),
                 multiple = TRUE, accept = c("Application/zip", ".zip")),
       

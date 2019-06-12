@@ -308,20 +308,20 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                            scale.xlog = F, scale.ylog = F,
                                            scale.reverse = F) {
   show.intensity <- (show.intensity - 50)/50
-
+  
   Fall <- get_funvals(dsList)
   if (is.null(Fstart)) Fstart <- min(Fall)
   if (is.null(Fstop)) Fstop <- max(Fall)
-
+  
   Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 60, 
                  scale = ifelse(scale.xlog, 'log', 'linear'))
   
   if (length(Fseq) == 0) return(NULL)
-
+  
   N <- length(dsList)
   legends <- get_legends(dsList)
   colors <- color_palettes(N)
-
+  
   dt <- get_RT_summary(dsList, ftarget = Fseq)
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
   
@@ -329,7 +329,7 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
   run.names <- grep('run', names(dr),  value = T)
   
   max_value = max(dr[,-c('algId', 'target', 'funcId', 'DIM')], na.rm = NA)
-
+  
   if (backend == 'plotly') {
     p <- plot_ly_default(x.title = "best-so-far f(x)-value",
                          y.title = "function evaluations")
@@ -340,7 +340,7 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
       ds_ERT <- dt[algId == attr(dsList[[i]], 'algId') &
                      funcId == attr(dsList[[i]], 'funcId') &
                      DIM == attr(dsList[[i]], 'DIM')]
-
+      
       algId <- attr(dsList[[i]], 'algId')
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.2)')
@@ -367,7 +367,7 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
           grad_function <- grad_functions$fixed_edges
           if (!show.gradation)
             grad_function <- grad_functions$no_gradation
-            
+          
           sorted_dr_ERT <- apply(dr_ERT[, -c('algId', 'target', 'funcId', 'DIM')], 1, function(x){sort(x, decreasing = FALSE, na.last = T)})
           upper_border <- max_value
           counter <- 0
@@ -408,11 +408,22 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
           
         }
         if (show.runs){
+          upper_border <- max_value
           for (run_v in names_to_show) {
+            y_value <- dr_ERT[[run_v]]
+            x_value <- head(dr_ERT[['target']], length(y_value))
+            
+            if (anyNA(y_value)){
+              y_value <- y_value[!is.na(y_value)]
+              x_value <- head(x_value, length(y_value))
+              y_value <- c(y_value, upper_border)
+              x_value <- c(x_value, x_value[length(x_value)])#to make straight line
+            }
+            
             p %<>% add_trace(
               data = dr_ERT,
-              x = ~ target,
-              y = dr_ERT[[run_v]],
+              x = x_value,#~ target,
+              y = y_value,#dr_ERT[[run_v]],
               type = 'scatter',
               mode = 'lines',
               line = list(color = rgb_str, width = 0.5),
@@ -462,7 +473,7 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
           }
         }
       }
-
+      
       if (show.CI)
         p %<>%
         add_trace(data = ds_ERT, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
@@ -471,19 +482,19 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
         add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
                   fill = 'tonexty',  line = list(color = 'transparent'), legendgroup = legend,
                   fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
-
+      
       if (show.ERT)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
                          name = paste0(legend, '.ERT'), mode = 'lines+markers',
                          marker = list(color = rgb_str), legendgroup = legend,
                          line = list(color = rgb_str))
-
+      
       if (show.mean)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~mean, type = 'scatter',
                          mode = 'lines+markers', name = paste0(algId, '.mean'),
                          marker = list(color = rgb_str), legendgroup = legend,
                          line = list(color = rgb_str, dash = 'dash'))
-
+      
       if (show.median)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~median, type = 'scatter',
                          name = paste0(legend, '.median'), mode = 'lines+markers',
@@ -493,20 +504,20 @@ plot_RT_single_fct.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
     p %<>%
       layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
              yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
-
+    
     if (scale.reverse)
       p %<>% layout(xaxis = list(autorange = "reversed"))
-
+    
   } else if (backend == 'ggplot2') {
     dt[, 'group' := paste(algId, funcId, DIM, sep = '-')]
     p <- ggplot(data = dt, aes(group = 'group', colour = 'group'))
-
+    
     if (show.CI) p <- p + geom_ribbon(aes(target, ymin = lower, ymax = upper, fill = 'group'),
                                       alpha = 0.2, colour = NA)
     if (show.ERT) p <- p + geom_line(aes(target, ERT), size = 1.2)
     if (show.mean) p <- p + geom_line(aes(target, mean), linetype = 'dashed')
     if (show.median) p <- p + geom_line(aes(target, median), linetype = 'dotted')
-
+    
     p <- p +
       scale_color_manual(values = colors) +
       scale_fill_manual(values = colors)
@@ -545,41 +556,44 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
                                      show.gradation = T,
                                      backend = 'plotly',
                                      scale.xlog = F, scale.ylog = F,
-                                     scale.reverse = F) {
-  show.intensity <- (show.intensity - 50)/50
-
+                                     scale.reverse = F
+                                     ) {
+  if (show.intensity==0)
+    show.intensity <- show.intensity + 5
+  show.intensity <- (show.intensity - 45)/50
+  
   RTall <- get_runtimes(dsList)
   if (is.null(RTstart)) Fstart <- min(RTall)
   if (is.null(RTstop)) Fstop <- max(RTall)
-
-
+  
+  
   RTseq <- seq_RT(RTall, RTstart, RTstop, length.out = 60, scale = ifelse(scale.xlog,'log','linear'))
   if (length(RTseq) == 0) return(NULL)
-
+  
   N <- length(dsList)
   colors <- color_palettes(N)
   legends <- get_legends(dsList)
-
+  
   fce <- get_FV_summary(dsList, RTseq)
   fce[, `:=`(upper = mean + sd, lower = mean - sd)]
-
+  
   if (backend == 'plotly') {
     p <- plot_ly_default(y.title = "best-so-far f(x)-value", x.title = "runtime")
-
+    
     for (i in seq_along(dsList)) {
       legend <- legends[i]
       algId <- attr(dsList[[i]], 'algId')
-
+      
       ds_FCE <- fce[algId == attr(dsList[[i]], 'algId') &
                       funcId == attr(dsList[[i]], 'funcId') &
                       DIM == attr(dsList[[i]], 'DIM')]
-
+      
       if (nrow(ds_FCE) == 0)
         next
-
+      
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
-
+      
       if (show.CI) {
         p %<>%
           add_trace(data = ds_FCE, x = ~runtime, y = ~upper, type = 'scatter', mode = 'lines',
@@ -590,19 +604,19 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
                     legendgroup = legend,
                     fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd')
       }
-
+      
       if (show.mean)
         p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~mean, type = 'scatter',
                          mode = 'lines+markers', name = paste0(algId, '.mean'),
                          marker = list(color = rgb_str), legendgroup = legend,
                          line = list(color = rgb_str))
-
+      
       if (show.median)
         p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~median, type = 'scatter',
                          name = paste0(legend, '.median'), mode = 'lines+markers',
                          marker = list(color = rgb_str), legendgroup = legend,
                          line = list(color = rgb_str, dash = 'dash'))
-
+      
       if (show.runs || show.grad) {
         fce_runs <- get_FV_sample(dsList, RTseq)
         
@@ -627,7 +641,7 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
           grad_function <- grad_functions$fixed_edges
           if (!show.gradation)
             grad_function <- grad_functions$no_gradation
-            
+          
           
           for (counter in c(1:length(all_names))) {
             fill_density <- fill_density + grad_function(counter,names_amount,show.intensity)
@@ -673,9 +687,13 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
           
           if (show.optimal) {
             mentioned <- FALSE
-            check_value <- tail(best_parts, 1)
-            for (run_v in names_to_show)
-              if (check_value == tail(fce_runs_ERT[[run_v]], 1)) {
+            target_idx <- min(which(best_parts == max(best_parts))) #min index with max value
+            
+            check_value <- best_parts[target_idx]
+            
+            for (run_v in names_to_show){
+              found_val <- fce_runs_ERT[[run_v]][target_idx]
+              if (!is.na(found_val) & check_value == found_val) {
                 p %<>% add_trace(
                   data = fce_runs_ERT,
                   x = ~ runtime,
@@ -689,7 +707,9 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
                 )
                 mentioned = TRUE
               }
+            }
           }
+          
           
           if (show.pareto) {
             p %<>% add_trace(
@@ -709,20 +729,20 @@ plot_FV_line.DataSetList <- function(dsList, RTstart = NULL, RTstop = NULL,
     p %<>%
       layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
              yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
-
+    
     if (scale.reverse)
       p %<>% layout(xaxis = list(autorange = "reversed"))
   } else if (backend == 'ggplot2') {
     fce[, 'group' := paste(algId, funcId, DIM, sep = '-')]
     p <- ggplot(data = fce, aes(group = 'group', colour = 'group'))
-
+    
     if (show.mean) p <- p + geom_line(aes(runtime, mean), linetype = 'dashed')
     if (show.median) p <- p + geom_line(aes(runtime, median), linetype = 'dotted')
-
+    
     p <- p +
       scale_color_manual(values = colors) +
       scale_fill_manual(values = colors)
-
+    
     #TODO: add individual run etc
   }
   return(p)
@@ -2034,7 +2054,7 @@ plot_FV_RT_surface.DataSetList <- function(dsList,
   i <- 1
   for (distribution in distributions){
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-    print(rgb_str)
+
     dm <- distribution$matrix
     to_show <- list(x = as.numeric(as.character(colnames(dm))), y = as.numeric(as.character(rownames(dm))), z = as.numeric(as.character(c(dm))))
     
@@ -2050,11 +2070,16 @@ plot_FV_RT_surface.DataSetList <- function(dsList,
     p <- p %>% add_surface(x = to_show$x, y = to_show$y, z = probability, colorscale = color_pattern, opacity  = opac)
     i <- i + 1
   }
-
-  if (is.null(surfaces))
+  
+  if (!is.null(surfaces)){
+    
     for (surface in surfaces){
-      #View(surface)
-      p %<>% add_surface(data = surface, x = ~surface$x, y = ~surface$y, z = ~surface$z, opacity = 0.98)
+      
+      surf_x <- surface$x[!is.na(surface$x)]
+      surf_y <- surface$y[!is.na(surface$y)]
+      surf_z <- matrix(surface$z, nrow = length(surf_x), ncol = length(surf_y))
+      p %<>% add_surface(x = surf_x, y = surf_y, z = surf_z, opacity = 0.98)
     }
+  }
   p
 }

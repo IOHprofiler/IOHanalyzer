@@ -59,6 +59,7 @@ shinyServer(function(input, output, session) {
   #shared surface
   
   surface3d <- reactiveValues(data =list())
+  surfaceList <- reactiveValues(data = list())
 
   # set up the global variable
   observe({
@@ -229,6 +230,16 @@ shinyServer(function(input, output, session) {
       print_html('', 'upload_data_promt')
     }
   })
+  
+  # remove all uploaded surfaces (from 3dimension plot)
+  observeEvent(input$upload.remove_surface, {
+    if (length(surface3d$data) != 0) {
+      surface3d$data <- list() # must be a 'list'
+      surfaceList$data <- list()
+      print_html('<p style="color:red;">all surfaces are removed!</p>')
+      print_html('', 'upload_data_promt')
+    }
+  })
 
   # show the detailed information on DataSetList
   output$data_info <- renderDataTable({
@@ -375,7 +386,12 @@ shinyServer(function(input, output, session) {
     setTextInput(session, 'PAR.Sample.Min', name, alternative = format_FV(start))
     setTextInput(session, 'PAR.Sample.Max', name, alternative = format_FV(stop))
     setTextInput(session, 'PAR.Sample.Step', name, alternative = format_FV(step))
+    
+    #setTextInput(session,'FCE_RTPlot.FVMin', name, altrenative = format_FV(start))
+    #setTextInput(session,'FCE_RTPlot.FVMax', name, altrenative = format_FV(stop))
+    
   })
+  
 
   # update the values for the grid of running times
   observe({
@@ -413,6 +429,9 @@ shinyServer(function(input, output, session) {
     setTextInput(session, 'FCEECDF.AUC.Min', name, alternative = min(v))
     setTextInput(session, 'FCEECDF.AUC.Max', name, alternative = max(v))
     setTextInput(session, 'FCEECDF.AUC.Step', name, alternative = step)
+    
+    setTextInput(session, 'FCE_RTPlot.RTMin', name, alternative = start)
+    setTextInput(session, 'FCE_RTPlot.RTMax', name, alternative = stop)
 
     #TODO: remove q and replace by single number
     setTextInput(session, 'FCEECDF.Single.Target', name, alternative = q[2])
@@ -1041,10 +1060,10 @@ shinyServer(function(input, output, session) {
     
     req(length(datapaths) != 0)
     
-    if (length(surface3d$data) == 0)
+    if (length(surfaceList$data) == 0)
       datapath_new <- datapaths
     else
-      datapath_new <- setdiff(datapaths, intersect(surfaces3d$data, datapaths))
+      datapath_new <- setdiff(datapaths, intersect(surfaceList$data, datapaths))
     
     req(length(datapath_new) != 0)
     for (datapath in datapath_new) {
@@ -1054,8 +1073,8 @@ shinyServer(function(input, output, session) {
           print_html(paste("Error while reading csv file occured"))
         }
       )
-      surface3d$data <- c(surface3d$data, new_surface)
-      print (surface3d$data)
+      surface3d$data <- append(surface3d$data, list(new_surface))
+      surfaceList$data <- c(surfaceList$data, datapath)
     }
   })
   

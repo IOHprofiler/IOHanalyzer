@@ -49,15 +49,15 @@ runtime_summary <- reactive({
   fstep <- format_FV(input$RTSummary.Statistics.Step) %>% as.numeric
   data <- DATA()
   
-  if (!input$RTSummary.Statistics.Single){
+  if (!input$RTSummary.Statistics.Single) {
     req(fstart <= fstop, fstep <= fstop - fstart, length(data) > 0)
     fall <- get_funvals(data)
     fseq <- seq_FV(fall, fstart, fstop, fstep)
     req(fseq)
-  }
-  else{
+  } else { 
     fseq <- fstart
   }
+
   df <- get_RT_summary(data, fseq, algorithm = input$RTSummary.Statistics.Algid)
   df <- df[, c('DIM', 'funcId') := NULL]
   df$target <- format_FV(df$target) %>% as.numeric
@@ -67,16 +67,15 @@ runtime_summary <- reactive({
   for (p in paste0(probs * 100, '%')) {
     df[[p]] %<>% as.integer
   }
+
   df$mean <- round(df$mean, digits = 2)
   df$sd <- round(df$sd, digits = 2)
   df$ERT <- round(df$ERT, digits = 2)
   df$ps <- round(df$ps, digits = 2)
+
   if (format == COCO)
     df$target <- formatC(df$target, format = "e", digits = 2)
-
-
   df
-
 })
 
 output$table_RT_summary <- DT::renderDataTable({

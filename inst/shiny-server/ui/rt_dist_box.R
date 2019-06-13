@@ -6,15 +6,23 @@ rt_histogram_box <- function(width = 12, collapsed = T, collapsible = T) {
         width = 2,
         textInput('RTPMF.Hist.Target', label = HTML('Select the target value'),
                   value = ''),
-        selectInput('RTPMF.Hist.Algs', label = 'Select which algorithms to plot:',
-                    multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
-                      custom_icon() %>%
-                        bs_embed_popover(
-                          title = "Algorithm selection", content = alg_select_info, 
-                          placement = "auto"
-                        )
-                    ),
-        HTML('Choose whether the histograms are <b>overlaid</b> in one plot
+        selectInput(
+          'RTPMF.Hist.Algs',
+          label = 'Select which algorithms to plot',
+          multiple = T, 
+          selected = NULL, 
+          choices = NULL
+          ) %>% 
+          shinyInput_label_embed(
+            custom_icon() %>%
+              bs_embed_popover(
+                title = "Algorithm selection", 
+                content = alg_select_info, 
+                placement = "auto"
+                )
+            ),
+
+        HTML_P('Choose whether the histograms are <b>overlaid</b> in one plot
              or <b>separated</b> in several subplots:'),
         selectInput('RTPMF.Hist.Mode', '',
                     choices = c("overlay", "subplot"),
@@ -51,17 +59,24 @@ rt_pmf_box <- function(width = 12, collapsed = T, collapsible = T) {
       sidebarLayout(
         sidebarPanel(
           width = 2,
-          HTML('Select the target value for which the runtime distribution is shown'),
-
-          textInput('RTPMF.Bar.Target', label = '', value = ''),
-          selectInput('RTPMF.Bar.Algs', label = 'Select which algorithms to plot:',
-                      multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
-                        custom_icon() %>%
-                          bs_embed_popover(
-                            title = "Algorithm selection", content = alg_select_info, 
-                            placement = "auto"
-                          )
-                      ),
+          textInput('RTPMF.Bar.Target', label = 'Select the target value', value = ''),
+          
+          selectInput(
+            'RTPMF.Bar.Algs',
+            label = 'Select which algorithms to plot:',
+            multiple = T, 
+            selected = NULL, 
+            choices = NULL
+            ) %>% 
+            shinyInput_label_embed(
+              custom_icon() %>%
+                bs_embed_popover(
+                  title = "Algorithm selection", 
+                  content = alg_select_info, 
+                  placement = "auto"
+                  )
+              ),
+          
           checkboxInput('RTPMF.Bar.Sample', label = 'Show runtime for each run', value = T),
           checkboxInput('RTPMF.Bar.Logy', label = 'Scale y axis \\(\\log_{10}\\)', value = F),
 
@@ -69,34 +84,29 @@ rt_pmf_box <- function(width = 12, collapsed = T, collapsible = T) {
                       choices = supported_fig_format, selected = 'pdf'),
 
           downloadButton('RTPMF.Bar.Download', label = 'Download the figure')
-
-          # HTML('Kernel density estimation uses the following <b>kernel function</b>:'),
-          # selectInput('RT_PMF_KER', '',
-          #             choices = c("gaussian", "epanechnikov", "rectangular",
-          #                         "triangular", "biweight", "cosine", "optcosine"),
-          #             selected = 'gaussian')
-
         ),
 
         mainPanel(
           width = 10,
-          column(width = 12, align = "center",
-                 HTML('<p align="left" style="font-size:120%;"><b>Warning! </b>The
-                      <b>probability mass function</b> of the runtime is approximated by the
-                      treating the runtime as a <i>continuous</i> random variable and applying the <b>kernel estimation</b> (KDE):</p>'),
-                 HTML('<p align="left" style="font-size:120%;">
-                      The plot shows the distribution of the first hitting
-                      times of the individual runs (dots), and an estimated
-                      distribution of the probability mass function.
-                      The displayed algorithms can be selected by clicking on
-                      the legend on the right. A <b>tooltip</b> and <b>toolbar</b>
-                      appear when hovering over the figure. This also includes the
-                      option to download the plot as png file. A csv file with the runtime
-                      data can be downlowaded from the
-                      <a href="#shiny-tab-ERT_data", data-toggle="tab"> Data Summary tab</a>.'),
-                 plotlyOutput.IOHanalyzer('RT_PMF')
-                 )
-                 )
+          column(
+            width = 12, align = "center",
+            HTML('<p align="left" style="font-size:120%;"><b>Warning! </b>The
+                 <b>probability mass function</b> of the runtime is approximated by the
+                 treating the runtime as a <i>continuous</i> random variable and 
+                 applying the <b>kernel estimation</b> (KDE):</p>'),
+            HTML('<p align="left" style="font-size:120%;">
+                 The plot shows the distribution of the first hitting
+                 times of the individual runs (dots), and an estimated
+                 distribution of the probability mass function.
+                 The displayed algorithms can be selected by clicking on
+                 the legend on the right. A <b>tooltip</b> and <b>toolbar</b>
+                 appear when hovering over the figure. This also includes the
+                 option to download the plot as png file. A csv file with the runtime
+                 data can be downlowaded from the
+                 <a href="#shiny-tab-ERT_data", data-toggle="tab"> Data Summary tab</a>.'),
+            plotlyOutput.IOHanalyzer('RT_PMF')
+            )
           )
         )
+      )
 }

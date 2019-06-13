@@ -643,7 +643,7 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
   }
 
   if (plot_mode == 'subplot') {
-    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.025)
+    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.04)
   }
   p
 }
@@ -934,7 +934,7 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', 
   }
 
   if (plot_mode == 'subplot')
-    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.02)
+    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.04)
 
   p
 }

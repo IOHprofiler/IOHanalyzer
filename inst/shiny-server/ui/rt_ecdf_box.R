@@ -99,37 +99,57 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
     solidHeader = T, status = "primary",
     sidebarPanel(
       width = 3,
-      selectInput('RTECDF.Aggr.Algs', label = 'Select which algorithms to plot:',
-                  multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
-                    custom_icon() %>%
-                      bs_embed_popover(
-                        title = "Algorithm selection", content = alg_select_info, 
-                        placement = "auto"
-                      )
-                  ),        
+      selectInput(
+        'RTECDF.Aggr.Algs',
+        label = 'Select which algorithms to plot:',
+        multiple = T, 
+        selected = NULL, 
+        choices = NULL
+        ) %>% shinyInput_label_embed(
+          custom_icon() %>%
+            bs_embed_popover(
+              title = "Algorithm selection", content = alg_select_info, 
+              placement = "auto"
+            )
+          ),
+        
       checkboxInput("RTECDF.Aggr.Func", "Aggregate functions", value = T),
       checkboxInput("RTECDF.Aggr.Dim", "Aggregate dimensions", value = F),
       checkboxInput("RTECDF.Aggr.Logx", "Scale x axis \\(\\log_{10}\\)", value = T),
       
-      HTML_P('Choose whether to upload a file containing the target-values for each (function, dimension)-pair
-             or use the automatically generated targets (see table below the plot). Please consider keeping the file format when
-             modifying the csv given below.'),
-      downloadButton('RTECDF.Aggr.Table.Download', label = 'Download the example targets'),
-
-      hr(),
       br(),
-      fileInput("RTECDF.Aggr.Table.Upload", label = HTML('<p align="left" style="font-size:120%;">Please choose a <i>csv file</i> containing the targets</p>'),
-                multiple = FALSE, accept = c(
-                  "text/csv",
-                  "text/comma-separated-values,text/plain",
-                  ".csv")),
-      actionButton("RTECDF.Aggr.Refresh", "Refresh the figure"),
-      selectInput('RTECDF.Aggr.Format', label = 'Select the figure format',
+      actionButton(
+        "RTECDF.Aggr.Refresh", 
+        label = HTML('<p align="left" style="font-size:100%;">Refresh the figure</p>')
+      ),
+      
+      hr(),
+      HTML_P('You can download the table below the figure, containing the target values for each 
+              (function, dimension)-pair and edit the table as you want. Please keep 
+             the file format when modifying it.'),
+      downloadButton('RTECDF.Aggr.Table.Download', label = 'Download the table of targets'),
+      br(),
+      br(),
+      br(),
+      
+      HTML_P('Upload the table you just downloaded and edited'),
+      fileInput(
+        "RTECDF.Aggr.Table.Upload", 
+        label = NULL,
+        multiple = FALSE, 
+        accept = c(
+          "text/csv",
+          "text/comma-separated-values,text/plain",
+          ".csv"
+          )
+      ),
+      
+      hr(),
+      selectInput('RTECDF.Aggr.Format', label = 'figure format to download',
                   choices = supported_fig_format, selected = 'pdf'),
 
       downloadButton('RTECDF.Aggr.Download', label = 'Download the figure')
-
-      ),
+    ),
 
     mainPanel(
       width = 9,

@@ -15,7 +15,8 @@ The details on the experimentation and post-processing tool can be found on [arX
 
 To install the IOHProfiler R-package, please install R environment first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/). Please start up the __R console__, which can be done (in case you're not familiar with R) by either executing command `R` in your system terminal or open the R application. 
 
-The IOHanalyzer is now available on CRAN!
+The IOHanalyzer is now available on CRAN at:
+[https://CRAN.R-project.org/package=IOHanalyzer](https://CRAN.R-project.org/package=IOHanalyzer)
 To use the CRAN version, simply use the command in your R console:
 ```r
 install.packages('IOHanalyzer')

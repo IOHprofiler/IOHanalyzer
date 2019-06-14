@@ -4,7 +4,8 @@
 \alias{save_plotly}
 \title{Save plotly figure in multiple format}
 \usage{
-save_plotly(p, file, format = "svg", ...)
+save_plotly(p, file, format = "svg", width = NULL, height = NULL,
+  ...)
 }
 \arguments{
 \item{p}{plotly object. The plot to be saved}
@@ -12,6 +13,10 @@ save_plotly(p, file, format = "svg", ...)
 \item{file}{String. The name of the figure file}
 
 \item{format}{String. The format of the figure: 'svg', 'pdf', 'eps', 'png' are supported}
+
+\item{width}{Optional. Width of the figure}
+
+\item{height}{Optional. Height of the figure}
 
 \item{...}{Additional arguments for orca}
 }

@@ -254,6 +254,8 @@ color_palettes <- function(ncolor) {
 #' @param p plotly object. The plot to be saved
 #' @param file String. The name of the figure file
 #' @param format String. The format of the figure: 'svg', 'pdf', 'eps', 'png' are supported
+#' @param width Optional. Width of the figure
+#' @param height Optional. Height of the figure
 #' @param ... Additional arguments for orca
 #' @export
 #' @examples

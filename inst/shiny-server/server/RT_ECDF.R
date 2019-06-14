@@ -56,7 +56,7 @@ observe({
   req(input$Overall.Dim)
   
   dsList <- subset(DATA_RAW(), algId %in% input$RTECDF.Aggr.Algs)
-  
+  req(length(dsList) > 0)
   if (!input$RTECDF.Aggr.Func) 
     dsList <- subset(dsList, funcId == input$Overall.Funcid)
   

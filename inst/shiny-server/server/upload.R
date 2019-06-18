@@ -201,16 +201,18 @@ observeEvent(selected_folders(), {
                     sprintf('%d: %s\n', length(folderList$data), folder),
                     add = TRUE)
     }
-    }
+  }
 })
 
 # remove all uploaded data set
 observeEvent(input$upload.remove_data, {
   if (length(DataList$data) != 0) {
     DataList$data <- DataSetList() # must be a 'DataSetList'
+    unlink(folderList$data, T)
     folderList$data <- list()
     print_html('<p style="color:red;">all data are removed!</p>')
     print_html('', 'upload_data_promt')
+    
   }
 })
 

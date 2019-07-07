@@ -1,16 +1,20 @@
-<img src="../img/leiden.png" style="width:11%"> &nbsp;&nbsp;
-<img src="../img/CNRS.gif" style="width:5%"> &nbsp;&nbsp;
-<img src="../img/SU.jpg" style="width:10%">
-
-## Iterative Optimization Heuristics Profiler
+# Iterative Optimization Heuristics Profiler
 
 ## Development Team
-* [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
-* Diederick Vermetten, <i>Leiden Institute of Advanced Computer Science</i>,
-* [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
-* [Carola Doerr](http://www-desir.lip6.fr/~doerr/), <i>CNRS and Sorbonne University</i>, 
-* [Ofer Shir](http://www.migal.org.il/Ofer-Shir) <i>Migal - The Galilee Research Institute, Tel-Hai College</i>,
-* [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back#tab-1), <i>Leiden Institute of Advanced Computer Science</i>.
+<div class="row">
+  <img src="../img/leiden.png" style="width:20%">
+  <img src="../img/CNRS.gif" style="width:9%"> 
+  <img src="../img/SU.jpg" style="width:20%"> 
+  <img src="../img/telhai.jpg" style="width:20%">
+</div>
+<br/>
+
+* [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang), <i>Leiden Institute of Advanced Computer Science</i>.
+* Diederick Vermetten, <i>Leiden Institute of Advanced Computer Science</i>.
+* [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye), <i>Leiden Institute of Advanced Computer Science</i>.
+* [Carola Doerr](http://www-desir.lip6.fr/~doerr/), <i>CNRS and Sorbonne University</i>.
+* [Ofer Shir](http://www.migal.org.il/Ofer-Shir) <i>Migal - The Galilee Research Institute, Tel-Hai College</i>.
+* [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back), <i>Leiden Institute of Advanced Computer Science</i>.
 
 ## Reference
 When using IOHprofiler and parts thereof, please kindly cite this work as

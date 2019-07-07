@@ -6,7 +6,8 @@ The __performance analyzer__ for <b>I</b>terative <b>O</b>ptimization <b>H</b>eu
 * __Wiki page__: [https://iohprofiler.github.io/IOHanalyzer](https://iohprofiler.github.io/IOHanalyzer)
 * __Bug reports__: [https://github.com/IOHprofiler/IOHAnalyzer/issues](https://github.com/IOHprofiler/IOHAnalyzer/issues)
 * __Online service__: [http://iohprofiler.liacs.nl](http://iohprofiler.liacs.nl)
-* __General Email__: [iohprofiler@liacs.leidenuniv.nl](iohprofiler@liacs.leidenuniv.nl)
+* __General Contact__: [iohprofiler@liacs.leidenuniv.nl](iohprofiler@liacs.leidenuniv.nl)
+* __Mailing List__: [https://lists.leidenuniv.nl/mailman/listinfo/iohprofiler](https://lists.leidenuniv.nl/mailman/listinfo/iohprofiler)
 
 It <i>provides</i>:
 
@@ -46,8 +47,7 @@ Please start up a `R` console and install the stable version as:
 install.packages('IOHanalyzer')
 ```
 
-which is maintained on _CRAN_ 
-[https://CRAN.R-project.org/package=IOHanalyzer](https://CRAN.R-project.org/package=IOHanalyzer)
+which is maintained on [CRAN](https://CRAN.R-project.org/package=IOHanalyzer) (Comprehensive R Archive Network).
 
 ### Lastest version
 
@@ -82,16 +82,14 @@ Data preparation is fairly easy for this tool. Just compress the data folder obt
 Please see our wiki page for the specification and regulation on the data format.
 * COCO: data format of the [COCO benchmark environment](https://github.com/numbbo/coco).
 
-## Cite us
+## Our Team
 
-The development team is:
-
-* [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
-* Diederick Vermetten, <i>Leiden Institute of Advanced Computer Science</i>,
-* [Carola Doerr](http://www-desir.lip6.fr/~doerr/), <i>CNRS and Sorbonne University</i>,
-* [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
-* [Sander van Rijn](https://www.universiteitleiden.nl/en/staffmembers/sander-van-rijn#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
-* [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back#tab-1), <i>Leiden Institute of Advanced Computer Science</i>,
+* [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang#tab-1), <i>Leiden Institute of Advanced Computer Science</i>.
+* Diederick Vermetten, <i>Leiden Institute of Advanced Computer Science</i>.
+* [Carola Doerr](http://www-desir.lip6.fr/~doerr/), <i>CNRS and Sorbonne University</i>.
+* [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye#tab-1), <i>Leiden Institute of Advanced Computer Science</i>.
+* [Sander van Rijn](https://www.universiteitleiden.nl/en/staffmembers/sander-van-rijn#tab-1), <i>Leiden Institute of Advanced Computer Science</i>.
+* [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back#tab-1), <i>Leiden Institute of Advanced Computer Science</i>.
 
 When using IOHprofiler and parts thereof, please kindly cite this work as
 

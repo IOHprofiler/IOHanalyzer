@@ -2,10 +2,10 @@
 
 ## Development Team
 <div class="row">
-  <img src="../img/leiden.png" style="width:20%">
-  <img src="../img/CNRS.gif" style="width:9%"> 
-  <img src="../img/SU.jpg" style="width:20%"> 
-  <img src="../img/telhai.jpg" style="width:20%">
+  <img src="../img/leiden.png" style="width:15%">
+  <img src="../img/CNRS.gif" style="width:7%"> 
+  <img src="../img/SU.jpg" style="width:15%"> 
+  <img src="../img/telhai.jpg" style="width:15%">
 </div>
 <br/>
 

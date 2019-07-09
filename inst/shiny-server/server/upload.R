@@ -247,6 +247,24 @@ observe({
   
   updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.Overview-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.Overview-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.Overview-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.Statistics-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.Statistics-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.Statistics-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.Single_ERT-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.Single_ERT-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.Single_ERT-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.Multi_ERT-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.Multi_ERT-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.Rank-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.Rank-Alg', choices = algIds_, selected = algIds_)
+  
   updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'FCESummary.Overview.Algid', choices = algIds, selected = 'all')

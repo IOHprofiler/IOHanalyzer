@@ -1,0 +1,20 @@
+---
+title: "Multi_ERT"
+author: "IOHprofiler"
+date: "7/8/2019"
+output: pdf_document:
+  fig_caption: yes
+graphics: yes
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+dsl_sub <- subset(dsl, DIM == dim && algId %in% algs)
+p <- Plot.FV.Multi_Func(dsl_sub, scale.xlog=input$`Report.FV.Multi_ERT-Scalex`, scale.ylog=input$`Report.FV.Multi_ERT-Scaley`)
+save_plotly(p, paste0('ERT_multi_', dim, 'D.pdf'), 'pdf', width = 1000, height = 1200)
+```
+## ERT plot of all functions in `r paste(dim)`D 
+
+```{r, results='asis', fig.align='center', fig.cap="TEsting", fig.width=500, fig.height=600, fig.pos='!hbt'}
+include_graphics(paste0('ERT_multi_', dim, 'D.pdf'))
+```

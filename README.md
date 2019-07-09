@@ -80,6 +80,7 @@ Data preparation is fairly easy for this tool. Just compress the data folder obt
 * IOHprofiler: our own csv-based format that is adopted from COCO. An example of the raw data file is as follows:
 <img src="inst/shiny-server/img/raw_data.png" style="width:95%">
 Please see our wiki page for the specification and regulation on the data format.
+
 * COCO: data format of the [COCO benchmark environment](https://github.com/numbbo/coco).
 
 ## Our Team

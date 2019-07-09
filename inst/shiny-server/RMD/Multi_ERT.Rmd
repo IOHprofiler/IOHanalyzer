@@ -10,7 +10,7 @@ graphics: yes
 ```{r, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 dsl_sub <- subset(dsl, DIM == dim && algId %in% algs)
-p <- Plot.FV.Multi_Func(dsl_sub, scale.xlog=input$`Report.FV.Multi_ERT-Scalex`, scale.ylog=input$`Report.FV.Multi_ERT-Scaley`)
+p <- Plot.RT.Multi_Func(dsl_sub, scale.xlog=input$`Report.FV.Multi_ERT-Scalex`, scale.ylog=input$`Report.FV.Multi_ERT-Scaley`)
 save_plotly(p, paste0('ERT_multi_', dim, 'D.pdf'), 'pdf', width = 1000, height = 1200)
 ```
 ## ERT plot of all functions in `r paste(dim)`D 

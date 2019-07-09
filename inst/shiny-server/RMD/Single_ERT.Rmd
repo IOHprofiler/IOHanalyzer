@@ -14,15 +14,17 @@ name <- get_data_id(dsl_sub)
 rts <- get_runtimes(dsl_sub)
 tryCatch(
   {
-  fv_min <- as.numeric(REG$ERTPlot.Min[[name]])
-  fv_max <- as.numeric(REG$ERTPlot.Max[[name]])
+  fv_min <- as.numeric(REG$ERTPlot.Min[name])
+  if (is.na(fv_min)) fv_min <- NULL
+  fv_max <- as.numeric(REG$ERTPlot.Max[name])
+  if (is.na(fv_max)) fv_max <- NULL
 },
 error = function(e) {
     fv_min <- NULL
     fv_max <- NULL
   }
 )
-p <- Plot.FV.Single_Func(dsl_sub, RTstart = fv_min, RTstop = fv_max, scale.reverse = (!attr(dsl_sub, 'maximization')), 
+p <- Plot.RT.Single_Func(dsl_sub, Fstart = fv_min, Fstop = fv_max,
                          scale.xlog=input$`Report.FV.Single_ERT-Scalex`, scale.ylog=input$`Report.FV.Single_ERT-Scaley`)
 save_plotly(p, paste0('ERT_single_F', fid, '-', dim, 'D.pdf'), 'pdf', width = 1000, height = 500)
 ```

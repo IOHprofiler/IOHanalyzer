@@ -13,12 +13,13 @@ observe({
   rds_files <- list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
 
   if (length(rds_files) != 0) {
-    updateSelectInput(session, 'repository.dataset', choices = rds_files, selected = NULL)
+    updateSelectInput(session, 'repository.dataset', choices = c(rds_files, "Example_small", "Example_large"), selected = NULL)
   } else { # TODO: the alert msg should be updated
     shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository,
                    please create a folder called 'repository' in your home directory
-                   and make sure it contains the '2019gecco.rds'-file
+                   and make sure it contains at least one '.rds'-file, such as the ones
                    provided on the IOHProfiler github-page.")
+    updateSelectInput(session, 'repository.dataset', choices = c("Example_small", "Example_large"), selected = NULL)
   }
   })
 
@@ -26,9 +27,17 @@ observe({
 observeEvent(input$repository.dataset, {
   req(input$repository.dataset)
 
-  rds_file <- file.path(repo_dir, paste0(input$repository.dataset, ".rds"))
-  repo_data <<- readRDS(rds_file)
-
+  if (input$repository.dataset  == "Example_small"){
+    repo_data <<- IOHanalyzer::dsl
+  }
+  else if (input$repository.dataset == "Example_large"){
+    repo_data <<- IOHanalyzer::dsl_large
+  }
+  else{
+    rds_file <- file.path(repo_dir, paste0(input$repository.dataset, ".rds"))
+  
+    repo_data <<- readRDS(rds_file)
+  }
   algIds <- c(get_algId(repo_data), 'all')
   dims <- c(get_dim(repo_data), 'all')
   funcIds <- c(get_funcId(repo_data), 'all')
@@ -51,6 +60,9 @@ observeEvent(input$repository.load_button, {
 
   DataList$data <- c(DataList$data, data)
   format <<- attr(data[[1]], 'format')
+  if (is.null(format)){
+    format <<- attr(data[[1]], 'src')
+  }
 })
 
 # upload the compressed the data file and uncompress them

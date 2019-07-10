@@ -20,6 +20,68 @@ SP <- function(data, max_runtime) {
   list(ERT = rowSums(data) / succ, runs = succ, succ_rate = succ_rate)
 }
 
+bootstrap_RT <- function(x, max_eval, bootstrap.size) {
+  x_succ <- x[!is.na(x)]
+  x_unsucc <- max_eval[is.na(x)]
+  n_succ <- length(x_succ)
+  n_unsucc <- length(x_unsucc)
+  
+  p <- n_succ / length(x)
+  N <- rgeom(bootstrap.size, p) 
+  
+  sapply(N,
+         function(size) {
+           if (size > 0) 
+             x <- sum(sample(x_unsucc, size, replace = T))
+           else
+             x <- 0
+           
+           x <- x + sample(x_succ, 1, replace = T)
+         })
+}
+
+pairwise.ks.test <- function(x, max_eval, bootstrap.size = 30) {
+  N <- length(x)
+  p.value <- matrix(NA, N, N)
+  
+  for (i in seq(1, N - 1)) {
+    for (j in seq(i + 1, N)) {
+      x1 <- bootstrap_RT(x[[i]], max_eval[[i]], bootstrap.size)
+      x2 <- bootstrap_RT(x[[j]], max_eval[[j]], bootstrap.size)
+      
+      options(warn = -1)
+      p.value[i, j] <- ks.test(x1, x2, alternative = 'greater', exact = F)$p.value
+      p.value[j, i] <- ks.test(x1, x2, alternative = 'less', exact = F)$p.value
+      options(warn = 0)
+    }
+  }
+  
+  p.value.adjust <- p.adjust(as.vector(p.value), method = 'holm')
+  p.value <- matrix(p.value.adjust, N, N)
+  colnames(p.value) <- rownames(p.value) <- names(x)
+  p.value
+}
+
+pairwise.test <- function(dsl, ftarget, alpha = 0.01,
+                          bootstrap.size = 30, plot = F) {
+  RT <- get_RT_sample(dsl, ftarget, output = 'long')
+  maxRT <- get_maxRT(dsl, output = 'long')
+  
+  x <- split(RT$RT, RT$algId)
+  max_eval <- split(maxRT$maxRT, maxRT$algId)
+  p.value <- pairwise.ks.test(x, max_eval)
+  
+  if (plot) {
+    g <- graph_from_adjacency_matrix(p.value <= alpha, mode = 'directed', diag = F)
+    plot.igraph(g, vertex.size = 10, edge.arrow.size = .1, 
+                vertex.label.color = 'black',
+                vertex.label.dist = 1.5, 
+                vertex.label.cex = 1)
+  }
+  p.value
+}
+
+
 #TODO: improve formatting
 #' Function for generating sequences of function values
 #'

@@ -49,7 +49,6 @@ options(shiny.port = 4242)
   invisible()
 }
 
-
 IOHanalyzer_env <- new.env(parent = emptyenv())
 
 .mean <- function(x) mean(x, na.rm = T)

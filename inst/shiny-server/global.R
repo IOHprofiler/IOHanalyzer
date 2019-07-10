@@ -204,6 +204,15 @@ eventExpr <- parse(text = paste0('{', paste(paste0('input$', widget_id), collaps
 supported_fig_format <- c('png', 'eps', 'svg', 'pdf')
 Sys.setenv('MAPBOX_TOKEN' = 'pk.eyJ1Ijoid2FuZ3JvbmluIiwiYSI6ImNqcmIzemhvMDBudnYzeWxoejh5c2Y5cXkifQ.9XGMWTDOsgi3-b5qG594kQ')
 
+sanity_check_id <- function(input) {
+  for (id in widget_id) {
+    tryCatch(eval(parse(text = paste0('input$', id))),
+             error = function(e) {
+               cat(paste('widget', id, 'does not exist!\n'))
+             })
+  }
+}
+
 
 
 

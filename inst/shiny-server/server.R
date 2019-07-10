@@ -12,9 +12,9 @@ exdir <- file.path(tempdir(), 'data')
 
 setTextInput <- function(session, id, name, alternative) {
   v <- REG[[id]]
-  if (name %in% names(v)) {
+  if (name %in% names(v)) 
     updateTextInput(session, id, value = v[[name]])
-  } else
+  else
     updateTextInput(session, id, value = alternative)
 }
 
@@ -46,7 +46,7 @@ shinyServer(function(input, output, session) {
     # close_connection()
     unlink(exdir, recursive = T)
   })
-
+  
   for (f in list.files('server', pattern = '.R', full.names = T)) {
     source(f, local = TRUE)
   }

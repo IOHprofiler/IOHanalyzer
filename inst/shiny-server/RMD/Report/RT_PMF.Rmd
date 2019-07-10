@@ -1,0 +1,32 @@
+---
+title: "RT_PMF"
+author: "IOHprofiler"
+date: "7/5/2019"
+output: pdf_document:
+  fig_caption: yes
+graphics: yes
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+dsl_sub <- subset(dsl, DIM == dim && funcId == fid && algId %in% algs)
+name <- get_data_id(dsl_sub)
+fvs <- get_funvals(dsl_sub)
+tryCatch(
+  {
+  ftarget <- as.numeric(REG$RTPMF.Bar.Target[name])
+  if (is.na(ftarget)) ftarget <- median(fvs)
+},
+error = function(e) {
+    ftarget <- median(fvs)
+  }
+)
+p <- Plot.RT.PMF(dsl_sub, ftarget = ftarget, show.sample = input$RTPMF.Bar.Sample,
+              scale.ylog = input$RTPMF.Bar.Logy)
+save_plotly(p, paste0('RT_PMF_F', fid, '-', dim, 'D.pdf'), 'pdf', width = 1000, height = 500)
+```
+## Probability mass function of hitting times of F`r paste(fid)` on `r paste(dim)`D at runtime `r paste(ftarget)`
+
+```{r {{name_figure}}, results='asis', fig.align='center', fig.cap="TEsting", fig.width=500, fig.height=300, fig.pos='!hbt'}
+include_graphics(paste0('RT_PMF_F', fid, '-', dim, 'D.pdf'))
+```

@@ -11,6 +11,7 @@ suppressMessages(library(xtable))
 suppressMessages(library(colourpicker))
 suppressMessages(library(bsplus))
 suppressMessages(library(DT))
+suppressMessages(library(knitr))
 
 # global options
 options(datatable.print.nrows = 20)
@@ -159,14 +160,12 @@ widget_id <- c('RTSummary.Statistics.Min',
                'RTECDF.Multi.Min',
                'RTECDF.Multi.Max',
                'RTECDF.Multi.Step',
+               'RTECDF.Single.Target',
                'RTPMF.Bar.Target',
                'RTPMF.Hist.Target',
                'ERTPlot.Min',
                'ERTPlot.Max',
                'ERTPlot.Aggr.Targets',
-               'RTECDF.Single.Target1',
-               'RTECDF.Single.Target2',
-               'RTECDF.Single.Target3',
                'RTECDF.AUC.Min',
                'RTECDF.AUC.Max',
                'RTECDF.AUC.Step',
@@ -194,9 +193,7 @@ widget_id <- c('RTSummary.Statistics.Min',
                'FCEECDF.AUC.Min',
                'FCEECDF.AUC.Max',
                'FCEECDF.AUC.Step',
-               'FCEECDF.Single.Target1',
-               'FCEECDF.Single.Target2',
-               'FCEECDF.Single.Target3')
+               'FCEECDF.Single.Target')
 
 eventExpr <- parse(text = paste0('{', paste(paste0('input$', widget_id), collapse = "\n"), '}'))
 

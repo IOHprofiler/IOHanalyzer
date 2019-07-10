@@ -1,0 +1,23 @@
+---
+title: "FV_Rank"
+author: "IOHprofiler"
+date: "7/8/2019"
+output: pdf_document:
+  fig_caption: yes
+graphics: yes
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+dsl_sub <- subset(dsl, DIM == dim && algId %in% algs)
+p <- Plot.FV.Aggregated(dsl_sub, plot_mode = input$FCEPlot.Aggr.Mode,
+                        scale.ylog = input$FCEPlot.Aggr.Logy,
+                        use_rank = input$FCEPlot.Aggr.Ranking,
+                        aggr_on = ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM'))
+save_plotly(p, paste0('FV_Rank_', dim, 'D.pdf'), 'pdf', width = 1000, height = 500)
+```
+## Ranking plot of all functions in `r paste(dim)`D 
+
+```{r {{name_figure}}, results='asis', fig.align='center', fig.cap="TEsting", fig.width=500, fig.height=600, fig.pos='!hbt'}
+include_graphics(paste0('FV_Rank_', dim, 'D.pdf'))
+```

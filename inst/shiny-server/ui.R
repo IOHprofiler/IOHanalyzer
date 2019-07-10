@@ -239,6 +239,14 @@ body <- dashboardBody(
                 general_settings_box()
               )
             )
+    ),
+    tabItem(tabName = 'Report',
+            fluidRow(
+              column(
+                width = 12,
+                main_report_box()
+              )
+            )
     )
   )
 )

@@ -514,7 +514,8 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
             apply(data, 1, .median),
             apply(data, 1, .sd), .) %>%
       set_colnames(c('algId', 'target', 'mean', 'median',
-                     'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%'), 'ERT', 'runs', 'ps'))
+                     'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%'),
+                     'ERT', 'runs', 'ps'))
   } else {# TODO: remove this case, deprecated...
     NAs <- is.na(matched)
     if (any(NAs)) {
@@ -528,6 +529,38 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
       data[matched, -c('target')] %>% cbind(algId, ftarget, .)
     }
   }
+}
+
+#' Get the maximal running time
+#'
+#' @param ds A DataSet or DataSetList object
+#' @param ... Arguments passed to other methods
+#'
+#' @return A data.table object containing the algorithm ID and the running time 
+#' when the algorithm terminates in each run
+#' @examples 
+#' get_maxRT(dsl)
+#' get_maxRT(dsl[[1]])
+#' @export
+get_maxRT <- function(ds, ...) UseMethod("get_maxRT", ds)
+
+#' @rdname get_maxRT
+#' @export
+#'
+get_maxRT.DataSet <- function(ds, output = 'wide') {
+  algId <- attr(ds, 'algId')
+  N <- ncol(ds$RT)
+  res <- t(c(algId, attr(ds, 'maxRT'))) %>%
+    as.data.table %>%
+    set_colnames(c('algId', paste0('run.', seq(N))))
+
+  if (output == 'long') {
+    res <- melt(res, id = 'algId', variable.name = 'run', value.name = 'maxRT')
+    res[, run := as.numeric(gsub('run.', '', run)) %>% as.integer
+        ][, maxRT := as.integer(maxRT)
+          ][order(run)]
+  }
+  res
 }
 
 #' @rdname get_RT_sample

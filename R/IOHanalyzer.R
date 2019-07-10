@@ -32,9 +32,9 @@ options(shiny.port = 4242)
     IOHanalyzer.quantiles = c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.,
     IOHanalyzer.max_samples = 100,
     IOHanalyzer.backend = 'plotly',
-    IOHanalyzer.bgcolor = 'rgb(229,229,229)',
+    IOHanalyzer.bgcolor = 'rgb(230,230,230)',
     IOHanalyzer.gridcolor = 'rgb(255,255,255)',
-    IOHanalyzer.tickcolor = 'rgb(127,127,127)',
+    IOHanalyzer.tickcolor = 'rgb(51,51,51)',
     IOHanalyzer.figure_width = NULL,
     IOHanalyzer.figure_height = NULL,
     IOHanalyzer.legend_location = 'outside_right',
@@ -48,7 +48,6 @@ options(shiny.port = 4242)
   
   invisible()
 }
-
 
 IOHanalyzer_env <- new.env(parent = emptyenv())
 

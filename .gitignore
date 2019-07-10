@@ -5,6 +5,7 @@
 *.log
 *.RData
 *.Rhistory
+*.Rbuildignore
 *.bk
 *.pdf
 *.html

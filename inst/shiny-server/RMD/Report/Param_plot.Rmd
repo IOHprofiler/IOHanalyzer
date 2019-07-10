@@ -1,0 +1,39 @@
+---
+title: "Param_plot"
+author: "IOHprofiler"
+date: "7/5/2019"
+output: pdf_document:
+  fig_caption: yes
+graphics: yes
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+dsl_sub <- subset(dsl, DIM == dim && funcId == fid && algId %in% algs)
+name <- get_data_id(dsl_sub)
+tryCatch(
+  {
+  fv_min <- as.numeric(REG$PAR.Plot.Min[name])
+  if (is.na(fv_min)) fv_min <- NULL
+  fv_max <- as.numeric(REG$PAR.Plot.Max[name])
+  if (is.na(fv_max)) fv_max <- NULL
+},
+error = function(e) {
+    fv_min <- NULL
+    fv_max <- NULL
+  }
+)
+p <- Plot.Parameters(dsl_sub, fv_min, fv_max,
+                  show.mean = (input$PAR.Plot.show.mean == 'mean'),
+                  show.median = (input$PAR.Plot.show.mean == 'median'),
+                  scale.xlog = input$PAR.Plot.Logx,
+                  scale.ylog = input$PAR.Plot.Logy, 
+                  show.CI = input$PAR.Plot.CI,
+                  par_name = input$PAR.Plot.Params)
+save_plotly(p, paste0('Param_F', fid, '-', dim, 'D.pdf'), 'pdf', width = 1000, height = 500)
+```
+## Plot of parameters of F`r paste(fid)` on `r paste(dim)`D 
+
+```{r {{name_figure}}, results='asis', fig.align='center', fig.cap="TEsting", fig.width=500, fig.height=300, fig.pos='!hbt'}
+include_graphics(paste0('Param_F', fid, '-', dim, 'D.pdf'))
+```

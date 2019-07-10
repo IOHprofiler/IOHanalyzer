@@ -1,0 +1,32 @@
+---
+title: "FV_ECDF_Single_Target"
+author: "IOHprofiler"
+date: "7/5/2019"
+output: pdf_document:
+  fig_caption: yes
+graphics: yes
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+dsl_sub <- subset(dsl, DIM == dim && funcId == fid && algId %in% algs)
+name <- get_data_id(dsl_sub)
+rts <- get_runtimes(dsl_sub)
+tryCatch(
+  {
+  ftarget <- as.numeric(REG$FCEECDF.Single.Target[name])
+  if (is.null(ftarget) || is.na(ftarget)) ftarget <- median(rts)
+},
+error = function(e) {
+    ftarget <- median(rts)
+  }
+)
+p <- Plot.FV.ECDF_Per_Target(dsl_sub, as.integer(ftarget), scale.xlog = input$FCEECDF.Single.Logx,
+                          scale.reverse = !attr(dsl_sub[[1]],'maximization'))
+save_plotly(p, paste0('FV_ECDF_single_target_F', fid, '-', dim, 'D.pdf'), 'pdf', width = 1000, height = 500)
+```
+## ECDF plot of F`r paste(fid)` on `r paste(dim)`D at target `r paste(ftarget)`
+
+```{r {{name_figure}}, results='asis', fig.align='center', fig.cap="TEsting", fig.width=500, fig.height=300, fig.pos='!hbt'}
+include_graphics(paste0('FV_ECDF_single_target_F', fid, '-', dim, 'D.pdf'))
+```

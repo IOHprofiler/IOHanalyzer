@@ -1,0 +1,27 @@
+---
+title: "ECDF_Aggregated"
+author: "IOHprofiler"
+date: "7/5/2019"
+output: pdf_document:
+  fig_caption: yes
+graphics: yes
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+dsList <- subset(dsl, algId %in% algs)
+    
+if (!input$RTECDF.Aggr.Func) 
+  dsList <- subset(dsList, funcId == input$Overall.Funcid)
+if (!input$RTECDF.Aggr.Dim) 
+  dsList <- subset(dsList, DIM == input$Overall.Dim)
+#TODO: Add support for the custom targets
+p <- Plot.RT.ECDF_Multi_Func(dsList, 
+                            scale.xlog = input$RTECDF.Aggr.Logx)
+save_plotly(p, 'ECDF_Aggr.pdf', 'pdf', width = 1000, height = 500)
+```
+## Aggregated ECDF plot on `r if(input$RTECDF.Aggr.Func) paste("all functions ") `  `r if(input$RTECDF.Aggr.Dim) paste("all dimensions ") `
+
+```{r aggregated_ecdf, results='asis', fig.align='center', fig.cap="TEsting", fig.width=500, fig.height=300, fig.pos='!hbt'}
+include_graphics('ECDF_Aggr.pdf')
+```

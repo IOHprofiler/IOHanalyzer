@@ -11,7 +11,6 @@ graphics: yes
 knitr::opts_chunk$set(echo = FALSE)
 dsl_sub <- subset(dsl, DIM == dim && funcId == fid && algId %in% algs)
 name <- get_data_id(dsl_sub)
-rts <- get_runtimes(dsl_sub)
 tryCatch(
   {
   fv_min <- as.numeric(REG$ERTPlot.Min[name])
@@ -25,11 +24,17 @@ error = function(e) {
   }
 )
 p <- Plot.RT.Single_Func(dsl_sub, Fstart = fv_min, Fstop = fv_max,
-                         scale.xlog=input$`Report.FV.Single_ERT-Scalex`, scale.ylog=input$`Report.FV.Single_ERT-Scaley`)
+                         show.CI = input$ERTPlot.show.CI,
+                         show.ERT = input$ERTPlot.show.ERT,
+                         show.mean = input$ERTPlot.show.mean,
+                         show.median = input$ERTPlot.show.median,
+                         scale.xlog = input$ERTPlot.semilogx,
+                         scale.ylog = input$ERTPlot.semilogy,
+                         scale.reverse = !attr(dsl_sub[[1]],'maximization'))
 save_plotly(p, paste0('ERT_single_F', fid, '-', dim, 'D.pdf'), 'pdf', width = 1000, height = 500)
 ```
 ## ERT plot of F`r paste(fid)` on `r paste(dim)`D 
 
-```{r, results='asis', fig.align='center', fig.cap="TEsting", fig.width=500, fig.height=300, fig.pos='!hbt'}
+```{r {{name_figure}}, results='asis', fig.align='center', fig.cap="TEsting", fig.width=500, fig.height=300, fig.pos='!hbt'}
 include_graphics(paste0('ERT_single_F', fid, '-', dim, 'D.pdf'))
 ```

@@ -259,6 +259,46 @@ observe({
   
   updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.Overview-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.Overview-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.Overview-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.Statistics-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.Statistics-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.Statistics-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.Single_ERT-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.Single_ERT-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.Single_ERT-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.Multi_ERT-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.Multi_ERT-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.Rank-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.Rank-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.Histogram-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.Histogram-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.Histogram-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.PMF-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.PMF-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.PMF-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.ECDF_Single_Target-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.ECDF_Single_Target-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.ECDF_Single_Target-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.ECDF_Single_Function-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.ECDF_Single_Function-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.ECDF_Single_Function-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.ECDF_Aggregated-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.ECDF_AUC-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.ECDF_AUC-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.ECDF_AUC-Alg', choices = algIds_, selected = algIds_)
+  
   updateSelectInput(session, 'Report.FV.Overview-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.FV.Overview-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.FV.Overview-Alg', choices = algIds_, selected = algIds_)
@@ -267,15 +307,45 @@ observe({
   updateSelectInput(session, 'Report.FV.Statistics-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.FV.Statistics-Alg', choices = algIds_, selected = algIds_)
   
-  updateSelectInput(session, 'Report.FV.Single_ERT-FuncId', choices = funcIds, selected = selected_f)
-  updateSelectInput(session, 'Report.FV.Single_ERT-DIM', choices = DIMs, selected = selected_dim)
-  updateSelectInput(session, 'Report.FV.Single_ERT-Alg', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'Report.FV.Single_FCE-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.Single_FCE-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.Single_FCE-Alg', choices = algIds_, selected = algIds_)
   
-  updateSelectInput(session, 'Report.FV.Multi_ERT-DIM', choices = DIMs, selected = selected_dim)
-  updateSelectInput(session, 'Report.FV.Multi_ERT-Alg', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'Report.FV.Multi_FCE-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.Multi_FCE-Alg', choices = algIds_, selected = algIds_)
   
   updateSelectInput(session, 'Report.FV.Rank-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.FV.Rank-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.Histogram-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.Histogram-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.Histogram-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.PMF-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.PMF-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.PMF-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.ECDF_Single_Target-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.ECDF_Single_Target-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.ECDF_Single_Target-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.ECDF_Single_Function-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.ECDF_Single_Function-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.ECDF_Single_Function-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.ECDF_Aggregated-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.ECDF_AUC-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.ECDF_AUC-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.ECDF_AUC-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.Param.Plot-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.Param.Plot-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.Param.Plot-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.Param.Statistics-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.Param.Statistics-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.Param.Statistics-Alg', choices = algIds_, selected = algIds_)
   
   updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algIds, selected = 'all')

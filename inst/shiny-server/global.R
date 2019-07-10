@@ -160,6 +160,7 @@ widget_id <- c('RTSummary.Statistics.Min',
                'RTECDF.Multi.Min',
                'RTECDF.Multi.Max',
                'RTECDF.Multi.Step',
+               'RTECDF.Single.Target',
                'RTPMF.Bar.Target',
                'RTPMF.Hist.Target',
                'ERTPlot.Min',
@@ -191,7 +192,8 @@ widget_id <- c('RTSummary.Statistics.Min',
                'FCEECDF.Mult.Step',
                'FCEECDF.AUC.Min',
                'FCEECDF.AUC.Max',
-               'FCEECDF.AUC.Step')
+               'FCEECDF.AUC.Step',
+               'FCEECDF.Single.Target')
 
 eventExpr <- parse(text = paste0('{', paste(paste0('input$', widget_id), collapse = "\n"), '}'))
 

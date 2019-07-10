@@ -1,0 +1,32 @@
+---
+title: "FV_PMF"
+author: "IOHprofiler"
+date: "7/5/2019"
+output: pdf_document:
+  fig_caption: yes
+graphics: yes
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+dsl_sub <- subset(dsl, DIM == dim && funcId == fid && algId %in% algs)
+name <- get_data_id(dsl_sub)
+rts <- get_runtimes(dsl_sub)
+tryCatch(
+  {
+  rttarget <- as.numeric(REG$FCEPDF.Bar.Runtime[name])
+  if (is.null(rttarget) || is.na(rttarget)) rttarget <- median(rts)
+},
+error = function(e) {
+    rttarget <- median(rts)
+  }
+)
+p <- Plot.FV.PDF(dsl_sub, rttarget, show.sample = input$FCEPDF.Bar.Samples,
+              scale.ylog = input$FCEPDF.Bar.Logy )
+save_plotly(p, paste0('FV_PMF_F', fid, '-', dim, 'D.pdf'), 'pdf', width = 1000, height = 500)
+```
+## Probability denisty function of target values hit of F`r paste(fid)` on `r paste(dim)`D at runtime `r paste(rttarget)`
+
+```{r {{name_figure}}, results='asis', fig.align='center', fig.cap="TEsting", fig.width=500, fig.height=300, fig.pos='!hbt'}
+include_graphics(paste0('FV_PMF_F', fid, '-', dim, 'D.pdf'))
+```

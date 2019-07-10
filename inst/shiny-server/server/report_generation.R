@@ -27,13 +27,17 @@ output$Report.Generate <- downloadHandler(
 generate_report <- function(file){
   # shinyjs::alert("Test")
   dir_loc <- tempdir()
-  tempReport <- file.path(dir_loc, "Template_test.Rmd")
-  file.copy("RMD/Template_test.Rmd", tempReport, overwrite = TRUE)
-  file.copy("RMD/Single_ERT.Rmd", file.path(dir_loc, "Single_ERT.Rmd"), overwrite = TRUE)
-  file.copy("RMD/Multi_ERT.Rmd", file.path(dir_loc, "Multi_ERT.Rmd"), overwrite = TRUE)
-  file.copy("RMD/FV_Rank.Rmd", file.path(dir_loc, "FV_Rank.Rmd"), overwrite = TRUE)
-  
-  file.copy("RMD/bibliography.bib", file.path(dir_loc, "bibliography.bib"))
+  dir.create(file.path(dir_loc, "Report"))
+  file.copy("RMD/Report/", file.path(dir_loc), overwrite = TRUE, recursive = TRUE)
+  tempReport <- file.path(file.path(dir_loc, "Report"), "Template_test.Rmd")
+  # file.copy("RMD/Template_test.Rmd", tempReport, overwrite = TRUE)
+  # file.copy("RMD/Single_ERT.Rmd", file.path(dir_loc, "Single_ERT.Rmd"), overwrite = TRUE)
+  # file.copy("RMD/Multi_ERT.Rmd", file.path(dir_loc, "Multi_ERT.Rmd"), overwrite = TRUE)
+  # file.copy("RMD/RT_Rank.Rmd", file.path(dir_loc, "RT_Rank.Rmd"), overwrite = TRUE)
+  # file.copy("RMD/RT_Histogram.Rmd", file.path(dir_loc, "RT_Histogram.Rmd"), overwrite = TRUE)
+  # file.copy("RMD/RT_PMF.Rmd", file.path(dir_loc, "RT_PMF.Rmd"), overwrite = TRUE)
+  # 
+  # file.copy("RMD/bibliography.bib", file.path(dir_loc, "bibliography.bib"))
   # shinyjs::alert(tempReport)
   
   # Set up parameters to pass to Rmd document

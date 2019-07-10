@@ -6,7 +6,7 @@ sidebar_menu <- function() {
               menuItem("Fixed-Target Results", tabName = "ERT", icon = icon("file-text-o"),
                        menuSubItem("Data Summary", tabName = "ERT_data", icon = icon("table")),
                        menuSubItem("Expected Runtime", tabName = "ERT_convergence", icon = icon("line-chart"), selected = F),
-                       menuSubItem("probability Mass Function", tabName = "RT_PMF", icon = icon("bar-chart"), selected = F),
+                       menuSubItem("Probability Mass Function", tabName = "RT_PMF", icon = icon("bar-chart"), selected = F),
                        menuSubItem("Cumulative Distribution", tabName = "RT_ECDF", icon = icon("line-chart"), selected = F)
               ),
 

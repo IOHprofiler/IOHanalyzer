@@ -1,0 +1,40 @@
+---
+title: "ECDF_AUC"
+author: "IOHprofiler"
+date: "7/5/2019"
+output: pdf_document:
+  fig_caption: yes
+graphics: yes
+---
+
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+dsl_sub <- subset(dsl, DIM == dim && funcId == fid && algId %in% algs)
+name <- get_data_id(dsl_sub)
+fvs <- get_funvals(dsl_sub)
+tryCatch(
+  {
+  fmin <- as.numeric(REG$RTECDF.AUC.Min[name])
+  fmax <- as.numeric(REG$RTECDF.AUC.Max[name])
+  fstep <- as.numeric(REG$RTECDF.AUC.Step[name])
+
+  if (is.null(fmin) || is.na(fmin)) fmin <- min(fvs)
+  if (is.null(fmax) || is.na(fmax)) fmax <- max(fvs)
+  if (is.null(fstep) || is.na(fstep)) fstep <- NULL
+
+},
+error = function(e) {
+    fmin <- min(fvs)
+    fmax <- max(fvs)
+    fstep <- NULL
+  }
+)
+p <- Plot.RT.ECDF_AUC(dsl_sub, fmin, fmax, fstep)
+save_plotly(p, paste0('ECDF_AUC_F', fid, '-', dim, 'D.pdf'), 'pdf', width = 1000, height = 500)
+```
+## ECDF plot of F`r paste(fid)` on `r paste(dim)`D
+
+```{r {{name_figure}}, results='asis', fig.align='center', fig.cap="TEsting", fig.width=500, fig.height=300, fig.pos='!hbt'}
+include_graphics(paste0('ECDF_AUC_F', fid, '-', dim, 'D.pdf'))
+```

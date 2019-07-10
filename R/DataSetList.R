@@ -465,9 +465,7 @@ subset.DataSetList <- function(x, ...) {
   enclos <- parent.frame()
   idx <- sapply(x,
                 function(ds)
-                  eval(condition_call, attributes(ds), enclos) %>%
-                  unlist %>%
-                  all
+                  all(unlist(eval(condition_call, attributes(ds), enclos)))
   )
   x[idx]
 }

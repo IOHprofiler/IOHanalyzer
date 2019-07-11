@@ -11,6 +11,7 @@ suppressMessages(library(xtable))
 suppressMessages(library(colourpicker))
 suppressMessages(library(bsplus))
 suppressMessages(library(DT))
+suppressMessages(library(knitr))
 
 # global options
 options(datatable.print.nrows = 20)
@@ -159,14 +160,12 @@ widget_id <- c('RTSummary.Statistics.Min',
                'RTECDF.Multi.Min',
                'RTECDF.Multi.Max',
                'RTECDF.Multi.Step',
+               'RTECDF.Single.Target',
                'RTPMF.Bar.Target',
                'RTPMF.Hist.Target',
                'ERTPlot.Min',
                'ERTPlot.Max',
                'ERTPlot.Aggr.Targets',
-               'RTECDF.Single.Target1',
-               'RTECDF.Single.Target2',
-               'RTECDF.Single.Target3',
                'RTECDF.AUC.Min',
                'RTECDF.AUC.Max',
                'RTECDF.AUC.Step',
@@ -194,15 +193,22 @@ widget_id <- c('RTSummary.Statistics.Min',
                'FCEECDF.AUC.Min',
                'FCEECDF.AUC.Max',
                'FCEECDF.AUC.Step',
-               'FCEECDF.Single.Target1',
-               'FCEECDF.Single.Target2',
-               'FCEECDF.Single.Target3')
+               'FCEECDF.Single.Target')
 
 eventExpr <- parse(text = paste0('{', paste(paste0('input$', widget_id), collapse = "\n"), '}'))
 
 # token needed for mapbox, which is again needed for ocra... ------
 supported_fig_format <- c('png', 'eps', 'svg', 'pdf')
 Sys.setenv('MAPBOX_TOKEN' = 'pk.eyJ1Ijoid2FuZ3JvbmluIiwiYSI6ImNqcmIzemhvMDBudnYzeWxoejh5c2Y5cXkifQ.9XGMWTDOsgi3-b5qG594kQ')
+
+sanity_check_id <- function(input) {
+  for (id in widget_id) {
+    tryCatch(eval(parse(text = paste0('input$', id))),
+             error = function(e) {
+               cat(paste('widget', id, 'does not exist!\n'))
+             })
+  }
+}
 
 
 

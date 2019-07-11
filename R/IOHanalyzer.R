@@ -1,4 +1,4 @@
-#' @importFrom stats dt ecdf integrate median quantile sd 
+#' @importFrom stats dt ecdf integrate median quantile sd rgeom ks.test p.adjust
 #' @importFrom grDevices col2rgb colors nclass.FD
 #' @importFrom graphics hist
 #' @importFrom utils data head read.csv tail
@@ -15,6 +15,8 @@
 #' @importFrom shiny req
 #' @importFrom Rcpp sourceCpp
 #' @importFrom withr with_dir
+#' @importFrom igraph graph_from_adjacency_matrix layout.circle plot.igraph 
+#' @importFrom scales rescale
 #' @useDynLib IOHanalyzer
 NULL
 # Ugly hack, but appears to be required to appease CRAN
@@ -22,7 +24,7 @@ utils::globalVariables(c(".", "algId", "run", "ERT", "RT", "group",
                          "DIM", "Fvalue", "lower", "upper", "target", "format",
                          "runtime", "parId", "instance", "input", "funcId",
                          "budget", "dimension", "loss", "name", "optimizer_name",
-                         "rescale"))
+                         "rescale", "maxRT"))
 
 options(shiny.port = 4242)
 
@@ -48,7 +50,6 @@ options(shiny.port = 4242)
   
   invisible()
 }
-
 
 IOHanalyzer_env <- new.env(parent = emptyenv())
 

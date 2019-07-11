@@ -253,7 +253,6 @@ get_RT_summary.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   }) %>% rbindlist
 }
 
-
 #' @rdname get_RT_sample
 #' @param algorithm Which algorithms in the DataSetList to consider.
 #'
@@ -270,6 +269,22 @@ get_RT_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   }) %>% rbindlist(fill = T)
 }
 
+#' @rdname get_maxRT
+#' @param algorithm Which algorithms in the DataSetList to consider.
+#'
+#' @export
+get_maxRT.DataSetList <- function(ds, algorithm = 'all', ...) {
+  if (algorithm != 'all')
+    ds <- subset(ds, algId == algorithm)
+
+  lapply(ds, function(ds_){
+    res <- cbind(attr(ds_, 'DIM'), attr(ds_, 'funcId'), get_maxRT(ds_, ...))
+    colnames(res)[1] <- 'DIM'
+    colnames(res)[2] <- 'funcId'
+    res
+  }) %>% rbindlist(fill = T)
+}
+
 #' @rdname get_FV_summary
 #' @param algorithm Which algorithms in the DataSetList to consider.
 #' @export
@@ -277,7 +292,6 @@ get_RT_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
 get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
-
 
   lapply(ds, function(ds) {
     res <- cbind(attr(ds, 'DIM'), attr(ds, 'funcId'), get_FV_summary(ds, runtime))
@@ -465,10 +479,8 @@ subset.DataSetList <- function(x, ...) {
   enclos <- parent.frame()
   idx <- sapply(x,
                 function(ds)
-                  eval(condition_call, attributes(ds), enclos) %>%
-                  unlist %>%
-                  all
-  )
+                  all(unlist(eval(condition_call, attributes(ds), enclos)))
+                )
   x[idx]
 }
 

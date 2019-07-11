@@ -230,13 +230,27 @@ body <- dashboardBody(
               )
             )
     ),
-    
+    tabItem(tabName = 'Statistics',
+            fluidRow(
+              column(
+                width = 12,
+                heatmap_box()
+              )
+            )),
     tabItem(tabName = 'Settings',
             fluidRow(
               column(
                 width = 12,
                 color_settings_box(),
                 general_settings_box()
+              )
+            )
+    ),
+    tabItem(tabName = 'Report',
+            fluidRow(
+              column(
+                width = 12,
+                main_report_box()
               )
             )
     )

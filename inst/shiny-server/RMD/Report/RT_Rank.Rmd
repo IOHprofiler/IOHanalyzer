@@ -1,0 +1,24 @@
+---
+title: "RT_Rank"
+author: "IOHprofiler"
+date: "7/8/2019"
+output: pdf_document:
+  fig_caption: yes
+graphics: yes
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+dsl_sub <- subset(dsl, DIM == dim && algId %in% algs)
+p <- Plot.RT.Aggregated(dsl_sub, 
+                        plot_mode = input$ERTPlot.Aggr.Mode,
+                        scale.ylog = input$ERTPlot.Aggr.Logy,
+                        maximize = attr(dsl_sub[[1]],'maximization'),
+                        use_rank = input$ERTPlot.Aggr.Ranking)
+save_plotly(p, paste0('RT_Rank_', dim, 'D.pdf'), 'pdf', width = 1000, height = 500)
+```
+## Ranking plot of all functions in `r paste(dim)`D 
+
+```{r {{name_figure}}, results='asis', fig.align='center', fig.cap="TEsting", fig.width=500, fig.height=600, fig.pos='!hbt'}
+include_graphics(paste0('RT_Rank_', dim, 'D.pdf'))
+```

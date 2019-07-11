@@ -13,12 +13,13 @@ observe({
   rds_files <- list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
 
   if (length(rds_files) != 0) {
-    updateSelectInput(session, 'repository.dataset', choices = rds_files, selected = NULL)
+    updateSelectInput(session, 'repository.dataset', choices = c(rds_files, "Example_small", "Example_large"), selected = NULL)
   } else { # TODO: the alert msg should be updated
     shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository,
                    please create a folder called 'repository' in your home directory
-                   and make sure it contains the '2019gecco.rds'-file
+                   and make sure it contains at least one '.rds'-file, such as the ones
                    provided on the IOHProfiler github-page.")
+    updateSelectInput(session, 'repository.dataset', choices = c("Example_small", "Example_large"), selected = NULL)
   }
   })
 
@@ -26,9 +27,17 @@ observe({
 observeEvent(input$repository.dataset, {
   req(input$repository.dataset)
 
-  rds_file <- file.path(repo_dir, paste0(input$repository.dataset, ".rds"))
-  repo_data <<- readRDS(rds_file)
-
+  if (input$repository.dataset  == "Example_small"){
+    repo_data <<- IOHanalyzer::dsl
+  }
+  else if (input$repository.dataset == "Example_large"){
+    repo_data <<- IOHanalyzer::dsl_large
+  }
+  else{
+    rds_file <- file.path(repo_dir, paste0(input$repository.dataset, ".rds"))
+  
+    repo_data <<- readRDS(rds_file)
+  }
   algIds <- c(get_algId(repo_data), 'all')
   dims <- c(get_dim(repo_data), 'all')
   funcIds <- c(get_funcId(repo_data), 'all')
@@ -51,6 +60,9 @@ observeEvent(input$repository.load_button, {
 
   DataList$data <- c(DataList$data, data)
   format <<- attr(data[[1]], 'format')
+  if (is.null(format)){
+    format <<- attr(data[[1]], 'src')
+  }
 })
 
 # upload the compressed the data file and uncompress them
@@ -95,8 +107,9 @@ selected_folders <- reactive({
       }
       
       if (basename(info) == info) {
-        folder <- Sys.time()  # generate a folder name here
+        folder <- basename(tempfile("dir-"))  # generate a folder name here
         .exdir <- file.path(exdir, folder)
+        dir.create(.exdir, recursive = T)
         unzip_fct(datapath[i], list = FALSE, exdir = .exdir)
         folders[i] <- .exdir
       } else {
@@ -247,6 +260,95 @@ observe({
   
   updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.Overview-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.Overview-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.Overview-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.Statistics-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.Statistics-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.Statistics-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.Single_ERT-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.Single_ERT-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.Single_ERT-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.Multi_ERT-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.Multi_ERT-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.Rank-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.Rank-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.Histogram-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.Histogram-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.Histogram-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.PMF-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.PMF-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.PMF-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.ECDF_Single_Target-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.ECDF_Single_Target-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.ECDF_Single_Target-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.ECDF_Single_Function-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.ECDF_Single_Function-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.ECDF_Single_Function-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.ECDF_Aggregated-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.RT.ECDF_AUC-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.RT.ECDF_AUC-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.RT.ECDF_AUC-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.Overview-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.Overview-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.Overview-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.Statistics-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.Statistics-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.Statistics-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.Single_FCE-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.Single_FCE-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.Single_FCE-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.Multi_FCE-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.Multi_FCE-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.Rank-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.Rank-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.Histogram-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.Histogram-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.Histogram-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.PMF-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.PMF-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.PMF-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.ECDF_Single_Target-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.ECDF_Single_Target-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.ECDF_Single_Target-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.ECDF_Single_Function-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.ECDF_Single_Function-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.ECDF_Single_Function-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.ECDF_Aggregated-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.FV.ECDF_AUC-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.FV.ECDF_AUC-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.FV.ECDF_AUC-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.Param.Plot-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.Param.Plot-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.Param.Plot-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Report.Param.Statistics-FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Report.Param.Statistics-DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'Report.Param.Statistics-Alg', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'Stats.Overview.Algid', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'FCESummary.Overview.Algid', choices = algIds, selected = 'all')
@@ -387,6 +489,8 @@ observe({
   setTextInput(session, 'PAR.Sample.Min', name, alternative = format_FV(start))
   setTextInput(session, 'PAR.Sample.Max', name, alternative = format_FV(stop))
   setTextInput(session, 'PAR.Sample.Step', name, alternative = format_FV(step))
+  setTextInput(session, 'Stats.Overview.Target', name, alternative = format_FV(stop))
+  
 })
 
 # update the values for the grid of running times
@@ -424,7 +528,7 @@ observe({
   setTextInput(session, 'FCEECDF.AUC.Min', name, alternative = min(v))
   setTextInput(session, 'FCEECDF.AUC.Max', name, alternative = max(v))
   setTextInput(session, 'FCEECDF.AUC.Step', name, alternative = step)
-
+  
   #TODO: remove q and replace by single number
   setTextInput(session, 'FCEECDF.Single.Target', name, alternative = q[2])
 })

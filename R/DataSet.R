@@ -43,7 +43,8 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
       cdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.cdat'))
 
       # priority for the runtime alignment: *.cdat > *.tdat > *.dat
-      cdatFile <- ifelse(file.exists(cdatFile), cdatFile, tdatFile)
+      #TODO: discuss when to use tdat. Disabled for now since it can be very sparce and thus miss data. 
+      # cdatFile <- ifelse(file.exists(cdatFile), cdatFile, tdatFile) 
       cdatFile <- ifelse(file.exists(cdatFile), cdatFile, datFile)
     } else if (format %in% c(COCO, BIBOJ_COCO)) {
       datFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
@@ -446,7 +447,7 @@ get_ERT.DataSet <- function(ds, ftarget, ...) {
   algId <- attr(ds, 'algId')
   maximization <- attr(ds, 'maximization')
 
-  ftarget <- c(ftarget) %>% as.double %>% sort(decreasing = !maximization)
+  ftarget <- sort(as.double(unique(c(ftarget))), decreasing = !maximization)
   FValues <- rownames(data) %>% as.numeric
   idx <- seq_along(FValues)
   op <- ifelse(maximization, `>=`, `<=`)
@@ -479,8 +480,8 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
   algId <- attr(ds, 'algId')
   maximization <- attr(ds, 'maximization')
 
-  ftarget <- c(ftarget) %>% as.double %>% sort(decreasing = !maximization)
-  FValues <- rownames(data) %>% as.numeric
+  ftarget <- sort(as.double(unique(c(ftarget))), decreasing = !maximization)
+  FValues <- as.numeric(rownames(data))
   idx <- seq_along(FValues)
   op <- ifelse(maximization, `>=`, `<=`)
 
@@ -514,7 +515,8 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
             apply(data, 1, .median),
             apply(data, 1, .sd), .) %>%
       set_colnames(c('algId', 'target', 'mean', 'median',
-                     'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%'), 'ERT', 'runs', 'ps'))
+                     'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%'),
+                     'ERT', 'runs', 'ps'))
   } else {# TODO: remove this case, deprecated...
     NAs <- is.na(matched)
     if (any(NAs)) {
@@ -530,6 +532,39 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
   }
 }
 
+#' Get the maximal running time
+#'
+#' @param ds A DataSet or DataSetList object
+#' @param ... Arguments passed to other methods
+#'
+#' @return A data.table object containing the algorithm ID and the running time 
+#' when the algorithm terminates in each run
+#' @examples 
+#' get_maxRT(dsl)
+#' get_maxRT(dsl[[1]])
+#' @export
+get_maxRT <- function(ds, ...) UseMethod("get_maxRT", ds)
+
+#' @rdname get_maxRT
+#' @param output The format of the outputted table: 'wide' or 'long'
+#' @export
+#'
+get_maxRT.DataSet <- function(ds, output = 'wide', ...) {
+  algId <- attr(ds, 'algId')
+  N <- ncol(ds$RT)
+  res <- t(c(algId, attr(ds, 'maxRT'))) %>%
+    as.data.table %>%
+    set_colnames(c('algId', paste0('run.', seq(N))))
+
+  if (output == 'long') {
+    res <- melt(res, id = 'algId', variable.name = 'run', value.name = 'maxRT')
+    res[, run := as.numeric(gsub('run.', '', run)) %>% as.integer
+        ][, maxRT := as.integer(maxRT)
+          ][order(run)]
+  }
+  res
+}
+
 #' @rdname get_RT_sample
 #' @param output A character determining the format of output data.table: 'wide' or 'long'
 #' @export
@@ -539,8 +574,8 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide', ...) {
   algId <- attr(ds, 'algId')
   maximization <- attr(ds, 'maximization')
 
-  ftarget <- c(ftarget) %>% unique %>% as.double %>% sort(decreasing = !maximization)
-  FValues <- rownames(data) %>% as.double
+  ftarget <- sort(as.double(unique(c(ftarget))), decreasing = !maximization)
+  FValues <- as.double(rownames(data))
   idx <- seq_along(FValues)
   op <- ifelse(maximization, `>=`, `<=`)
 
@@ -551,15 +586,13 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide', ...) {
     }
   )
 
-  res <- data[matched, , drop = FALSE] %>%
-    as.data.table %>%
-    cbind(algId, ftarget, .) %>%
+  res <- cbind(algId, ftarget, as.data.table(data[matched, , drop = FALSE])) %>%
     set_colnames(c('algId', 'target', paste0('run.', seq(N))))
 
   if (output == 'long') {
     #TODO: option to not add runnr etc to speed up performance of ECDF calculation?
     res <- melt(res, id = c('algId', 'target'), variable.name = 'run', value.name = 'RT')
-    res[, run := as.numeric(gsub('run.', '', run)) %>% as.integer
+    res[, run := as.integer(as.numeric(gsub('run.', '', run)))
         ][, RT := as.integer(RT)
           ][order(target, run)]
   }
@@ -576,8 +609,8 @@ get_FV_summary.DataSet <- function(ds, runtime, ...) {
   algId <- attr(ds, 'algId')
   maximization <- attr(ds, 'maximization')
 
-  runtime <- c(runtime) %>% unique %>% as.numeric %>% sort
-  RT <- rownames(data) %>% as.numeric
+  runtime <- sort(as.numeric(unique(c(runtime))))
+  RT <- as.numeric(rownames(data))
   idx <- seq_along(RT)
 
   matched <- sapply(runtime, function(r) {
@@ -586,13 +619,10 @@ get_FV_summary.DataSet <- function(ds, runtime, ...) {
   })
 
   data <- data[matched, , drop = FALSE]
-  apply(data, 1, IOHanalyzer_env$C_quantile) %>%
-    t %>%
-    as.data.table %>%
-    cbind(algId, runtime, NC,
+  cbind(algId, runtime, NC,
           apply(data, 1, .mean),
           apply(data, 1, .median),
-          apply(data, 1, .sd), .) %>%
+          apply(data, 1, .sd), as.data.table(t(apply(data, 1, IOHanalyzer_env$C_quantile)))) %>%
     set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', 'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%')))
 }
 
@@ -608,8 +638,8 @@ get_FV_sample.DataSet <- function(ds, runtime, output = 'wide', ...) {
   algId <- attr(ds, 'algId')
   maximization <- attr(ds, 'maximization')
 
-  runtime <- c(runtime) %>% unique %>% as.numeric %>% sort
-  RT <- rownames(data) %>% as.numeric
+  runtime <- sort(as.numeric(unique(c(runtime))))
+  RT <- as.numeric(rownames(data))
   idx <- seq_along(RT)
 
   matched <- sapply(runtime, function(r) {
@@ -617,14 +647,12 @@ get_FV_sample.DataSet <- function(ds, runtime, output = 'wide', ...) {
     ifelse(is.na(res), n_row, res)
   })
 
-  res <- data[matched, , drop = FALSE] %>%
-    as.data.table %>%
-    cbind(algId, runtime, .) %>%
+  res <- cbind(algId, runtime, as.data.table(data[matched, , drop = FALSE])) %>%
     set_colnames(c('algId', 'runtime', paste0('run.', seq(N))))
 
   if (output == 'long') {
     res <- melt(res, id = c('algId', 'runtime'), variable.name = 'run', value.name = 'f(x)')
-    res[, run := as.numeric(gsub('run.', '', run)) %>% as.integer
+    res[, run := as.integer(as.numeric(gsub('run.', '', run)))
         ][order(runtime, run)]
   }
   res
@@ -666,14 +694,11 @@ get_PAR_summary.DataSet <- function(ds, ftarget, parId = 'all', ...) {
   lapply(par_name,
          function(par) {
            data <- ds[[par]][matched, , drop = FALSE]
-           apply(data, 1, IOHanalyzer_env$C_quantile) %>%
-             t %>%
-             as.data.table %>%
              cbind(algId, par, ftarget,
                    apply(data, 1, function(x) length(x[!is.na(x)])),
                    apply(data, 1, .mean),
                    apply(data, 1, .median),
-                   apply(data, 1, .sd), .) %>%
+                   apply(data, 1, .sd), as.data.table(t(apply(data, 1, IOHanalyzer_env$C_quantile)))) %>%
              set_colnames(c('algId', 'parId', 'target', 'runs', 'mean', 'median', 'sd',
                             paste0(getOption("IOHanalyzer.quantiles") * 100, '%')))
          }) %>%
@@ -697,7 +722,7 @@ get_PAR_sample.DataSet <- function(ds, ftarget, parId = 'all', output = 'wide', 
     return(NULL)
 
   maximization <- attr(ds, 'maximization')
-  ftarget <- c(ftarget) %>% as.numeric %>% sort(decreasing = !maximization)
+  ftarget <- sort(as.double(unique(c(ftarget))), decreasing = !maximization)
   op <- ifelse(maximization, `>=`, `<=`)
 
   matched <- sapply(

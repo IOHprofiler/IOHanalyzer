@@ -20,6 +20,20 @@ SP <- function(data, max_runtime) {
   list(ERT = rowSums(data) / succ, runs = succ, succ_rate = succ_rate)
 }
 
+#' Bootstrapping for running time samples
+#'
+#' @param x A numeric vector. A sample of the running time.
+#' @param max_runtime A numeric vector, containing the maximal running time in 
+#' each run. It should have the same size as x
+#' @param bootstrap.size integer, the size of the bootstrapped sample
+#'
+#' @return A numeric vector of the bootstrapped running time sample
+#' @export
+#' @examples 
+#' ds <- dsl[[1]]
+#' x <- get_RT_sample(ds, ftarget = 16, output = 'long')
+#' max_eval <- get_maxRT(dsl, output = 'long')
+#' bootstrap_RT(x$RT, max_eval$maxRT, bootstrap.size = 30)
 bootstrap_RT <- function(x, max_eval, bootstrap.size) {
   x_succ <- x[!is.na(x)]
   x_unsucc <- max_eval[is.na(x)]
@@ -35,12 +49,34 @@ bootstrap_RT <- function(x, max_eval, bootstrap.size) {
              x <- sum(sample(x_unsucc, size, replace = T))
            else
              x <- 0
-           
            x <- x + sample(x_succ, 1, replace = T)
          })
 }
 
-pairwise.ks.test <- function(x, max_eval, bootstrap.size = 30) {
+#' Performs a pairwise Kolmogorov-Smirnov test on the bootstrapped running times 
+#' among a data set
+#' 
+#' @description This function performs a Kolmogorov-Smirnov test on each pair of 
+#' algorithms in the input x to determine which algorithm gives a significantly 
+#' smaller running time. The resulting p-values are arranged in a matrix, where 
+#' each cell (i, j) contains a p-value from the test with alternative hypothesis:
+#' the running time of algorithm i is smaller (thus better) than that of j. 
+#'
+#' @param x either a list that contains running time sample for each algorithm as 
+#' sub-lists, or a DataSetList object
+#' @param bootstrap.size integer, the size of the bootstrapped sample
+#' @param ... all other options
+#' @return A matrix containing p-values of the test
+#' @export
+#' @examples 
+#' pairwise.test(subset(dsl, funcId == 1), 16)
+pairwise.test <- function(x, ...) UseMethod('pairwise.test', x)
+
+#' @param max_eval list that contains the maximal running time for each algorithm 
+#' as sub-lists
+#' @export
+#' @rdname pairwise.test
+pairwise.test.list <- function(x, max_eval, bootstrap.size = 30, ...) {
   N <- length(x)
   p.value <- matrix(NA, N, N)
   
@@ -62,31 +98,19 @@ pairwise.ks.test <- function(x, max_eval, bootstrap.size = 30) {
   p.value
 }
 
-#' Performs a pairwise statistical (ks-) test on the bootstrapped hitting times of a datasetlist
-#'
-#' @param dsl A datasetlist, consisiting of at least 2 algorithms on a single function and dimension
-#' @param ftarget The target value for calculating the hitting times
-#' @param alpha The cutoff for statistical significance
-#' @param bootstrap.size The maximum bootstrap size
-#'
-#' @return A matrix containing p-values indicating whether or not the ROW is statistically significantly
-#' better than the COLUMN
+#' @param ftarget float, the target value used to determine the running / hitting 
+#' time
 #' @export
-#' @examples 
-#' pairwise.test(subset(dsl, funcId==1), 16)
-pairwise.test <- function(dsl, ftarget, alpha = 0.01,
-                          bootstrap.size = 30) {
-  RT <- get_RT_sample(dsl, ftarget, output = 'long')
-  maxRT <- get_maxRT(dsl, output = 'long')
-  
-  x <- split(RT$RT, RT$algId)
-  max_eval <- split(maxRT$maxRT, maxRT$algId)
-  p.value <- pairwise.ks.test(x, max_eval)
+#' @rdname pairwise.test
+pairwise.test.DataSetList <- function(x, ftarget, bootstrap.size = 30, ...) {
+  dt <- get_RT_sample(x, ftarget, output = 'long')
+  maxRT <- get_maxRT(x, output = 'long')
+  s <- split(dt$RT, dt$algId)
+  maxRT <- split(maxRT$maxRT, maxRT$algId)
+  p.value <- pairwise.test.list(s, maxRT, bootstrap.size)
   p.value
 }
 
-
-#TODO: improve formatting
 #' Function for generating sequences of function values
 #'
 #' @param FV A list of function values
@@ -259,8 +283,6 @@ ECDF.DataSet <- function(ds, ftarget, ...) {
   fun
 }
 
-
-#TODO: better description of funcId parameter
 #' @rdname ECDF
 #' @export
 ECDF.DataSetList <- function(ds, ftarget, ...) {

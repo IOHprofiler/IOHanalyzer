@@ -1703,8 +1703,8 @@ Plot.Stats.Significance_Heatmap.DataSetList <- function(dsList, ftarget, alpha =
   if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1 || length(get_algId(dsList)) < 2){
     return(NULL)
   }
-  p_matrix <- pairwise.test(dsList, ftarget, alpha, bootstrap.size)
-  y <- p_matrix < alpha
+  p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size)
+  y <- p_matrix <= alpha
   colorScale <- data.frame(x=c(-1,-0.33,-0.33,0.33,0.33,1), col=c('blue','blue','white','white','red','red'))
   heatmap <-  y-t(y)
   
@@ -1732,7 +1732,7 @@ Plot.Stats.Significance_Graph.DataSetList <- function(dsList, ftarget, alpha = 0
   if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1 || length(get_algId(dsList)) < 2){
     return(NULL)
   }
-  p_matrix <- pairwise.test(dsList, ftarget, alpha, bootstrap.size)
+  p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size)
   g <- graph_from_adjacency_matrix(p_matrix <= alpha, mode = 'directed', diag = F)
   lab.locs <- radian.rescale(x = 1:nrow(p_matrix), direction = -1, start = 0)
   

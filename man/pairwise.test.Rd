@@ -2,26 +2,41 @@
 % Please edit documentation in R/stats.R
 \name{pairwise.test}
 \alias{pairwise.test}
-\title{Performs a pairwise statistical (ks-) test on the bootstrapped hitting times of a datasetlist}
+\alias{pairwise.test.list}
+\alias{pairwise.test.DataSetList}
+\title{Performs a pairwise Kolmogorov-Smirnov test on the bootstrapped running times 
+among a data set}
 \usage{
-pairwise.test(dsl, ftarget, alpha = 0.01, bootstrap.size = 30)
+pairwise.test(x, ...)
+
+\method{pairwise.test}{list}(x, max_eval, bootstrap.size = 30, ...)
+
+\method{pairwise.test}{DataSetList}(x, ftarget, bootstrap.size = 30, ...)
 }
 \arguments{
-\item{dsl}{A datasetlist, consisiting of at least 2 algorithms on a single function and dimension}
+\item{x}{either a list that contains running time sample for each algorithm as 
+sub-lists, or a DataSetList object}
 
-\item{ftarget}{The target value for calculating the hitting times}
+\item{...}{all other options}
 
-\item{alpha}{The cutoff for statistical significance}
+\item{max_eval}{list that contains the maximal running time for each algorithm 
+as sub-lists}
 
-\item{bootstrap.size}{The maximum bootstrap size}
+\item{bootstrap.size}{integer, the size of the bootstrapped sample}
+
+\item{ftarget}{float, the target value used to determine the running / hitting 
+time}
 }
 \value{
-A matrix containing p-values indicating whether or not the ROW is statistically significantly
-better than the COLUMN
+A matrix containing p-values of the test
 }
 \description{
-Performs a pairwise statistical (ks-) test on the bootstrapped hitting times of a datasetlist
+This function performs a Kolmogorov-Smirnov test on each pair of 
+algorithms in the input x to determine which algorithm gives a significantly 
+smaller running time. The resulting p-values are arranged in a matrix, where 
+each cell (i, j) contains a p-value from the test with alternative hypothesis:
+the running time of algorithm i is smaller (thus better) than that of j.
 }
 \examples{
-pairwise.test(subset(dsl, funcId==1), 16)
+pairwise.test(subset(dsl, funcId == 1), 16)
 }

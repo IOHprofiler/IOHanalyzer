@@ -62,7 +62,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
     print_fun <- cat
 
   object <- list()
-  class(object) %<>% c('DataSetList')
+  class(object) <- c('DataSetList', class(object))
   DIM <- c()
   algId <- c()
   funcId <- c()
@@ -153,7 +153,7 @@ c.DataSetList <- function(...) {
 
   object <- unlist(dsl, recursive = F)
   if(!any((class(object)) == 'DataSetList'))
-    class(object) %<>% c('DataSetList')
+    class(object) <- c('DataSetList', class(object))
 
   for (attr_str in c('DIM', 'funcId', 'algId')) {
     attr(object, attr_str) <- unlist(lapply(dsl, function(x) attr(x, attr_str)))
@@ -173,7 +173,7 @@ c.DataSetList <- function(...) {
 `[.DataSetList` <- function(x, i, drop = FALSE) {
   # remove the attributes firstly
   obj <- unclass(x)[i]
-  class(obj) %<>% c('DataSetList')
+  class(obj) <- c('DataSetList', class(obj))
 
   # also slice the attributes accordingly
   attr(obj, 'DIM') <- attr(x, 'DIM')[i]

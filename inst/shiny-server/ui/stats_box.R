@@ -13,7 +13,11 @@ heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
       
       mainPanel(
         width = 9,
-        HTML('Filler text for explanation of test procedure + how to read the table / figures'),
+        HTML_P('This function performs a Kolmogorov-Smirnov test on each pair of 
+                algorithms in the input x to determine which algorithm gives a significantly 
+                smaller running time. The resulting p-values are arranged in a matrix, where
+                each cell (i, j) contains a p-value from the test with alternative hypothesis:
+                the running time of algorithm i is smaller (thus better) than that of j.'),
         DT::dataTableOutput('Stats.Overview.Pmatrix'),
         plotlyOutput.IOHanalyzer('Stats.Overview.Heatmap'),
         plotOutput("Stats.Overview.Graph", height = '70vh')

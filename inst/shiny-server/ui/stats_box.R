@@ -13,8 +13,10 @@ heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
       
       mainPanel(
         width = 9,
+        HTML('Filler text for explanation of test procedure + how to read the table / figures'),
         DT::dataTableOutput('Stats.Overview.Pmatrix'),
-        plotlyOutput.IOHanalyzer('Stats.Overview.Heatmap')
+        plotlyOutput.IOHanalyzer('Stats.Overview.Heatmap'),
+        plotOutput("Stats.Overview.Graph", height = '70vh')
       )
   )
 }

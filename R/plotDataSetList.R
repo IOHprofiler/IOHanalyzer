@@ -1736,10 +1736,9 @@ Plot.Stats.Significance_Graph.DataSetList <- function(dsList, ftarget, alpha = 0
   g <- graph_from_adjacency_matrix(p_matrix <= alpha, mode = 'directed', diag = F)
   lab.locs <- radian.rescale(x = 1:nrow(p_matrix), direction = -1, start = 0)
   
-  p <- plot.igraph(g, layout = layout.circle(g), vertex.size = 10, edge.arrow.size = .1,
+  plot.igraph(g, layout = layout.circle(g), vertex.size = 10, edge.arrow.size = 1,
               vertex.label.color = 'black',
               vertex.label.dist = 2,
               vertex.label.cex = 1,
               vertex.label.degree = lab.locs)
-  p
 }

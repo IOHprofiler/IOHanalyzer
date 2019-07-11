@@ -107,8 +107,9 @@ selected_folders <- reactive({
       }
       
       if (basename(info) == info) {
-        folder <- Sys.time()  # generate a folder name here
+        folder <- basename(tempfile("dir-"))  # generate a folder name here
         .exdir <- file.path(exdir, folder)
+        dir.create(.exdir, recursive = T)
         unzip_fct(datapath[i], list = FALSE, exdir = .exdir)
         folders[i] <- .exdir
       } else {

@@ -43,7 +43,8 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
       cdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.cdat'))
 
       # priority for the runtime alignment: *.cdat > *.tdat > *.dat
-      cdatFile <- ifelse(file.exists(cdatFile), cdatFile, tdatFile)
+      #TODO: discuss when to use tdat. Disabled for now since it can be very sparce and thus miss data. 
+      # cdatFile <- ifelse(file.exists(cdatFile), cdatFile, tdatFile) 
       cdatFile <- ifelse(file.exists(cdatFile), cdatFile, datFile)
     } else if (format %in% c(COCO, BIBOJ_COCO)) {
       datFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))

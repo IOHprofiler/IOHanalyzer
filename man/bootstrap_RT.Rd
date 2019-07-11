@@ -9,10 +9,10 @@ bootstrap_RT(x, max_eval, bootstrap.size)
 \arguments{
 \item{x}{A numeric vector. A sample of the running time.}
 
-\item{bootstrap.size}{integer, the size of the bootstrapped sample}
-
-\item{max_runtime}{A numeric vector, containing the maximal running time in 
+\item{max_eval}{A numeric vector, containing the maximal running time in 
 each run. It should have the same size as x}
+
+\item{bootstrap.size}{integer, the size of the bootstrapped sample}
 }
 \value{
 A numeric vector of the bootstrapped running time sample

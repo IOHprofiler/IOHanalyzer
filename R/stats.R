@@ -23,7 +23,7 @@ SP <- function(data, max_runtime) {
 #' Bootstrapping for running time samples
 #'
 #' @param x A numeric vector. A sample of the running time.
-#' @param max_runtime A numeric vector, containing the maximal running time in 
+#' @param max_eval A numeric vector, containing the maximal running time in 
 #' each run. It should have the same size as x
 #' @param bootstrap.size integer, the size of the bootstrapped sample
 #'

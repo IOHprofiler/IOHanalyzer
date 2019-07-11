@@ -12,6 +12,7 @@ suppressMessages(library(colourpicker))
 suppressMessages(library(bsplus))
 suppressMessages(library(DT))
 suppressMessages(library(knitr))
+suppressMessages(library(kableExtra))
 
 # global options
 options(datatable.print.nrows = 20)

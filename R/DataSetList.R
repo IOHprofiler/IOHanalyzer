@@ -273,12 +273,12 @@ get_RT_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
 #' @param algorithm Which algorithms in the DataSetList to consider.
 #'
 #' @export
-get_maxRT.DataSetList <- function(dsl, algorithm = 'all', ...) {
+get_maxRT.DataSetList <- function(ds, algorithm = 'all', ...) {
   if (algorithm != 'all')
-    dsl <- subset(dsl, algId == algorithm)
+    ds <- subset(ds, algId == algorithm)
 
-  lapply(dsl, function(ds){
-    res <- cbind(attr(ds, 'DIM'), attr(ds, 'funcId'), get_maxRT(ds, ...))
+  lapply(ds, function(ds_){
+    res <- cbind(attr(ds_, 'DIM'), attr(ds_, 'funcId'), get_maxRT(ds_, ...))
     colnames(res)[1] <- 'DIM'
     colnames(res)[2] <- 'funcId'
     res

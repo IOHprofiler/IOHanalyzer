@@ -347,6 +347,7 @@ observe({
   updateSelectInput(session, 'Report.Param.Statistics-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.Param.Statistics-Alg', choices = algIds_, selected = algIds_)
   
+  updateSelectInput(session, 'Stats.Overview.Algid', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'FCESummary.Overview.Algid', choices = algIds, selected = 'all')
@@ -487,6 +488,8 @@ observe({
   setTextInput(session, 'PAR.Sample.Min', name, alternative = format_FV(start))
   setTextInput(session, 'PAR.Sample.Max', name, alternative = format_FV(stop))
   setTextInput(session, 'PAR.Sample.Step', name, alternative = format_FV(step))
+  setTextInput(session, 'Stats.Overview.Target', name, alternative = format_FV(stop))
+  
 })
 
 # update the values for the grid of running times
@@ -524,7 +527,7 @@ observe({
   setTextInput(session, 'FCEECDF.AUC.Min', name, alternative = min(v))
   setTextInput(session, 'FCEECDF.AUC.Max', name, alternative = max(v))
   setTextInput(session, 'FCEECDF.AUC.Step', name, alternative = step)
-
+  
   #TODO: remove q and replace by single number
   setTextInput(session, 'FCEECDF.Single.Target', name, alternative = q[2])
 })

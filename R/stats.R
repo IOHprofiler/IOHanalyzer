@@ -62,8 +62,20 @@ pairwise.ks.test <- function(x, max_eval, bootstrap.size = 30) {
   p.value
 }
 
+#' Performs a pairwise statistical (ks-) test on the bootstrapped hitting times of a datasetlist
+#'
+#' @param dsl A datasetlist, consisiting of at least 2 algorithms on a single function and dimension
+#' @param ftarget The target value for calculating the hitting times
+#' @param alpha The cutoff for statistical significance
+#' @param bootstrap.size The maximum bootstrap size
+#'
+#' @return A matrix containing p-values indicating whether or not the ROW is statistically significantly
+#' better than the COLUMN
+#' @export
+#' @examples 
+#' pairwise.test(subset(dsl, funcId==1), 16)
 pairwise.test <- function(dsl, ftarget, alpha = 0.01,
-                          bootstrap.size = 30, plot = F) {
+                          bootstrap.size = 30) {
   RT <- get_RT_sample(dsl, ftarget, output = 'long')
   maxRT <- get_maxRT(dsl, output = 'long')
   
@@ -71,13 +83,13 @@ pairwise.test <- function(dsl, ftarget, alpha = 0.01,
   max_eval <- split(maxRT$maxRT, maxRT$algId)
   p.value <- pairwise.ks.test(x, max_eval)
   
-  if (plot) {
-    g <- graph_from_adjacency_matrix(p.value <= alpha, mode = 'directed', diag = F)
-    plot.igraph(g, vertex.size = 10, edge.arrow.size = .1, 
-                vertex.label.color = 'black',
-                vertex.label.dist = 1.5, 
-                vertex.label.cex = 1)
-  }
+  # if (plot) {
+  #   g <- graph_from_adjacency_matrix(p.value <= alpha, mode = 'directed', diag = F)
+  #   plot.igraph(g, vertex.size = 10, edge.arrow.size = .1, 
+  #               vertex.label.color = 'black',
+  #               vertex.label.dist = 1.5, 
+  #               vertex.label.cex = 1)
+  # }
   p.value
 }
 

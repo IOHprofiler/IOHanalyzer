@@ -359,7 +359,20 @@ Plot.FV.Aggregated <- function(dsList, aggr_on = 'funcId', runtimes = NULL,
 Plot.FV.Multi_Func <- function(dsList, scale.xlog = F,
                              scale.ylog = F,
                              backend = NULL) UseMethod("Plot.FV.Multi_Func", dsList)
-
+#' Plot a heatmap showing the statistically different algorithms
+#' 
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ftarget The target function value to use
+#' @param alpha The cutoff for statistical significance
+#' @param bootstrap.size The amound of bootstrapped samples used
+#'
+#' @return A heatmap showing the statistical significance between algorithms
+#' @export
+#' @examples 
+#' Plot.Stats.Significance_Heatmap(subset(dsl, funcId==2), 16)
+Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01,
+                                            bootstrap.size = 30) UseMethod("Plot.Stats.Significance_Heatmap", dsList)
+  
 ##Implementations
 
 #' @rdname Plot.RT.Single_Func
@@ -1666,5 +1679,19 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
       layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
              xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
   }
+  p
+}
+
+#' @rdname Plot.Stats.Significance_Heatmap
+#' @export 
+Plot.Stats.Significance_Heatmap.DataSetList <- function(dsList, ftarget, alpha = 0.01,
+                                            bootstrap.size = 30){
+  if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1 || length(get_algId(dsList)) < 2){
+    return(NULL)
+  }
+  p_matrix <- pairwise.test(dsList, ftarget, alpha, bootstrap.size)
+  y <- p_matrix < alpha
+  colorScale <- data.frame(x=c(-1,-0.33,-0.33,0.33,0.33,1), col=c('blue','blue','white','white','red','red'))
+  p <- plot_ly(x = colnames(y), y = colnames(y), z = y-t(y), type='heatmap', xgap=0.2, ygap=0.2, colorscale = colorScale, showscale=F)
   p
 }

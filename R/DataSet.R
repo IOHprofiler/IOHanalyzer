@@ -545,9 +545,10 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
 get_maxRT <- function(ds, ...) UseMethod("get_maxRT", ds)
 
 #' @rdname get_maxRT
+#' @param output The format of the outputted table: 'wide' or 'long'
 #' @export
 #'
-get_maxRT.DataSet <- function(ds, output = 'wide') {
+get_maxRT.DataSet <- function(ds, output = 'wide', ...) {
   algId <- attr(ds, 'algId')
   N <- ncol(ds$RT)
   res <- t(c(algId, attr(ds, 'maxRT'))) %>%

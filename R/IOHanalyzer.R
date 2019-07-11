@@ -15,6 +15,8 @@
 #' @importFrom shiny req
 #' @importFrom Rcpp sourceCpp
 #' @importFrom withr with_dir
+#' @importFrom igraph graph_from_adjacency_matrix layout.circle plot.igraph 
+#' @importFrom scales rescale
 #' @useDynLib IOHanalyzer
 NULL
 # Ugly hack, but appears to be required to appease CRAN

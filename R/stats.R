@@ -82,14 +82,6 @@ pairwise.test <- function(dsl, ftarget, alpha = 0.01,
   x <- split(RT$RT, RT$algId)
   max_eval <- split(maxRT$maxRT, maxRT$algId)
   p.value <- pairwise.ks.test(x, max_eval)
-  
-  # if (plot) {
-  #   g <- graph_from_adjacency_matrix(p.value <= alpha, mode = 'directed', diag = F)
-  #   plot.igraph(g, vertex.size = 10, edge.arrow.size = .1, 
-  #               vertex.label.color = 'black',
-  #               vertex.label.dist = 1.5, 
-  #               vertex.label.cex = 1)
-  # }
   p.value
 }
 

@@ -373,6 +373,20 @@ Plot.FV.Multi_Func <- function(dsList, scale.xlog = F,
 Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01,
                                             bootstrap.size = 30) UseMethod("Plot.Stats.Significance_Heatmap", dsList)
   
+#' Plot a network graph showing the statistically different algorithms
+#' 
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param ftarget The target function value to use
+#' @param alpha The cutoff for statistical significance
+#' @param bootstrap.size The amound of bootstrapped samples used
+#'
+#' @return A graph showing the statistical significance between algorithms
+#' @export
+#' @examples 
+#' Plot.Stats.Significance_Graph(subset(dsl, funcId==2), 16)
+Plot.Stats.Significance_Graph <- function(dsList, ftarget, alpha = 0.01,
+                                            bootstrap.size = 30) UseMethod("Plot.Stats.Significance_Graph", dsList)
+
 ##Implementations
 
 #' @rdname Plot.RT.Single_Func
@@ -1692,6 +1706,40 @@ Plot.Stats.Significance_Heatmap.DataSetList <- function(dsList, ftarget, alpha =
   p_matrix <- pairwise.test(dsList, ftarget, alpha, bootstrap.size)
   y <- p_matrix < alpha
   colorScale <- data.frame(x=c(-1,-0.33,-0.33,0.33,0.33,1), col=c('blue','blue','white','white','red','red'))
-  p <- plot_ly(x = colnames(y), y = colnames(y), z = y-t(y), type='heatmap', xgap=0.2, ygap=0.2, colorscale = colorScale, showscale=F)
+  heatmap <-  y-t(y)
+  
+  p <- plot_ly(x = colnames(y), y = rownames(y), z = heatmap, type='heatmap', xgap=0.2, ygap=0.2, colorscale = colorScale, showscale=F) 
+  p %<>% layout(yaxis = list(autorange = "reversed"))
+  p
+}
+
+#' Helper function for Plot.Stats.Significance_Graph
+#' 
+#' @param x x
+#' @param start default is 0
+#' @param direction default is 1
+#' 
+#' @noRd 
+radian.rescale <- function(x, start=0, direction=1) {
+  c.rotate <- function(x) (x + start) %% (2 * pi) * direction
+  c.rotate(rescale(x, c(0, 2 * pi), range(x)))
+}
+
+#' @rdname Plot.Stats.Significance_Graph
+#' @export
+Plot.Stats.Significance_Graph.DataSetList <- function(dsList, ftarget, alpha = 0.01,
+                                                      bootstrap.size = 30){
+  if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1 || length(get_algId(dsList)) < 2){
+    return(NULL)
+  }
+  p_matrix <- pairwise.test(dsList, ftarget, alpha, bootstrap.size)
+  g <- graph_from_adjacency_matrix(p_matrix <= alpha, mode = 'directed', diag = F)
+  lab.locs <- radian.rescale(x = 1:nrow(p_matrix), direction = -1, start = 0)
+  
+  p <- plot.igraph(g, layout = layout.circle(g), vertex.size = 10, edge.arrow.size = .1,
+              vertex.label.color = 'black',
+              vertex.label.dist = 2,
+              vertex.label.cex = 1,
+              vertex.label.degree = lab.locs)
   p
 }

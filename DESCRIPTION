@@ -38,7 +38,9 @@ Imports:
   shinyjs,
   colourpicker,
   bsplus,
-  DT
+  DT,
+  igraph,
+  scales
 LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 6.1.1

@@ -1293,9 +1293,9 @@ Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
 #' @rdname Plot.RT.Multi_Func
 #' @export
 Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
-                                         scale.ylog = F,
-                                         scale.reverse = F,
-                                         backend = NULL) {
+                                           scale.ylog = F,
+                                           scale.reverse = F,
+                                           backend = NULL) {
   if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
   
   xscale <- if (scale.xlog) 'log' else 'linear'
@@ -1641,13 +1641,14 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
     dataert <- fvs
   }
 
-  for (i in seq_along(get_algId(dsList))){
+  for (i in seq_along(get_algId(dsList))) {
     algId <- get_algId(dsList)[[i]]
     color <- colors[[algId]]
     data <- dataert[,i]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
-    if (plot_mode == "radar"){
+
+    if (plot_mode == "radar") {
       p %<>%
         add_trace(type = 'scatterpolar', r = data,
                   theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
@@ -1655,6 +1656,7 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
                   marker = list(color = rgb_str), hoverinfo = 'text',
                   text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
                   name = algId, legendgroup = algId)
+                  
       #TODO: cleaner solution!!!!!
       data2 <- data
       data2[is.na(data2)] <- 0
@@ -1683,7 +1685,8 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
 
     }
   }
-  if (plot_mode == "radar"){
+
+  if (plot_mode == "radar") {
     if (use_rank)
       p %<>%
       layout(polar = list(radialaxis = list(type = 'linear', visible=F, autorange='reversed')))

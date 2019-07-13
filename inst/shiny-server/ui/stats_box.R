@@ -4,18 +4,21 @@ heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        HTML('<p align="justify">Select which algorithms to show.</p>'),
-        selectInput('Stats.Overview.Algid', 'Algorithms', choices = NULL, selected = NULL, multiple = T),
-        textInput('Stats.Overview.Target', label = F_TAR_LABEL,),
-        textInput('Stats.Overview.Alpha', label = HTML('<p>significant level \\(\\alpha\\)'), value = 0.01),
-        numericInput('Stats.Overview.Samples', label = 'Bootstrap size', min = 1, max = 1000, step = 1, value = 30)
+        selectInput('Stats.Overview.Algid', 'Algorithms to compare', choices = NULL, 
+                    selected = NULL, multiple = T),
+        textInput('Stats.Overview.Target', label = F_TAR_LABEL),
+        textInput('Stats.Overview.Alpha', 
+                  label = HTML('<p>significant level \\(\\alpha\\)'), value = 0.01),
+        numericInput('Stats.Overview.Samples', 
+                     label = 'size of the bootstrap sample', 
+                     min = 1, max = 1000, step = 1, value = 30)
       ),
       
       mainPanel(
         width = 9,
-        HTML_P('This function performs a <b>Kolmogorov-Smirnov test</b> on each pair of 
-                algorithms in the input x to determine which algorithm gives a significantly 
-                smaller running time. The resulting p-values are arranged in a matrix, where
+        HTML_P('The <b>Kolmogorov-Smirnov test</b> is performed on empirical CDFs of running times for each pair of 
+                algorithms, in order to determine which algorithm gives a significantly 
+                smaller running time distribution. The resulting p-values are arranged in a matrix, where
                 each cell \\((i, j)\\) contains a p-value from the test with the alternative hypothesis:
                 the running time of algorithm \\(i\\) is smaller (thus better) than that of \\(j\\).'),
         DT::dataTableOutput('Stats.Overview.Pmatrix')

@@ -17,8 +17,7 @@ suppressMessages(library(kableExtra))
 # global options
 options(datatable.print.nrows = 20)
 options(width = 80)
-# maximal number of requests, this is too many...
-options(shiny.maxRequestSize = 200 * 1024 ^ 2)   
+options(shiny.maxRequestSize = 200 * 1024 ^ 2)  # maximal upload file size
 
 # for customized 'plotlyOutput' function -----
 widget_html <- function(name, package, id, style, class, inline = FALSE, ...) {
@@ -81,13 +80,6 @@ symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
              "triangle-up-open", "triangle-down-open")
 
 # ploting settings for UI ---------------------
-# TODO: those should be deprecated. Verify and delete those
-# aspect_ratio <-  4 / 3
-# fig_height <- 1100
-# fig_height2 <- 1100
-# fig_width <- fig_height * aspect_ratio
-# fig_width2 <- fig_height * (16 / 10)
-
 plotly_height <- "auto"
 plotly_width <- "auto"
 plotly_height2 <- "auto"

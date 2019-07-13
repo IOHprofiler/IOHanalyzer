@@ -6,6 +6,7 @@ RT_MIN_LABEL <- HTML('<p>\\(B_{\\text{min}}:\\) Smallest budget value</p>')
 RT_MAX_LABEL <- HTML('<p>\\(B_{\\text{max}}:\\) Largest budget value</p>')
 RT_STEP_LABEL <- HTML('<p>\\(\\Delta B:\\) Granularity (step size)</p>')
 
+F_TAR_LABEL <- HTML('Target function value <p>\\(f_{\\text{target}}:\\)</p>')
 F_MIN_LABEL <- HTML('<p>\\(f_{\\text{min}}:\\) Smallest target value</p>')
 F_MAX_LABEL <- HTML('<p>\\(f_{\\text{max}}:\\) Largest target value</p>')
 F_STEP_LABEL <- HTML('<p>\\(\\Delta f:\\) Granularity (step size)</p>')

@@ -1498,8 +1498,12 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
 
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
 
-  p <- if (plot_mode == "radar")  IOH_plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
-  else IOH_plot_ly_default(title = plot_title)
+  p <- if (plot_mode == "radar")  
+    IOH_plot_ly_default(title = plot_title, 
+                        x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), 
+                        y.title = "ERT")
+  else 
+    IOH_plot_ly_default(title = plot_title)
 
   if (use_rank){
     ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))
@@ -1617,8 +1621,12 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
 
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
 
-  p <- if (plot_mode == "radar")  IOH_plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
-  else IOH_plot_ly_default(title = plot_title)
+  p <- if (plot_mode == "radar") 
+    IOH_plot_ly_default(title = plot_title, 
+                        x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), 
+                        y.title = "ERT")
+  else 
+    IOH_plot_ly_default(title = plot_title)
 
   if (use_rank){
     ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))
@@ -1700,16 +1708,22 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
 #' @export 
 Plot.Stats.Significance_Heatmap.DataSetList <- function(dsList, ftarget, alpha = 0.01,
                                             bootstrap.size = 30){
-  if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1 || length(get_algId(dsList)) < 2){
+  if (length(get_dim(dsList)) != 1 || 
+      length(get_funcId(dsList)) != 1 || 
+      length(get_algId(dsList)) < 2)
     return(NULL)
-  }
+  
   p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size)
   y <- p_matrix <= alpha
-  colorScale <- data.frame(x=c(-1,-0.33,-0.33,0.33,0.33,1), col=c('blue','blue','white','white','red','red'))
-  heatmap <-  y-t(y)
+  colorScale <- data.frame(x = c(-1, -0.33, -0.33, 0.33, 0.33, 1),
+                           col = c('blue', 'blue', 'white', 'white', 'red', 'red')
+                           )
+  heatmap <-  y - t(y)
   
-  p <- plot_ly(x = colnames(y), y = rownames(y), z = heatmap, type='heatmap', xgap=0.2, ygap=0.2, colorscale = colorScale, showscale=F) 
-  p %<>% layout(yaxis = list(autorange = "reversed"))
+  p <- plot_ly(x = colnames(y), y = rownames(y), z = heatmap, type = 'heatmap',
+               xgap = 0.2, ygap = 0.2, colorscale = colorScale, showscale = F) 
+  p %<>% layout(yaxis = list(autorange = 'reversed', scaleratio = 1),
+                xaxis = list(tickangle = 45))
   p
 }
 

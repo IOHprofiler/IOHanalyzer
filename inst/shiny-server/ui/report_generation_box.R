@@ -14,7 +14,9 @@ main_report_box <- function(width = 6, collapsible = T, collapsed = F) {
 
 fixed_target_report_box <- function(){
   box(title = "Fixed-Target", collapsible = T, collapsed = T, width = 11, status = "primary",
+      background = "blue",
       box(title = "Data Summary", collapsible = T, collapsed = T, width = 11, status = "primary",
+          background = "navy",
           checkboxInput("Report.RT.Overview", "Data Overview", F),
           conditionalSelection("Report.RT.Overview",'input["Report.RT.Overview"]'),
           checkboxInput("Report.RT.Statistics", "Runtime Statistics", F),
@@ -23,6 +25,7 @@ fixed_target_report_box <- function(){
           conditionalSelection("Report.RT.Samples",'input["Report.RT.Samples"]')
       ),
       box(title = "Expected Runtime", collapsible = T, collapsed = T, width = 11, status = "primary",
+          background = "navy",
           checkboxInput("Report.RT.Single_ERT", "Runtime plot (per function)", F),
           conditionalSelection("Report.RT.Single_ERT",'input["Report.RT.Single_ERT"]'),
           checkboxInput("Report.RT.Multi_ERT", "Runtime plot (all functions)", F),
@@ -30,28 +33,32 @@ fixed_target_report_box <- function(){
           checkboxInput("Report.RT.Rank", "Runtime ranking", F),
           conditionalSelection("Report.RT.Rank",'input["Report.RT.Rank"]', fid=F) #, plottype=c("radar", "line"))
       ),
-    box(title = "Probability Mass Function", collapsible = T, collapsed = T, width = 11, status = "primary",
-        checkboxInput("Report.RT.Histogram", "Histogram of hitting times", F),
-        conditionalSelection("Report.RT.Histogram",'input["Report.RT.Histogram"]'), # plottype = c("subplot","overlay")),
-        checkboxInput("Report.RT.PMF", "Probability Mass Function", F),
-        conditionalSelection("Report.RT.PMF",'input["Report.RT.PMF"]')
-    ),
-    box(title = "Cumulative Distirbution", collapsible = T, collapsed = T, width = 11, status = "primary",
-        checkboxInput("Report.RT.ECDF_Single_Target", "Single-target ECDF", F),
-        conditionalSelection("Report.RT.ECDF_Single_Target",'input["Report.RT.ECDF_Single_Target"]'),
-        checkboxInput("Report.RT.ECDF_Single_Function", "Single-function ECDF", F),
-        conditionalSelection("Report.RT.ECDF_Single_Function",'input["Report.RT.ECDF_Single_Function"]'),
-        checkboxInput("Report.RT.ECDF_Aggregated", "Aggregated ECDF", F),
-        conditionalSelection("Report.RT.ECDF_Aggregated",'input["Report.RT.ECDF_Aggregated"]', F, F),
-        checkboxInput("Report.RT.ECDF_AUC", "AUC of ECDF", F),
-        conditionalSelection("Report.RT.ECDF_AUC",'input["Report.RT.ECDF_AUC"]')
-    )
+      box(title = "Probability Mass Function", collapsible = T, collapsed = T, width = 11, status = "primary",
+          background = "navy",
+          checkboxInput("Report.RT.Histogram", "Histogram of hitting times", F),
+          conditionalSelection("Report.RT.Histogram",'input["Report.RT.Histogram"]'), # plottype = c("subplot","overlay")),
+          checkboxInput("Report.RT.PMF", "Probability Mass Function", F),
+          conditionalSelection("Report.RT.PMF",'input["Report.RT.PMF"]')
+      ),
+      box(title = "Cumulative Distirbution", collapsible = T, collapsed = T, width = 11, status = "primary",
+          background = "navy",
+          checkboxInput("Report.RT.ECDF_Single_Target", "Single-target ECDF", F),
+          conditionalSelection("Report.RT.ECDF_Single_Target",'input["Report.RT.ECDF_Single_Target"]'),
+          checkboxInput("Report.RT.ECDF_Single_Function", "Single-function ECDF", F),
+          conditionalSelection("Report.RT.ECDF_Single_Function",'input["Report.RT.ECDF_Single_Function"]'),
+          checkboxInput("Report.RT.ECDF_Aggregated", "Aggregated ECDF", F),
+          conditionalSelection("Report.RT.ECDF_Aggregated",'input["Report.RT.ECDF_Aggregated"]', F, F),
+          checkboxInput("Report.RT.ECDF_AUC", "AUC of ECDF", F),
+          conditionalSelection("Report.RT.ECDF_AUC",'input["Report.RT.ECDF_AUC"]')
+      )
   )
 }
 
 fixed_budget_report_box <- function(){
   box(title = "Fixed-Budget", collapsible = T, collapsed = T, width = 11, status = "primary",
+      background = "blue",
       box(title = "Data Summary", collapsible = T, collapsed = T, width = 11, status = "primary",
+          background = "navy",
           checkboxInput("Report.FV.Overview", "Data Overview", F),
           conditionalSelection("Report.FV.Overview",'input["Report.FV.Overview"]'),
           checkboxInput("Report.FV.Statistics", "Runtime Statistics", F),
@@ -60,6 +67,7 @@ fixed_budget_report_box <- function(){
           conditionalSelection("Report.FV.Samples",'input["Report.FV.Samples"]')
       ),
       box(title = "Expected Runtime", collapsible = T, collapsed = T, width = 11, status = "primary",
+          background = "navy",
           checkboxInput("Report.FV.Single_FCE", "Runtime plot (per function)", F),
           conditionalSelection("Report.FV.Single_FCE",'input["Report.FV.Single_FCE"]'),
           checkboxInput("Report.FV.Multi_FCE", "Runtime plot (all functions)", F),
@@ -68,12 +76,14 @@ fixed_budget_report_box <- function(){
           conditionalSelection("Report.FV.Rank",'input["Report.FV.Rank"]', fid=F) #, plottype=c("radar", "line"))
       ),
       box(title = "Probability Mass Function", collapsible = T, collapsed = T, width = 11, status = "primary",
+          background = "navy",
           checkboxInput("Report.FV.Histogram", "Histogram of hitting times", F),
           conditionalSelection("Report.FV.Histogram",'input["Report.FV.Histogram"]'), # plottype = c("subplot","overlay")),
           checkboxInput("Report.FV.PMF", "Probability Mass Function", F),
           conditionalSelection("Report.FV.PMF",'input["Report.FV.PMF"]')
       ),
-      box(title = "Cumulative Distirbution", collapsible = T, collapsed = T, width = 11, status = "primary",
+      box(title = "Cumulative Distirbution", collapsible = T, collapsed = T, width = 11, status = "primary", 
+          background = "navy",
           checkboxInput("Report.FV.ECDF_Single_Target", "Single-target ECDF", F),
           conditionalSelection("Report.FV.ECDF_Single_Target",'input["Report.FV.ECDF_Single_Target"]'),
           checkboxInput("Report.FV.ECDF_Single_Function", "Single-function ECDF", F),
@@ -86,6 +96,7 @@ fixed_budget_report_box <- function(){
 
 parameter_box <- function(){
   box(title = "Parameters", collapsible = T, collapsed = T, width = 11, status = "primary",
+    background = "blue",
     checkboxInput("Report.Param.Plot", "Parameter plot", F),
     conditionalSelection("Report.Param.Plot",'input["Report.Param.Plot"]'),
     checkboxInput("Report.Param.Statistics", "Parameter statistics", F),

@@ -45,7 +45,10 @@ bootstrap_RT <- function(x, max_eval, bootstrap.size) {
   
   sapply(N,
          function(size) {
-           if (size > 0) 
+           if (is.na(size)){
+             x <- return(Inf)
+           }
+           else if (size > 0) 
              x <- sum(sample(x_unsucc, size, replace = T))
            else
              x <- 0

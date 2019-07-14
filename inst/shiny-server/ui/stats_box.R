@@ -8,7 +8,8 @@ heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
                     selected = NULL, multiple = T),
         textInput('Stats.Overview.Target', label = F_TAR_LABEL),
         textInput('Stats.Overview.Alpha', 
-                  label = HTML('<p>significant level \\(\\alpha\\)'), value = 0.01),
+                  label = HTML('<p>significant level \\(\\alpha\\)</p>'), 
+                  value = 0.01),
         numericInput('Stats.Overview.Samples', 
                      label = 'size of the bootstrap sample', 
                      min = 1, max = 1000, step = 1, value = 30)

@@ -77,6 +77,10 @@ pairwise.test <- function(x, ...) UseMethod('pairwise.test', x)
 #' @export
 #' @rdname pairwise.test
 pairwise.test.list <- function(x, max_eval, bootstrap.size = 30, ...) {
+  if("DataSetList" %in% class(x)){
+    class(x) <- rev(class(x))
+    pairwise.test.DataSetList(x)
+  }
   N <- length(x)
   p.value <- matrix(NA, N, N)
   

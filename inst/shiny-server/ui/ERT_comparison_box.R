@@ -23,6 +23,7 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
             checkboxInput('ERTPlot.Aggr.Logy', 
                           label = 'Scale y axis \\(\\log_{10}\\)',
                           value = F),
+            actionButton("ERTPlot.Aggr.Refresh", "Refresh the figure"),
             
             selectInput('ERTPlot.Aggr.Format', label = 'Select the figure format',
                         choices = supported_fig_format, selected = 'pdf'),
@@ -34,7 +35,8 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
         width = 10,
         column(
           width = 12, align = "center",
-          plotlyOutput.IOHanalyzer('ERTPlot.Aggr.Plot')
+          plotlyOutput.IOHanalyzer('ERTPlot.Aggr.Plot'),
+          DT::dataTableOutput("ERTPlot.Aggr.Targets")
         )
       )
     )

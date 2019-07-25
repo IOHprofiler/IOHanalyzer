@@ -18,8 +18,7 @@ output$FCEPlot.Download <- downloadHandler(
 
 update_fv_per_fct_axis <- observe({
   plotlyProxy("FCE_PER_FUN", session) %>%
-    plotlyProxyInvoke("relayout", list(xaxis = list(title = 'runtime', type = ifelse(input$FCEPlot.semilogx, 'log', 'linear')),
-                                       yaxis = list(title = 'best-so-far-f(x)-value', type = ifelse(input$FCEPlot.semilogy, 'log', 'linear'))))
+    plotlyProxyInvoke("relayout", list(yaxis = list(title = 'best-so-far-f(x)-value', type = ifelse(input$FCEPlot.semilogy, 'log', 'linear'))))
 })
 
 
@@ -30,7 +29,7 @@ render_FV_PER_FUN <- reactive({
   data <- subset(DATA(), algId %in% input$FCEPlot.Algs)
   Plot.FV.Single_Func(data, RTstart = rt_min, RTstop = rt_max, show.CI = input$FCEPlot.show.CI,
                show.mean = input$FCEPlot.show.mean, show.median = input$FCEPlot.show.median,
-               scale.xlog = isolate(input$FCEPlot.semilogx), scale.ylog = isolate(input$FCEPlot.semilogy))
+               scale.xlog = input$FCEPlot.semilogx, scale.ylog = isolate(input$FCEPlot.semilogy))
   },
   message = "Creating plot")
 })

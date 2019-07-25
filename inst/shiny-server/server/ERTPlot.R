@@ -17,8 +17,7 @@ output$ERTPlot.Download <- downloadHandler(
 
 update_ert_per_fct_axis <- observe({
   plotlyProxy("ERT_PER_FUN", session) %>%
-    plotlyProxyInvoke("relayout", list(xaxis = list(title = 'best-so-far-f(x)-value', type = ifelse(input$ERTPlot.semilogx, 'log', 'linear')),
-                                       yaxis = list(title = 'function evaluations', type = ifelse(input$ERTPlot.semilogy, 'log', 'linear'))))
+    plotlyProxyInvoke("relayout", list(yaxis = list(title = 'function evaluations', type = ifelse(input$ERTPlot.semilogy, 'log', 'linear'))))
 })
 
 
@@ -34,7 +33,7 @@ render_ert_per_fct <- reactive({
                      show.ERT = input$ERTPlot.show.ERT,
                      show.mean = input$ERTPlot.show.mean,
                      show.median = input$ERTPlot.show.median,
-                     scale.xlog = isolate(input$ERTPlot.semilogx),
+                     scale.xlog = input$ERTPlot.semilogx,
                      scale.ylog = isolate(input$ERTPlot.semilogy),
                      scale.reverse = !attr(data[[1]],'maximization'))
   },

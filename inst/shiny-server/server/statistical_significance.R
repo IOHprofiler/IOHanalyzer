@@ -18,8 +18,7 @@ output$Stats.Overview.Pmatrix <- DT::renderDataTable({
   req(length(DATA()) > 0)
   data <- subset(DATA(), algId %in% input$Stats.Overview.Algid)
   target <- as.numeric(input$Stats.Overview.Target)
-  df <- pairwise.test(data, target, alpha = as.numeric(input$Stats.Overview.Alpha),
-                      bootstrap.size = input$Stats.Overview.Samples)
+  df <- pairwise.test(data, target, bootstrap.size = input$Stats.Overview.Samples)
   format(df, digits=3)
 }, options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
 

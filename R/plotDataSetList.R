@@ -1293,9 +1293,9 @@ Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
 #' @rdname Plot.RT.Multi_Func
 #' @export
 Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
-                                         scale.ylog = F,
-                                         scale.reverse = F,
-                                         backend = NULL) {
+                                           scale.ylog = F,
+                                           scale.reverse = F,
+                                           backend = NULL) {
   if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
   
   xscale <- if (scale.xlog) 'log' else 'linear'
@@ -1498,8 +1498,12 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
 
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
 
-  p <- if (plot_mode == "radar")  IOH_plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
-  else IOH_plot_ly_default(title = plot_title)
+  p <- if (plot_mode == "radar")  
+    IOH_plot_ly_default(title = plot_title, 
+                        x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), 
+                        y.title = "ERT")
+  else 
+    IOH_plot_ly_default(title = plot_title)
 
   if (use_rank){
     ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))
@@ -1617,8 +1621,12 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
 
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
 
-  p <- if (plot_mode == "radar")  IOH_plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), y.title = "ERT")
-  else IOH_plot_ly_default(title = plot_title)
+  p <- if (plot_mode == "radar") 
+    IOH_plot_ly_default(title = plot_title, 
+                        x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), 
+                        y.title = "ERT")
+  else 
+    IOH_plot_ly_default(title = plot_title)
 
   if (use_rank){
     ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))
@@ -1633,13 +1641,14 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
     dataert <- fvs
   }
 
-  for (i in seq_along(get_algId(dsList))){
+  for (i in seq_along(get_algId(dsList))) {
     algId <- get_algId(dsList)[[i]]
     color <- colors[[algId]]
     data <- dataert[,i]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
-    if (plot_mode == "radar"){
+
+    if (plot_mode == "radar") {
       p %<>%
         add_trace(type = 'scatterpolar', r = data,
                   theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
@@ -1647,6 +1656,7 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
                   marker = list(color = rgb_str), hoverinfo = 'text',
                   text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
                   name = algId, legendgroup = algId)
+                  
       #TODO: cleaner solution!!!!!
       data2 <- data
       data2[is.na(data2)] <- 0
@@ -1675,7 +1685,8 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
 
     }
   }
-  if (plot_mode == "radar"){
+
+  if (plot_mode == "radar") {
     if (use_rank)
       p %<>%
       layout(polar = list(radialaxis = list(type = 'linear', visible=F, autorange='reversed')))
@@ -1700,16 +1711,22 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
 #' @export 
 Plot.Stats.Significance_Heatmap.DataSetList <- function(dsList, ftarget, alpha = 0.01,
                                             bootstrap.size = 30){
-  if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1 || length(get_algId(dsList)) < 2){
+  if (length(get_dim(dsList)) != 1 || 
+      length(get_funcId(dsList)) != 1 || 
+      length(get_algId(dsList)) < 2)
     return(NULL)
-  }
-  p_matrix <- pairwise.test(dsList, ftarget, alpha, bootstrap.size)
-  y <- p_matrix < alpha
-  colorScale <- data.frame(x=c(-1,-0.33,-0.33,0.33,0.33,1), col=c('blue','blue','white','white','red','red'))
-  heatmap <-  y-t(y)
   
-  p <- plot_ly(x = colnames(y), y = rownames(y), z = heatmap, type='heatmap', xgap=0.2, ygap=0.2, colorscale = colorScale, showscale=F) 
-  p %<>% layout(yaxis = list(autorange = "reversed"))
+  p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size)
+  y <- p_matrix <= alpha
+  colorScale <- data.frame(x = c(-1, -0.33, -0.33, 0.33, 0.33, 1),
+                           col = c('blue', 'blue', 'white', 'white', 'red', 'red')
+                           )
+  heatmap <-  y - t(y)
+  
+  p <- plot_ly(x = colnames(y), y = rownames(y), z = heatmap, type = 'heatmap',
+               xgap = 0.2, ygap = 0.2, colorscale = colorScale, showscale = F) 
+  p %<>% layout(yaxis = list(autorange = 'reversed', scaleratio = 1),
+                xaxis = list(tickangle = 45))
   p
 }
 
@@ -1732,7 +1749,7 @@ Plot.Stats.Significance_Graph.DataSetList <- function(dsList, ftarget, alpha = 0
   if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1 || length(get_algId(dsList)) < 2){
     return(NULL)
   }
-  p_matrix <- pairwise.test(dsList, ftarget, alpha, bootstrap.size)
+  p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size)
   g <- graph_from_adjacency_matrix(p_matrix <= alpha, mode = 'directed', diag = F)
   lab.locs <- radian.rescale(x = 1:nrow(p_matrix), direction = -1, start = 0)
   

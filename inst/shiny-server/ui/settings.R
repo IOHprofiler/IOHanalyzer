@@ -5,7 +5,8 @@ color_settings_box <- function(width = 12, collapsible = T, collapsed = F) {
       sidebarLayout(
         sidebarPanel(
           width = 3,
-          selectInput(inputId = "Settings.Color.Scheme", label="Color schemes", choices = c("Default", "Variant 1", "Variant 2", "Custom")),
+          selectInput(inputId = "Settings.Color.Scheme", label = "Color schemes", 
+                      choices = c("Default", "Variant 1", "Variant 2", "Custom")),
           conditionalPanel(condition = 'input["Settings.Color.Scheme"] == "Custom"',
                            downloadButton("Settings.Color.Example","Download an example color settings file"),
                            fileInput("Settings.Color.Upload","Upload a color settings file")
@@ -13,18 +14,18 @@ color_settings_box <- function(width = 12, collapsible = T, collapsed = F) {
           colourInput("Settings.Color.Bg", "Plot background colour", value = "#E6E6E6"),
           colourInput("Settings.Color.Grid", "Plot gridline colour", value = "#FFFFFF"),
           colourInput("Settings.Color.Tick", "Plot ticks colour", value = "#333333"),
-          selectInput("Settings.Legend.Location", "Legend location", c("Outside, right", "Inside, right", "Inside, left", "Below"), "Outside, right")
+          selectInput("Settings.Legend.Location", "Legend location", 
+                      c("Outside, right", "Inside, right", "Inside, left", "Below"), "Outside, right")
         ),
+
         mainPanel(
           width = 9,
           column(
             width = 12,
-            align = "center",
+            align = 'center',
             HTML_P('Example of the current colorscheme.'),
             plotlyOutput.IOHanalyzer('Settings.Color.Plot')
           )
-          
-          
         )
       )
   )

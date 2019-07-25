@@ -58,11 +58,12 @@ IOHanalyzer_env <- new.env(parent = emptyenv())
 .sd <- function(x) sd(x, na.rm = T)
 .sum <- function(x) sum(x, na.rm = T)
 
-IOHanalyzer_env$D_quantile <- function(x, pct = NULL){
+IOHanalyzer_env$D_quantile <- function(x, pct = NULL) {
   if (is.null(pct)) pct <- getOption("IOHanalyzer.quantiles")
   quantile(x, pct, names = F, type = 3, na.rm = T)
 }
-IOHanalyzer_env$C_quantile <- function(x, pct = NULL){
+
+IOHanalyzer_env$C_quantile <- function(x, pct = NULL) {
   if (is.null(pct)) pct <- getOption("IOHanalyzer.quantiles")
   quantile(x, pct, names = F, na.rm = T)
 }

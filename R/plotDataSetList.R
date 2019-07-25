@@ -1018,7 +1018,7 @@ Plot.FV.ECDF_Per_Target.DataSetList <- function(dsList, runtimes, scale.xlog = F
 
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.35)')
-
+    show_legend <- T
     for (i in seq_along(runtimes)) {
       funvals <- get_FV_sample(ds, runtimes[i], output = 'long')$'f(x)' %>% sort
 
@@ -1034,13 +1034,14 @@ Plot.FV.ECDF_Per_Target.DataSetList <- function(dsList, runtimes, scale.xlog = F
 
       p %<>%
         add_trace(data = NULL, x = funvals, y = density, type = 'scatter',
-                  mode = 'lines', name = algId, showlegend = F,
-                  legendgroup = paste0(k),
+                  mode = 'lines', name = algId, showlegend = show_legend,
+                  legendgroup = algId,
                   line = list(color = rgb_str, width = 3)) %>%
-        add_trace(data = NULL, x = x, y = y, type = 'scatter',
-                  mode = 'markers',  legendgroup = paste0(k),
+        add_trace(data = NULL, x = x, y = y, type = 'scatter', showlegend = F,
+                  mode = 'markers',  legendgroup = algId,
                   name = sprintf('%s, %.2e', algId, runtimes[i]),
                   marker = list(color = rgb_str, symbol = symbols[i], size = 13))
+      show_legend <- F
     }
   }
 

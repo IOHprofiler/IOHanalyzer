@@ -1,12 +1,16 @@
 # The ECDF plots for the target value ----------------
 output$FCE_ECDF_PER_TARGET <- renderPlotly({
-  withProgress({
+  render_ecdf_per_target()
+})
+
+render_ecdf_per_target <- reactive({
   req(input$FCEECDF.Single.Target)
-  runtimes <- as.numeric(input$FCEECDF.Single.Target)
-  data <- subset(DATA(), algId %in% input$FCEECDF.Single.Algs)
-  
-  Plot.FV.ECDF_Per_Target(data,runtimes, scale.xlog = input$FCEECDF.Single.Logx,
-                          scale.reverse = !attr(DATA()[[1]],'maximization'))
+  withProgress({
+    runtimes <- as.numeric(input$FCEECDF.Single.Target)
+    data <- subset(DATA(), algId %in% input$FCEECDF.Single.Algs)
+    
+    Plot.FV.ECDF_Per_Target(data,runtimes, scale.xlog = input$FCEECDF.Single.Logx,
+                            scale.reverse = !attr(DATA()[[1]],'maximization'))
   },
   message = "Creating plot")
 })

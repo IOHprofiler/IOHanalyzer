@@ -414,8 +414,8 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
 
   if (backend == 'plotly') {
-    p <- IOH_plot_ly_default(x.title = "best-so-far f(x)-value",
-                         y.title = "function evaluations")
+    p <- IOH_plot_ly_default(x.title = "Best-so-far f(x)-value",
+                         y.title = "Function evaluations")
 
     # TODO: improve this part, get rid of the loop
     for (i in seq_along(dsList)) {
@@ -507,7 +507,7 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
   fce[, `:=`(upper = mean + sd, lower = mean - sd)]
 
   if (backend == 'plotly') {
-    p <- IOH_plot_ly_default(y.title = "best-so-far f(x)-value", x.title = "runtime")
+    p <- IOH_plot_ly_default(y.title = "Best-so-far f(x)-value", x.title = "Runtime")
 
     for (i in seq_along(dsList)) {
       legend <- legends[i]
@@ -581,8 +581,8 @@ Plot.RT.PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
   N <- length(dsList)
   colors <- color_palettes(N)
 
-  p <- IOH_plot_ly_default(x.title = "algorithms",
-                       y.title = "runtime / function evaluations")
+  p <- IOH_plot_ly_default(x.title = "Algorithms",
+                       y.title = "Runtime / function evaluations")
 
   for (i in seq_along(dsList)) {
     ds <- dsList[[i]]
@@ -624,10 +624,10 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
     nrows <- ceiling(N / 3.) # keep to columns for the histograms
 
   if (plot_mode == 'overlay') {
-    p <- IOH_plot_ly_default(x.title = "function evaluations", y.title = "runs")
+    p <- IOH_plot_ly_default(x.title = "Function evaluations", y.title = "Runs")
   } else if (plot_mode == 'subplot') {
     p <- lapply(seq(N), function(x) {
-      IOH_plot_ly_default(x.title = "function evaluations", y.title = "runs")
+      IOH_plot_ly_default(x.title = "Function evaluations", y.title = "Runs")
     })
   }
   if (use.equal.bins){
@@ -665,7 +665,23 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
         add_trace(data = plot_data, x = ~x, y = ~y, width = ~width, type = 'bar',
                   name = algId, text = ~text, hoverinfo = 'text',
                   marker = list(color = rgba_str,
-                                line = list(color = 'rgb(8,48,107)', width = 1.5)))
+                                line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
+        layout(
+          annotations = list(
+            text = "Target Values", font = f1, align = "center",
+            xref = "paper", yref = "paper",
+            yanchor = "top", xanchor = "center",
+            x = 0.5, y = -0.22, showarrow = FALSE
+          )
+        ) %>%
+        layout(
+          annotations = list(
+            text = "Runs", font = f1, align = "center",
+            xref = "paper", yref = "paper",
+            yanchor = "top", xanchor = "center", textangle=-90,
+            x = -0.15, y = 0.5, showarrow = FALSE
+          )
+        )
     }
   }
 
@@ -684,7 +700,7 @@ Plot.RT.ECDF_Per_Target.DataSetList <- function(dsList, ftargets, scale.xlog = F
   colors <- color_palettes(N)
 
   p <- IOH_plot_ly_default(title = paste('ftarget:', paste(ftargets, collapse = ' ')),
-                       x.title = "function evaluations",
+                       x.title = "Function evaluations",
                        y.title = "Proportion of runs")
 
   for (k in seq_along(dsList)) {
@@ -741,7 +757,7 @@ Plot.RT.ECDF_Single_Func.DataSetList <- function(dsList, fstart = NULL, fstop = 
 
   RT <- get_runtimes(dsList)
   x <- seq_RT(RT, length.out = 50, scale = ifelse(scale.xlog, 'log', 'linear'))
-  p <- IOH_plot_ly_default(x.title = "function evaluations",
+  p <- IOH_plot_ly_default(x.title = "Function evaluations",
                        y.title = "Proportion of (run, target) pairs")
 
   for (k in seq_along(dsList)) {
@@ -873,7 +889,7 @@ Plot.FV.PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
   N <- length(dsList)
   colors <- color_palettes(N)
 
-  p <- IOH_plot_ly_default(x.title = "algorithms",
+  p <- IOH_plot_ly_default(x.title = "Algorithms",
                        y.title = "Target value")
 
   for (i in seq_along(dsList)) {
@@ -913,11 +929,11 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', 
     nrows <- ceiling(n_algorithm / 3.) # keep to columns for the histograms
 
   if (plot_mode == 'overlay') {
-    p <- IOH_plot_ly_default(x.title = "target values", y.title = "runs")
+    p <- IOH_plot_ly_default(x.title = "Target values", y.title = "Runs")
 
   } else if (plot_mode == 'subplot') {
     p <- lapply(seq(n_algorithm), function(x) {
-      IOH_plot_ly_default(x.title = "target values", y.title = "runs")
+      IOH_plot_ly_default(x.title = "Target values", y.title = "Runs")
     })
   }
   if (use.equal.bins){
@@ -956,7 +972,23 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', 
         add_trace(data = plot_data, x = ~x, y = ~y, width = ~width, type = 'bar',
                   name = algId, text = ~text, hoverinfo = 'text',
                   marker = list(color = rgba_str,
-                                line = list(color = 'rgb(8,48,107)', width = 1.5)))
+                                line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
+        layout(
+          annotations = list(
+            text = "Function Evaluations", font = f1, align = "center",
+            xref = "paper", yref = "paper",
+            yanchor = "top", xanchor = "center",
+            x = 0.5, y = -0.22, showarrow = FALSE
+          )
+        ) %>%
+        layout(
+          annotations = list(
+            text = "Runs", font = f1, align = "center",
+            xref = "paper", yref = "paper",
+            yanchor = "top", xanchor = "center", textangle=-90,
+            x = -0.15, y = 0.5, showarrow = FALSE
+          )
+        )
     }
   }
 
@@ -977,7 +1009,7 @@ Plot.FV.ECDF_Per_Target.DataSetList <- function(dsList, runtimes, scale.xlog = F
   colors <- color_palettes(n_algorithm)
 
   p <- IOH_plot_ly_default(title = NULL,
-                       x.title = "target value",
+                       x.title = "Target value",
                        y.title = "Proportion of runs")
 
   for (k in seq_along(dsList)) {
@@ -1047,7 +1079,7 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
     x <- seq(funevals.min, funevals.max, length.out = 40)
   
   autorange <- ifelse(attr(dsList[[1]],"maximization"), T, 'reversed')
-  p <- IOH_plot_ly_default(x.title = "target value",
+  p <- IOH_plot_ly_default(x.title = "Target value",
                        y.title = "Proportion of (run, budget) pairs") %>%
                       layout(xaxis = list(autorange = autorange))
 
@@ -1245,6 +1277,15 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
                               name = alg,
                               legendgroup = ~algId,
                               showlegend = showlegend)
+      p[[j]] %<>%
+        layout(
+          annotations = list(
+            text = "Target value", font = f1, align = "center",
+            xref = "paper", yref = "paper",
+            yanchor = "top", xanchor = "center",
+            x = 0.5, y = -0.2, showarrow = FALSE
+          )
+        ) 
     }
   }
 
@@ -1262,7 +1303,7 @@ Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
     targets <- get_default_ECDF_targets(dsList, as.numeric)
 
   algId <- unique(attr(dsList, 'algId'))
-  p <- IOH_plot_ly_default(x.title = "function evaluations",
+  p <- IOH_plot_ly_default(x.title = "Function evaluations",
                        y.title = "Proportion of (run, target, ...) pairs")
 
   rts <- get_runtimes(dsList)
@@ -1372,12 +1413,26 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
             yanchor = "bottom", xanchor = "center",
             x = 0.5, y = 1, showarrow = FALSE
           )
+        ) %>%
+        layout(
+          annotations = list(
+            text = "Best-so-far f(x)", font = f1, align = "center",
+            xref = "paper", yref = "paper",
+            yanchor = "top", xanchor = "center",
+            x = 0.5, y = -0.2, showarrow = FALSE
+          )
+        ) %>%
+        layout(
+          annotations = list(
+            text = "ERT", font = f1, align = "center",
+            xref = "paper", yref = "paper",
+            yanchor = "top", xanchor = "center", textangle=-90,
+            x = -0.26, y = 0.5, showarrow = FALSE
+          )
         )
     }
 
-    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.03,
-                 heights = rep(1 / n_rows, n_rows),
-                 widths = rep(1 / n_cols, n_cols))
+    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.04)
   }
   p
 }
@@ -1439,7 +1494,7 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
     p <- lapply(
       seq(n_fcts),
       function(x)
-        IOH_plot_ly_default(x.title = "", y.title = "mean function value") %>%
+        IOH_plot_ly_default(x.title = "", y.title = "Mean function value") %>%
         layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 4, autorange = T),
                yaxis = list(type = yscale, tickfont = f1, ticklen = 4))
     )
@@ -1462,12 +1517,26 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
             yanchor = "bottom", xanchor = "center",
             x = 0.5, y = 1, showarrow = FALSE
           )
+        ) %>%
+        layout(
+          annotations = list(
+            text = "Funcion evaluations", font = f1, align = "center",
+            xref = "paper", yref = "paper",
+            yanchor = "top", xanchor = "center",
+            x = 0.5, y = -0.2, showarrow = FALSE
+          )
+        ) %>%
+        layout(
+          annotations = list(
+            text = "Mean f(x)", font = f1, align = "center",
+            xref = "paper", yref = "paper",
+            yanchor = "top", xanchor = "center", textangle=-90,
+            x = -0.25, y = 0.6, showarrow = FALSE
+          )
         )
     }
-
-    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.02,
-                 heights = rep(1 / n_rows, n_rows),
-                 widths = rep(1 / n_cols, n_cols))
+    
+    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.03)
   }
   p
 }
@@ -1499,11 +1568,11 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
 
   p <- if (plot_mode == "radar")  
-    IOH_plot_ly_default(title = plot_title, 
-                        x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), 
-                        y.title = "ERT")
-  else 
     IOH_plot_ly_default(title = plot_title)
+  else 
+    IOH_plot_ly_default(title = plot_title, 
+                        x.title = ifelse(aggr_on == "funcId", "Function", "Dimension"), 
+                        y.title = ifelse(use_rank, "Rank", "ERT"))
 
   if (use_rank){
     ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))
@@ -1622,11 +1691,11 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
 
   p <- if (plot_mode == "radar") 
-    IOH_plot_ly_default(title = plot_title, 
-                        x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), 
-                        y.title = "ERT")
-  else 
     IOH_plot_ly_default(title = plot_title)
+  else 
+    IOH_plot_ly_default(title = plot_title, 
+                        x.title = ifelse(aggr_on == "funcId", "Function", "Dimension"), 
+                        y.title = ifelse(use_rank, "Rank", "Mean Runtime"))
 
   if (use_rank){
     ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))

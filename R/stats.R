@@ -43,12 +43,13 @@ bootstrap_RT <- function(x, max_eval, bootstrap.size) {
   p <- n_succ / length(x)
   N <- rgeom(bootstrap.size, p) 
   
+  if (n_succ == 0){
+    return (rep(Inf, bootstrap.size))
+  }
+  
   sapply(N,
          function(size) {
-           if (is.na(size)){
-             x <- return(Inf)
-           }
-           else if (size > 0) 
+           if (size > 0) 
              x <- sum(sample(x_unsucc, size, replace = T))
            else
              x <- 0
@@ -67,7 +68,7 @@ bootstrap_RT <- function(x, max_eval, bootstrap.size) {
 #'
 #' @param x either a list that contains running time sample for each algorithm as 
 #' sub-lists, or a DataSetList object
-#' @param bootstrap.size integer, the size of the bootstrapped sample
+#' @param bootstrap.size integer, the size of the bootstrapped sample. Set to 0 to disable bootstrapping
 #' @param ... all other options
 #' @return A matrix containing p-values of the test
 #' @export
@@ -89,9 +90,14 @@ pairwise.test.list <- function(x, max_eval, bootstrap.size = 30, ...) {
   
   for (i in seq(1, N - 1)) {
     for (j in seq(i + 1, N)) {
-      x1 <- bootstrap_RT(x[[i]], max_eval[[i]], bootstrap.size)
-      x2 <- bootstrap_RT(x[[j]], max_eval[[j]], bootstrap.size)
-      
+      if (bootstrap.size == 0){
+        x1 <- x[[i]]
+        x2 <- x[[j]]
+      }
+      else {
+        x1 <- bootstrap_RT(x[[i]], max_eval[[i]], bootstrap.size)
+        x2 <- bootstrap_RT(x[[j]], max_eval[[j]], bootstrap.size)
+      }
       options(warn = -1)
       p.value[i, j] <- ks.test(x1, x2, alternative = 'greater', exact = F)$p.value
       p.value[j, i] <- ks.test(x1, x2, alternative = 'less', exact = F)$p.value

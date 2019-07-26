@@ -58,3 +58,33 @@ heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
       )
   )
 }
+
+glicko2_box <- function(width = 12, collapsible = T, collapsed = T) {
+  box(title = HTML('<p style="font-size:120%;">Glicko2-based ranking</p>'),
+      width = width, solidHeader = T, status = "primary",
+      collapsible = collapsible, collapsed = collapsed,
+      sidebarPanel(
+        width = 3,
+        selectInput('Stats.Glicko.Algid', 'Algorithms to compare', choices = NULL, 
+                    selected = NULL, multiple = T),
+        selectInput('Stats.Glicko.Funcid', 'Functions to use', choices = NULL, 
+                    selected = NULL, multiple = T),
+        selectInput('Stats.Glicko.Dim', 'Dimensions to use', choices = NULL, 
+                    selected = NULL, multiple = T),
+        textInput('Stats.Glicko.Nrgames', 
+                  label = "Number of games per (function,dimension) pair", 
+                  value = 25),
+        actionButton('Stats.Glicko.Create', 'Create Ranking')
+      ),
+      
+      mainPanel(
+        width = 9,
+        HTML_P('The <b>Glicko2</b> This procedure ranks algorithms based on a glico2-procedure. 
+                Every round, for every function and dimension of the datasetlist, 
+                each pair of algorithms competes. This competition samples a random runtime for the 
+                provided target (best achieved target among all algorithms). Whichever algorithm has the lower
+                runtime wins the game. Then, from these games, the glico2-rating is used to determine the ranking.'),
+        DT::dataTableOutput('Stats.Glicko.Dataframe')
+      )
+  )
+}

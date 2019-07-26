@@ -440,3 +440,92 @@ get_default_ECDF_targets <- function(data, format_func = as.integer) {
   targets %>% set_names(names)
 }
 
+#' Glicko2 raning of algorithms
+#' 
+#' This procedure ranks algorithms based on a glicko2-procedure. 
+#' Every round (total nr_rounds), for every function and dimension of the datasetlist, 
+#' each pair of algorithms competes. This competition samples a random runtime for the 
+#' provided target (defaults to best achieved target). Whichever algorithm has the lower
+#' runtime wins the game. Then, from these games, the glicko2-rating is determined.
+#' 
+#' @param dsl The DataSetList, can contain multiple functions and dimensions, but should have the 
+#' same algorithms for all of them
+#' @param nr_rounds The number of rounds to run. More rounds leads to a more accurate ranking.
+#' @return A dataframe containing the glicko2-ratings and some additional info
+#' 
+#' @export
+#' @examples 
+#' glicko2_ranking(dsl)
+glicko2_ranking <- function(dsl, nr_rounds = 100){
+  req(length(get_algId(dsl)) > 1)
+  p1 <- NULL
+  p2 <- NULL
+  scores <- NULL
+  weeks <- NULL
+  get_dims <- function(){
+    dims <- get_dim(dsl)
+    if (length(dims) > 1){
+      dims <- sample(dims)
+    }
+    dims
+  }
+  get_funcs <- function(){
+    funcs <- get_funcId(dsl)
+    if (length(funcs) > 1){
+      funcs <- sample(funcs)
+    }
+    funcs
+  }
+  n_algs = length(get_algId(dsl))
+  alg_names <- NULL
+  for (k in seq(1,nr_rounds)){
+    for (dim in get_dims()){
+      for (fid in get_funcs()){
+        dsl_s <- subset(dsl, funcId == fid && DIM == dim)
+        target <- max(get_funvals(dsl_s))
+        x_arr <- get_RT_sample(dsl_s, target)
+        vals = array(dim=c(n_algs,ncol(x_arr)-4))
+        for (i in seq(1,n_algs)){ 
+          z <- x_arr[i]
+          y <- as.numeric(z[,5:ncol(x_arr)])
+          vals[i,] = y
+        }
+        if (is.null(alg_names)) alg_names <- x_arr[,3]
+        
+        for (i in seq(1,n_algs)){
+          for (j in seq(i,n_algs)){
+            if (i == j) next
+            weeks <- c(weeks, k)
+            s1 <- sample(vals[i,], 1) 
+            s2 <- sample(vals[j,], 1)
+            if (is.na(s1)){
+              if (is.na(s2)){
+                won <- 0.5
+              }
+              else{
+                won <- 0
+              }
+            }
+            else{
+              if (is.na(s2)){
+                won <- 1
+              }
+              else{
+                won <- s1 < s2
+              }
+            }
+            p1 <- c(p1, i)
+            p2 <- c(p2, j)
+            scores <- c(scores, won)
+            
+          }
+        }
+      }
+    }
+  }
+  # weeks <- seq(1,1,length.out = length(p1))
+  games <- data.frame(Weeks = weeks, Player1 = p1, Player2 = p2, Scores = as.numeric(scores))
+  lout <- glicko2(games,init=c(1500,350,0.06))
+  lout$ratings$Player <- alg_names[lout$ratings$Player]
+  lout
+}

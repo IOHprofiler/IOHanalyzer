@@ -348,6 +348,10 @@ observe({
   updateSelectInput(session, 'Report.Param.Statistics-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.Param.Statistics-Alg', choices = algIds_, selected = algIds_)
   
+  updateSelectInput(session, 'Stats.Glicko.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
+  
   updateSelectInput(session, 'Stats.Overview.Algid', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algIds, selected = 'all')

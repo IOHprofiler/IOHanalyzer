@@ -36,3 +36,22 @@ render_graph <- reactive({
   },
   message = "Creating plot")
 })
+
+data_table_glicko2 <- reactive({
+  input$Stats.Glicko.Create
+  isolate({
+    withProgress({
+      data <- subset(DATA_RAW(), algId %in% input$Stats.Glicko.Algid && funcId %in% input$Stats.Glicko.Funcid && DIM %in% input$Stats.Glicko.Dim)
+      req(length(data) > 0 && length(get_algId(data)) > 0)
+      nr_games <- as.numeric(input$Stats.Glicko.Nrgames)
+      df <- glicko2_ranking(data, nr_games)$ratings
+      format(df, digits=3)
+    }, message = "Creating Ranking, this might take a while")
+  })
+})
+
+output$Stats.Glicko.Dataframe <- DT::renderDataTable({
+  
+  req(length(DATA_RAW()) > 0)
+  data_table_glicko2()
+}, options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))

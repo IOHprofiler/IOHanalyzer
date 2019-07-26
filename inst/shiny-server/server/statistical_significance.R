@@ -55,3 +55,11 @@ output$Stats.Glicko.Dataframe <- DT::renderDataTable({
   req(length(DATA_RAW()) > 0)
   data_table_glicko2()
 }, options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
+
+output$Stats.Glicko.Candlestick <- renderPlotly({
+  isolate({
+    data <- subset(DATA_RAW(), algId %in% input$Stats.Glicko.Algid && funcId %in% input$Stats.Glicko.Funcid && DIM %in% input$Stats.Glicko.Dim)
+    nr_games <- as.numeric(input$Stats.Glicko.Nrgames)
+  })
+  Plot.Stats.Glicko2_Candlestick(data, nr_games, data_table_glicko2())
+})

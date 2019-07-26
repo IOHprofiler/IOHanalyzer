@@ -387,6 +387,18 @@ Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01,
 Plot.Stats.Significance_Graph <- function(dsList, ftarget, alpha = 0.01,
                                             bootstrap.size = 30) UseMethod("Plot.Stats.Significance_Graph", dsList)
 
+#' Create a candlestick plot of Glicko2-rankings
+#' 
+#' @param dsList A DataSetList
+#' @param nr_rounds The number of rounds in the tournament
+#' @param glicko2_rank_df Optional. Dataframe containing the glicko2 rating to avoid needless recalculation.
+#' 
+#' @export
+#' @examples 
+#' Plot.Stats.Glicko2_Candlestick(dsl, nr_rounds=2)
+Plot.Stats.Glicko2_Candlestick <- function(dsList, nr_rounds=100, 
+                                            glicko2_rank_df=NULL) UseMethod("Plot.Stats.Glicko2_Candlestick", dsList)
+
 ##Implementations
 
 #' @rdname Plot.RT.Single_Func
@@ -1828,4 +1840,42 @@ Plot.Stats.Significance_Graph.DataSetList <- function(dsList, ftarget, alpha = 0
               vertex.label.dist = 2,
               vertex.label.cex = 1,
               vertex.label.degree = lab.locs)
+}
+
+#' @rdname Plot.Stats.Glicko2_Candlestick
+#' @export
+Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds=100, glicko2_rank_df=NULL){
+  df <- glicko2_rank_df
+  
+  if(is.null(df)){
+    df <- glicko2_ranking(dsList, nr_rounds)$ratings
+    algIds <- df$Player$algId
+  }
+  else{
+    algIds <- df$algId
+  }
+  p <- IOH_plot_ly_default(title = "Glicko2-rating", 
+                           x.title = "Algorithm", 
+                           y.title = "Rating")
+  df$Rating %<>% as.numeric
+  df$Deviation %<>% as.numeric
+  high <- df$Rating + 3*df$Deviation
+  low <- df$Rating - 3*df$Deviation
+  open <- df$Rating + df$Deviation
+  close <- df$Rating - df$Deviation
+  
+  N <- length(df$Rating)
+  colors <- color_palettes(N)
+  
+  for (i in seq(N)){
+    # rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.52)')
+    color <- list(line=list(color = colors[[i]]))
+    p %<>% add_trace(type="candlestick", x = algIds[[i]], open=open[[i]], close=close[[i]], 
+                     high=high[[i]], low=low[[i]], legendgroup=algIds[[i]], 
+                     name=algIds[[i]], increasing = color, decreasing = color,
+                     hovertext = paste0(format(df$Rating[[i]], digits = 3), '+-', format(df$Deviation[[i]], digits = 3)),
+                     hoverinfo = "text")
+  }
+  p %<>% layout(xaxis = list(rangeslider = list(visible = F)))
+  p
 }

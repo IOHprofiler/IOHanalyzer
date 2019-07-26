@@ -84,7 +84,8 @@ glicko2_box <- function(width = 12, collapsible = T, collapsed = T) {
                 each pair of algorithms competes. This competition samples a random runtime for the 
                 provided target (best achieved target among all algorithms). Whichever algorithm has the lower
                 runtime wins the game. Then, from these games, the glico2-rating is used to determine the ranking.'),
-        DT::dataTableOutput('Stats.Glicko.Dataframe')
+        DT::dataTableOutput('Stats.Glicko.Dataframe'),
+        plotlyOutput.IOHanalyzer("Stats.Glicko.Candlestick")
       )
   )
 }

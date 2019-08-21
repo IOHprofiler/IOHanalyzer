@@ -35,6 +35,7 @@ render_ert_per_fct <- reactive({
                      show.median = input$ERTPlot.show.median,
                      scale.xlog = input$ERTPlot.semilogx,
                      scale.ylog = isolate(input$ERTPlot.semilogy),
+                     includeOpts = input$ERTPlot.inclueOpts,
                      scale.reverse = !attr(data[[1]],'maximization'))
   },
   message = "Creating plot"

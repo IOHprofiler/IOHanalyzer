@@ -46,7 +46,11 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
           checkboxInput('ERTPlot.semilogy',
                         label = 'Scale y axis \\(\\log_{10}\\)',
                         value = T),
-
+          
+          checkboxInput('ERTPlot.inclueOpts',
+                        label="Include optimal points found by each algorithm",
+                        value=F),
+          
           selectInput('ERTPlot.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = 'pdf'),
 

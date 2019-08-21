@@ -77,7 +77,7 @@ Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
                                show.ERT = T, show.CI = F, show.mean = F,
                                show.median = F, backend = NULL,
                                scale.xlog = F, scale.ylog = F,
-                               scale.reverse = F) UseMethod("Plot.RT.Single_Func", dsList)
+                               scale.reverse = F, includeOpts = F) UseMethod("Plot.RT.Single_Func", dsList)
 #' Plot lineplot of the expected function values of a DataSetList
 #'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
@@ -407,7 +407,7 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                            show.ERT = T, show.CI = T, show.mean = F,
                                            show.median = F, backend = NULL,
                                            scale.xlog = F, scale.ylog = F,
-                                           scale.reverse = F) {
+                                           scale.reverse = F, includeOpts = F) {
   if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
   Fall <- get_funvals(dsList)
   if (is.null(Fstart)) Fstart <- min(Fall)
@@ -415,7 +415,14 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 
   Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 60,
                  scale = ifelse(scale.xlog, 'log', 'linear'))
-
+  
+  if (includeOpts){
+    for (algid in get_algId(dsList)){
+      Fseq <- c(Fseq, max(get_funvals(subset(dsList, algId == algid))))
+    }
+    Fseq <- unique(sort(Fseq))
+  }
+  
   if (length(Fseq) == 0) return(NULL)
 
   N <- length(dsList)

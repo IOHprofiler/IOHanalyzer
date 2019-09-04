@@ -69,6 +69,7 @@ grad_functions <- c(
 #' @param scale.ylog Whether or not to scale the y-axis logaritmically
 #' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
 #' @param backend Which plotting library to use. Can be 'plotly' or 'ggplot2'
+#' @param includeOpts Whether or not to include all best points reached by each algorithm
 #' @return A plot of ERT-values of the DataSetList
 #' @export
 #' @examples 
@@ -687,7 +688,7 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
                                 line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
         layout(
           annotations = list(
-            text = "Target Values", font = f1, align = "center",
+            text = "Function Evaluations", font = f1, align = "center",
             xref = "paper", yref = "paper",
             yanchor = "top", xanchor = "center",
             x = 0.5, y = -0.22, showarrow = FALSE
@@ -994,7 +995,7 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', 
                                 line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
         layout(
           annotations = list(
-            text = "Function Evaluations", font = f1, align = "center",
+            text = "Target Values", font = f1, align = "center",
             xref = "paper", yref = "paper",
             yanchor = "top", xanchor = "center",
             x = 0.5, y = -0.22, showarrow = FALSE

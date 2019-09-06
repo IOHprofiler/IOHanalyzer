@@ -688,18 +688,10 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
                                 line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
         layout(
           annotations = list(
-            text = "Function Evaluations", font = f1, align = "center",
+            text = c("Function Evaluations", "Runs"), font = f1, align = "center",
             xref = "paper", yref = "paper",
-            yanchor = "top", xanchor = "center",
-            x = 0.5, y = -0.22, showarrow = FALSE
-          )
-        ) %>%
-        layout(
-          annotations = list(
-            text = "Runs", font = f1, align = "center",
-            xref = "paper", yref = "paper",
-            yanchor = "top", xanchor = "center", textangle=-90,
-            x = -0.15, y = 0.5, showarrow = FALSE
+            yanchor = "top", xanchor = "center", textangle=c(0, -90),
+            x = c(0.5, -0.15), y = c(-0.22, 0.5), showarrow = FALSE
           )
         )
     }
@@ -995,18 +987,10 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', 
                                 line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
         layout(
           annotations = list(
-            text = "Target Values", font = f1, align = "center",
+            text = c("Target Values", "Runs"), font = f1, align = "center",
             xref = "paper", yref = "paper",
-            yanchor = "top", xanchor = "center",
-            x = 0.5, y = -0.22, showarrow = FALSE
-          )
-        ) %>%
-        layout(
-          annotations = list(
-            text = "Runs", font = f1, align = "center",
-            xref = "paper", yref = "paper",
-            yanchor = "top", xanchor = "center", textangle=-90,
-            x = -0.15, y = 0.5, showarrow = FALSE
+            yanchor = "top", xanchor = "center", textangle=c(0, -90),
+            x = c(0.5,-0.15), y = c(-0.22, 0.5), showarrow = FALSE
           )
         )
     }
@@ -1429,26 +1413,10 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
         ) %>%
         layout(
           annotations = list(
-            text = paste0('F', funcIds[[i]]), font = f2, align = "center",
-            xref = "paper", yref = "paper",
-            yanchor = "bottom", xanchor = "center",
-            x = 0.5, y = 1, showarrow = FALSE
-          )
-        ) %>%
-        layout(
-          annotations = list(
-            text = "Best-so-far f(x)", font = f1, align = "center",
-            xref = "paper", yref = "paper",
-            yanchor = "top", xanchor = "center",
-            x = 0.5, y = -0.2, showarrow = FALSE
-          )
-        ) %>%
-        layout(
-          annotations = list(
-            text = "ERT", font = f1, align = "center",
-            xref = "paper", yref = "paper",
-            yanchor = "top", xanchor = "center", textangle=-90,
-            x = -0.26, y = 0.5, showarrow = FALSE
+            text = c("Best-so-far f(x)", "ERT", paste0('F', funcIds[[i]])), font = c(f1, f1, f2),
+            xref = "paper", yref = "paper", align = "center",
+            yanchor = c("top", "top", "bottom"), xanchor = "center", textangle=c(0, -90, 0),
+            x = c(0.5, -0.26, 0.5), y = c(-0.2, 0.5, 1), showarrow = FALSE
           )
         )
     }
@@ -1533,26 +1501,10 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
         ) %>%
         layout(
           annotations = list(
-            text = paste0('F', funcIds[[i]]), font = f2, align = "center",
-            xref = "paper", yref = "paper",
-            yanchor = "bottom", xanchor = "center",
-            x = 0.5, y = 1, showarrow = FALSE
-          )
-        ) %>%
-        layout(
-          annotations = list(
-            text = "Funcion evaluations", font = f1, align = "center",
-            xref = "paper", yref = "paper",
-            yanchor = "top", xanchor = "center",
-            x = 0.5, y = -0.2, showarrow = FALSE
-          )
-        ) %>%
-        layout(
-          annotations = list(
-            text = "Mean f(x)", font = f1, align = "center",
-            xref = "paper", yref = "paper",
-            yanchor = "top", xanchor = "center", textangle=-90,
-            x = -0.25, y = 0.6, showarrow = FALSE
+            text = c("Funcion evaluations", "Mean f(x)", paste0('F', funcIds[[i]])), font = c(f1, f1, f2),
+            xref = "paper", yref = "paper", align = "center",
+            yanchor = c("top", "top", "bottom"), xanchor = "center", textangle=c(0, -90, 0),
+            x = c(0.5, -0.25, 0.5), y = c(-0.2, 0.6, 1), showarrow = FALSE
           )
         )
     }

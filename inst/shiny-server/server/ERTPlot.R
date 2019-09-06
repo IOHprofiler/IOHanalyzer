@@ -178,7 +178,7 @@ render_ERTPlot_aggr_plot <- reactive({
 ERTPlot.Aggr.data <- function() {
   data <- subset(DATA_RAW(), algId %in% isolate(input$ERTPlot.Aggr.Algs))
   if (length(data) == 0) return(NULL)
-  data <- subset(data, DIM==input$Overall.Dim)
+  data <- subset(data, DIM == input$Overall.Dim)
   if (length(unique(get_funcId(data))) == 1){
     shinyjs::alert("This plot is only available when the dataset contains multiple functions for the selected dimension.")
     return(NULL)
@@ -194,7 +194,11 @@ default_targets_table <- reactive({
   data <- ERTPlot.Aggr.data()
   if (is.null(data)) return(NULL)
   aggr_on <- 'funcId'
-  get_max_targets(data, aggr_on, maximize = attr(data[[1]],'maximization')) %>% t %>% as.data.table(keep.rownames = F)
+  as.data.table(
+    t(
+      get_max_targets(data, aggr_on, maximize = attr(data[[1]],'maximization'))
+    ),
+  keep.rownames = F)
 })
 
 ERTPlot.Aggr.Targets_obj <- NULL

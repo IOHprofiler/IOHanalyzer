@@ -222,7 +222,27 @@ observeEvent(input$ERTPlot.Aggr.Targets_cell_edit, {
   if (is.null(data)) return(NULL)
   aggr_on <- 'funcId'
   aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_dim(data)
-  suppressWarnings(ERTPlot.Aggr.Targets_obj[i, paste0(aggr_attr[[j]])] <<- DT::coerceValue(v, ERTPlot.Aggr.Targets_obj[i, paste0(aggr_attr[[j]])]))
+  suppressWarnings(ERTPlot.Aggr.Targets_obj[i, paste0(aggr_attr[[j]])] <<- 
+                     DT::coerceValue(v, ERTPlot.Aggr.Targets_obj[i, paste0(aggr_attr[[j]])]))
   replaceData(proxy, ERTPlot.Aggr.Targets_obj, resetPaging = FALSE, rownames = FALSE)
 })
 
+
+output$ERTPlot.Aggr.ERTTable <- DT::renderDataTable({
+  input$ERTPlot.Aggr.Refresh
+  req(length(DATA_RAW()) > 0)
+  
+  withProgress({
+    dsList <- ERTPlot.Aggr.data()
+    if (is.null(dsList)) return(NULL)
+    aggr_on <- 'funcId'
+    aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
+    
+    targets <- ERTPlot.Aggr.Targets_obj
+    erts <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, maximize = attr(dsList[[1]], "maximization"))
+    rownames(erts) <- aggr_attr
+    formatC(erts, digits = 4)
+  },
+  message = "Creating table")
+}, editable = FALSE, rownames = TRUE,
+options = list(pageLength = 5, lengthMenu = c(5, 10, 25, -1), scrollX = T, server = T))

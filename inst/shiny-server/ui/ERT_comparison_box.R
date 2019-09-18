@@ -36,7 +36,10 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
         column(
           width = 12, align = "center",
           plotlyOutput.IOHanalyzer('ERTPlot.Aggr.Plot'),
-          DT::dataTableOutput("ERTPlot.Aggr.Targets")
+          HTML("The chosen target values per function are as follows (double click an entry to edit it):"),
+          DT::dataTableOutput("ERTPlot.Aggr.Targets"),
+          HTML("The raw ERT-values are:"),
+          DT::dataTableOutput("ERTPlot.Aggr.ERTTable")
         )
       )
     )

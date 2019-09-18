@@ -295,7 +295,7 @@ Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = F)
 #' @param scale.ylog Whether or not to scale the y-axis logaritmically
 #' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
 #' @param backend Which plotting library to use. Either 'plotly' or 'ggplot2'.
-#'
+#' 
 #' @return A plot of ERT-values of the DataSetList
 #' @export
 #' @examples 
@@ -1395,9 +1395,9 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
     p <- lapply(
       seq(n_fcts),
       function(x)
-        IOH_plot_ly_default(x.title = "", y.title = "ERT") %>%
-          layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 4, autorange = autorange),
-                 yaxis = list(type = yscale, tickfont = f1, ticklen = 4))
+        IOH_plot_ly_default(x.title = "Best f(x)", y.title = "ERT") %>%
+          layout(xaxis = list(type = xscale, tickfont = 10, ticklen = 4, autorange = autorange),
+                 yaxis = list(type = yscale, tickfont = 10, ticklen = 4))
     )
 
     for (i in seq(n_fcts)) {
@@ -1410,13 +1410,17 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
           type = 'scatter', mode = 'lines+markers',
           line = list(width = 1.8), marker = list(size = 4), # TODO: perhaps turn off the marker here
           colors = colors, showlegend = showlegend
-        ) %>%
+        ) 
+      disp_y <-  mod(i, n_cols) == 1
+      disp_x <- i > (n_fcts - n_cols)
+      disp <- c(disp_x, disp_y, T)
+      p[[i]] %<>%
         layout(
           annotations = list(
-            text = c("Best-so-far f(x)", "ERT", paste0('F', funcIds[[i]])), font = c(f1, f1, f2),
+            text = c("Best-so-far f(x)", "ERT", paste0('F', funcIds[[i]]))[disp], font = c(f1, f1, f2)[disp],
             xref = "paper", yref = "paper", align = "center",
-            yanchor = c("top", "top", "bottom"), xanchor = "center", textangle=c(0, -90, 0),
-            x = c(0.5, -0.26, 0.5), y = c(-0.2, 0.5, 1), showarrow = FALSE
+            yanchor = c("top", "top", "bottom")[disp], xanchor = "center", textangle=c(0, -90, 0)[disp],
+            x = c(0.5, -0.26, 0.5)[disp], y = c(-0.2, 0.5, 1)[disp], showarrow = FALSE
           )
         )
     }

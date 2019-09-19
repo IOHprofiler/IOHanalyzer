@@ -28,7 +28,11 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
             selectInput('ERTPlot.Aggr.Format', label = 'Select the figure format',
                         choices = supported_fig_format, selected = 'pdf'),
             
-            downloadButton('ERTPlot.Aggr.Download', label = 'Download the figure')
+            downloadButton('ERTPlot.Aggr.Download', label = 'Download the figure'),
+            selectInput('ERTPlot.Aggr.TableFormat', label = 'Select the table format',
+                        choices = c('csv','tex'), selected = 'csv'),
+            downloadButton('ERTPlot.Aggr.DownloadTable', label = 'Download the table')
+            
           ),
       
       mainPanel(
@@ -36,9 +40,9 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
         column(
           width = 12, align = "center",
           plotlyOutput.IOHanalyzer('ERTPlot.Aggr.Plot'),
-          HTML("The chosen target values per function are as follows (double click an entry to edit it):"),
+          HTML_P("The chosen target values per function are as follows (double click an entry to edit it):"),
           DT::dataTableOutput("ERTPlot.Aggr.Targets"),
-          HTML("The raw ERT-values are:"),
+          HTML_P("The raw ERT-values are:"),
           DT::dataTableOutput("ERTPlot.Aggr.ERTTable")
         )
       )

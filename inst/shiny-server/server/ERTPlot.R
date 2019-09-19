@@ -228,21 +228,39 @@ observeEvent(input$ERTPlot.Aggr.Targets_cell_edit, {
 })
 
 
+ert_multi_function <- function(){
+  dsList <- ERTPlot.Aggr.data()
+  if (is.null(dsList)) return(NULL)
+  aggr_on <- 'funcId'
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
+  
+  targets <- ERTPlot.Aggr.Targets_obj
+  erts <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, maximize = attr(dsList[[1]], "maximization"))
+  rownames(erts) <- aggr_attr
+  formatC(erts, digits = 4)
+}
+
 output$ERTPlot.Aggr.ERTTable <- DT::renderDataTable({
   input$ERTPlot.Aggr.Refresh
   req(length(DATA_RAW()) > 0)
   
   withProgress({
-    dsList <- ERTPlot.Aggr.data()
-    if (is.null(dsList)) return(NULL)
-    aggr_on <- 'funcId'
-    aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
-    
-    targets <- ERTPlot.Aggr.Targets_obj
-    erts <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, maximize = attr(dsList[[1]], "maximization"))
-    rownames(erts) <- aggr_attr
-    formatC(erts, digits = 4)
+    ert_multi_function()
   },
   message = "Creating table")
 }, editable = FALSE, rownames = TRUE,
 options = list(pageLength = 5, lengthMenu = c(5, 10, 25, -1), scrollX = T, server = T))
+
+output$ERTPlot.Aggr.DownloadTable <- downloadHandler(
+  filename = function() {
+    eval(ERT_multi_func_name)
+  },
+  content = function(file) {
+    df <- ert_multi_function()
+    if (input$ERTPlot.Aggr.TableFormat == 'csv')
+      write.csv(df, file, row.names = F)
+    else{
+      print(xtable(df), file = file)
+    }
+  }
+)

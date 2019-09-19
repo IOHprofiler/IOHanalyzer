@@ -15,7 +15,7 @@ color_settings_box <- function(width = 12, collapsible = T, collapsed = F) {
           colourInput("Settings.Color.Grid", "Plot gridline colour", value = "#FFFFFF"),
           colourInput("Settings.Color.Tick", "Plot ticks colour", value = "#333333"),
           selectInput("Settings.Legend.Location", "Legend location", 
-                      c("Outside, right", "Inside, right", "Inside, left", "Below"), "Outside, right")
+                      c("Outside, right", "Inside, right", "Inside, left", "Below"), "Below")
         ),
 
         mainPanel(
@@ -52,8 +52,8 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
           width=3,
           align = "Left",
           HTML_P('Set the figure download properties'),
-          numericInput("Settings.Download.Width", label = "Image width (px)", value = NULL, min = 100, max = 4096),
-          numericInput("Settings.Download.Height", label = "Image height (px)", value = NULL, min = 100, max = 4096)
+          numericInput("Settings.Download.Width", label = "Image width (px)", value = 1000, min = 100, max = 4096),
+          numericInput("Settings.Download.Height", label = "Image height (px)", value = 1000, min = 100, max = 4096)
         ),
         column(
           width=3,
@@ -62,7 +62,7 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
           numericInput("Settings.Font.Title", label = "Title", value = 16, min = 8, max = 100),
           numericInput("Settings.Font.Label", label = "Axis labels", value = 16, min = 8, max = 100),
           numericInput("Settings.Font.Legend", label = "Legend", value = 13, min = 8, max = 100),
-          numericInput("Settings.Font.Tick", label = "Ticks", value = 16, min = 8, max = 100)
+          numericInput("Settings.Font.Tick", label = "Ticks", value = 12, min = 8, max = 100)
         )
       )
          

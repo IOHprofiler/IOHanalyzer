@@ -1420,8 +1420,8 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
           annotations = list(
             text = c("Best-so-far f(x)", "ERT", paste0('F', funcIds[[i]]))[disp], font = c(f1, f1, f2)[disp],
             xref = "paper", yref = "paper", align = "center",
-            yanchor = c("top", "top", "bottom")[disp], xanchor = "center", textangle=c(0, -90, 0)[disp],
-            x = c(0.5, -0.26, 0.5)[disp], y = c(-0.2, 0.5, 1)[disp], showarrow = FALSE
+            yanchor = c("top", "top", "bottom")[disp], xanchor = "center", textangle = c(0, -90, 0)[disp],
+            x = c(0.5, -0.3, 0.5)[disp], y = c(-0.25, 0.6, 1)[disp], showarrow = FALSE
           )
         )
     }
@@ -1515,7 +1515,7 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
             text = c("Funcion evaluations", "Mean f(x)", paste0('F', funcIds[[i]]))[disp], font = c(f1, f1, f2)[disp],
             xref = "paper", yref = "paper", align = "center",
             yanchor = c("top", "top", "bottom")[disp], xanchor = "center", textangle = c(0, -90, 0)[disp],
-            x = c(0.5, -0.25, 0.5)[disp], y = c(-0.2, 0.6, 1)[disp], showarrow = FALSE
+            x = c(0.5, -0.3, 0.5)[disp], y = c(-0.25, 0.6, 1)[disp], showarrow = FALSE
           )
         )
     }

@@ -1414,6 +1414,7 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
       disp_y <-  mod(i, n_cols) == 1
       disp_x <- i > (n_fcts - n_cols)
       disp <- c(disp_x, disp_y, T)
+      
       p[[i]] %<>%
         layout(
           annotations = list(
@@ -1427,7 +1428,7 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
 
     p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.04)
   }
-  p
+  p %>% layout(margin = 5)
 }
 
 #' @rdname Plot.FV.Multi_Func
@@ -1502,20 +1503,26 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
           type = 'scatter', mode = 'lines+markers',
           line = list(width = 1.8), marker = list(size = 4), # TODO: perhaps turn off the marker here
           colors = colors, showlegend = showlegend
-        ) %>%
+        ) 
+      
+      disp_y <-  mod(i, n_cols) == 1
+      disp_x <- i > (n_fcts - n_cols)
+      disp <- c(disp_x, disp_y, T)
+      
+      p[[i]] %<>%
         layout(
           annotations = list(
-            text = c("Funcion evaluations", "Mean f(x)", paste0('F', funcIds[[i]])), font = c(f1, f1, f2),
+            text = c("Funcion evaluations", "Mean f(x)", paste0('F', funcIds[[i]]))[disp], font = c(f1, f1, f2)[disp],
             xref = "paper", yref = "paper", align = "center",
-            yanchor = c("top", "top", "bottom"), xanchor = "center", textangle=c(0, -90, 0),
-            x = c(0.5, -0.25, 0.5), y = c(-0.2, 0.6, 1), showarrow = FALSE
+            yanchor = c("top", "top", "bottom")[disp], xanchor = "center", textangle = c(0, -90, 0)[disp],
+            x = c(0.5, -0.25, 0.5)[disp], y = c(-0.2, 0.6, 1)[disp], showarrow = FALSE
           )
         )
     }
     
     p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.03)
   }
-  p
+  p %>% layout(margin = 5)
 }
 
 #' @rdname Plot.RT.Aggregated

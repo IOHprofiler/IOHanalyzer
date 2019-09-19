@@ -177,3 +177,40 @@ observeEvent(input$FCEPlot.Aggr.Targets_cell_edit, {
   suppressWarnings(FCEPlot.Aggr.Targets_obj[i, paste0(aggr_attr[[j]])] <<- DT::coerceValue(v, FCEPlot.Aggr.Targets_obj[i, paste0(aggr_attr[[j]])]))
   replaceData(proxy, FCEPlot.Aggr.Targets_obj, resetPaging = FALSE, rownames = FALSE)
 })
+
+fce_multi_function <- function(){
+  dsList <- FCEPlot.Aggr.data()
+  if (is.null(dsList)) return(NULL)
+  aggr_on <- 'funcId'
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
+  
+  runtimes <- FCEPlot.Aggr.Targets_obj
+  erts <- mean_FVs(dsList, aggr_on = aggr_on, runtimes = runtimes)
+  rownames(erts) <- aggr_attr
+  formatC(erts, digits = 4)
+}
+
+output$FCEPlot.Aggr.FCETable <- DT::renderDataTable({
+  input$FCEPlot.Aggr.Refresh
+  req(length(DATA_RAW()) > 0)
+  
+  withProgress({
+    fce_multi_function()
+  },
+  message = "Creating table")
+}, editable = FALSE, rownames = TRUE,
+options = list(pageLength = 5, lengthMenu = c(5, 10, 25, -1), scrollX = T, server = T))
+
+output$FCEPlot.Aggr.DownloadTable <- downloadHandler(
+  filename = function() {
+    eval(FCE_multi_func_name)
+  },
+  content = function(file) {
+    df <- fce_multi_function()
+    if (input$FCEPlot.Aggr.TableFormat == 'csv')
+      write.csv(df, file, row.names = F)
+    else{
+      print(xtable(df), file = file)
+    }
+  }
+)

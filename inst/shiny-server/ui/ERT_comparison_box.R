@@ -23,7 +23,7 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
             checkboxInput('ERTPlot.Aggr.Logy', 
                           label = 'Scale y axis \\(\\log_{10}\\)',
                           value = F),
-            actionButton("ERTPlot.Aggr.Refresh", "Refresh the figure"),
+            actionButton("ERTPlot.Aggr.Refresh", "Refresh the figure and table"),
             
             selectInput('ERTPlot.Aggr.Format', label = 'Select the figure format',
                         choices = supported_fig_format, selected = 'pdf'),

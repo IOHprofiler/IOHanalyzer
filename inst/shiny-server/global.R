@@ -121,6 +121,8 @@ PARSample_csv_name <- parse(text = "paste0('PARSample-', paste0(input$Overall.Di
                              paste0('F', input$Overall.Funcid), '.', input$PAR.Sample.FileFormat)")
 ERT_multi_func_name <- parse(text = "paste0('MultiERT-', paste0(input$Overall.Dim, 'D'),
                              '.', input$ERTPlot.Aggr.TableFormat)")
+FCE_multi_func_name <- parse(text = "paste0('MultiFCE-', paste0(input$Overall.Dim, 'D'),
+                             '.', input$FCEPlot.Aggr.TableFormat)")
 # max_samples <- 100
 
 FIG_NAME_ERT_PER_FUN <- parse(text = "paste0('ERT-', Sys.Date(), '.', input$ERTPlot.Format)")

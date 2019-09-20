@@ -36,6 +36,8 @@ ERT_agg_box <- function(width = 12, height = '600px', collapsible = T,
         width = 10,
         column(
           width = 12, align = "center",
+          HTML_P('The <b><i>ERT</i></b> is shown against the target 
+                 values for all functions in the selected dimension.'),
           plotlyOutput.IOHanalyzer('ERTPlot.Multi.Plot', aspect_ratio = 1)
         )
       )

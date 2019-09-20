@@ -8,6 +8,7 @@ main_report_box <- function(width = 6, collapsible = T, collapsed = F) {
       fixed_target_report_box(),
       fixed_budget_report_box(),
       parameter_box(),
+      hr(),
       downloadButton("Report.Generate", "Generate report pdf"),
       downloadButton("Report.Generate.Tar", "Generate report tar", style="float:right")
       )

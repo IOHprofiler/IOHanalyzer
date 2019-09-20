@@ -67,6 +67,7 @@ rt_ecdf_agg_targets_box <- function(width = 12, collapsible = T, collapsed = T) 
                     label = 'Scale x axis \\(\\log_{10}\\)',
                     value = T),
 
+      hr(),
       selectInput('RTECDF.Multi.Format', label = 'Select the figure format',
                   choices = supported_fig_format, selected = 'pdf'),
 
@@ -196,6 +197,7 @@ rt_ecdf_auc_box <- function(width = 12, collapsible = T, collapsed = T) {
       textInput('RTECDF.AUC.Max', label = F_MAX_LABEL, value = ''),
       textInput('RTECDF.AUC.Step', label = F_STEP_LABEL, value = ''),
 
+      hr(),
       selectInput('RTECDF.AUC.Format', label = 'Select the figure format',
                   choices = supported_fig_format, selected = 'pdf'),
       downloadButton('RTECDF.AUC.Download', label = 'Download the figure')

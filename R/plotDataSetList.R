@@ -1489,8 +1489,8 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
       seq(n_fcts),
       function(x)
         IOH_plot_ly_default(x.title = "", y.title = "Mean function value") %>%
-        layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 4, autorange = T),
-               yaxis = list(type = yscale, tickfont = f1, ticklen = 4))
+        layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 3, autorange = T),
+               yaxis = list(type = yscale, tickfont = f1, ticklen = 3))
     )
 
     for (i in seq(n_fcts)) {
@@ -1522,7 +1522,7 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
     
     p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.03)
   }
-  p %>% layout(margin = 5)
+  p %>% layout(margin = 2)
 }
 
 #' @rdname Plot.RT.Aggregated

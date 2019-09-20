@@ -22,6 +22,7 @@ fv_histgram_box <- function(width = 12, collapsible = T, collapsed = T) {
                     selected = 'subplot'),
         checkboxInput("FCEPDF.Hist.Equal", "Use equal bins for all algorithms", F),
         
+        hr(),
         selectInput('FCEPDF.Hist.Format', label = 'Select the figure format',
                     choices = supported_fig_format, selected = 'pdf'),
 
@@ -70,6 +71,7 @@ fv_pdf_box <- function(width = 12, collapsible = T, collapsed = T) {
         checkboxInput('FCEPDF.Bar.Samples', label = 'Show runtime samples', value = T),
         checkboxInput('FCEPDF.Bar.Logy', label = 'Scale y axis \\(\\log_{10}\\)', value = T),
         
+        hr(),
         selectInput('FCEPDF.Bar.Format', label = 'Select the figure format',
                     choices = supported_fig_format, selected = 'pdf'),
 

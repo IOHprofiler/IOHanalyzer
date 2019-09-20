@@ -36,27 +36,28 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
       width = width, solidHeader = T, status = "primary",
       collapsible = collapsible, collapsed = collapsed,
       mainPanel(
-        width=12,
+        width = 12,
         column(
-          width=3,
+          width = 3,
           align = "Left",
           HTML_P('Set the general properties'),
           #TODO: get probabilities from get_probability and put them as default
           textInput("Settings.General.Probs", label = "Probability-quantiles", value = "0.02,0.05,0.10,0.25,0.50,0.75,0.90,0.95,0.98"),
           numericInput("Settings.General.Max_samples", label = "Maximum samples shown per algorithm", value = 100),
           selectInput("Settings.General.Backend", "Plotting backend", c('plotly','ggplot2'),'plotly'),
+          hr(),
           downloadButton("Settings.Download", "Download current settings file"),
           fileInput("Settings.Upload", "Upload a settings file", accept = "rds")
         ),
         column(
-          width=3,
+          width = 3,
           align = "Left",
           HTML_P('Set the figure download properties'),
           numericInput("Settings.Download.Width", label = "Image width (px)", value = 1000, min = 100, max = 4096),
           numericInput("Settings.Download.Height", label = "Image height (px)", value = 1000, min = 100, max = 4096)
         ),
         column(
-          width=3,
+          width = 3,
           align = "Left",
           HTML_P('Set the figure fontsizes'),
           numericInput("Settings.Font.Title", label = "Title", value = 16, min = 8, max = 100),

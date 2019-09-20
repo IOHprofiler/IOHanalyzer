@@ -24,11 +24,13 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
                           label = 'Scale y axis \\(\\log_{10}\\)',
                           value = F),
             actionButton("ERTPlot.Aggr.Refresh", "Refresh the figure and table"),
+            hr(),
             
             selectInput('ERTPlot.Aggr.Format', label = 'Select the figure format',
                         choices = supported_fig_format, selected = 'pdf'),
             
             downloadButton('ERTPlot.Aggr.Download', label = 'Download the figure'),
+            hr(),
             selectInput('ERTPlot.Aggr.TableFormat', label = 'Select the table format',
                         choices = c('csv','tex'), selected = 'csv'),
             downloadButton('ERTPlot.Aggr.DownloadTable', label = 'Download the table')
@@ -39,10 +41,18 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
         width = 10,
         column(
           width = 12, align = "center",
+          HTML_P('The <b><i>ERT</i></b> of the runtime samples across all functions. 
+                  ERT is decided based on the target values in the table below,
+                  with the default being the <b>best reached f(x) by any of the 
+                  selected algorithms</b>. <i>Infinite ERTS</i> are shown as 
+                  seperate dots on the graph.'),
           plotlyOutput.IOHanalyzer('ERTPlot.Aggr.Plot'),
-          HTML_P("The chosen target values per function are as follows (double click an entry to edit it):"),
+          hr(),
+          HTML_P("The chosen <b>target values</b> per function are as follows 
+                 (double click an entry to edit it):"),
           DT::dataTableOutput("ERTPlot.Aggr.Targets"),
-          HTML_P("The raw ERT-values are:"),
+          hr(),
+          HTML_P("The raw <b>ERT</b>-values are:"),
           DT::dataTableOutput("ERTPlot.Aggr.ERTTable")
         )
       )

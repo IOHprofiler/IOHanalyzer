@@ -28,6 +28,7 @@ rt_histogram_box <- function(width = 12, collapsed = T, collapsible = T) {
                     choices = c("overlay", "subplot"),
                     selected = 'subplot'),
         checkboxInput("RTPMF.Hist.Equal", "Use equal bins for all algorithms", F),
+        hr(),
         selectInput('RTPMF.Hist.Format', label = 'Select the figure format',
                     choices = supported_fig_format, selected = 'pdf'),
 
@@ -80,6 +81,7 @@ rt_pmf_box <- function(width = 12, collapsed = T, collapsible = T) {
           checkboxInput('RTPMF.Bar.Sample', label = 'Show runtime for each run', value = T),
           checkboxInput('RTPMF.Bar.Logy', label = 'Scale y axis \\(\\log_{10}\\)', value = F),
 
+          hr(),
           selectInput('RTPMF.Bar.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = 'pdf'),
 

@@ -48,11 +48,12 @@ heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
       fluidRow(
         column(
           width = 6, align = 'center',
-          HTML('<div style="margin-top: 50px;"></div>'),
+          HTML('<div style="margin-top: 30px;"></div>'),
           plotlyOutput.IOHanalyzer('Stats.Overview.Heatmap', aspect_ratio = 1)
         ),
         column(
           width = 6, align = 'center',
+          HTML('<div style="margin-top: 30px;"></div>'),
           plotOutput("Stats.Overview.Graph", height = '70vh')
         )
       )

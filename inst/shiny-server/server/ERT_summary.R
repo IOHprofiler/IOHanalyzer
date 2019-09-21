@@ -73,8 +73,7 @@ runtime_summary <- reactive({
   df$ERT <- round(df$ERT, digits = 2)
   df$ps <- round(df$ps, digits = 2)
 
-  if (format == COCO)
-    df$target <- formatC(df$target, format = "e", digits = 2)
+  df$target <- format_FV(df$target)
   df
 })
 
@@ -108,7 +107,7 @@ get_RT <- reactive({
   fstep <- format_FV(input$RTSummary.Sample.Step) %>% as.numeric
   data <- DATA()
 
-  if (!input$RTSummary.Sample.Single){
+  if (!input$RTSummary.Sample.Single) {
     req(fstart <= fstop, fstep <= fstop - fstart, length(data) > 0)
     fall <- get_funvals(data)
     fseq <- seq_FV(fall, fstart, fstop, fstep)
@@ -120,8 +119,7 @@ get_RT <- reactive({
 
   df <- get_RT_sample(data, ftarget = fseq, algorithm = input$RTSummary.Sample.Algid,
                 output = input$RTSummary.Sample.DownloadFormat)
-  if (format == COCO)
-    df$target <- formatC(df$target, format = "e", digits = 2)
+  df$target <- format_FV(df$target)
   df[is.na(df)] <- 'NA'
   df
 })

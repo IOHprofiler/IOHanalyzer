@@ -2,10 +2,6 @@
 folderList <- reactiveValues(data = list())
 DataList <- reactiveValues(data = DataSetList())
 
-# set up the global variable
-observe({
-  sub_sampling <<- input$upload.subsampling
-})
 
 # set up list of datasets (scan the repository, looking for .rds files)
 observe({
@@ -27,10 +23,10 @@ observe({
 observeEvent(input$repository.dataset, {
   req(input$repository.dataset)
 
-  if (input$repository.dataset  == "Example_small"){
+  if (input$repository.dataset  == "Example_small") {
     repo_data <<- IOHanalyzer::dsl
   }
-  else if (input$repository.dataset == "Example_large"){
+  else if (input$repository.dataset == "Example_large") {
     repo_data <<- IOHanalyzer::dsl_large
   }
   else{
@@ -41,7 +37,12 @@ observeEvent(input$repository.dataset, {
   algIds <- c(get_algId(repo_data), 'all')
   dims <- c(get_dim(repo_data), 'all')
   funcIds <- c(get_funcId(repo_data), 'all')
-
+  if ( is.null(attr(repo_data, 'maximization'))) {
+    attr(repo_data, 'maximization') <<- T
+  } 
+  if ( is.null(attr(repo_data, 'suite'))) {
+    attr(repo_data, 'suite') <<- 'PBO'
+  } 
   updateSelectInput(session, 'repository.algId', choices = algIds, selected = 'all')
   updateSelectInput(session, 'repository.dim', choices = dims, selected = 'all')
   updateSelectInput(session, 'repository.funcId', choices = funcIds, selected = 'all')
@@ -59,10 +60,6 @@ observeEvent(input$repository.load_button, {
     data <- subset(data, algId == input$repository.algId)
 
   DataList$data <- c(DataList$data, data)
-  format <<- attr(data[[1]], 'format')
-  if (is.null(format)){
-    format <<- attr(data[[1]], 'src')
-  }
 })
 
 # upload the compressed the data file and uncompress them
@@ -74,7 +71,7 @@ selected_folders <- reactive({
     for (i in seq(datapath)) {
       filetype <- sub('[^\\.]*\\.', '', basename(datapath[i]), perl = T)
 
-      if (filetype == 'csv'){
+      if (filetype == 'csv') {
         folders[i] <- datapath[[i]]
         next
       }
@@ -99,7 +96,7 @@ selected_folders <- reactive({
       idx <- grep('*.info', files)[1]
       info <- files[idx]
 
-      if (is.null(info)){
+      if (is.null(info)) {
         idx <- grep('*.csv', files)[1]
         info <- files[idx]
         if (is.null(info))
@@ -143,23 +140,51 @@ observeEvent(selected_folders(), {
     print_html(paste('<p style="color:red;">more than one format: <br>',
                      format_detected,
                      'is detected in the uploaded data set... skip the uploaded data'))
+  else
+    format_detected <- format_detected[[1]]
+  
+  
+  
+  for (folder in folder_new) {
+    indexFiles <- scan_IndexFile(folder)
 
-  else {
-    if (format_detected == IOHprofiler && format_selected == TWO_COL){
-      format <<- TWO_COL
+    if (length(indexFiles) == 0)
+      print_html(paste('<p style="color:red;">No .info-files detected in the
+                       uploaded folder:</p>', folder))
+    else {
+      folderList$data <- c(folderList$data, folder)
+
+      # read the data set and handle potential errors
+      new_data <- tryCatch(
+        DataSetList(folder, print_fun = print_html,
+                    maximization = NULL,
+                    format = format_detected,
+                    subsampling = input$upload.subsampling),
+        error = function(e) {
+          print_html(paste('<p style="color:red;">The following error happened
+                           when processing the data set:</p>'))
+          print_html(paste('<p style="color:red;">', e, '</p>'))
+          DataSetList()
+        }
+      )
+      DataList$data <- c(DataList$data, new_data)
+      
+      shinyjs::html("upload_data_promt",
+                    sprintf('%d: %s\n', length(folderList$data), folder),
+                    add = TRUE)
     }
-    else
-      format <<- format_detected   # set the global data format
   }
-  if (format == NEVERGRAD){
+  if (is.null(DataList$data)) {
+    shinyjs::alert("An error occurred when processing the uploaded data. 
+                   Please ensure the data is not corrupted.")
+  }
+  else if (attr(DataList$data, 'suite') == NEVERGRAD) {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_ECDF"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_convergence"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_data"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_PMF"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "PARAMETER"))
-    
-    
   }
   else{
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_ECDF"))
@@ -169,52 +194,7 @@ observeEvent(selected_folders(), {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PMF"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "PARAMETER"))
   }
-  
-  
-  for (folder in folder_new) {
-    indexFiles <- scan_IndexFile(folder)
-
-    if (length(indexFiles) == 0 && format != NEVERGRAD)
-      print_html(paste('<p style="color:red;">format', format_selected,
-                       'is selected, however', format_detected,
-                       'is detected...<br>using the detected one...</p>'))
-    else {
-      folderList$data <- c(folderList$data, folder)
-
-      if (format_selected == AUTOMATIC || (format_detected == IOHprofiler && format_selected == TWO_COL)) {
-        set_format_func(format)
-      } else if (format_detected != format) {
-        print_html(paste('<p style="color:red;">format', format_selected,
-                         'is selected, however', format,
-                         'is detected...<br>using the detected one...</p>'))
-      }
-
-      if (maximization == AUTOMATIC)
-        maximization <- ifelse((format == COCO || format == BIBOJ_COCO || format == NEVERGRAD)
-                               , FALSE, TRUE)
-      else
-        maximization <- ifelse((maximization == "MAXIMIZE" || maximization == TRUE), TRUE, FALSE)
-
-      # read the data set and handle potential errors
-      new_data <- tryCatch(
-        DataSetList(folder, print_fun = print_html,
-                    maximization = maximization,
-                    format = format,
-                    subsampling = sub_sampling),
-        error = function(e) {
-          print_html(paste('<p style="color:red;">The following error happened
-                           when processing the data set:</p>'))
-          print_html(paste('<p style="color:red;">', e, '</p>'))
-          DataSetList()
-        }
-      )
-
-      DataList$data <- c(DataList$data, new_data)
-      shinyjs::html("upload_data_promt",
-                    sprintf('%d: %s\n', length(folderList$data), folder),
-                    add = TRUE)
-    }
-  }
+  set_format_func(attr(DataList$data, 'suite'))
 })
 
 # remove all uploaded data set
@@ -392,7 +372,7 @@ DATA <- reactive({
   if (length(DataList$data) == 0) return(NULL)
 
   d <- subset(DataList$data, DIM == dim, funcId == id)
-  if (length(d) == 0 && dim != "" && id != ""){
+  if (length(d) == 0 && dim != "" && id != "") {
     showNotification("There is no data available for this (dimension,function)-pair")
   }
   d
@@ -406,13 +386,13 @@ DATA_RAW <- reactive({
 MAX_ERTS_FUNC <- reactive({
   dim <- input$Overall.Dim
   data <- subset(DataList$data, DIM == dim)
-  max_ERTs(data, aggr_on = 'funcId', maximize = !(format == COCO || format == BIBOJ_COCO))
+  max_ERTs(data, aggr_on = 'funcId', maximize = attr(data, 'maximization'))
 })
 
 MAX_ERTS_DIM <- reactive({
   func <- input$Overall.Funcid
   data <- subset(DataList$data, funcId == func)
-  max_ERTs(data, aggr_on = 'DIM', maximize = !(format == COCO || format == BIBOJ_COCO))
+  max_ERTs(data, aggr_on = 'DIM', maximize = attr(data, 'maximization'))
 })
 
 MEAN_FVALS_FUNC <- reactive({

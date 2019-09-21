@@ -58,7 +58,7 @@ DataSetList <-
   function(path = NULL,
            verbose = T,
            print_fun = NULL,
-           maximization = TRUE,
+           maximization = NULL,
            format = IOHprofiler,
            subsampling = FALSE) {
     if (is.null(path))
@@ -83,6 +83,8 @@ DataSetList <-
     DIM <- c()
     algId <- c()
     funcId <- c()
+    suites <- c()
+    maximizations <- c()
     i <- 1
     
     for (file in indexFiles) {
@@ -93,6 +95,7 @@ DataSetList <-
       if (format == NEVERGRAD) {
         dsl <- read_nevergrad(file)
         object %<>% c(., dsl)
+        suites[i] <- NEVERGRAD
       }
       
       else{
@@ -122,8 +125,9 @@ DataSetList <-
           DIM[i] <- attr(data, 'DIM')
           funcId[i] <- attr(data, 'funcId')
           algId[i] <- attr(data, 'algId')
-          instance <- attr(data, 'instance')
-          
+          instance <- attr(data, 'instance') #Was instance without index?
+          suites[i] <- attr(data, 'suite')
+          maximizations[i] <- attr(data, 'maximization')
           # check for duplicated instances
           if (length(object) != 0) {
             idx <- sapply(object, function(obj)
@@ -159,6 +163,15 @@ DataSetList <-
       attr(object, 'funcId') <- funcId
       attr(object, 'algId') <- algId
     }
+    
+    suite <- unique(suites)
+    maximization <- unique(maximizations)
+    if (length(suite) != 1 || length(maximizations) != 1) {
+      warning("Multipe different suites detected!")
+    }
+    attr(object, 'suite') <- suite
+    attr(object, 'maximization') <- maximization
+    
     object
   }
 
@@ -187,6 +200,18 @@ c.DataSetList <- function(...) {
       unlist(lapply(dsl, function(x)
         attr(x, attr_str)))
   }
+  for (attr_str in c('suite', 'maximization')) {
+    temp  <-
+      unique(
+        unlist(lapply(dsl, function(x)
+          attr(x, attr_str))))
+    if (length(temp) > 1) {
+      warning(paste0("Attempted to add datasets with different ", attr_str, 
+                  "-attributes! This will lead to errors when processing
+                  this data!"))
+    }
+    attr(object, attr_str) <- temp[[1]]
+  }
   object
 }
 
@@ -208,6 +233,9 @@ c.DataSetList <- function(...) {
   attr(obj, 'DIM') <- attr(x, 'DIM')[i]
   attr(obj, 'funcId') <- attr(x, 'funcId')[i]
   attr(obj, 'algId') <- attr(x, 'algId')[i]
+  attr(obj, 'suite') <- attr(x, 'suite')
+  attr(obj, 'maximization') <- attr(x, 'maximization')
+  
   obj
 }
 
@@ -220,6 +248,7 @@ c.DataSetList <- function(...) {
 #' print(dsl)
 print.DataSetList <- function(x, ...) {
   cat('DataSetList:\n')
+  cat(paste0('Suite: ', attr(x, 'suite')))
   for (i in seq_along(x)) {
     cat(sprintf('%d: %s\n', i, as.character(x[[i]])))
   }
@@ -240,6 +269,7 @@ print.DataSetList <- function(x, ...) {
 summary.DataSetList <- function(object, ...) {
   as.data.frame(t(sapply(object, function(d) {
     list(
+      suite = attr(d, 'suite'),
       funcId = attr(d, 'funcId'),
       DIM = attr(d, 'DIM'),
       algId = attr(d, 'algId'),

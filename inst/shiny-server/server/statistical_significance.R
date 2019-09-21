@@ -16,10 +16,11 @@ output$Stats.Overview.Heatmap <- renderPlotly(
 
 output$Stats.Overview.Pmatrix <- DT::renderDataTable({
   req(length(DATA()) > 0)
+  req(length(get_algId(DATA())) > 0)
   data <- subset(DATA(), algId %in% input$Stats.Overview.Algid)
   target <- as.numeric(input$Stats.Overview.Target)
   df <- pairwise.test(data, target, bootstrap.size = input$Stats.Overview.Samples)
-  format(df, digits=3)
+  format(df, digits = 3)
 }, options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
 
 output$Stats.Overview.Graph <- renderPlot({
@@ -45,7 +46,7 @@ data_table_glicko2 <- reactive({
       req(length(data) > 0 && length(get_algId(data)) > 0)
       nr_games <- as.numeric(input$Stats.Glicko.Nrgames)
       df <- glicko2_ranking(data, nr_games)$ratings
-      format(df, digits=3)
+      format(df, digits = 3)
     }, message = "Creating Ranking, this might take a while")
   })
 })

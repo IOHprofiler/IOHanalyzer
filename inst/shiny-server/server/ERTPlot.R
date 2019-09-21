@@ -23,20 +23,20 @@ update_ert_per_fct_axis <- observe({
 
 render_ert_per_fct <- reactive({
   withProgress({
-  req(input$ERTPlot.Min, input$ERTPlot.Max, length(DATA()) > 0)
-  selected_algs <- input$ERTPlot.Algs
-  data <- subset(DATA(), algId %in% input$ERTPlot.Algs)
-  fstart <- input$ERTPlot.Min %>% as.numeric
-  fstop <- input$ERTPlot.Max %>% as.numeric
-  Plot.RT.Single_Func(data, Fstart = fstart, Fstop = fstop,
-                     show.CI = input$ERTPlot.show.CI,
-                     show.ERT = input$ERTPlot.show.ERT,
-                     show.mean = input$ERTPlot.show.mean,
-                     show.median = input$ERTPlot.show.median,
-                     scale.xlog = input$ERTPlot.semilogx,
-                     scale.ylog = isolate(input$ERTPlot.semilogy),
-                     includeOpts = input$ERTPlot.inclueOpts,
-                     scale.reverse = !attr(data[[1]],'maximization'))
+    req(input$ERTPlot.Min, input$ERTPlot.Max, length(DATA()) > 0)
+    selected_algs <- input$ERTPlot.Algs
+    data <- subset(DATA(), algId %in% input$ERTPlot.Algs)
+    fstart <- input$ERTPlot.Min %>% as.numeric
+    fstop <- input$ERTPlot.Max %>% as.numeric
+    Plot.RT.Single_Func(data, Fstart = fstart, Fstop = fstop,
+                       show.CI = input$ERTPlot.show.CI,
+                       show.ERT = input$ERTPlot.show.ERT,
+                       show.mean = input$ERTPlot.show.mean,
+                       show.median = input$ERTPlot.show.median,
+                       scale.xlog = input$ERTPlot.semilogx,
+                       scale.ylog = isolate(input$ERTPlot.semilogy),
+                       includeOpts = input$ERTPlot.inclueOpts,
+                       scale.reverse = !attr(data, 'maximization'))
   },
   message = "Creating plot"
   )
@@ -54,14 +54,14 @@ render_ERTPlot_multi_plot <- reactive({
                  algId %in% isolate(input$ERTPlot.Multi.Algs),
                  DIM == input$Overall.Dim)
   req(length(data) > 0)
-  if (length(unique(get_funcId(data))) == 1){
+  if (length(unique(get_funcId(data))) == 1) {
     shinyjs::alert("This plot is only available when the dataset contains multiple functions  for the selected dimension.")
     return(NULL)
   }
   Plot.RT.Multi_Func(data,
                    scale.xlog = input$ERTPlot.Multi.Logx,
                    scale.ylog = input$ERTPlot.Multi.Logy,
-                   scale.reverse = !attr(data[[1]],'maximization'))
+                   scale.reverse = !attr(data,'maximization'))
   },
   message = "Creating plot")
 })
@@ -196,7 +196,7 @@ default_targets_table <- reactive({
   aggr_on <- 'funcId'
   as.data.table(
     t(
-      get_max_targets(data, aggr_on, maximize = attr(data[[1]],'maximization'))
+      get_max_targets(data, aggr_on, maximize = attr(data,'maximization'))
     ),
   keep.rownames = F)
 })
@@ -235,7 +235,8 @@ ert_multi_function <- function(){
   aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
   
   targets <- ERTPlot.Aggr.Targets_obj
-  erts <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, maximize = attr(dsList[[1]], "maximization"))
+  erts <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, 
+                   maximize = attr(dsList, "maximization"))
   rownames(erts) <- aggr_attr
   formatC(erts, digits = 4)
 }

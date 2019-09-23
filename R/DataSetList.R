@@ -166,7 +166,7 @@ DataSetList <-
     
     suite <- unique(suites)
     maximization <- unique(maximizations)
-    if (length(suite) != 1 || length(maximizations) != 1) {
+    if (length(suite) != 1 || length(maximization) != 1) {
       warning("Multipe different suites detected!")
     }
     attr(object, 'suite') <- suite

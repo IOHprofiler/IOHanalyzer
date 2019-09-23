@@ -58,7 +58,12 @@ observeEvent(input$repository.load_button, {
     data <- subset(data, DIM == input$repository.dim)
   if (input$repository.algId != 'all')
     data <- subset(data, algId == input$repository.algId)
-
+  if (length(DataList$data) > 0 && attr(data, 'suite') != attr(DataList$data, 'suite')) {
+    shinyjs::alert(paste0("Attempting to add data from a different suite to the currently",
+                   " loaded data.\nPlease either remove the currently loaded data or", 
+                   " choose a different dataset to load."))
+    return(NULL)
+  }
   DataList$data <- c(DataList$data, data)
 })
 
@@ -167,8 +172,17 @@ observeEvent(selected_folders(), {
           DataSetList()
         }
       )
-      DataList$data <- c(DataList$data, new_data)
       
+      tryCatch(
+        DataList$data <- c(DataList$data, new_data),
+        error = function(e) {
+          print_html(paste('<p style="color:red;">The following error happened', 
+                           'when adding the uploaded data set:</p>'))
+          print_html(paste('<p style="color:red;">', e, 
+                           '\nRemoving the old data.</p>'))        
+          DataList$data <- new_data
+        }
+      )
       shinyjs::html("upload_data_promt",
                     sprintf('%d: %s\n', length(folderList$data), folder),
                     add = TRUE)

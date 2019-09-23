@@ -16,7 +16,7 @@ output$Stats.Overview.Heatmap <- renderPlotly(
 
 output$Stats.Overview.Pmatrix <- DT::renderDataTable({
   req(length(DATA()) > 0)
-  req(length(get_algId(DATA())) > 0)
+  req(length(get_algId(DATA())) > 1)
   data <- subset(DATA(), algId %in% input$Stats.Overview.Algid)
   target <- as.numeric(input$Stats.Overview.Target)
   df <- pairwise.test(data, target, bootstrap.size = input$Stats.Overview.Samples)

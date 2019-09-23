@@ -14,13 +14,18 @@ output$Stats.Overview.Heatmap <- renderPlotly(
   render_heatmap()
 )
 
-output$Stats.Overview.Pmatrix <- DT::renderDataTable({
+create_stats_table <- reactive({
   req(length(DATA()) > 0)
   req(length(get_algId(DATA())) > 1)
   data <- subset(DATA(), algId %in% input$Stats.Overview.Algid)
   target <- as.numeric(input$Stats.Overview.Target)
   df <- pairwise.test(data, target, bootstrap.size = input$Stats.Overview.Samples)
-  format(df, digits = 3)
+  df <- format(df, digits = 3)
+  df
+})
+
+output$Stats.Overview.Pmatrix <- DT::renderDataTable({
+  create_stats_table()
 }, options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
 
 output$Stats.Overview.Graph <- renderPlot({
@@ -37,6 +42,43 @@ render_graph <- reactive({
   },
   message = "Creating plot")
 })
+
+
+output$Stats.Overview.DownloadTable <- downloadHandler(
+  filename = function() {
+    eval(Stats_table_name)
+  },
+  content = function(file) {
+    df <- create_stats_table()
+    if (input$Stats.Overview.TableFormat == 'csv')
+      write.csv(df, file, row.names = F)
+    else{
+      print(xtable(df), file = file)
+    }
+  }
+)
+
+output$Stats.Overview.DownloadHeatmap <- downloadHandler(
+  filename = function() {
+    eval(Stats_heatmap_name)
+  },
+  content = function(file) {
+    save_plotly(render_heatmap(), file,
+                format = input$Stats.Overview.Format)
+  },
+  contentType = paste0('image/', input$Stats.Overview.Format)
+)
+
+# output$Stats.Overview.DownloadNetwork <- downloadHandler(
+#   filename = function() {
+#     eval(Stats_network_name)
+#   },
+#   content = function(file) {
+#     save_plotly(render_graph(), file,
+#                 format = input$Stats.Overview.Format)
+#   },
+#   contentType = paste0('image/', input$Stats.Overview.Format)
+# )
 
 data_table_glicko2 <- reactive({
   input$Stats.Glicko.Create
@@ -57,10 +99,39 @@ output$Stats.Glicko.Dataframe <- DT::renderDataTable({
   data_table_glicko2()
 }, options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
 
-output$Stats.Glicko.Candlestick <- renderPlotly({
+render_glico2_plot <- reactive({
   isolate({
     data <- subset(DATA_RAW(), algId %in% input$Stats.Glicko.Algid && funcId %in% input$Stats.Glicko.Funcid && DIM %in% input$Stats.Glicko.Dim)
     nr_games <- as.numeric(input$Stats.Glicko.Nrgames)
   })
   Plot.Stats.Glicko2_Candlestick(data, nr_games, data_table_glicko2())
 })
+
+output$Stats.Glicko.Candlestick <- renderPlotly({
+  render_glico2_plot()
+})
+
+output$Stats.Glicko.DownloadTable <- downloadHandler(
+  filename = function() {
+    eval(Glicko2_table_name)
+  },
+  content = function(file) {
+    df <- data_table_glicko2()
+    if (input$Stats.Glicko.TableFormat == 'csv')
+      write.csv(df, file, row.names = F)
+    else{
+      print(xtable(df), file = file)
+    }
+  }
+)
+
+output$Stats.Glicko.Download <- downloadHandler(
+  filename = function() {
+    eval(Glicko2_figure_name)
+  },
+  content = function(file) {
+    save_plotly(render_glico2_plot(), file,
+                format = input$Stats.Glicko.Format)
+  },
+  contentType = paste0('image/', input$Stats.Glicko.Format)
+)

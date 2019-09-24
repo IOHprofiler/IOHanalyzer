@@ -43,10 +43,10 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     
     if (is.null(maximization)) {
       maximization <- info$maximization
-      if (is.null(maximization)) {
+      if (is.null(maximization) && !is.null(suite)) {
         warning("maximization or minimization not specified in .info-file, 
                  taking best guess based on the suite-name.")
-        if (grep("\\w*bbob\\w*", suite, ignore.case = T)) {
+        if (grepl("\\w*bbob\\w*", suite, ignore.case = T) != 0) {
           maximization <- F
         }
         else

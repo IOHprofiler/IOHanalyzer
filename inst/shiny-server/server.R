@@ -20,7 +20,7 @@ setTextInput <- function(session, id, name, alternative) {
 
 #TODO: this function could be made more clear
 set_format_func <- function(suite) {
-   if (grep("\\w*bbob\\w*", suite, ignore.case = T))
+   if (grepl("\\w*bbob\\w*", suite, ignore.case = T))
      format_FV <- function(v) format(v, format = 'e', digits = 3, nsmall = 2)
    else  
      format_FV <- function(v) format(v, digits = 2, nsmall = 2)

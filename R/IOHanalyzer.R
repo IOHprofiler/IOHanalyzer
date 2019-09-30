@@ -44,7 +44,8 @@ options(shiny.port = 4242)
     IOHanalyzer.legend_fontsize = 13,
     IOHanalyzer.label_fontsize = 16,
     IOHanalyzer.title_fontsize = 16,
-    IOHanalyzer.tick_fontsize = 12
+    IOHanalyzer.tick_fontsize = 12,
+    IOHanalyzer.max_colors = 0
   )
   toset <- !(names(op.IOHanalyzer) %in% names(op))
   if (any(toset)) options(op.IOHanalyzer[toset])

@@ -13,13 +13,12 @@ f2 <- list(
 )
 
 # font No. 3...
-f3 <- function() {
-  list(
+f3 <- list(
     family = 'Old Standard TT, serif',
     size = getOption("IOHanalyzer.tick_fontsize", default = 16), 
     color = 'black'
-  )
-}
+)
+
 
 legend_right <- function(){
   list(x = 1.01, y = 0.9, orientation = 'v',
@@ -92,7 +91,7 @@ IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickcolor = getOption('IOHanalyzer.tickcolor'),
                         ticks = 'outside',
                         ticklen = 9,
-                        tickfont = f3(),
+                        tickfont = f3,
                         exponentformat = 'E',
                         zeroline = F),
            yaxis = list(
@@ -105,7 +104,7 @@ IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickcolor = getOption('IOHanalyzer.tickcolor'),
                         ticks = 'outside',
                         ticklen = 9,
-                        tickfont = f3(),
+                        tickfont = f3,
                         exponentformat = 'E',
                         zeroline = F))
 }
@@ -185,18 +184,25 @@ IOHanalyzer_env$used_colorscheme <- Set3
 #' 
 #' @examples
 #' set_color_scheme("Default")
-set_color_scheme <- function(schemename, path = NULL){
-  if (schemename == "Default") IOHanalyzer_env$used_colorscheme <- Set3
-  else if (schemename == "Variant 1") IOHanalyzer_env$used_colorscheme <- Set2
-  else if (schemename == "Variant 2") IOHanalyzer_env$used_colorscheme <- Set1
+set_color_scheme <- function(schemename, path = NULL, nr_algs = 0){
+  if (schemename == "Default") {
+    options(IOHanalyzer.max_colors = 0)
+  }
   else if (schemename == "Custom" && !is.null(path)) {
     colors <- fread(path, header = F)[[1]]
     N <- length(colors)
+    options(IOHanalyzer.max_colors = N)
     custom_set <- function(n) {
       return(colors[mod(seq(n), N) + 1])
     }
     IOHanalyzer_env$used_colorscheme <- custom_set
   } 
+  else {
+    if (schemename == "Variant 1") IOHanalyzer_env$used_colorscheme <- Set1
+    else if (schemename == "Variant 2") IOHanalyzer_env$used_colorscheme <- Set2
+    else if (schemename == "Variant 3") IOHanalyzer_env$used_colorscheme <- Set3
+    options(IOHanalyzer.max_colors = nr_algs)
+  }
 }
 
 #' Get colors according to the current colorScheme of the IOHanalyzer
@@ -208,13 +214,14 @@ set_color_scheme <- function(schemename, path = NULL){
 #' @examples
 #' get_color_scheme(5)
 get_color_scheme <- function(n){
-  IOHanalyzer_env$used_colorscheme(n)
+  color_palettes(n)
 }
 
 # TODO: incoporate more colors
 color_palettes <- function(ncolor) {
   # TODO: FIX IT!
-  if (ncolor < 5) return(IOHanalyzer_env$used_colorscheme(ncolor))
+  max_colors <- getOption("IOHanalyzer.max_colors", 5)
+  if (ncolor <= max_colors) return(IOHanalyzer_env$used_colorscheme(ncolor))
 
   brewer <- function(n) {
     colors <- RColorBrewer::brewer.pal(n, 'Spectral')

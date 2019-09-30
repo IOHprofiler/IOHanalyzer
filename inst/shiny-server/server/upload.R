@@ -116,7 +116,13 @@ selected_folders <- reactive({
         folders[i] <- .exdir
       } else {
         folder <- dirname(info)
-        unzip_fct(datapath[i], list = FALSE, exdir = exdir)
+        res <- unzip_fct(datapath[i], list = FALSE, exdir = exdir)
+        if (length(res) == 0) {
+          shinyjs::alert("An error occured while unzipping the provided files.\n
+               Please ensure no archives are corrupted and the filenames are
+               in base-64.")
+          return(NULL)
+        }
         folders[i] <- file.path(exdir, folder)
       }
     }

@@ -114,6 +114,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     # TODO: add the same sanity checks for TWO_COL format
     if (format != TWO_COL) {
       maxRT <- sapply(rt_unaligned, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
+      maxRT <- pmax(maxRT, info$maxRT) #Fix for old-format files which do not store used runtime in .dat-files
       # if (any(maxRT != info$maxRT))
       #   warning('Inconsitent maxRT in *.info file and *.cdat file')
     }

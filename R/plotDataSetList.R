@@ -635,22 +635,33 @@ Plot.RT.PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
 #' @rdname Plot.RT.Histogram
 #' @export
 Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay', use.equal.bins = F){
-
+  if (length(get_funcId(dsList)) != 1 || length(get_dim(dsList)) != 1) {
+    warning("Invalid dataset uploaded. Please ensure the datasetlist contains data 
+            from only one function and only one dimension.")
+    return(NULL)
+  }
+  
   N <- length(dsList)
   colors <- color_palettes(N)
-  if (N <= 10)
-    nrows <- ceiling(N / 2.) # keep to columns for the histograms
-  else
-    nrows <- ceiling(N / 3.) # keep to columns for the histograms
-
+  if (N <= 10) {
+    n_rows <- ceiling(N / 2.) # keep to columns for the histograms
+    n_cols <- min(2, N)
+  }
+  else {
+    n_rows <- ceiling(N / 3.) # keep to columns for the histograms
+    n_cols <- 3
+  }
   if (plot_mode == 'overlay') {
     p <- IOH_plot_ly_default(x.title = "Function evaluations", y.title = "Runs")
   } else if (plot_mode == 'subplot') {
     p <- lapply(seq(N), function(x) {
-      IOH_plot_ly_default(x.title = "Function evaluations", y.title = "Runs")
+      disp_y <-  mod(x, n_cols) == 1
+      disp_x <- x > (N - n_cols)
+      IOH_plot_ly_default(x.title = if (disp_x) "Function evaluations" else "", 
+                          y.title = if (disp_y) "Runs" else "")
     })
   }
-  if (use.equal.bins){
+  if (use.equal.bins) {
     res1 <- hist(get_RT_sample(dsList, ftarget, output = 'long')$RT, breaks = nclass.FD, plot = F)
   }
   
@@ -681,26 +692,32 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
                   marker = list(color = rgba_str,
                                 line = list(color = 'rgb(8,48,107)', width = 1.5)))
     } else if (plot_mode == 'subplot') {
+      disp_y <-  mod(i, n_cols) == 1
+      disp_x <- i > (N - n_cols)
+      disp <- c(disp_x, disp_y)
+      
       p[[i]] %<>%
         add_trace(data = plot_data, x = ~x, y = ~y, width = ~width, type = 'bar',
                   name = algId, text = ~text, hoverinfo = 'text',
                   marker = list(color = rgba_str,
-                                line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
-        layout(
-          annotations = list(
-            text = c("Function Evaluations", "Runs"), font = f1, align = "center",
-            xref = "paper", yref = "paper",
-            yanchor = "top", xanchor = "center", textangle=c(0, -90),
-            x = c(0.5, -0.15), y = c(-0.22, 0.5), showarrow = FALSE
-          )
-        )
+                                line = list(color = 'rgb(8,48,107)', width = 1.5))) 
+      # %>%
+      #   layout(
+      #     annotations = list(
+      #       text = c("Function Evaluations", "Runs")[disp], font = list(f2, f2)[disp], 
+      #       align = "center",
+      #       xref = "paper", yref = "paper",
+      #       yanchor = c("top","top")[disp], xanchor = "center", textangle = c(0, -90),
+      #       x = c(0.5, -0.1*n_cols)[disp], y = c(-0.065*n_rows, 0.6)[disp], showarrow = FALSE
+      #     )
+      #   )
     }
   }
 
   if (plot_mode == 'subplot') {
-    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.04)
+    p <- subplot(p, nrows = n_rows, titleX = T, titleY = T, margin = 0.05)
   }
-  p
+  p %>% layout(margin = 5)
 }
 
 #' @rdname Plot.RT.ECDF_Per_Target
@@ -933,22 +950,35 @@ Plot.FV.PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
 #' @rdname Plot.FV.Histogram
 #' @export
 Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', use.equal.bins = F){
-  n_algorithm <- length(dsList)
-  colors <- color_palettes(n_algorithm)
-  if (n_algorithm <= 10)
-    nrows <- ceiling(n_algorithm / 2.) # keep to columns for the histograms
-  else
-    nrows <- ceiling(n_algorithm / 3.) # keep to columns for the histograms
-
+  if (length(get_funcId(dsList)) != 1 || length(get_dim(dsList)) != 1) {
+    warning("Invalid dataset uploaded. Please ensure the datasetlist contains data 
+            from only one function and only one dimension.")
+    return(NULL)
+  }
+  N <- length(dsList)
+  colors <- color_palettes(N)
+  if (N <= 10) {
+    n_rows <- ceiling(N / 2.) # keep to columns for the histograms
+    n_cols <- min(2, N)
+  }
+  else {
+    n_rows <- ceiling(N / 3.) # keep to columns for the histograms
+    n_cols <- 3
+  }
+  
   if (plot_mode == 'overlay') {
     p <- IOH_plot_ly_default(x.title = "Target values", y.title = "Runs")
 
   } else if (plot_mode == 'subplot') {
-    p <- lapply(seq(n_algorithm), function(x) {
-      IOH_plot_ly_default(x.title = "Target values", y.title = "Runs")
+    p <- lapply(seq(N), function(x) {
+      disp_y <-  mod(x, n_cols) == 1
+      disp_x <- x > (N - n_cols)
+      IOH_plot_ly_default(x.title = if (disp_x) "Target values" else "", 
+                          y.title = if (disp_y) "Runs" else "")
     })
   }
-  if (use.equal.bins){
+  
+  if (use.equal.bins) {
     res1 <- hist(get_FV_sample(dsList, runtime, output = 'long')$'f(x)', breaks = nclass.FD, plot = F)
   }
   
@@ -984,22 +1014,14 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', 
         add_trace(data = plot_data, x = ~x, y = ~y, width = ~width, type = 'bar',
                   name = algId, text = ~text, hoverinfo = 'text',
                   marker = list(color = rgba_str,
-                                line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
-        layout(
-          annotations = list(
-            text = c("Target Values", "Runs"), font = f1, align = "center",
-            xref = "paper", yref = "paper",
-            yanchor = "top", xanchor = "center", textangle=c(0, -90),
-            x = c(0.5,-0.15), y = c(-0.22, 0.5), showarrow = FALSE
-          )
-        )
+                                line = list(color = 'rgb(8,48,107)', width = 1.5)))
     }
   }
 
   if (plot_mode == 'subplot')
-    p <- subplot(p, nrows = nrows, titleX = F, titleY = F, margin = 0.04)
+    p <- subplot(p, nrows = n_rows, titleX = T, titleY = T, margin = 0.05)
 
-  p
+  p %>% layout(margin = 5)
 }
 
 #' @rdname Plot.FV.ECDF_Per_Target
@@ -1252,7 +1274,7 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
       rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
       
-      if (show.CI){
+      if (show.CI) {
       p[[j]] %<>%
         add_trace(data = dt_plot, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
                   line = list(color = rgba_str, width = 0),
@@ -1394,10 +1416,14 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
     autorange <- ifelse(scale.reverse, 'reversed', T)
     p <- lapply(
       seq(n_fcts),
-      function(x)
-        IOH_plot_ly_default(x.title = "Best f(x)", y.title = "ERT") %>%
-          layout(xaxis = list(type = xscale, tickfont = 10, ticklen = 4, autorange = autorange),
-                 yaxis = list(type = yscale, tickfont = 10, ticklen = 4))
+      function(x){
+        disp_y <-  mod(x, n_cols) == 1
+        disp_x <- x > (n_fcts - n_cols)
+        IOH_plot_ly_default(x.title = if (disp_x) "Best-so-far f(x)" else "", 
+                            y.title = if (disp_y) "ERT" else "") %>%
+            layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 3, autorange = autorange),
+                   yaxis = list(type = yscale, tickfont = f1, ticklen = 3))
+      }
     )
 
     for (i in seq(n_fcts)) {
@@ -1411,22 +1437,22 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
           line = list(width = 1.8), marker = list(size = 4), # TODO: perhaps turn off the marker here
           colors = colors, showlegend = showlegend
         ) 
-      disp_y <-  mod(i, n_cols) == 1
-      disp_x <- i > (n_fcts - n_cols)
-      disp <- c(disp_x, disp_y, T)
-      
+
       p[[i]] %<>%
         layout(
           annotations = list(
-            text = c("Best-so-far f(x)", "ERT", paste0('F', funcIds[[i]]))[disp], font = c(f1, f1, f2)[disp],
+            text = paste0('F', funcIds[[i]]),
+            font = f2,
             xref = "paper", yref = "paper", align = "center",
-            yanchor = c("top", "top", "bottom")[disp], xanchor = "center", textangle = c(0, -90, 0)[disp],
-            x = c(0.5, -0.3, 0.5)[disp], y = c(-0.25, 0.6, 1)[disp], showarrow = FALSE
+            yanchor =  "bottom",
+            xanchor = "center", textangle = 0,
+            x = 0.5,
+            y = 1, showarrow = FALSE
           )
         )
     }
 
-    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.04)
+    p <- subplot(p, nrows = n_rows, titleX = T, titleY = T, margin = 0.05)
   }
   p %>% layout(margin = 5)
 }
@@ -1487,10 +1513,14 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
   } else if (backend == 'plotly') {
     p <- lapply(
       seq(n_fcts),
-      function(x)
-        IOH_plot_ly_default(x.title = "", y.title = "Mean function value") %>%
+      function(x){
+        disp_y <-  mod(x, n_cols) == 1
+        disp_x <- x > (n_fcts - n_cols)
+        IOH_plot_ly_default(x.title = if (disp_x) "Function Evaluations" else "", 
+                          y.title = if (disp_y) "Target value" else "") %>%
         layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 3, autorange = T),
                yaxis = list(type = yscale, tickfont = f1, ticklen = 3))
+      }
     )
 
     for (i in seq(n_fcts)) {
@@ -1508,19 +1538,21 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
       disp_y <-  mod(i, n_cols) == 1
       disp_x <- i > (n_fcts - n_cols)
       disp <- c(disp_x, disp_y, T)
-      
+      # disp <- c(T,T,T)
       p[[i]] %<>%
         layout(
           annotations = list(
-            text = c("Funcion evaluations", "Mean f(x)", paste0('F', funcIds[[i]]))[disp], font = c(f1, f1, f2)[disp],
+            text = paste0('F', funcIds[[i]]), 
+            font = f2,
             xref = "paper", yref = "paper", align = "center",
-            yanchor = c("top", "top", "bottom")[disp], xanchor = "center", textangle = c(0, -90, 0)[disp],
-            x = c(0.5, -0.3, 0.5)[disp], y = c(-0.25, 0.6, 1)[disp], showarrow = FALSE
+            yanchor = "bottom", 
+            xanchor = "center", textangle = 0,
+            x = 0.5, y = 1, showarrow = FALSE
           )
         )
     }
     
-    p <- subplot(p, nrows = n_rows, titleX = F, titleY = F, margin = 0.03)
+    p <- subplot(p, nrows = n_rows, titleX = T, titleY = T, margin = 0.05)
   }
   p %>% layout(margin = 2)
 }

@@ -27,7 +27,7 @@ legend_right <- function(){
                    family = 'Old Standard TT, serif'))
 }
 
-legend_inside <- function () {
+legend_inside <- function() {
   list(x = .01, y = 1, orientation = 'v',
        bgcolor = 'rgba(255, 255, 255, 0.5)',
        bordercolor = 'rgba(255, 255, 255, 0.8)',
@@ -219,6 +219,7 @@ color_palettes <- function(ncolor) {
   brewer <- function(n) {
     colors <- RColorBrewer::brewer.pal(n, 'Spectral')
     colors[colors == "#FFFFBF"] <- "#B2B285"
+    colors[colors == "#E6F598"] <- "#86FF33"
     colors
   }
 

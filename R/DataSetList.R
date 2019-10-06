@@ -503,25 +503,27 @@ max_ERTs <- function(dsList, aggr_on = 'funcId', targets = NULL, maximize = T) U
 max_ERTs.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, maximize = T) {
   N <- length(get_algId(dsList))
 
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
-  if(!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
+  if (!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
 
-  second_aggr <- if(aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
-  if(length(second_aggr) >1 ) return(NULL)
+  second_aggr <- if (aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
+  if (length(second_aggr) > 1) return(NULL)
 
   erts <- seq(0, 0, length.out = length(get_algId(dsList)))
   names(erts) <- get_algId(dsList)
 
   for (j in seq_along(aggr_attr)) {
-    dsList_filetered <- if(aggr_on == 'funcId') subset(dsList, funcId==aggr_attr[[j]])
-    else subset(dsList, DIM==aggr_attr[[j]])
+    dsList_filetered <- if (aggr_on == 'funcId') subset(dsList, funcId == aggr_attr[[j]])
+    else subset(dsList, DIM == aggr_attr[[j]])
 
-    if(is.null(targets)){
+    if (is.null(targets)) {
       Fall <- get_funvals(dsList_filetered)
       Fval <- ifelse(maximize, max(Fall), min(Fall))
     }
-    else
+    else {
       Fval <- targets[[j]]
+    }
+      
     summary <- get_RT_summary(dsList_filetered, ftarget = Fval)
     ert <- summary$ERT
     names(ert) <- summary$algId

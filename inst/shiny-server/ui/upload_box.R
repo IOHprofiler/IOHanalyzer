@@ -21,7 +21,8 @@ upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: fin
                   label = "Maximization or minimization?",
                   choices = c(AUTOMATIC,"MAXIMIZE", "MINIMIZE"), 
                   selected = AUTOMATIC, width = '60%') ,
-      HTML('<p style="font-size:100%;"> <b>Note</b>: when using two-column format, please select the format and maximization manually.</p>'),
+      HTML('<p style="font-size:100%;"> <b>Note</b>: when using two-column format, please select 
+           the format and maximization manually.</p>'),
       
       HTML('<p align="justify" style="font-size:120%;">When the dataset is huge, 
            the alignment can take a very long time. In this case, you could toggle 

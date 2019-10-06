@@ -1,5 +1,7 @@
 # The expected runtime plot ---------------------
 # TODO: wrapp this as a separate function for DataSet class
+# TODO: add very brief explanation on each function here
+
 output$ERT_PER_FUN <- renderPlotly({
   render_ert_per_fct()
 })
@@ -17,28 +19,36 @@ output$ERTPlot.Download <- downloadHandler(
 
 update_ert_per_fct_axis <- observe({
   plotlyProxy("ERT_PER_FUN", session) %>%
-    plotlyProxyInvoke("relayout", list(xaxis = list(title = 'best-so-far-f(x)-value', type = ifelse(input$ERTPlot.semilogx, 'log', 'linear')),
-                                       yaxis = list(title = 'function evaluations', type = ifelse(input$ERTPlot.semilogy, 'log', 'linear'))))
+    plotlyProxyInvoke(
+      "restyle", 
+      list(
+        xaxis = list(title = 'best-so-far-f(x)-value', 
+                     type = ifelse(input$ERTPlot.semilogx, 'log', 'linear')),
+        yaxis = list(title = 'function evaluations', 
+                     type = ifelse(input$ERTPlot.semilogy, 'log', 'linear'))
+      )
+    )
 })
-
 
 render_ert_per_fct <- reactive({
   withProgress({
-  req(input$ERTPlot.Min, input$ERTPlot.Max, length(DATA()) > 0)
-  selected_algs <- input$ERTPlot.Algs
-  data <- subset(DATA(), algId %in% input$ERTPlot.Algs)
-  fstart <- input$ERTPlot.Min %>% as.numeric
-  fstop <- input$ERTPlot.Max %>% as.numeric
-  Plot.RT.Single_Func(data, Fstart = fstart, Fstop = fstop,
-                     show.CI = input$ERTPlot.show.CI,
-                     show.ERT = input$ERTPlot.show.ERT,
-                     show.mean = input$ERTPlot.show.mean,
-                     show.median = input$ERTPlot.show.median,
-                     scale.xlog = isolate(input$ERTPlot.semilogx),
-                     scale.ylog = isolate(input$ERTPlot.semilogy),
-                     scale.reverse = !attr(data[[1]],'maximization'))
-  },
-  message = "Creating plot"
+    req(input$ERTPlot.Min, input$ERTPlot.Max, length(DATA()) > 0)
+    
+    selected_algs <- input$ERTPlot.Algs
+    data <- subset(DATA(), algId %in% input$ERTPlot.Algs)
+    fstart <- as.numeric(input$ERTPlot.Min)
+    fstop <- as.numeric(input$ERTPlot.Max)
+  
+    Plot.RT.Single_Func(data, Fstart = fstart, Fstop = fstop,
+                        show.CI = input$ERTPlot.show.CI,
+                        show.ERT = input$ERTPlot.show.ERT,
+                        show.mean = input$ERTPlot.show.mean,
+                        show.median = input$ERTPlot.show.median,
+                        scale.xlog = isolate(input$ERTPlot.semilogx),
+                        scale.ylog = isolate(input$ERTPlot.semilogy),
+                        scale.reverse = !attr(data[[1]], 'maximization'))
+    },
+    message = "Creating plot"
   )
 })
 
@@ -53,15 +63,18 @@ render_ERTPlot_multi_plot <- reactive({
   data <- subset(DATA_RAW(),
                  algId %in% isolate(input$ERTPlot.Multi.Algs),
                  DIM == input$Overall.Dim)
+  
   req(length(data) > 0)
-  if (length(unique(get_funcId(data))) == 1){
-    shinyjs::alert("This plot is only available when the dataset contains multiple functions  for the selected dimension.")
+  if (length(unique(get_funcId(data))) == 1) {
+    shinyjs::alert("This plot is only available when the dataset contains 
+                   multiple functions  for the selected dimension.")
     return(NULL)
   }
+  
   Plot.RT.Multi_Func(data,
                    scale.xlog = input$ERTPlot.Multi.Logx,
                    scale.ylog = input$ERTPlot.Multi.Logy,
-                   scale.reverse = !attr(data[[1]],'maximization'))
+                   scale.reverse = !attr(data[[1]], 'maximization'))
   },
   message = "Creating plot")
 })
@@ -103,14 +116,19 @@ render_ERTPlot_aggr_plot <- reactive({
   data <- subset(DATA_RAW(), algId %in% input$ERTPlot.Aggr.Algs)
   if (length(data) == 0) return(NULL)
   data <- subset(data, DIM == input$Overall.Dim)
-  if (length(unique(get_funcId(data))) == 1){
-    shinyjs::alert("This plot is only available when the dataset contains multiple functions for the selected dimension.")
+  
+  if (length(unique(get_funcId(data))) == 1) {
+    shinyjs::alert("This plot is only available when the dataset contains 
+                   multiple functions for the selected dimension.")
     return(NULL)
   }
-  if (length(unique(get_algId(data))) == 1){
-    shinyjs::alert("This plot is only available when the dataset contains multiple algorithms for the selected dimension.")
+  
+  if (length(unique(get_algId(data))) == 1) {
+    shinyjs::alert("This plot is only available when the dataset contains
+                   multiple algorithms for the selected dimension.")
     return(NULL)
   }
+  
   erts <- MAX_ERTS_FUNC()
   aggr_on <- 'funcId'
   aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_DIM(data)

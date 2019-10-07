@@ -1384,10 +1384,10 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
   } else if (n_fcts <= 20) {
     n_rows <- ceiling(n_fcts / 3.)
     n_cols <- 3
-  } else if (n_fcts <= 30) {
+  } else {
     n_rows <- ceiling(n_fcts / 4.)
     n_cols <- 4
-  }
+  } 
 
   dt <- list()
   for (i in seq(n_fcts)) {
@@ -1482,7 +1482,7 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
   } else if (n_fcts <= 20) {
     n_rows <- ceiling(n_fcts / 3.)
     n_cols <- 3
-  } else if (n_fcts <= 30) {
+  } else {
     n_rows <- ceiling(n_fcts / 4.)
     n_cols <- 4
   }

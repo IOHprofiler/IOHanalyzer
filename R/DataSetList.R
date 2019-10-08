@@ -152,7 +152,7 @@ c.DataSetList <- function(...) {
     return()
 
   object <- unlist(dsl, recursive = F)
-  if(!any((class(object)) == 'DataSetList'))
+  if (!any((class(object)) == 'DataSetList'))
     class(object) <- c('DataSetList', class(object))
 
   for (attr_str in c('DIM', 'funcId', 'algId')) {
@@ -197,7 +197,7 @@ print.DataSetList <- function(x, ...) {
 }
 
 # TODO: consistent use of ds, data, dsList etc.
-#Q: Why do generict need to have matching parameter names?
+# TODO: make decision on `DIM` or `dim`? funcId or fId or fID? algID / algid / algId?
 
 #' S3 summary function for DataSetList
 #'
@@ -220,17 +220,54 @@ summary.DataSetList <- function(object, ...) {
     as.data.frame
 }
 
-# TODO: add Roxegen docs
 # TODO: add reverse ordering, e.g., -DIM
+
+#' S3 sort function for DataSetList
+#'
+#' @param dsl The DataSetList to sort
+#' @param ... attribute by which `dsl` is sorted. Multiple attributes can be specified.
+#' @export
+#' @examples 
+#' sort(dsl, DIM, funcId, algId) 
 sort <- function(dsl, ...) UseMethod("sort", dsl)
+
+#' @rdname sort
+#' @param ... attribute by which `dsl` is sorted. Multiple attributes can be specified.
+#' 
+#' @export
+#'
 sort.DataSetList <- function(dsl, ...) {
-  n <- nargs()
-  condition_call <- substitute(list(...))
-  x <- eval(condition_call, attributes(dsl))
+  cols <- substitute(list(...))[-1L]
   
-  DT <- as.data.table(c(list(1:length(dsl)), x))
-  col <- colnames(DT)[2:n]
-  setorderv(DT, col)
+  if (identical(as.character(cols), "NULL")) 
+    return(dsl)
+  
+  cols <- as.list(cols)
+  order <- as.list(rep(1L, length(cols)))
+  
+  for (i in seq_along(cols)) {
+    v <- as.list(cols[[i]])
+    if (length(v) > 1L) {
+      if (v[[1L]] == '-') order[[i]] <- -1L
+      v <- v[[-1L]]
+    }
+    
+    v <- as.character(v)
+    if (v %in% c('DIM', 'funcId', 'algId'))
+      cols[[i]] <- v
+    else {
+      cols[[i]] <- NULL
+      order[[i]] <- NULL
+    }
+  }
+  
+  cols <- unlist(cols, use.names = F)
+  order <- unlist(order)
+  x <- c(list(1:length(dsl)), lapply(cols, function(col) attr(dsl, col)))
+  names(x) <- c('index', cols) 
+  
+  DT <- rbindlist(list(x))
+  setorderv(DT, cols, order)
   dsl[DT[[1]]]
 }
 

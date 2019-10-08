@@ -196,7 +196,7 @@ print.DataSetList <- function(x, ...) {
   }
 }
 
-#TODO: consistent use of ds, data, dsList etc.
+# TODO: consistent use of ds, data, dsList etc.
 #Q: Why do generict need to have matching parameter names?
 
 #' S3 summary function for DataSetList
@@ -220,6 +220,19 @@ summary.DataSetList <- function(object, ...) {
     as.data.frame
 }
 
+# TODO: add Roxegen docs
+# TODO: add reverse ordering, e.g., -DIM
+sort <- function(dsl, ...) UseMethod("sort", dsl)
+sort.DataSetList <- function(dsl, ...) {
+  n <- nargs()
+  condition_call <- substitute(list(...))
+  x <- eval(condition_call, attributes(dsl))
+  
+  DT <- as.data.table(c(list(1:length(dsl)), x))
+  col <- colnames(DT)[2:n]
+  setorderv(DT, col)
+  dsl[DT[[1]]]
+}
 
 #' @rdname get_ERT
 #' @param algorithm Which algorithms in the DataSetList to consider.

@@ -22,16 +22,16 @@ f3 <- function() {
 }
 
 legend_right <- function(){
-  list(x = 1.01, y = 0.9, orientation = 'v',
-       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 16), 
+  list(x = 1.01, y = 1, orientation = 'v',
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
                    family = 'Old Standard TT, serif'))
 }
 
 legend_inside <- function() {
   list(x = .01, y = 1, orientation = 'v',
-       bgcolor = 'rgba(255, 255, 255, 0.5)',
-       bordercolor = 'rgba(255, 255, 255, 0.8)',
-       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 16), 
+       bgcolor = 'rgba(255, 255, 255, 0)',
+       bordercolor = 'rgba(255, 255, 255, 0)',
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
                    family = 'Old Standard TT, serif'))
 }
 
@@ -39,22 +39,29 @@ legend_inside2 <- function() {
   list(x = 0.7, y = 0.1, orientation = 'v',
        bgcolor = 'rgba(255, 255, 255, 0.5)',
        bordercolor = 'rgba(255, 255, 255, 0.8)',
-       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 16), 
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
                   family = 'Old Standard TT, serif'))
 }
 
 legend_below <- function() { 
   list(orientation = 'h',
-       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 16), 
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
+                   family = 'Old Standard TT, serif'))
+}
+
+legend_below2 <- function() { 
+  list(orientation = 'h', y = -0.15,
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
                    family = 'Old Standard TT, serif'))
 }
 
 legend_location <- function(){
-  opt <- getOption('IOHanalyzer.legend_location', default = 'outside_right')
+  opt <- getOption('IOHanalyzer.legend_location', default = 'below')
   if (opt == 'outside_right') return(legend_right())
   else if (opt == 'inside_left') return(legend_inside())
   else if (opt == 'inside_right') return(legend_inside2())
   else if (opt == 'below') return(legend_below())
+  else if (opt == 'below2') return(legend_below2())
   else warning("The selected legend option is not implemented")
 }
 
@@ -93,7 +100,7 @@ IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         ticks = 'outside',
                         ticklen = 9,
                         tickfont = f3(),
-                        exponentformat = 'E',
+                        exponentformat = 'e',
                         zeroline = F),
            yaxis = list(
                         # title = list(text = y.title, font = f3),
@@ -106,7 +113,7 @@ IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         ticks = 'outside',
                         ticklen = 9,
                         tickfont = f3(),
-                        exponentformat = 'E',
+                        exponentformat = 'e',
                         zeroline = F))
 }
 
@@ -220,6 +227,7 @@ color_palettes <- function(ncolor) {
     colors <- RColorBrewer::brewer.pal(n, 'Spectral')
     colors[colors == "#FFFFBF"] <- "#B2B285"
     colors[colors == "#E6F598"] <- "#86FF33"
+    colors[colors == '#FEE08B'] <- "#FFFF33"
     colors
   }
 
@@ -244,8 +252,6 @@ color_palettes <- function(ncolor) {
   colors
 }
 
-# TODO: we have to change the working directory back and force because
-# function 'orca' always generates figures in the current folder
 
 #' Save plotly figure in multiple format
 #'
@@ -254,7 +260,6 @@ color_palettes <- function(ncolor) {
 #'
 #' @param p plotly object. The plot to be saved
 #' @param file String. The name of the figure file
-#' @param format String. The format of the figure: 'svg', 'pdf', 'eps', 'png' are supported
 #' @param width Optional. Width of the figure
 #' @param height Optional. Height of the figure
 #' @param ... Additional arguments for orca
@@ -264,15 +269,16 @@ color_palettes <- function(ncolor) {
 #' p <- Plot.RT.Single_Func(dsl[1])
 #' save_plotly(p, 'example_file.png', format = 'png')
 #' }
-save_plotly <- function(p, file, format = 'svg', width = NULL, height = NULL, ...) {
+save_plotly <- function(p, file, width = NULL, height = NULL, ...) {
   des <- dirname(file)
   file <- basename(file)
+  format <- tools::file_ext(file)
   
   pwd <- tempdir()
   if (is.null(width)) width <- getOption("IOHanalyzer.figure_width", default = NULL)
   if (is.null(height)) height <- getOption("IOHanalyzer.figure_height", default = NULL)
   
-  if (format %in% c('svg', 'png'))
+  if (format %in% c('svg', 'png', 'jpeg', 'webp', 'pdf', 'eps'))
     withr::with_dir(pwd, orca(p, file, format = format, width = width, height = height, ...))
   else {
     file_svg <- paste0(file, '.svg')

@@ -225,8 +225,8 @@ print.DataSetList <- function(x, ...) {
   }
 }
 
-#TODO: consistent use of ds, data, dsList etc.
-#Q: Why do generict need to have matching parameter names?
+# TODO: consistent use of ds, data, dsList etc.
+# TODO: make decision on `DIM` or `dim`? funcId or fId or fID? algID / algid / algId?
 
 #' S3 summary function for DataSetList
 #'
@@ -249,6 +249,59 @@ summary.DataSetList <- function(object, ...) {
   })))
 }
 
+#' S3 sort function for DataSetList
+#'
+#' @param dsl The DataSetList to sort
+#' @param ... attribute by which `dsl` is sorted. Multiple attributes can be specified.
+#' @export
+#' @examples 
+#' sort(dsl, DIM, -funcId, algId) 
+sort <- function(dsl, ...) UseMethod('sort', dsl)
+
+#' @rdname sort
+#' @param ... attribute by which `dsl` is sorted. Multiple attributes can be specified.
+#' 
+#' @export
+#'
+sort.DataSetList <- function(dsl, ...) {
+  cols <- substitute(list(...))[-1L]
+  if (identical(as.character(cols), "NULL")) 
+    return(dsl)
+  
+  cols <- as.list(cols)
+  order <- as.list(rep(1L, length(cols)))
+  
+  for (i in seq_along(cols)) {
+    v <- as.list(cols[[i]])
+    if (length(v) > 1L) {
+      if (v[[1L]] == '-') order[[i]] <- -1L
+      v <- v[[-1L]]
+    }
+    
+    v <- as.character(v)
+    if (v %in% c('DIM', 'funcId', 'algId'))
+      cols[[i]] <- v
+    else {
+      cols[[i]] <- NULL
+      order[[i]] <- NULL
+    }
+  }
+  
+  cols <- unlist(cols, use.names = F)
+  order <- unlist(order)
+  x <- c(list(1:length(dsl)), lapply(cols, function(col) attr(dsl, col)))
+  names(x) <- c('index', cols) 
+  
+  DT <- rbindlist(list(x))
+  setorderv(DT, cols, order)
+  idx <- DT[[1]]
+  dsl <- dsl[idx]
+  
+  # TODO: perhaps we do not need those attributes at all...
+  for (v in c('DIM', 'funcId', 'algId'))
+    attr(dsl, v) <- sapply(dsl, function(d) attr(d, v))
+  dsl
+}
 
 #' @rdname get_ERT
 #' @param algorithm Which algorithms in the DataSetList to consider.
@@ -434,8 +487,7 @@ get_PAR_sample.DataSetList <-
 #' @examples
 #' get_dim(dsl)
 get_dim <- function(dsList) {
-  sort(unique(sapply(dsList, function(d)
-    attr(d, 'DIM'))))
+  unique(sapply(dsList, function(d) attr(d, 'DIM')))
 }
 
 #' Get all function ids present in a DataSetList
@@ -447,8 +499,7 @@ get_dim <- function(dsList) {
 #' @examples
 #' get_funcId(dsl)
 get_funcId <- function(dsList) {
-  sort(unique(sapply(dsList, function(d)
-    attr(d, 'funcId'))))
+  unique(sapply(dsList, function(d) attr(d, 'funcId')))
 }
 
 #' Get all algorithm ids present in a DataSetList
@@ -460,8 +511,7 @@ get_funcId <- function(dsList) {
 #' @examples
 #' get_algId(dsl)
 get_algId <- function(dsList) {
-  sort(unique(sapply(dsList, function(d)
-    attr(d, 'algId'))))
+  unique(sapply(dsList, function(d) attr(d, 'algId')))
 }
 
 #' Get all parameter ids present in a DataSetList
@@ -532,7 +582,8 @@ get_runtimes <- function(dsList) {
 #   targets
 # }
 
-#' Filter a DataSetList by some criterium
+# TODO: the attribute list should als be sliced here...
+#' Filter a DataSetList by some criteria
 #'
 #' @param x The DataSetLsit
 #' @param ... The condition to filter on. Can be any expression which assigns True or False
@@ -543,7 +594,6 @@ get_runtimes <- function(dsList) {
 #' @examples
 #' subset(dsl, funcId == 1)
 subset.DataSetList <- function(x, ...) {
-  n <- nargs() - 1
   condition_call <- substitute(list(...))
   enclos <- parent.frame()
   idx <- sapply(x,
@@ -621,7 +671,7 @@ max_ERTs.DataSetList <-
       erts <- rbind(erts, ert[get_algId(dsList)])
     }
     return(erts[-1, ])
-  }
+}
 
 #' Get the expected function-values for all DataSets in a DataSetList at certain runtimes
 #'
@@ -686,4 +736,4 @@ mean_FVs.DataSetList <-
       erts <- rbind(erts, ert[get_algId(dsList)])
     }
     return(erts[-1, ])
-  }
+}

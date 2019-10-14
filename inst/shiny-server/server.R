@@ -18,7 +18,7 @@ setTextInput <- function(session, id, name, alternative) {
     updateTextInput(session, id, value = alternative)
 }
 
-#TODO: this function could be made more clear
+# TODO: this function could be made more clear
 set_format_func <- function(format) {
    if (format == COCO || format == BIBOJ_COCO) 
      format_FV <- function(v) format(v, format = 'e', digits = 3, nsmall = 2)

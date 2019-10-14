@@ -77,7 +77,7 @@ grad_functions <- c(
 Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
                                 show.ERT = T, show.CI = F, show.mean = F,
                                 show.median = F, backend = NULL,
-                                scale.xlog = F, scale.ylog = F,
+                                scale.xlog = F, scale.ylog = F, includeOpts = F,
                                 scale.reverse = F, dash = 'solid', p = NULL) 
   UseMethod("Plot.RT.Single_Func", dsList)
 #' Plot lineplot of the expected function values of a DataSetList
@@ -408,7 +408,7 @@ Plot.Stats.Glicko2_Candlestick <- function(dsList, nr_rounds=100,
 Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                             show.ERT = T, show.CI = T, show.mean = F,
                                             show.median = F, backend = NULL,
-                                            scale.xlog = F, scale.ylog = F,
+                                            scale.xlog = F, scale.ylog = F, includeOpts = F,
                                             scale.reverse = F, dash = 'solid', p = NULL) {
   if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
 
@@ -420,8 +420,8 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
   Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 60,
                  scale = ifelse(scale.xlog, 'log', 'linear'))
   
-  if (includeOpts){
-    for (algid in get_algId(dsList)){
+  if (includeOpts) {
+    for (algid in get_algId(dsList)) {
       Fseq <- c(Fseq, max(get_funvals(subset(dsList, algId == algid))))
     }
     Fseq <- unique(sort(Fseq))

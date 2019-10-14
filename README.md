@@ -85,12 +85,12 @@ Please see our wiki page for the specification and regulation on the data format
 
 ## Our Team
 
-* [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang#tab-1), <i>Leiden Institute of Advanced Computer Science</i>.
-* Diederick Vermetten, <i>Leiden Institute of Advanced Computer Science</i>.
+* [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang), <i>Leiden Institute of Advanced Computer Science</i>.
+* [Diederick Vermetten](https://www.universiteitleiden.nl/en/staffmembers/diederick-vermetten), <i>Leiden Institute of Advanced Computer Science</i>.
 * [Carola Doerr](http://www-desir.lip6.fr/~doerr/), <i>CNRS and Sorbonne University</i>.
-* [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye#tab-1), <i>Leiden Institute of Advanced Computer Science</i>.
-* [Sander van Rijn](https://www.universiteitleiden.nl/en/staffmembers/sander-van-rijn#tab-1), <i>Leiden Institute of Advanced Computer Science</i>.
-* [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back#tab-1), <i>Leiden Institute of Advanced Computer Science</i>.
+* [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye), <i>Leiden Institute of Advanced Computer Science</i>.
+* [Sander van Rijn](https://www.universiteitleiden.nl/en/staffmembers/sander-van-rijn), <i>Leiden Institute of Advanced Computer Science</i>.
+* [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back), <i>Leiden Institute of Advanced Computer Science</i>.
 
 When using IOHprofiler and parts thereof, please kindly cite this work as
 
@@ -112,7 +112,7 @@ Carola Doerr, Hao Wang, Furong Ye, Sander van Rijn, Thomas Bäck: <i>IOHprofiler
 
 ## License
 
-This application is governed by the __BSD 3-Clause license__. 
+This application is governed by the __BSD 3-Clause license__.
 
 BSD 3-Clause License
 

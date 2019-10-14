@@ -8,12 +8,12 @@
 Plot.RT.Single_Func(dsList, Fstart = NULL, Fstop = NULL,
   show.ERT = T, show.CI = F, show.mean = F, show.median = F,
   backend = NULL, scale.xlog = F, scale.ylog = F,
-  scale.reverse = F, includeOpts = F)
+  scale.reverse = F, dash = "solid", p = NULL)
 
 \method{Plot.RT.Single_Func}{DataSetList}(dsList, Fstart = NULL,
   Fstop = NULL, show.ERT = T, show.CI = T, show.mean = F,
   show.median = F, backend = NULL, scale.xlog = F, scale.ylog = F,
-  scale.reverse = F, includeOpts = F)
+  scale.reverse = F, dash = "solid", p = NULL)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

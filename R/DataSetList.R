@@ -256,14 +256,13 @@ summary.DataSetList <- function(object, ...) {
 #' @export
 #' @examples 
 #' sort(dsl, DIM, -funcId, algId) 
-sort <- function(dsl, ...) UseMethod('sort', dsl)
+arrange <- function(dsl, ...) UseMethod('arrange', dsl)
 
-#' @rdname sort
+#' @rdname arrange
 #' @param ... attribute by which `dsl` is sorted. Multiple attributes can be specified.
-#' 
 #' @export
 #'
-sort.DataSetList <- function(dsl, ...) {
+arrange.DataSetList <- function(dsl, ...) {
   cols <- substitute(list(...))[-1L]
   if (identical(as.character(cols), "NULL")) 
     return(dsl)
@@ -305,7 +304,6 @@ sort.DataSetList <- function(dsl, ...) {
 
 #' @rdname get_ERT
 #' @param algorithm Which algorithms in the DataSetList to consider.
-#'
 #' @export
 #'
 get_ERT.DataSetList <-

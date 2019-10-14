@@ -2,7 +2,7 @@
 % Please edit documentation in R/DataSetList.R
 \name{subset.DataSetList}
 \alias{subset.DataSetList}
-\title{Filter a DataSetList by some criterium}
+\title{Filter a DataSetList by some criteria}
 \usage{
 \method{subset}{DataSetList}(x, ...)
 }
@@ -16,7 +16,7 @@ to a DataSet object, such as DIM == 625 or funcId == 2}
 The filtered DataSetList
 }
 \description{
-Filter a DataSetList by some criterium
+Filter a DataSetList by some criteria
 }
 \examples{
 subset(dsl, funcId == 1)

@@ -21,7 +21,7 @@ f3 <- function() {
   )
 }
 
-legend_right <- function(){
+legend_right <- function() {
   list(x = 1.01, y = 1, orientation = 'v',
        font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
                    family = 'Old Standard TT, serif'))

@@ -74,10 +74,10 @@ grad_functions <- c(
 #' @examples 
 #' Plot.RT.Single_Func(subset(dsl, funcId == 1))
 Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
-                               show.ERT = T, show.CI = F, show.mean = F,
-                               show.median = F, backend = NULL,
-                               scale.xlog = F, scale.ylog = F,
-                               scale.reverse = F, dash = 'solid', p = NULL) 
+                                show.ERT = T, show.CI = F, show.mean = F,
+                                show.median = F, backend = NULL,
+                                scale.xlog = F, scale.ylog = F,
+                                scale.reverse = F, dash = 'solid', p = NULL) 
   UseMethod("Plot.RT.Single_Func", dsList)
 #' Plot lineplot of the expected function values of a DataSetList
 #'

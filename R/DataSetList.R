@@ -126,8 +126,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
     }
   }
 
-  # TODO: sort all DataSet by multiple attributes: algId, funcId and DIM
-  if (format != NEVERGRAD){
+  if (format != NEVERGRAD) {
     attr(object, 'DIM') <- DIM
     attr(object, 'funcId') <- funcId
     attr(object, 'algId') <- algId
@@ -220,16 +219,14 @@ summary.DataSetList <- function(object, ...) {
     as.data.frame
 }
 
-# TODO: add reverse ordering, e.g., -DIM
-
 #' S3 sort function for DataSetList
 #'
 #' @param dsl The DataSetList to sort
 #' @param ... attribute by which `dsl` is sorted. Multiple attributes can be specified.
 #' @export
 #' @examples 
-#' sort(dsl, DIM, funcId, algId) 
-sort <- function(dsl, ...) UseMethod("sort", dsl)
+#' sort(dsl, DIM, -funcId, algId) 
+sort <- function(dsl, ...) UseMethod('sort', dsl)
 
 #' @rdname sort
 #' @param ... attribute by which `dsl` is sorted. Multiple attributes can be specified.
@@ -238,7 +235,6 @@ sort <- function(dsl, ...) UseMethod("sort", dsl)
 #'
 sort.DataSetList <- function(dsl, ...) {
   cols <- substitute(list(...))[-1L]
-  
   if (identical(as.character(cols), "NULL")) 
     return(dsl)
   
@@ -268,7 +264,13 @@ sort.DataSetList <- function(dsl, ...) {
   
   DT <- rbindlist(list(x))
   setorderv(DT, cols, order)
-  dsl[DT[[1]]]
+  idx <- DT[[1]]
+  dsl <- dsl[idx]
+  
+  # TODO: perhaps we do not need those attributes at all...
+  for (v in c('DIM', 'funcId', 'algId'))
+    attr(dsl, v) <- sapply(dsl, function(d) attr(d, v))
+  dsl
 }
 
 #' @rdname get_ERT
@@ -425,7 +427,7 @@ get_PAR_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
 #' @examples 
 #' get_dim(dsl)
 get_dim <- function(dsList) {
-  sapply(dsList, function(d) attr(d, 'DIM')) %>% unique %>% sort
+  sapply(dsList, function(d) attr(d, 'DIM')) %>% unique
 }
 
 #' Get all function ids present in a DataSetList
@@ -437,7 +439,7 @@ get_dim <- function(dsList) {
 #' @examples 
 #' get_funcId(dsl)
 get_funcId <- function(dsList) {
-  sapply(dsList, function(d) attr(d, 'funcId')) %>% unique %>% sort
+  sapply(dsList, function(d) attr(d, 'funcId')) %>% unique
 }
 
 #' Get all algorithm ids present in a DataSetList
@@ -449,7 +451,7 @@ get_funcId <- function(dsList) {
 #' @examples 
 #' get_algId(dsl)
 get_algId <- function(dsList) {
-  sapply(dsList, function(d) attr(d, 'algId')) %>% unique %>% sort
+  sapply(dsList, function(d) attr(d, 'algId')) %>% unique 
 }
 
 #' Get all parameter ids present in a DataSetList
@@ -513,7 +515,8 @@ get_runtimes <- function(dsList) {
 #   targets
 # }
 
-#' Filter a DataSetList by some criterium
+# TODO: the attribute list should als be sliced here...
+#' Filter a DataSetList by some criteria
 #'
 #' @param x The DataSetLsit
 #' @param ... The condition to filter on. Can be any expression which assigns True or False
@@ -524,7 +527,6 @@ get_runtimes <- function(dsList) {
 #' @examples 
 #' subset(dsl, funcId == 1)
 subset.DataSetList <- function(x, ...) {
-  n <- nargs() - 1
   condition_call <- substitute(list(...))
   enclos <- parent.frame()
   idx <- sapply(x,
@@ -599,24 +601,23 @@ mean_FVs <- function(dsList, aggr_on = 'funcId', runtimes = NULL) UseMethod("mea
 mean_FVs.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NULL) {
   N <- length(get_algId(dsList))
 
-  aggr_attr <- if(aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
-  if(!is.null(runtimes) && length(runtimes) != length(aggr_attr)) targets <- NULL
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
+  if (!is.null(runtimes) && length(runtimes) != length(aggr_attr)) targets <- NULL
 
-  second_aggr <- if(aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
-  if(length(second_aggr) >1 ) return(NULL)
+  second_aggr <- if (aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
+  if (length(second_aggr) > 1) return(NULL)
 
   erts <- seq(0, 0, length.out = length(get_algId(dsList)))
   names(erts) <- get_algId(dsList)
 
   for (j in seq_along(aggr_attr)) {
-    dsList_filetered <- if(aggr_on == 'funcId') subset(dsList, funcId==aggr_attr[[j]])
-    else subset(dsList, DIM==aggr_attr[[j]])
+    dsList_filetered <- if (aggr_on == 'funcId') subset(dsList, funcId == aggr_attr[[j]])
+    else subset(dsList, DIM == aggr_attr[[j]])
 
-    if(is.null(runtimes)){
+    if (is.null(runtimes)) {
       RTall <- get_runtimes(dsList_filetered)
       RTval <- max(RTall)
-    }
-    else
+    } else
       RTval <- runtimes[[j]]
     summary <- get_FV_summary(dsList_filetered, runtime = RTval)
     ert <- summary$mean

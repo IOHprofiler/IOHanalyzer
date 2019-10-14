@@ -1,6 +1,7 @@
 #' Estimator 'SP' for the Expected Running Time (ERT)
 #'
-#' @param data A dataframe or matrix
+#' @param data A dataframe or matrix. Each row stores the runtime sample points from 
+#' several runs
 #' @param max_runtime A Numerical vector. Should have the same size as columns of data
 #'
 #' @return A list containing ERTs, number of succesfull runs and the succes rate
@@ -9,12 +10,14 @@
 #' SP(dsl[[1]]$RT, max(dsl[[1]]$RT))
 SP <- function(data, max_runtime) {
   N <- ncol(data)
+  M <- nrow(data)
+  
   succ <- apply(data, 1, function(x) sum(!is.na(x)))
   succ_rate <- succ / N
-
   idx <- is.na(data)
-  for (i in seq(N)) {
-    data[idx[, i], i] <- max_runtime[i]
+  
+  for (i in seq(M)) {
+    data[i, idx[i, ]] <- max_runtime[idx[i, ]]
   }
 
   list(ERT = rowSums(data) / succ, runs = succ, succ_rate = succ_rate)
@@ -57,6 +60,7 @@ bootstrap_RT <- function(x, max_eval, bootstrap.size) {
          })
 }
 
+# TODO: remove the bootstrapping part as it does not make much sense here...
 #' Performs a pairwise Kolmogorov-Smirnov test on the bootstrapped running times 
 #' among a data set
 #' 
@@ -81,20 +85,20 @@ pairwise.test <- function(x, ...) UseMethod('pairwise.test', x)
 #' @export
 #' @rdname pairwise.test
 pairwise.test.list <- function(x, max_eval, bootstrap.size = 30, ...) {
-  if("DataSetList" %in% class(x)){
+  if ("DataSetList" %in% class(x)) {
     class(x) <- rev(class(x))
     pairwise.test.DataSetList(x)
   }
+  
   N <- length(x)
   p.value <- matrix(NA, N, N)
   
   for (i in seq(1, N - 1)) {
     for (j in seq(i + 1, N)) {
-      if (bootstrap.size == 0){
+      if (bootstrap.size == 0) {
         x1 <- x[[i]]
         x2 <- x[[j]]
-      }
-      else {
+      } else {
         x1 <- bootstrap_RT(x[[i]], max_eval[[i]], bootstrap.size)
         x2 <- bootstrap_RT(x[[j]], max_eval[[j]], bootstrap.size)
       }
@@ -124,6 +128,8 @@ pairwise.test.DataSetList <- function(x, ftarget, bootstrap.size = 30, ...) {
   p.value
 }
 
+# TODO: move those two functions to a separate file
+# TODO: review / re-write this function 
 #' Function for generating sequences of function values
 #'
 #' @param FV A list of function values
@@ -198,6 +204,7 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
   # })
 }
 
+# TODO: review / re-write this function 
 #' Function for generating sequences of runtime values
 #'
 #' @param RT A list of runtime values
@@ -296,6 +303,7 @@ ECDF.DataSet <- function(ds, ftarget, ...) {
   fun
 }
 
+# TODO: review / re-write this function 
 #' @rdname ECDF
 #' @export
 ECDF.DataSetList <- function(ds, ftarget, ...) {
@@ -306,17 +314,17 @@ ECDF.DataSetList <- function(ds, ftarget, ...) {
 
   if (is.data.table(ftarget)) {
     runtime <- sapply(seq(nrow(ftarget)), function(i) {
-      if(length(dims) > 1 && length(funcs) >1){
+      if (length(dims) > 1 && length(funcs) > 1) {
         names_temp <- ftarget[i][[1]] %>% 
           strsplit(., ';')
         FuncId <- names_temp[[1]][[1]]
         Dim <- names_temp[[1]][[2]]
       }
-      else if(length(dims) > 1){
+      else if (length(dims) > 1) {
         FuncId <- funcs[[1]]
         Dim <- ftarget[i][[1]]
       }
-      else if(length(funcs) > 1){
+      else if (length(funcs) > 1) {
         FuncId <- ftarget[i][[1]]
         Dim <- dims[[1]]
       }
@@ -396,6 +404,7 @@ AUC.ECDF <- function(fun, from = NULL, to = NULL) {
     integrate(fun, lower = from, upper = to, subdivisions = 1e3L)$value / (to - from)
 }
 
+# TODO: review / re-write this function 
 #TODO: inconsistent use of format_func gives slightly different results between
 #generated and uploaded targets
 #' Generate ECDF targets for a DataSetList

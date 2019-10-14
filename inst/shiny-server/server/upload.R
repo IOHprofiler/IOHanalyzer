@@ -388,7 +388,7 @@ observe({
 DATA <- reactive({
   dim <- input$Overall.Dim
   id <- input$Overall.Funcid
-
+  
   if (length(DataList$data) == 0) return(NULL)
 
   d <- subset(DataList$data, DIM == dim, funcId == id)
@@ -494,7 +494,6 @@ observe({
   setTextInput(session, 'PAR.Sample.Max', name, alternative = format_FV(stop))
   setTextInput(session, 'PAR.Sample.Step', name, alternative = format_FV(step))
   setTextInput(session, 'Stats.Overview.Target', name, alternative = format_FV(stop))
-  
 })
 
 # update the values for the grid of running times

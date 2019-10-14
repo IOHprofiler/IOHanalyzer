@@ -234,7 +234,8 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                heatmap_box()
+                heatmap_box(),
+                glicko2_box()
               )
             )),
     tabItem(tabName = 'Settings',

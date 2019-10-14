@@ -17,6 +17,7 @@
 #' @importFrom withr with_dir
 #' @importFrom igraph graph_from_adjacency_matrix layout.circle plot.igraph 
 #' @importFrom scales rescale
+#' @importFrom PlayerRatings glicko2
 #' @useDynLib IOHanalyzer
 NULL
 # Ugly hack, but appears to be required to appease CRAN
@@ -37,13 +38,13 @@ options(shiny.port = 4242)
     IOHanalyzer.bgcolor = 'rgb(230,230,230)',
     IOHanalyzer.gridcolor = 'rgb(255,255,255)',
     IOHanalyzer.tickcolor = 'rgb(51,51,51)',
-    IOHanalyzer.figure_width = NULL,
-    IOHanalyzer.figure_height = NULL,
-    IOHanalyzer.legend_location = 'outside_right',
+    IOHanalyzer.figure_width = 1000,
+    IOHanalyzer.figure_height = 1000,
+    IOHanalyzer.legend_location = 'legend_below',
     IOHanalyzer.legend_fontsize = 13,
     IOHanalyzer.label_fontsize = 16,
     IOHanalyzer.title_fontsize = 16,
-    IOHanalyzer.tick_fontsize = 16
+    IOHanalyzer.tick_fontsize = 12
   )
   toset <- !(names(op.IOHanalyzer) %in% names(op))
   if (any(toset)) options(op.IOHanalyzer[toset])

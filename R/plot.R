@@ -44,13 +44,7 @@ legend_inside2 <- function() {
 }
 
 legend_below <- function() { 
-  list(orientation = 'h',
-       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
-                   family = 'Old Standard TT, serif'))
-}
-
-legend_below2 <- function() { 
-  list(orientation = 'h', y = -0.15,
+  list(y = -0.15, orientation = 'h',
        font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
                    family = 'Old Standard TT, serif'))
 }

@@ -30,6 +30,7 @@ par_expected_value_box <- function(width = 12, collapsible = T, collapsed = T) {
                     label = 'Scale y axis \\(\\log_{10}\\)',
                     value = T),
 
+      hr(),
       selectInput('PAR.Plot.Format', label = 'Select the figure format',
                   choices = supported_fig_format, selected = 'pdf'),
       downloadButton('PAR.Plot.Download', label = 'Download the figure')
@@ -67,6 +68,7 @@ par_summary_box <- function(width = 12, collapsible = T, collapsed = T) {
                                                        used to generate the table on the right.</p>'), value = FALSE),
       selectInput('PAR.Summary.Algid', 'Algorithms', choices = NULL, selected = NULL),
       selectInput('PAR.Summary.Param', 'Parameters', choices = NULL, selected = NULL),
+      hr(),
       selectInput('PAR.Summary.Format', 'Format', choices = c('csv','tex'), selected = 'csv'),
       downloadButton("PAR.Summary.Download", "Save this table as csv")
       ),
@@ -98,7 +100,8 @@ par_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
                                                                              used to generate the table on the right.</p>'), value = FALSE),
       selectInput('PAR.Sample.Algid', 'Algorithms', choices = NULL, selected = NULL),
       selectInput('PAR.Sample.Param', 'Parameters', choices = NULL, selected = NULL),
-      selectInput('PAR.Sample.Format', 'Format of the csv',
+      hr(),
+      selectInput('PAR.Sample.Format', 'Format of the table',
                   choices = c('long', 'wide'), selected = 'wide'),
       selectInput('PAR.Sample.FileFormat', 'File-Format', choices = c('csv','tex'), selected = 'csv'),
       downloadButton("PAR.Sample.Download", "Save this table")

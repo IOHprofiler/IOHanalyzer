@@ -22,7 +22,7 @@ sub-lists, or a DataSetList object}
 \item{max_eval}{list that contains the maximal running time for each algorithm 
 as sub-lists}
 
-\item{bootstrap.size}{integer, the size of the bootstrapped sample}
+\item{bootstrap.size}{integer, the size of the bootstrapped sample. Set to 0 to disable bootstrapping}
 
 \item{ftarget}{float, the target value used to determine the running / hitting 
 time}

@@ -18,8 +18,7 @@ output$FCEPlot.Download <- downloadHandler(
 
 update_fv_per_fct_axis <- observe({
   plotlyProxy("FCE_PER_FUN", session) %>%
-    plotlyProxyInvoke("relayout", list(xaxis = list(title = 'runtime', type = ifelse(input$FCEPlot.semilogx, 'log', 'linear')),
-                                       yaxis = list(title = 'best-so-far-f(x)-value', type = ifelse(input$FCEPlot.semilogy, 'log', 'linear'))))
+    plotlyProxyInvoke("relayout", list(yaxis = list(title = 'best-so-far-f(x)-value', type = ifelse(input$FCEPlot.semilogy, 'log', 'linear'))))
 })
 
 
@@ -30,7 +29,7 @@ render_FV_PER_FUN <- reactive({
   data <- subset(DATA(), algId %in% input$FCEPlot.Algs)
   Plot.FV.Single_Func(data, RTstart = rt_min, RTstop = rt_max, show.CI = input$FCEPlot.show.CI,
                show.mean = input$FCEPlot.show.mean, show.median = input$FCEPlot.show.median,
-               scale.xlog = isolate(input$FCEPlot.semilogx), scale.ylog = isolate(input$FCEPlot.semilogy))
+               scale.xlog = input$FCEPlot.semilogx, scale.ylog = isolate(input$FCEPlot.semilogy))
   },
   message = "Creating plot")
 })
@@ -178,3 +177,40 @@ observeEvent(input$FCEPlot.Aggr.Targets_cell_edit, {
   suppressWarnings(FCEPlot.Aggr.Targets_obj[i, paste0(aggr_attr[[j]])] <<- DT::coerceValue(v, FCEPlot.Aggr.Targets_obj[i, paste0(aggr_attr[[j]])]))
   replaceData(proxy, FCEPlot.Aggr.Targets_obj, resetPaging = FALSE, rownames = FALSE)
 })
+
+fce_multi_function <- function(){
+  dsList <- FCEPlot.Aggr.data()
+  if (is.null(dsList)) return(NULL)
+  aggr_on <- 'funcId'
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
+  
+  runtimes <- FCEPlot.Aggr.Targets_obj
+  erts <- mean_FVs(dsList, aggr_on = aggr_on, runtimes = runtimes)
+  rownames(erts) <- aggr_attr
+  formatC(erts, digits = 4)
+}
+
+output$FCEPlot.Aggr.FCETable <- DT::renderDataTable({
+  input$FCEPlot.Aggr.Refresh
+  req(length(DATA_RAW()) > 0)
+  
+  withProgress({
+    fce_multi_function()
+  },
+  message = "Creating table")
+}, editable = FALSE, rownames = TRUE,
+options = list(pageLength = 5, lengthMenu = c(5, 10, 25, -1), scrollX = T, server = T))
+
+output$FCEPlot.Aggr.DownloadTable <- downloadHandler(
+  filename = function() {
+    eval(FCE_multi_func_name)
+  },
+  content = function(file) {
+    df <- fce_multi_function()
+    if (input$FCEPlot.Aggr.TableFormat == 'csv')
+      write.csv(df, file, row.names = F)
+    else{
+      print(xtable(df), file = file)
+    }
+  }
+)

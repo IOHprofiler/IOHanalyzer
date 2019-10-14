@@ -66,6 +66,7 @@ fv_ecdf_agg_budgets_box <- function(width = 12, collapsible = T, collapsed = T) 
       checkboxInput('FCEECDF.Mult.Logx',
                     label = 'Scale x axis \\(\\log_{10}\\)',
                     value = F),
+      hr(),
       selectInput('FCEECDF.Mult.Format', label = 'Select the figure format',
                   choices = supported_fig_format, selected = 'pdf'),
 
@@ -111,6 +112,7 @@ fv_ecdf_auc_box <- function(width = 12, collapsible = T, collapsed = T) {
       textInput('FCEECDF.AUC.Max', label = RT_MAX_LABEL, value = ''),
       textInput('FCEECDF.AUC.Step', label = RT_STEP_LABEL, value = ''),
 
+      hr(),
       selectInput('FCEECDF.AUC.Format', label = 'select the figure format',
                   choices = supported_fig_format, selected = 'pdf'),
 

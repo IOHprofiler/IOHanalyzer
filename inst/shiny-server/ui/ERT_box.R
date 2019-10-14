@@ -5,7 +5,6 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
       sidebarLayout(
         sidebarPanel(
           width = 3,
-          HTML('<p style="font-size:120%;">Range of the displayed target values</p>'),
 
           selectInput('ERTPlot.Algs', label = 'Select which algorithms to plot:',
                       multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
@@ -15,7 +14,9 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
                             placement = "auto"
                           )
                       ),
-
+          
+          HTML('<p style="font-size:120%;">Range of the displayed target values</p>'),
+          
           textInput('ERTPlot.Min',
                     label = F_MIN_LABEL,
                     value = ''),
@@ -46,7 +47,12 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
           checkboxInput('ERTPlot.semilogy',
                         label = 'Scale y axis \\(\\log_{10}\\)',
                         value = T),
-
+          
+          checkboxInput('ERTPlot.inclueOpts',
+                        label = "Include optimal points found by each algorithm",
+                        value = F),
+          hr(),
+          
           selectInput('ERTPlot.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = 'pdf'),
 

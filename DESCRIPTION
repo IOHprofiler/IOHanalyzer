@@ -41,7 +41,8 @@ Imports:
   DT,
   igraph,
   scales,
-  kableExtra
+  kableExtra,
+  PlayerRatings
 LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 6.1.1

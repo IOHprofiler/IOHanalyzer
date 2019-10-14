@@ -20,7 +20,7 @@ the corresponding datafiles to create the DataSetList}
 \item{format}{A character. The format of data source, options are:
 \itemize{
 \item'IOHProfiler'
-\item'COCO' 
+\item'COCO'
 \item'TWO_COL'
 \item'COCO_BIOBJ'
 \item'NEVERGRAD'

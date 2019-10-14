@@ -15,5 +15,5 @@
 S3 print function for DataSetList
 }
 \examples{
-print(dsl) 
+print(dsl)
 }

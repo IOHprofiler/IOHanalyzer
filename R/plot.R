@@ -54,8 +54,8 @@ legend_location <- function(){
   else if (opt == 'inside_left') return(legend_inside())
   else if (opt == 'inside_right') return(legend_inside2())
   else if (opt == 'below') return(legend_below())
-  else if (opt == 'below2') return(legend_below2())
-  else warning("The selected legend option is not implemented")
+  # else if (opt == 'below2') return(legend_below2())
+  else warning(paste0("The selected legend option (", opt, ") is not implemented"))
 }
 
 # TODO: create font object as above for title, axis...

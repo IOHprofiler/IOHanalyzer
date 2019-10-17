@@ -70,6 +70,8 @@ grad_functions <- c(
 #' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
 #' @param backend Which plotting library to use. Can be 'plotly' or 'ggplot2'
 #' @param includeOpts Whether or not to include all best points reached by each algorithm
+#' @param dash Style of ERT-lines 
+#' @param p Existing plot to which to add the current data
 #' @return A plot of ERT-values of the DataSetList
 #' @export
 #' @examples 
@@ -78,7 +80,8 @@ Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
                                 show.ERT = T, show.CI = F, show.mean = F,
                                 show.median = F, backend = NULL,
                                 scale.xlog = F, scale.ylog = F,
-                                scale.reverse = F, dash = 'solid', p = NULL) 
+                                scale.reverse = F, dash = 'solid', p = NULL,
+                                includeOpts = F) 
   UseMethod("Plot.RT.Single_Func", dsList)
 #' Plot lineplot of the expected function values of a DataSetList
 #'
@@ -316,7 +319,7 @@ Plot.RT.Multi_Func <- function(dsList, scale.xlog = F,
 #' @param erts Pre-calculated ERT-values for the provided targets. Created by the max_ERTs function
 #' of DataSetList. Can be provided to prevent needless computation in recalculating ERTs when recreating
 #' this plot.
-#'
+#' @param inf.action How to handle infinite ERTs ('overlap' or 'jitter')
 #' @return A plot of ERT-based comparison on the provided functions or dimensions of the DataSetList
 #' @export
 #' @examples 
@@ -409,7 +412,8 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                             show.ERT = T, show.CI = T, show.mean = F,
                                             show.median = F, backend = NULL,
                                             scale.xlog = F, scale.ylog = F,
-                                            scale.reverse = F, dash = 'solid', p = NULL) {
+                                            scale.reverse = F, dash = 'solid', p = NULL,
+                                            includeOpts = F) {
   if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
 
   Fall <- get_funvals(dsList)
@@ -420,8 +424,8 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
   Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 60,
                  scale = ifelse(scale.xlog, 'log', 'linear'))
   
-  if (includeOpts){
-    for (algid in get_algId(dsList)){
+  if (includeOpts) {
+    for (algid in get_algId(dsList)) {
       Fseq <- c(Fseq, max(get_funvals(subset(dsList, algId == algid))))
     }
     Fseq <- unique(sort(Fseq))
@@ -1690,19 +1694,13 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
                   marker = list(color = rgb_str), hoverinfo = 'text',
                   text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
                   name = algId, legendgroup = algId)
-      
-      p %<>%
-        add_trace(type = 'scatterpolar', mode = 'markers', r = data_inf_ ,
-                  theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
-                  marker = list(color = rgb_str, symbol = 'diamond', size = '10'), 
-                  text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
-                  hoverinfo = 'text', showlegend = F, legendgroup = algId)
+      #TODO: Fix dealing with infinite ERT when radarplot is selected
       # p %<>%
-      #   add_trace(type='scatterpolar', mode='markers', r = data_inf_,
+      #   add_trace(type = 'scatterpolar', mode = 'markers', r = data_inf_ ,
       #             theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
-      #             marker = list(color = rgb_str, symbol = 'x', size = '10'), hoverinfo = 'text',
+      #             marker = list(color = rgb_str, symbol = 'diamond', size = '10'), 
       #             text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
-      #             showlegend = F, legendgroup = algId)
+      #             hoverinfo = 'text', showlegend = F, legendgroup = algId)
     } else {
       p %<>% add_trace(x = aggr_attr, y = data, type = 'scatter',
                        mode = 'lines+markers',

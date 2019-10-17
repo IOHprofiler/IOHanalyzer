@@ -281,6 +281,10 @@ summary.DataSetList <- function(object, ...) {
 
 #' S3 sort function for DataSetList
 #'
+#' Sorts a DataSetList based on the custom specified attributes ("algId', 'DIM' or 'funcId'). 
+#' Default is as ascending, can be made descending by adding a - in front of the attribute.
+#' Sorting accross multiple attributes is supported, in the order they are specified.
+#' 
 #' @param dsl The DataSetList to sort
 #' @param ... attribute by which `dsl` is sorted. Multiple attributes can be specified.
 #' @export
@@ -289,10 +293,7 @@ summary.DataSetList <- function(object, ...) {
 sort <- function(dsl, ...) UseMethod('sort', dsl)
 
 #' @rdname sort
-#' @param ... attribute by which `dsl` is sorted. Multiple attributes can be specified.
-#' 
 #' @export
-#'
 sort.DataSetList <- function(dsl, ...) {
   cols <- substitute(list(...))[-1L]
   if (identical(as.character(cols), "NULL")) 
@@ -323,7 +324,7 @@ sort.DataSetList <- function(dsl, ...) {
   names(x) <- c('index', cols) 
   
   DT <- rbindlist(list(x))
-  setorderv(DT, cols, order)
+  data.table::setorderv(DT, cols, order)
   idx <- DT[[1]]
   dsl <- dsl[idx]
   
@@ -517,7 +518,7 @@ get_PAR_sample.DataSetList <-
 #' @examples
 #' get_dim(dsl)
 get_dim <- function(dsList) {
-  unique(sapply(dsList, function(d) attr(d, 'DIM')))
+  sort(unique(sapply(dsList, function(d) attr(d, 'DIM'))))
 }
 
 #' Get all function ids present in a DataSetList
@@ -529,7 +530,7 @@ get_dim <- function(dsList) {
 #' @examples
 #' get_funcId(dsl)
 get_funcId <- function(dsList) {
-  unique(sapply(dsList, function(d) attr(d, 'funcId')))
+  sort(unique(sapply(dsList, function(d) attr(d, 'funcId'))))
 }
 
 #' Get all algorithm ids present in a DataSetList

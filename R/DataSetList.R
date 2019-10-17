@@ -206,7 +206,7 @@ c.DataSetList <- function(...) {
         unlist(lapply(dsl, function(x)
           attr(x, attr_str))))
     if (length(temp) > 1) {
-      warning(paste0("Attempted to add datasets with different ", attr_str, 
+      stop(paste0("Attempted to add datasets with different ", attr_str, 
                   "-attributes! This will lead to errors when processing
                   this data!"))
     }

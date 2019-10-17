@@ -197,6 +197,7 @@ observeEvent(selected_folders(), {
   if (is.null(DataList$data)) {
     shinyjs::alert("An error occurred when processing the uploaded data. 
                    Please ensure the data is not corrupted.")
+    return(NULL)
   }
   else if (attr(DataList$data, 'suite') == NEVERGRAD) {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_ECDF"))

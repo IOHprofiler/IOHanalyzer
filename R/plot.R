@@ -93,7 +93,7 @@ IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         ticks = 'outside',
                         ticklen = 9,
                         tickfont = f3,
-                        exponentformat = 'E',
+                        exponentformat = 'e',
                         zeroline = F),
            yaxis = list(
                         # title = list(text = y.title, font = f3),
@@ -106,7 +106,7 @@ IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         ticks = 'outside',
                         ticklen = 9,
                         tickfont = f3,
-                        exponentformat = 'E',
+                        exponentformat = 'e',
                         zeroline = F))
 }
 
@@ -180,6 +180,7 @@ IOHanalyzer_env$used_colorscheme <- Set3
 #' And it is also possible to select "Custom", which allows uploading of a custom set of colors
 #' @param path The path to the file containing the colors to use. Only used if 
 #' schemename is "Custom"
+#' @param nr_algs The amount of colors to set the scheme for
 #' 
 #' @export
 #' 

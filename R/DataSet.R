@@ -56,84 +56,78 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     
     datBaseName <- strsplit(basename(info$datafile), '\\.')[[1]][1]
     
+    #Order preference for alingment: cdat > tdat > dat
     datFile <- file.path(path, paste0(datBaseName, '.dat'))
     tdatFile <- file.path(path, paste0(datBaseName, '.tdat'))
     cdatFile <- file.path(path, paste0(datBaseName, '.cdat'))
     
-
     if (file.exists(cdatFile)) {
-      fv_file <- cdatFile
+      fvFile <- cdatFile
     }
     else if (file.exists(tdatFile)) {
-      fv_file <- tdatFile
+      fvFile <- tdatFile
     }
     else if (file.exists(datFile)) {
-      fv_file <- datFile
+      fvFile <- datFile
     }
     else {
-      return(NULL)
+      stop("No datafiles found, please verify the integrity of the chosen files")
     }
     
     if (file.exists(datFile)) {
-      rt_file <- datFile
+      rtFile <- datFile
     }
     else if (file.exists(cdatFile)) {
-      rt_file <- cdatFile
+      rtFile <- cdatFile
     }
     else if (file.exists(tdatFile)) {
-      rt_file <- tdatFile
+      rtFile <- tdatFile
     }
     
     
-    read_unaligned <- switch(format,
+    read_raw <- switch(format,
                              IOHprofiler = read_dat,
                              COCO = read_COCO_dat2,
                              BIOBJ_COCO = read_BIOBJ_COCO_dat,
                              TWO_COL = read_dat)
 
-    fv_unaligned <- read_unaligned(fv_file, subsampling)
-    rt_unaligned <- read_unaligned(rt_file, subsampling)
+    fvUnaligned <- read_raw(fvFile, subsampling)
+    rtUnaligned <- read_raw(rtFile, subsampling)
 
     if (is.null(maximization)) {
       warning("Did not find maximization / minimization, auto-detecting based on
                function value progression")
-      maximization <- (fv_unaligned[[1]][[1,2]] > 
-                       fv_unaligned[[1]][[1, length(fv_unaligned[[1]][1, ])]])
+      maximization <- (fvUnaligned[[1]][[1,2]] > 
+                       fvUnaligned[[1]][[1, length(fvUnaligned[[1]][1, ])]])
 
     }
     
-    RT <- align_runtime(rt_unaligned, format = format, maximization = maximization)
-    FV <- align_function_value(fv_unaligned, format = format)  # function value
+    RT <- align_runtime(rtUnaligned, format = format, maximization = maximization)
+    FV <- align_function_value(fvUnaligned, format = format)  # function value
 
 
     # TODO: remove this and incorporate the parameters aligned by runtimes
     FV[names(FV) != 'FV'] <- NULL
 
     # TODO: add more data sanity checks
+    maxRT <- set_names(sapply(rtUnaligned, function(d) d[nrow(d), idxEvals]), NULL)
+    maxRT <- pmax(maxRT, info$maxRT) #Fix for old-format files which do not store used runtime in .dat-files
+    if (any(maxRT != info$maxRT))
+      warning('Inconsitent maxRT in *.info file and *.cdat file')
 
-    # TODO: add the same sanity checks for TWO_COL format
-    if (format != TWO_COL) {
-      maxRT <- sapply(rt_unaligned, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
-      maxRT <- pmax(maxRT, info$maxRT) #Fix for old-format files which do not store used runtime in .dat-files
-      # if (any(maxRT != info$maxRT))
-      #   warning('Inconsitent maxRT in *.info file and *.cdat file')
-    }
-    else{
-      maxRT <- info$maxRT
-    }
 
     #TODO: Clean up these if-statements: Function to set idxTarget and n_data_column?
     if (format == TWO_COL)
-      finalFV <- sapply(fv_unaligned, function(d) d[nrow(d), idxTarget - 1]) %>% set_names(NULL)
+      finalFV <- set_names(sapply(fvUnaligned, function(d) d[nrow(d), idxTarget - 1]), NULL)
     else
-      finalFV <- sapply(fv_unaligned, function(d) d[nrow(d), idxTarget]) %>% set_names(NULL)
+      finalFV <- set_names(sapply(fvUnaligned, function(d) d[nrow(d), idxTarget]), NULL)
 
-    # if (any(finalFV != info$finalFV))
-    #   warning('Inconsitent finalFvalue in *.info file and *.dat file')
+    if (any(finalFV != info$finalFV))
+      warning('Inconsitent finalFvalue in *.info file and *.dat file')
 
-    if (length(info$instance) != length(rt_unaligned)) {
+    if (length(info$instance) != length(rtUnaligned)) {
       warning('The number of instances found in the info is inconsistent with the data!')
-      info$instance <- seq(length(rt_unaligned))
+      info$instance <- seq(length(rtUnaligned))
     }
 
     # TODO: maybe the RT summary should not be always pre-computed

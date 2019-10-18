@@ -222,7 +222,7 @@ get_color_scheme <- function(n){
 # TODO: incoporate more colors
 color_palettes <- function(ncolor) {
   # TODO: FIX IT!
-  max_colors <- getOption("IOHanalyzer.max_colors", 5)
+  max_colors <- getOption("IOHanalyzer.max_colors", 2)
   if (ncolor <= max_colors) return(IOHanalyzer_env$used_colorscheme(ncolor))
 
   brewer <- function(n) {

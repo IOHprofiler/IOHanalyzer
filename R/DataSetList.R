@@ -248,7 +248,7 @@ c.DataSetList <- function(...) {
 #' print(dsl)
 print.DataSetList <- function(x, ...) {
   cat('DataSetList:\n')
-  cat(paste0('Suite: ', attr(x, 'suite')))
+  cat(paste0('Suite: ', attr(x, 'suite'), '\n'))
   for (i in seq_along(x)) {
     cat(sprintf('%d: %s\n', i, as.character(x[[i]])))
   }

@@ -442,8 +442,8 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 
   if (backend == 'plotly') {
     if (is.null(p))
-      p <- IOH_plot_ly_default(x.title = "best-so-far f(x)-value",
-                               y.title = "function evaluations")
+      p <- IOH_plot_ly_default(x.title = "Best-so-far f(x)-value",
+                               y.title = "Function evaluations")
 
     # TODO: improve this part, get rid of the loop
     for (i in seq_along(dsList)) {
@@ -1325,7 +1325,7 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
   }
 
   subplot(p, nrows = nrows, titleX = F, titleY = T, margin = 0.05) %>%
-    add_annotations(x = 0.5 , y = -0.18, text = "best-so-far f(x)-value",
+    add_annotations(x = 0.5 , y = -0.18, text = "Best-so-far f(x)-value",
                     showarrow = F, xref = 'paper', yref = 'paper',
                     font = list(size = 22, family = 'sans-serif'))
 }

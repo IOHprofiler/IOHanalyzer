@@ -113,3 +113,17 @@ repository_box <- function(width = 12, collapsible = F, collapsed = T,
   )
 }
 
+welcome_bar <- function(width = 12, collapsible = T, collapsed = F) {
+  box(
+    title = HTML('<p style="font-size:140%;">Welcome to IOHanalyzer!</p>'),
+    width = width, collapsed = collapsed, collapsible = collapsible,
+    solidHeader = T, status = "primary",  
+    mainPanel(width = 12, 
+              HTML_P(welcome_message)
+              )
+    
+  )
+  
+  
+}
+

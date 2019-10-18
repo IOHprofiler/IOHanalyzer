@@ -23,3 +23,9 @@ custom_icon <- function(name = NULL){
   if (is.null(name)) name <- "info-circle"
   htmltools::tags$a(shiny::icon(name = name), href = "javascript:void(0);")
 }
+
+welcome_message <- "To get started with IOHanalyzer, please upload your dataset using the prompt
+                    on the left, or choose one of the pre-loaded datasets on the right. <br>
+                      For more information on the features of IOHanalyzer and how to use them,
+                    as well as a full specification of the accepted data formats, please visit 
+                    <a href='https://iohprofiler.github.io/'> our wiki. </a>"

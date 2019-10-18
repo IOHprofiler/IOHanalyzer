@@ -108,6 +108,9 @@ body <- dashboardBody(
     # data uploading functionalities -----------------
     tabItem(tabName = 'upload',
             fluidRow(
+              welcome_bar()
+            ),
+            fluidRow(
               column(width = 6,
                      upload_box(collapsible = F)
               ),

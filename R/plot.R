@@ -264,6 +264,7 @@ color_palettes <- function(ncolor) {
 #' @param file String. The name of the figure file
 #' @param width Optional. Width of the figure
 #' @param height Optional. Height of the figure
+#' @param format Deprecated. Optional extra specifier for format
 #' @param ... Additional arguments for orca
 #' @export
 #' @examples
@@ -271,10 +272,11 @@ color_palettes <- function(ncolor) {
 #' p <- Plot.RT.Single_Func(dsl[1])
 #' save_plotly(p, 'example_file.png', format = 'png')
 #' }
-save_plotly <- function(p, file, width = NULL, height = NULL, ...) {
+save_plotly <- function(p, file, width = NULL, height = NULL, format = NULL, ...) {
   des <- dirname(file)
   file <- basename(file)
-  format <- tools::file_ext(file)
+  if (is.null(format))
+    format <- tools::file_ext(file)
   
   pwd <- tempdir()
   if (is.null(width)) width <- getOption("IOHanalyzer.figure_width", default = NULL)

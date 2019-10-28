@@ -32,8 +32,9 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     
     #Unknown suite, set best guess based on format
     if (is.null(suite)) {
-      warning("Suite-name not provided in .info-file, taking best guess based on
-              the format of data-files.")
+      if (verbose)
+        warning("Suite-name not provided in .info-file, taking best guess based on
+                the format of data-files.")
       suite <- switch(format,
                       IOHprofiler = "PBO",
                       COCO = "BBOB",
@@ -44,8 +45,9 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     if (is.null(maximization)) {
       maximization <- info$maximization
       if (is.null(maximization) && !is.null(suite)) {
-        warning("maximization or minimization not specified in .info-file, 
-                 taking best guess based on the suite-name.")
+        if (verbose)
+          warning("maximization or minimization not specified in .info-file, 
+                  taking best guess based on the suite-name.")
         if (grepl("\\w*bbob\\w*", suite, ignore.case = T) != 0) {
           maximization <- F
         }
@@ -95,8 +97,9 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     rtUnaligned <- read_raw(rtFile, subsampling)
 
     if (is.null(maximization)) {
-      warning("Did not find maximization / minimization, auto-detecting based on
-               function value progression")
+      if (verbose)
+        warning("Did not find maximization / minimization, auto-detecting based on
+                function value progression")
       maximization <- (fvUnaligned[[1]][[1,2]] > 
                        fvUnaligned[[1]][[1, length(fvUnaligned[[1]][1, ])]])
 
@@ -112,7 +115,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     # TODO: add more data sanity checks
     maxRT <- set_names(sapply(rtUnaligned, function(d) d[nrow(d), idxEvals]), NULL)
     maxRT <- pmax(maxRT, info$maxRT) #Fix for old-format files which do not store used runtime in .dat-files
-    if (any(maxRT != info$maxRT))
+    if (any(maxRT != info$maxRT) && verbose)
       warning('Inconsitent maxRT in *.info file and *.cdat file')
 
 
@@ -122,11 +125,12 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     else
       finalFV <- set_names(sapply(fvUnaligned, function(d) d[nrow(d), idxTarget]), NULL)
 
-    if (any(finalFV != info$finalFV))
+    if (any(finalFV != info$finalFV) && verbose)
       warning('Inconsitent finalFvalue in *.info file and *.dat file')
 
     if (length(info$instance) != length(rtUnaligned)) {
-      warning('The number of instances found in the info is inconsistent with the data!')
+      if (verbose)
+        warning('The number of instances found in the info is inconsistent with the data!')
       info$instance <- seq(length(rtUnaligned))
     }
 
@@ -146,7 +150,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
 
     do.call(function(...) structure(c(RT, FV, AUX), class = c('DataSet', 'list'), ...),
             c(info, list(maxRT = maxRT, finalFV = finalFV, format = format,
-                         maximization = maximization, suite = info$suite)))
+                         maximization = maximization, suite = suite)))
 
   } else {
     structure(list(), class = c('DataSet', 'list'))

@@ -12,7 +12,19 @@ heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
                   value = 0.01),
         numericInput('Stats.Overview.Samples', 
                      label = 'size of the bootstrap sample', 
-                     min = 1, max = 1000, step = 1, value = 30)
+                     min = 1, max = 1000, step = 1, value = 30),
+        hr(),
+        selectInput('Stats.Overview.TableFormat', label = 'Select the table format',
+                    choices = c('csv','tex'), selected = 'csv'),
+        downloadButton('Stats.Overview.DownloadTable', label = 'Download the table'),
+        hr(),
+        selectInput('Stats.Overview.Format', label = 'Select the figure format',
+                    choices = supported_fig_format, selected = 'pdf'),
+        downloadButton('Stats.Overview.DownloadHeatmap', 
+                       label = 'Download the heatmap')
+        # downloadButton('Stats.Overview.DownloadNetwork', 
+        #                label = 'Download the network-graph', status = F)
+        
       ),
       
       mainPanel(
@@ -37,7 +49,7 @@ heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
                   <ul>
                     <li><font color="red">Red: A row is better than the column</font></li>
                     <li><font color="blue">Blue: A row is worse than the column</font></li>
-                    <li><font color="grey">Gray: no significant decision between the row and column</font></li>
+                    <li><font color="grey">Gray: no significant distinction between the row and column</font></li>
                   </ul>
                   On the right subplot, the partial order resulted from the test is visualized as a network, 
                   where an arrow from algorithm \\(A\\) to \\(B\\) indicates \\(A\\) is siginicantly better than 
@@ -75,7 +87,16 @@ glicko2_box <- function(width = 12, collapsible = T, collapsed = T) {
         textInput('Stats.Glicko.Nrgames', 
                   label = "Number of games per (function,dimension) pair", 
                   value = 25),
-        actionButton('Stats.Glicko.Create', 'Create Ranking')
+        actionButton('Stats.Glicko.Create', 'Create Ranking'),
+        hr(),
+        selectInput('Stats.Glicko.Format', label = 'Select the figure format',
+                    choices = supported_fig_format, selected = 'pdf'),
+        
+        downloadButton('Stats.Glicko.Download', label = 'Download the figure'),
+        hr(),
+        selectInput('Stats.Glicko.TableFormat', label = 'Select the table format',
+                    choices = c('csv','tex'), selected = 'csv'),
+        downloadButton('Stats.Glicko.DownloadTable', label = 'Download the table')
       ),
       
       mainPanel(

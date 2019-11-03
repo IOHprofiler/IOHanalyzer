@@ -26,94 +26,112 @@
 DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler,
                     subsampling = FALSE) {
   if (!is.null(info)) {
-    datFile <- info$datafile
     path <- dirname(info$datafile)
-    filename <- basename(info$datafile)
-
-    # Data source:
-    # alignment by target values:
-    #   IOHprofiler: *.dat
-    #   COCO: *.dat
-    # alignment by runtimes:
-    #   IHprofiler: *.cdat
-    #   COCO: *.tdat
-    if (format == IOHprofiler) {
-      datFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
-      tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
-      cdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.cdat'))
-
-      # priority for the runtime alignment: *.cdat > *.tdat > *.dat
-      #TODO: discuss when to use tdat. Disabled for now since it can be very sparce and thus miss data. 
-      # cdatFile <- ifelse(file.exists(cdatFile), cdatFile, tdatFile) 
-      cdatFile <- ifelse(file.exists(cdatFile), cdatFile, datFile)
-    } else if (format %in% c(COCO, BIBOJ_COCO)) {
-      datFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
-      tdatFile <- file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.tdat'))
-    } else if (format == TWO_COL) {
-      datFile <-  file.path(path, paste0(strsplit(filename, '\\.')[[1]][1], '.dat'))
+    
+    suite <- info$suite
+    
+    #Unknown suite, set best guess based on format
+    if (is.null(suite)) {
+      if (verbose)
+        warning("Suite-name not provided in .info-file, taking best guess based on
+                the format of data-files.")
+      suite <- switch(format,
+                      IOHprofiler = "PBO",
+                      COCO = "BBOB",
+                      BIOBJ_COCO = "biobj-bbob",
+                      TWO_COL = NULL)
     }
-
-    # TODO: whether to keep the raw data set list?
-    if (format == IOHprofiler) {
-      dat <- read_dat(datFile, subsampling)         # read the dat file
-      cdat <- read_dat(cdatFile, subsampling)       # read the cdat file
-    } else if (format == COCO) {
-      #Should we use read_COCO_dat or read_COCO_dat2?
-      dat <- read_COCO_dat2(datFile, subsampling)    # read the dat file
-      cdat <- read_COCO_dat2(tdatFile, subsampling)   # read the tdat file
-    } else if (format == BIBOJ_COCO) {
-      dat <- read_BIOBJ_COCO_dat(datFile, subsampling)    # read the dat file
-      cdat <- read_BIOBJ_COCO_dat(tdatFile, subsampling)   # read the tdat file
-    } else if (format == TWO_COL) {
-      dat <- read_dat(datFile, subsampling)
+    
+    if (is.null(maximization)) {
+      maximization <- info$maximization
+      if (is.null(maximization) && !is.null(suite)) {
+        if (verbose)
+          warning("maximization or minimization not specified in .info-file, 
+                  taking best guess based on the suite-name.")
+        if (grepl("\\w*bbob\\w*", suite, ignore.case = T) != 0) {
+          maximization <- F
+        }
+        else
+          maximization <- T
+      }
     }
-
-    # check if the number of instances does not match
-    if (format != TWO_COL)
-      stopifnot(length(dat) == length(cdat))
-
-    if (is.null(maximization)){
-      if (format == IOHprofiler || format == TWO_COL)
-        maximization <- TRUE
-      else if (format == COCO)
-        maximization <- FALSE
+    
+    datBaseName <- strsplit(basename(info$datafile), '\\.')[[1]][1]
+    
+    #Order preference for alingment: cdat > tdat > dat
+    datFile <- file.path(path, paste0(datBaseName, '.dat'))
+    tdatFile <- file.path(path, paste0(datBaseName, '.tdat'))
+    cdatFile <- file.path(path, paste0(datBaseName, '.cdat'))
+    
+    if (file.exists(cdatFile)) {
+      fvFile <- cdatFile
     }
-    # RT <- align_by_target(dat, maximization = maximization, format = format) # runtime
-    RT <- align_runtime(dat, format = format, maximization = maximization)
+    else if (file.exists(tdatFile)) {
+      fvFile <- tdatFile
+    }
+    else if (file.exists(datFile)) {
+      fvFile <- datFile
+    }
+    else {
+      stop("No datafiles found, please verify the integrity of the chosen files")
+    }
+    
+    if (file.exists(datFile)) {
+      rtFile <- datFile
+    }
+    else if (file.exists(cdatFile)) {
+      rtFile <- cdatFile
+    }
+    else if (file.exists(tdatFile)) {
+      rtFile <- tdatFile
+    }
+    
+    
+    read_raw <- switch(format,
+                             IOHprofiler = read_dat,
+                             COCO = read_COCO_dat2,
+                             BIOBJ_COCO = read_BIOBJ_COCO_dat,
+                             TWO_COL = read_dat)
 
-    #TODO: check if this works correctly without CDAT-file
-    if (format == TWO_COL)
-      FV <- align_function_value(dat, format = format)  # function value
-    else
-      FV <- align_function_value(cdat, format = format)  # function value
+    fvUnaligned <- read_raw(fvFile, subsampling)
+    rtUnaligned <- read_raw(rtFile, subsampling)
+
+    if (is.null(maximization)) {
+      if (verbose)
+        warning("Did not find maximization / minimization, auto-detecting based on
+                function value progression")
+      maximization <- (fvUnaligned[[1]][[1,2]] > 
+                       fvUnaligned[[1]][[1, length(fvUnaligned[[1]][1, ])]])
+
+    }
+    
+    RT <- align_runtime(rtUnaligned, format = format, maximization = maximization)
+    FV <- align_function_value(fvUnaligned, format = format)  # function value
+
 
     # TODO: remove this and incorporate the parameters aligned by runtimes
     FV[names(FV) != 'FV'] <- NULL
 
     # TODO: add more data sanity checks
+    maxRT <- set_names(sapply(rtUnaligned, function(d) d[nrow(d), idxEvals]), NULL)
+    maxRT <- pmax(maxRT, info$maxRT) #Fix for old-format files which do not store used runtime in .dat-files
+    if (any(maxRT != info$maxRT) && verbose)
+      warning('Inconsitent maxRT in *.info file and *.cdat file')
 
-    # TODO: add the same sanity checks for TWO_COL format
-    if (format != TWO_COL) {
-      maxRT <- sapply(cdat, function(d) d[nrow(d), idxEvals]) %>% set_names(NULL)
-      # if (any(maxRT != info$maxRT))
-      #   warning('Inconsitent maxRT in *.info file and *.cdat file')
-    }
-    else{
-      maxRT <- info$maxRT
-    }
 
     #TODO: Clean up these if-statements: Function to set idxTarget and n_data_column?
     if (format == TWO_COL)
-      finalFV <- sapply(dat, function(d) d[nrow(d), idxTarget - 1]) %>% set_names(NULL)
+      finalFV <- set_names(sapply(fvUnaligned, function(d) d[nrow(d), idxTarget - 1]), NULL)
     else
-      finalFV <- sapply(dat, function(d) d[nrow(d), idxTarget]) %>% set_names(NULL)
+      finalFV <- set_names(sapply(fvUnaligned, function(d) d[nrow(d), idxTarget]), NULL)
 
-    # if (any(finalFV != info$finalFV))
-    #   warning('Inconsitent finalFvalue in *.info file and *.dat file')
+    if (any(finalFV != info$finalFV) && verbose)
+      warning('Inconsitent finalFvalue in *.info file and *.dat file')
 
-    if (length(info$instance) != length(dat)) {
-      warning('The number of instances found in the info is inconsistent with the data!')
-      info$instance <- seq(length(dat))
+    if (length(info$instance) != length(rtUnaligned)) {
+      if (verbose)
+        warning('The number of instances found in the info is inconsistent with the data!')
+      info$instance <- seq(length(rtUnaligned))
     }
 
     # TODO: maybe the RT summary should not be always pre-computed
@@ -132,7 +150,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
 
     do.call(function(...) structure(c(RT, FV, AUX), class = c('DataSet', 'list'), ...),
             c(info, list(maxRT = maxRT, finalFV = finalFV, format = format,
-                         maximization = maximization)))
+                         maximization = maximization, suite = suite)))
 
   } else {
     structure(list(), class = c('DataSet', 'list'))

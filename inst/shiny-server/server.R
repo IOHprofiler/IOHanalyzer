@@ -1,5 +1,5 @@
-format <- NULL         # the unique format of the data set
-sub_sampling <- TRUE   # perform sub-sampling of the data set?
+# active_suite <- NULL         # the unique format of the data set
+# sub_sampling <- TRUE   # perform sub-sampling of the data set?
 repo_dir <- ''         # repository directory
 repo_data <- NULL      # repository data
 has_rendered_ERT_per_fct <- FALSE
@@ -18,9 +18,9 @@ setTextInput <- function(session, id, name, alternative) {
     updateTextInput(session, id, value = alternative)
 }
 
-# TODO: this function could be made more clear
-set_format_func <- function(format) {
-   if (format == COCO || format == BIBOJ_COCO) 
+#TODO: this function could be made more clear
+set_format_func <- function(suite) {
+   if (grepl("\\w*bbob\\w*", suite, ignore.case = T))
      format_FV <- function(v) format(v, format = 'e', digits = 3, nsmall = 2)
    else  
      format_FV <- function(v) format(v, digits = 2, nsmall = 2)

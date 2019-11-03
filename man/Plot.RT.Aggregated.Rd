@@ -32,6 +32,8 @@ Plot.RT.Aggregated(dsList, aggr_on = "funcId", targets = NULL,
 \item{erts}{Pre-calculated ERT-values for the provided targets. Created by the max_ERTs function
 of DataSetList. Can be provided to prevent needless computation in recalculating ERTs when recreating
 this plot.}
+
+\item{inf.action}{How to handle infinite ERTs ('overlap' or 'jitter')}
 }
 \value{
 A plot of ERT-based comparison on the provided functions or dimensions of the DataSetList

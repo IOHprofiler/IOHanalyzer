@@ -216,23 +216,40 @@ read_IndexFile_BIOBJ_COCO <- function(fname) {
 #' check_format(path)
 check_format <- function(path) {
   if (sub('[^\\.]*\\.', '', basename(path), perl = T) == "csv")
-    return (NEVERGRAD)
+    return(NEVERGRAD)
   
   index_files <- scan_IndexFile(path)
   info <- lapply(index_files, read_IndexFile) %>% unlist(recursive = F)
   datafile <- sapply(info, function(item) item$datafile)
-
+  
+  
   format <- lapply(datafile, function(file) {
-    first_line <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
+    tryCatch({
+      first_line <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
+    }, error = function(e) {
+      stop("Error detecting data files specified in .info, please verify the 
+             integrity of the provided files.")
+    })
+    
     if (startsWith(first_line, '% function') || startsWith(first_line, '% f evaluations'))
       COCO
-    else if (startsWith(first_line, '\"function'))
-      IOHprofiler
+    else if (startsWith(first_line, '\"function')) {
+      n_col = ncol(fread(file, header = FALSE, sep = ' ', colClasses = 'character', fill = T, nrows = 1))
+      if (n_col == 2)
+        TWO_COL
+      else
+        IOHprofiler
+    }
     else if (first_line == '%')  # Bi-objective COCO format...
       BIBOJ_COCO
+    else {
+      stop("Error detecting file format of file ", file, "; Please verify
+           the integrity of this file.")
+    }
   }) %>%
     unlist %>%
     unique
+  
   
   csv_files <- file.path(path, list.files(path, pattern = '.csv', recursive = T))
   if (length(csv_files) > 0)
@@ -245,10 +262,11 @@ check_format <- function(path) {
         'contains multiple data formats. This is not allowed for data processing.
         Please check the returned dataframe for more information.'
       )
-      )
+    )
   } else
     format
 }
+
 
 #' Read IOHProfiler *.dat files
 #'

@@ -40,11 +40,12 @@ options(shiny.port = 4242)
     IOHanalyzer.tickcolor = 'rgb(51,51,51)',
     IOHanalyzer.figure_width = 1000,
     IOHanalyzer.figure_height = 1000,
-    IOHanalyzer.legend_location = 'legend_below',
+    IOHanalyzer.legend_location = 'below',
     IOHanalyzer.legend_fontsize = 13,
     IOHanalyzer.label_fontsize = 16,
     IOHanalyzer.title_fontsize = 16,
-    IOHanalyzer.tick_fontsize = 12
+    IOHanalyzer.tick_fontsize = 12,
+    IOHanalyzer.max_colors = 2 #Set to 2 since colorbrewer only works with >= 3 colors
   )
   toset <- !(names(op.IOHanalyzer) %in% names(op))
   if (any(toset)) options(op.IOHanalyzer[toset])

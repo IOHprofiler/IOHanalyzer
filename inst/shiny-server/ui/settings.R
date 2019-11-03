@@ -6,7 +6,7 @@ color_settings_box <- function(width = 12, collapsible = T, collapsed = F) {
         sidebarPanel(
           width = 3,
           selectInput(inputId = "Settings.Color.Scheme", label = "Color schemes", 
-                      choices = c("Default", "Variant 1", "Variant 2", "Custom")),
+                      choices = c("Default", "Variant 1", "Variant 2", "Variant 3", "Custom")),
           conditionalPanel(condition = 'input["Settings.Color.Scheme"] == "Custom"',
                            downloadButton("Settings.Color.Example","Download an example color settings file"),
                            fileInput("Settings.Color.Upload","Upload a color settings file")

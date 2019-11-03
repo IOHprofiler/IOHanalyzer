@@ -13,13 +13,12 @@ f2 <- list(
 )
 
 # font No. 3...
-f3 <- function() {
-  list(
+f3 <- list(
     family = 'Old Standard TT, serif',
     size = getOption("IOHanalyzer.tick_fontsize", default = 16), 
     color = 'black'
-  )
-}
+)
+
 
 legend_right <- function() {
   list(x = 1.01, y = 1, orientation = 'v',
@@ -55,8 +54,8 @@ legend_location <- function(){
   else if (opt == 'inside_left') return(legend_inside())
   else if (opt == 'inside_right') return(legend_inside2())
   else if (opt == 'below') return(legend_below())
-  else if (opt == 'below2') return(legend_below2())
-  else warning("The selected legend option is not implemented")
+  # else if (opt == 'below2') return(legend_below2())
+  else warning(paste0("The selected legend option (", opt, ") is not implemented"))
 }
 
 # TODO: create font object as above for title, axis...
@@ -93,7 +92,7 @@ IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickcolor = getOption('IOHanalyzer.tickcolor'),
                         ticks = 'outside',
                         ticklen = 9,
-                        tickfont = f3(),
+                        tickfont = f3,
                         exponentformat = 'e',
                         zeroline = F),
            yaxis = list(
@@ -106,7 +105,7 @@ IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickcolor = getOption('IOHanalyzer.tickcolor'),
                         ticks = 'outside',
                         ticklen = 9,
-                        tickfont = f3(),
+                        tickfont = f3,
                         exponentformat = 'e',
                         zeroline = F))
 }
@@ -181,23 +180,31 @@ IOHanalyzer_env$used_colorscheme <- Set3
 #' And it is also possible to select "Custom", which allows uploading of a custom set of colors
 #' @param path The path to the file containing the colors to use. Only used if 
 #' schemename is "Custom"
+#' @param nr_algs The amount of colors to set the scheme for
 #' 
 #' @export
 #' 
 #' @examples
 #' set_color_scheme("Default")
-set_color_scheme <- function(schemename, path = NULL){
-  if (schemename == "Default") IOHanalyzer_env$used_colorscheme <- Set3
-  else if (schemename == "Variant 1") IOHanalyzer_env$used_colorscheme <- Set2
-  else if (schemename == "Variant 2") IOHanalyzer_env$used_colorscheme <- Set1
+set_color_scheme <- function(schemename, path = NULL, nr_algs = 0){
+  if (schemename == "Default") {
+    options(IOHanalyzer.max_colors = 0)
+  }
   else if (schemename == "Custom" && !is.null(path)) {
     colors <- fread(path, header = F)[[1]]
     N <- length(colors)
+    options(IOHanalyzer.max_colors = N)
     custom_set <- function(n) {
       return(colors[mod(seq(n), N) + 1])
     }
     IOHanalyzer_env$used_colorscheme <- custom_set
   } 
+  else {
+    if (schemename == "Variant 1") IOHanalyzer_env$used_colorscheme <- Set1
+    else if (schemename == "Variant 2") IOHanalyzer_env$used_colorscheme <- Set2
+    else if (schemename == "Variant 3") IOHanalyzer_env$used_colorscheme <- Set3
+    options(IOHanalyzer.max_colors = nr_algs)
+  }
 }
 
 #' Get colors according to the current colorScheme of the IOHanalyzer
@@ -209,13 +216,14 @@ set_color_scheme <- function(schemename, path = NULL){
 #' @examples
 #' get_color_scheme(5)
 get_color_scheme <- function(n){
-  IOHanalyzer_env$used_colorscheme(n)
+  color_palettes(n)
 }
 
 # TODO: incoporate more colors
 color_palettes <- function(ncolor) {
   # TODO: FIX IT!
-  if (ncolor < 5) return(IOHanalyzer_env$used_colorscheme(ncolor))
+  max_colors <- getOption("IOHanalyzer.max_colors", 2)
+  if (ncolor <= max_colors) return(IOHanalyzer_env$used_colorscheme(ncolor))
 
   brewer <- function(n) {
     colors <- RColorBrewer::brewer.pal(n, 'Spectral')
@@ -256,6 +264,7 @@ color_palettes <- function(ncolor) {
 #' @param file String. The name of the figure file
 #' @param width Optional. Width of the figure
 #' @param height Optional. Height of the figure
+#' @param format Deprecated. Optional extra specifier for format
 #' @param ... Additional arguments for orca
 #' @export
 #' @examples
@@ -263,10 +272,11 @@ color_palettes <- function(ncolor) {
 #' p <- Plot.RT.Single_Func(dsl[1])
 #' save_plotly(p, 'example_file.png', format = 'png')
 #' }
-save_plotly <- function(p, file, width = NULL, height = NULL, ...) {
+save_plotly <- function(p, file, width = NULL, height = NULL, format = NULL, ...) {
   des <- dirname(file)
   file <- basename(file)
-  format <- tools::file_ext(file)
+  if (is.null(format))
+    format <- tools::file_ext(file)
   
   pwd <- tempdir()
   if (is.null(width)) width <- getOption("IOHanalyzer.figure_width", default = NULL)

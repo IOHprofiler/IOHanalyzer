@@ -7,13 +7,14 @@
 \usage{
 Plot.RT.Single_Func(dsList, Fstart = NULL, Fstop = NULL,
   show.ERT = T, show.CI = F, show.mean = F, show.median = F,
-  backend = NULL, scale.xlog = F, scale.ylog = F, includeOpts = F,
-  scale.reverse = F, dash = "solid", p = NULL)
+  backend = NULL, scale.xlog = F, scale.ylog = F,
+  scale.reverse = F, dash = "solid", p = NULL, includeOpts = F)
+
 
 \method{Plot.RT.Single_Func}{DataSetList}(dsList, Fstart = NULL,
   Fstop = NULL, show.ERT = T, show.CI = T, show.mean = F,
   show.median = F, backend = NULL, scale.xlog = F, scale.ylog = F,
-  includeOpts = F, scale.reverse = F, dash = "solid", p = NULL)
+  scale.reverse = F, dash = "solid", p = NULL, includeOpts = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -35,6 +36,12 @@ Plot.RT.Single_Func(dsList, Fstart = NULL, Fstop = NULL,
 \item{scale.xlog}{Whether or not to scale the x-axis logaritmically}
 
 \item{scale.ylog}{Whether or not to scale the y-axis logaritmically}
+
+\item{scale.reverse}{Wheter or not to reverse the x-axis (when using minimization)}
+
+\item{dash}{Style of ERT-lines}
+
+\item{p}{Existing plot to which to add the current data}
 
 \item{includeOpts}{Whether or not to include all best points reached by each algorithm}
 

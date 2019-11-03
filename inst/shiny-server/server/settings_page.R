@@ -1,6 +1,6 @@
 observe({
-  if (input$Settings.Color.Scheme != "Custom"){
-    set_color_scheme(input$Settings.Color.Scheme, NULL)
+  if (input$Settings.Color.Scheme != "Custom") {
+    set_color_scheme(input$Settings.Color.Scheme, NULL, length(get_algId(DATA())))
   }
 })
 
@@ -12,7 +12,7 @@ output$Settings.Color.Example <- downloadHandler(
   content = function(file) {
     n <- length(DATA())
     if (n == 0) n <- 5
-    writeLines(get_color_scheme(n=n), file)
+    writeLines(get_color_scheme(n = n), file)
   }
 )
 
@@ -29,19 +29,19 @@ plot_color_example <- function(ds){
                      input$Settings.Font.Legend,
                      input$Settings.Font.Label,
                      input$Settings.Font.Tick)
-  if (any(is.null(curr_settings))) return (NULL)
-  if (length(ds) > 0){
+  if (any(is.null(curr_settings))) return(NULL)
+  if (length(ds) > 0) {
     algnames <- get_algId(ds)
   }
   else algnames <- c("Alg 1", "Alg 2", "Alg 3", "Alg 4", "Alg 5")
-  colors <- get_color_scheme(n=length(algnames))
+  colors <- get_color_scheme(n = length(algnames))
   schemename <- input$Settings.Color.Scheme
-  if(schemename == "Custom" && !is.null(input$Settings.Color.Upload)){
+  if (schemename == "Custom" && !is.null(input$Settings.Color.Upload)) {
     schemename <- paste0(schemename, ": ", input$Settings.Color.Upload$datapath)
   }
   p <- IOH_plot_ly_default(schemename, "X-axis label", "Y-axis label")
 
-  for (i in seq_along(algnames)){
+  for (i in seq_along(algnames)) {
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
     
     p %<>% add_segments(y = i, yend = i, x = 0, xend = 10, name = sprintf('%s', algnames[[i]]),
@@ -51,11 +51,11 @@ plot_color_example <- function(ds){
 }
 
 selected_color_congfig <- observe({
-  if(!is.null(input$Settings.Color.Upload)){
+  if (!is.null(input$Settings.Color.Upload)) {
     datapath <- input$Settings.Color.Upload$datapath
     tryCatch(
       expr = {
-        set_color_scheme("Custom", path=datapath)
+        set_color_scheme("Custom", path = datapath)
       },
       error = function(e) {
         shinyjs::alert("File could not be read, please upload a file in the same format as the example.")
@@ -136,7 +136,7 @@ output$Settings.Download <- downloadHandler(
 )
 
 observe({
-  if (!is.null(input$Settings.Upload)){
+  if (!is.null(input$Settings.Upload)) {
     file <- input$Settings.Upload$datapath
     IOH_opts <- readRDS(file)
     options(IOH_opts[grep(names(IOH_opts), pattern = "IOH")]) #Ensure no other options get changed by the user

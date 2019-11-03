@@ -1,6 +1,3 @@
-# Iterative Optimization Heuristics Profiler
-
-## Development Team
 <div class="row">
   <img src="../img/leiden.png" style="width:15%">
   <img src="../img/CNRS.gif" style="width:7%"> 
@@ -9,12 +6,37 @@
 </div>
 <br/>
 
+# Iterative Optimization Heuristics Profiler
+
+The __performance analyzer__ for <b>I</b>terative <b>O</b>ptimization <b>H</b>euristics (IOHs).
+It <i>provides</i>:
+
+* a web-based interface to analyze and visualize the empirical performance of IOHs
+* interactive plot
+* statistical evaluation
+* report generation
+* `R` programming interfaces in the backend
+
+## Development Team
+
 * [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang), <i>Leiden Institute of Advanced Computer Science</i>.
-* Diederick Vermetten, <i>Leiden Institute of Advanced Computer Science</i>.
+* [Diederick Vermetten](https://www.universiteitleiden.nl/en/staffmembers/diederick-vermetten), <i>Leiden Institute of Advanced Computer Science</i>.
 * [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye), <i>Leiden Institute of Advanced Computer Science</i>.
 * [Carola Doerr](http://www-desir.lip6.fr/~doerr/), <i>CNRS and Sorbonne University</i>.
 * [Ofer Shir](http://www.migal.org.il/Ofer-Shir) <i>Migal - The Galilee Research Institute, Tel-Hai College</i>.
 * [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back), <i>Leiden Institute of Advanced Computer Science</i>.
+
+## <a name="install"></a>Installation
+
+### Software dependency
+
+* [mandatory] `R` As __IOHanalyzer__ is written as a `R` package, the `R` environment has to be installed first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/).
+* [optional] `orca` required to download plotly figures. Please see [https://github.com/plotly/orca](https://github.com/plotly/orca) for the installation instruction.
+* [optional] `inkscape` required to support pdf and eps figure format in downloading. Please visit the Inskscape Wiki page [http://wiki.inkscape.org/wiki/index.php/Installing_Inkscape](http://wiki.inkscape.org/wiki/index.php/Installing_Inkscape) for the detail.
+
+## Host it online yourself?
+
+We provide docker file for deploying __IOHanalyzer__ on the server. Please see [https://github.com/IOHprofiler/IOHanalyzer-docker](https://github.com/IOHprofiler/IOHanalyzer-docker) for details.
 
 ## Reference
 When using IOHprofiler and parts thereof, please kindly cite this work as
@@ -73,5 +95,3 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-

@@ -17,7 +17,7 @@ output$Report.Generate.Tar <- downloadHandler(
 generate_report <- function(file){
   dir_loc <- tempdir()
   dir.create(file.path(dir_loc, "Report"), showWarnings = F)
-  file.copy("RMD/Report/", file.path(dir_loc), overwrite = TRUE, recursive = TRUE)
+  file.copy("markdown/Report/", file.path(dir_loc), overwrite = TRUE, recursive = TRUE)
   tempReport <- file.path(file.path(dir_loc, "Report"), "Template_test.Rmd")
   params <- list(input = input, dsl = DATA_RAW(), figure_folder = dir_loc, REG = REG)
   rmarkdown::render(tempReport, output_file = file,

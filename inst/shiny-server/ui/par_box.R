@@ -76,7 +76,7 @@ par_summary_box <- function(width = 12, collapsible = T, collapsed = T) {
     mainPanel(
       width = 9,
       HTML(paste0('<div style="font-size:120%;">',
-                  includeMarkdown('RMD/PAR_SUMMARY_TABLE.Rmd'), '</div>')),
+                  includeMarkdown('markdown/PAR_SUMMARY_TABLE.Rmd'), '</div>')),
       DT::dataTableOutput('table_PAR_summary')
     )
   )

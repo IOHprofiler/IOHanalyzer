@@ -121,7 +121,8 @@ Plot.RT.PMF <- function(dsList, ftarget, show.sample = F, scale.ylog = F, backen
 #' @param ftarget The target function value.
 #' @param plot_mode How to plot the different hisograms for each algorithm. Can be either
 #'  'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.
-#' @param use.equal.bins Whether to determine one bin size for all plots or have individual bin sizes for each algorithm
+#' @param use.equal.bins Whether to determine one bin size for all plots or have individual 
+#' bin sizes for each algorithm
 #'
 #' @return A plot of the histograms of the runtimes at a the
 #'         target function value of the DataSetList
@@ -190,21 +191,24 @@ Plot.RT.ECDF_AUC <- function(dsList, fstart = NULL,
 #' @export
 #' @examples 
 #' Plot.FV.PDF(subset(dsl, funcId == 1), 100)
-Plot.FV.PDF <- function(dsList, runtime, show.sample = F, scale.ylog = F) UseMethod("Plot.FV.PDF", dsList)
+Plot.FV.PDF <- function(dsList, runtime, show.sample = F, scale.ylog = F) 
+  UseMethod("Plot.FV.PDF", dsList)
 #' Plot histograms of the function values of a DataSetList at a certain target runtime
 #'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
 #' @param runtime The target runtime
 #' @param plot_mode How to plot the different hisograms for each algorithm. Can be either
 #'  'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.
-#' @param use.equal.bins Whether to determine one bin size for all plots or have individual bin sizes for each algorithm
+#' @param use.equal.bins Whether to determine one bin size for all plots or have individual 
+#' bin sizes for each algorithm
 #' 
 #' @return A plot of the histograms of the function values at a the
 #'         target runtime of the DataSetList
 #' @export
 #' @examples 
 #' Plot.FV.Histogram(subset(dsl, funcId == 1), 100)
-Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay', use.equal.bins = F) UseMethod("Plot.FV.Histogram", dsList)
+Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay', use.equal.bins = F) 
+  UseMethod("Plot.FV.Histogram", dsList)
 #' Plot the empirical cumulative distriburtion as a function of the target values of
 #' a DataSetList at certain target runtimes
 #'
@@ -218,7 +222,8 @@ Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay', use.equal.bi
 #' @export
 #' @examples 
 #' Plot.FV.ECDF_Per_Target(subset(dsl, funcId == 1), 10)
-Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F, scale.reverse = F) UseMethod("Plot.FV.ECDF_Per_Target", dsList)
+Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F, scale.reverse = F) 
+  UseMethod("Plot.FV.ECDF_Per_Target", dsList)
 #' Plot the aggregated empirical cumulative distriburtion as a function of the function values of
 #' a DataSetList.
 #'
@@ -237,7 +242,8 @@ Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F, scale.reve
 #' Plot.FV.ECDF_Single_Func(subset(dsl, funcId == 1))
 Plot.FV.ECDF_Single_Func <- function(dsList, rt_min = NULL, rt_max = NULL,
                               rt_step = NULL, scale.xlog = F,
-                              show.per_target = F, scale.reverse = F) UseMethod("Plot.FV.ECDF_Single_Func", dsList)
+                              show.per_target = F, scale.reverse = F) 
+  UseMethod("Plot.FV.ECDF_Single_Func", dsList)
 #' Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
 #'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
@@ -261,7 +267,8 @@ Plot.FV.ECDF_AUC <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
 #' @param scale.ylog Whether or not to scale the y-axis logaritmically
 #' @param algids Which algorithms from dsList to use
-#' @param par_name Which parameters to create plots for; set to NULL to use all parameters found in dsList.
+#' @param par_name Which parameters to create plots for; set to NULL to use all 
+#' parameters found in dsList.
 #' @param show.CI Whether or not to show the standard deviation
 #'
 #' @return A plot of for every recorded parameter in the DataSetList
@@ -300,10 +307,9 @@ Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = F)
 #' @export
 #' @examples 
 #' Plot.RT.Multi_Func(dsl)
-Plot.RT.Multi_Func <- function(dsList, scale.xlog = F,
-                             scale.ylog = F,
-                             scale.reverse = F,
-                             backend = NULL) UseMethod("Plot.RT.Multi_Func", dsList)
+Plot.RT.Multi_Func <- function(dsList, scale.xlog = F, scale.ylog = F, scale.reverse = F, 
+                               backend = NULL) 
+  UseMethod("Plot.RT.Multi_Func", dsList)
 #' Plot ERT-based comparison over multiple functions or dimensions
 #'
 #' @param dsList A DataSetList (should consist of only one function OR dimension).
@@ -314,17 +320,17 @@ Plot.RT.Multi_Func <- function(dsList, scale.xlog = F,
 #' @param targets Custom list of function-value targets, one for each function or dimension.
 #' @param use_rank Wheter to use a ranking system. If False, the actual ERT-values will be used.
 #' @param erts Pre-calculated ERT-values for the provided targets. Created by the max_ERTs function
-#' of DataSetList. Can be provided to prevent needless computation in recalculating ERTs when recreating
-#' this plot.
+#' of DataSetList. Can be provided to prevent needless computation in recalculating ERTs 
+#' when recreating this plot.
 #'
 #' @return A plot of ERT-based comparison on the provided functions or dimensions of the DataSetList
 #' @export
 #' @examples 
 #' Plot.RT.Aggregated(dsl)
-Plot.RT.Aggregated <- function(dsList, aggr_on = 'funcId', targets = NULL,
-                          plot_mode = 'radar', use_rank = F,
-                          scale.ylog = T, maximize = T,
-                          erts = NULL, inf.action = 'overlap') UseMethod("Plot.RT.Aggregated", dsList)
+Plot.RT.Aggregated <- function(dsList, aggr_on = 'funcId', targets = NULL, 
+                               plot_mode = 'radar', use_rank = F, scale.ylog = T, maximize = T,
+                               erts = NULL, inf.action = 'overlap') 
+  UseMethod("Plot.RT.Aggregated", dsList)
 #' Plot expected function value-based comparison over multiple functions or dimensions
 #'
 #' @param dsList A DataSetList (should consist of only one function OR dimension).
@@ -343,9 +349,10 @@ Plot.RT.Aggregated <- function(dsList, aggr_on = 'funcId', targets = NULL,
 #' @export
 #' @examples 
 #' Plot.FV.Aggregated(dsl)
-Plot.FV.Aggregated <- function(dsList, aggr_on = 'funcId', runtimes = NULL,
-                          plot_mode = 'radar', use_rank = F,
-                          scale.ylog = T, fvs = NULL) UseMethod("Plot.FV.Aggregated", dsList)
+Plot.FV.Aggregated <- function(dsList, aggr_on = 'funcId', runtimes = NULL, plot_mode = 'radar', 
+                               use_rank = F, scale.ylog = T, fvs = NULL) 
+  UseMethod("Plot.FV.Aggregated", dsList)
+
 #' Plot FV-plots for multiple functions or dimensions
 #'
 #' @param dsList A DataSetList (should consist of only one function OR dimension).
@@ -357,9 +364,9 @@ Plot.FV.Aggregated <- function(dsList, aggr_on = 'funcId', runtimes = NULL,
 #' @export
 #' @examples 
 #' Plot.FV.Multi_Func(dsl)
-Plot.FV.Multi_Func <- function(dsList, scale.xlog = F,
-                             scale.ylog = F,
-                             backend = NULL) UseMethod("Plot.FV.Multi_Func", dsList)
+Plot.FV.Multi_Func <- function(dsList, scale.xlog = F, scale.ylog = F, backend = NULL) 
+  UseMethod("Plot.FV.Multi_Func", dsList)
+
 #' Plot a heatmap showing the statistically different algorithms
 #' 
 #' @param dsList A DataSetList (should consist of only one function and dimension).
@@ -370,9 +377,9 @@ Plot.FV.Multi_Func <- function(dsList, scale.xlog = F,
 #' @return A heatmap showing the statistical significance between algorithms
 #' @export
 #' @examples 
-#' Plot.Stats.Significance_Heatmap(subset(dsl, funcId==2), 16)
-Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01,
-                                            bootstrap.size = 30) UseMethod("Plot.Stats.Significance_Heatmap", dsList)
+#' Plot.Stats.Significance_Heatmap(subset(dsl, funcId == 2), 16)
+Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01, bootstrap.size = 30) 
+  UseMethod("Plot.Stats.Significance_Heatmap", dsList)
   
 #' Plot a network graph showing the statistically different algorithms
 #' 
@@ -384,9 +391,8 @@ Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01,
 #' @return A graph showing the statistical significance between algorithms
 #' @export
 #' @examples 
-#' Plot.Stats.Significance_Graph(subset(dsl, funcId==2), 16)
-Plot.Stats.Significance_Graph <- function(dsList, ftarget, alpha = 0.01,
-                                            bootstrap.size = 30) 
+#' Plot.Stats.Significance_Graph(subset(dsl, funcId == 2), 16)
+Plot.Stats.Significance_Graph <- function(dsList, ftarget, alpha = 0.01, bootstrap.size = 30) 
   UseMethod("Plot.Stats.Significance_Graph", dsList)
 
 #' Create a candlestick plot of Glicko2-rankings
@@ -398,8 +404,9 @@ Plot.Stats.Significance_Graph <- function(dsList, ftarget, alpha = 0.01,
 #' @export
 #' @examples 
 #' Plot.Stats.Glicko2_Candlestick(dsl, nr_rounds=2)
-Plot.Stats.Glicko2_Candlestick <- function(dsList, nr_rounds=100, 
-                                            glicko2_rank_df=NULL) UseMethod("Plot.Stats.Glicko2_Candlestick", dsList)
+Plot.Stats.Glicko2_Candlestick <- function(dsList, nr_rounds = 100, glicko2_rank_df = NULL) 
+  UseMethod("Plot.Stats.Glicko2_Candlestick", dsList)
+
 
 ##Implementations
 
@@ -1534,7 +1541,7 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
 Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, 
                                            plot_mode = 'radar', use_rank = F,
                                            scale.ylog = T, maximize = T, erts = NULL,
-                                           inf.action = 'overlap') {
+                                           dash = 'auto', inf.action = 'overlap') {
   if (is.null(erts))
     erts <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, maximize = maximize)
   
@@ -1543,6 +1550,9 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
 
   N <- length(get_algId(dsList))
   colors <- color_palettes(N)
+
+  if (dash == 'auto')
+    dash <- c("solid", "dot", "dash", "longdash", "dashdot", "longdashdot") 
   
   fid <- get_funcId(dsList)
   range <- c(min(fid) - .5, max(fid) + .5)

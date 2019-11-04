@@ -1,6 +1,6 @@
 observe({
   if (input$Settings.Color.Scheme != "Custom") {
-    set_color_scheme(input$Settings.Color.Scheme, NULL, length(get_algId(DATA())))
+    set_color_scheme(input$Settings.Color.Scheme, get_algId(DATA()), NULL)
   }
 })
 
@@ -12,7 +12,7 @@ output$Settings.Color.Example <- downloadHandler(
   content = function(file) {
     n <- length(DATA())
     if (n == 0) n <- 5
-    writeLines(get_color_scheme(n = n), file)
+    writeLines(get_color_scheme(get_algId(DATA())), file)
   }
 )
 
@@ -34,7 +34,7 @@ plot_color_example <- function(ds){
     algnames <- get_algId(ds)
   }
   else algnames <- c("Alg 1", "Alg 2", "Alg 3", "Alg 4", "Alg 5")
-  colors <- get_color_scheme(n = length(algnames))
+  colors <- get_color_scheme(algnames)
   schemename <- input$Settings.Color.Scheme
   if (schemename == "Custom" && !is.null(input$Settings.Color.Upload)) {
     schemename <- paste0(schemename, ": ", input$Settings.Color.Upload$datapath)

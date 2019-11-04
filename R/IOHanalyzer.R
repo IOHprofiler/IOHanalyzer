@@ -25,7 +25,7 @@ utils::globalVariables(c(".", "algId", "run", "ERT", "RT", "group",
                          "DIM", "Fvalue", "lower", "upper", "target", "format",
                          "runtime", "parId", "instance", "input", "funcId",
                          "budget", "dimension", "loss", "name", "optimizer_name",
-                         "rescale", "maxRT"))
+                         "rescale", "maxRT", "algnames"))
 
 options(shiny.port = 4242)
 

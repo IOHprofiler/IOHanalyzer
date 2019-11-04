@@ -65,6 +65,7 @@ observeEvent(input$repository.load_button, {
     return(NULL)
   }
   DataList$data <- c(DataList$data, data)
+  set_color_scheme("Default", get_algId(DataList$data))
 })
 
 # upload the compressed the data file and uncompress them
@@ -215,6 +216,7 @@ observeEvent(selected_folders(), {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PMF"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "PARAMETER"))
   }
+  set_color_scheme("Default", get_algId(DataList$data))
   set_format_func(attr(DataList$data, 'suite'))
 })
 

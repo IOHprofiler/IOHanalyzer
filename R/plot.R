@@ -43,7 +43,7 @@ legend_inside2 <- function() {
 }
 
 legend_below <- function() { 
-  list(y = -0.15, orientation = 'h',
+  list(y = -0.2, orientation = 'h',
        font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
                    family = 'Old Standard TT, serif'))
 }
@@ -92,7 +92,7 @@ IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickcolor = getOption('IOHanalyzer.tickcolor'),
                         ticks = 'outside',
                         ticklen = 9,
-                        tickfont = 100,
+                        tickfont = f3(),
                         exponentformat = 'e',
                         zeroline = F),
            yaxis = list(
@@ -105,7 +105,7 @@ IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickcolor = getOption('IOHanalyzer.tickcolor'),
                         ticks = 'outside',
                         ticklen = 9,
-                        tickfont = 100,
+                        tickfont = f3(),
                         exponentformat = 'e',
                         zeroline = F))
 }

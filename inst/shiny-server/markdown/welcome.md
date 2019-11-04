@@ -4,6 +4,7 @@ This the **analyzer** for the empirical performance of _Iterative Optimization H
 * <a href="#shiny-tab-FCE_DATA", data-toggle="tab">Fixed-Budget results</a>: focuses on the distribution of the **best function value** at various given budget values (thus called "fixed-budget"), functions and dimensions.
 
 To get started, you could
+
 * **upload** your own dataset using the _Upload Data_ box on the bottom left. The supported format is specified in the <a href="#shiny-tab-dataformat", data-toggle="tab">data format tab</a>.
 * or **choose** one of the pre-loaded datasets in the _Load Data from Repository_ box on the bottom right and directly explore the analyzer.
 
@@ -38,6 +39,7 @@ In details, the following functionalities are provided:
     <td class="tg-0pky"><a href="#shiny-tab-FCE_ECDF", data-toggle="tab">ECDF of targets times</a></td>
   </tr>
 </table>
+<br/>
 
 For more information on the features of IOHanalyzer and how to use them,
 as well as a full specification of the accepted data formats, please visit <a href='https://iohprofiler.github.io/'> our wiki.</a>

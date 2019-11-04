@@ -92,7 +92,7 @@ IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickcolor = getOption('IOHanalyzer.tickcolor'),
                         ticks = 'outside',
                         ticklen = 9,
-                        tickfont = f3(),
+                        tickfont = f3,
                         exponentformat = 'e',
                         zeroline = F),
            yaxis = list(
@@ -105,7 +105,7 @@ IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickcolor = getOption('IOHanalyzer.tickcolor'),
                         ticks = 'outside',
                         ticklen = 9,
-                        tickfont = f3(),
+                        tickfont = f3,
                         exponentformat = 'e',
                         zeroline = F))
 }

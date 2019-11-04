@@ -17,7 +17,9 @@ arrange(dsl, ...)
 \item{...}{attribute by which `dsl` is sorted. Multiple attributes can be specified.}
 }
 \description{
-S3 sort function for DataSetList
+Sorts a DataSetList based on the custom specified attributes ("algId', 'DIM' or 'funcId'). 
+Default is as ascending, can be made descending by adding a - in front of the attribute.
+Sorting accross multiple attributes is supported, in the order they are specified.
 }
 \examples{
 sort(dsl, DIM, -funcId, algId) 

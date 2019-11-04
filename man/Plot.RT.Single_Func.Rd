@@ -7,9 +7,8 @@
 \usage{
 Plot.RT.Single_Func(dsList, Fstart = NULL, Fstop = NULL,
   show.ERT = T, show.CI = F, show.mean = F, show.median = F,
-  backend = NULL, scale.xlog = F, scale.ylog = F,
-  scale.reverse = F, dash = "solid", p = NULL, includeOpts = F)
-
+  backend = NULL, scale.xlog = F, scale.ylog = F, includeOpts = F,
+  scale.reverse = F, dash = "solid", p = NULL)
 
 \method{Plot.RT.Single_Func}{DataSetList}(dsList, Fstart = NULL,
   Fstop = NULL, show.ERT = T, show.CI = T, show.mean = F,
@@ -37,15 +36,13 @@ Plot.RT.Single_Func(dsList, Fstart = NULL, Fstop = NULL,
 
 \item{scale.ylog}{Whether or not to scale the y-axis logaritmically}
 
+\item{includeOpts}{Whether or not to include all best points reached by each algorithm}
+
 \item{scale.reverse}{Wheter or not to reverse the x-axis (when using minimization)}
 
 \item{dash}{Style of ERT-lines}
 
 \item{p}{Existing plot to which to add the current data}
-
-\item{includeOpts}{Whether or not to include all best points reached by each algorithm}
-
-\item{scale.reverse}{Wheter or not to reverse the x-axis (when using minimization)}
 }
 \value{
 A plot of ERT-values of the DataSetList

@@ -28,8 +28,7 @@ output$PAR.Plot.Download <- downloadHandler(
     eval(FIG_NAME_PAR_PER_FUN)
   },
   content = function(file) {
-    save_plotly(render_PAR_PER_FUN(), file,
-                format = input$PAR.Plot.Format)
+    save_plotly(render_PAR_PER_FUN(), file)
   },
   contentType = paste0('image/', input$PAR.Plot.Format)
 )

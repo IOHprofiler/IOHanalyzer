@@ -63,8 +63,7 @@ output$Stats.Overview.DownloadHeatmap <- downloadHandler(
     eval(Stats_heatmap_name)
   },
   content = function(file) {
-    save_plotly(render_heatmap(), file,
-                format = input$Stats.Overview.Format)
+    save_plotly(render_heatmap(), file)
   },
   contentType = paste0('image/', input$Stats.Overview.Format)
 )
@@ -74,8 +73,7 @@ output$Stats.Overview.DownloadHeatmap <- downloadHandler(
 #     eval(Stats_network_name)
 #   },
 #   content = function(file) {
-#     save_plotly(render_graph(), file,
-#                 format = input$Stats.Overview.Format)
+#     save_plotly(render_graph(), file)
 #   },
 #   contentType = paste0('image/', input$Stats.Overview.Format)
 # )
@@ -130,8 +128,7 @@ output$Stats.Glicko.Download <- downloadHandler(
     eval(Glicko2_figure_name)
   },
   content = function(file) {
-    save_plotly(render_glico2_plot(), file,
-                format = input$Stats.Glicko.Format)
+    save_plotly(render_glico2_plot(), file)
   },
   contentType = paste0('image/', input$Stats.Glicko.Format)
 )

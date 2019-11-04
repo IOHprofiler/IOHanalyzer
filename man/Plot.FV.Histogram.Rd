@@ -19,7 +19,8 @@ Plot.FV.Histogram(dsList, runtime, plot_mode = "overlay",
 \item{plot_mode}{How to plot the different hisograms for each algorithm. Can be either
 'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.}
 
-\item{use.equal.bins}{Whether to determine one bin size for all plots or have individual bin sizes for each algorithm}
+\item{use.equal.bins}{Whether to determine one bin size for all plots or have individual 
+bin sizes for each algorithm}
 }
 \value{
 A plot of the histograms of the function values at a the

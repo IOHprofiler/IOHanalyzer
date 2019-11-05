@@ -289,11 +289,10 @@ summary.DataSetList <- function(object, ...) {
 #' @param ... attribute by which `dsl` is sorted. Multiple attributes can be specified.
 #' @export
 #' @examples 
-#' sort(dsl, DIM, -funcId, algId) 
+#' arrange(dsl, DIM, -funcId, algId) 
 arrange <- function(dsl, ...) UseMethod('arrange', dsl)
 
 #' @rdname arrange
-#' @param ... attribute by which `dsl` is sorted. Multiple attributes can be specified.
 #' @export
 #'
 arrange.DataSetList <- function(dsl, ...) {

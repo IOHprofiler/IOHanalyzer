@@ -556,8 +556,8 @@ read_nevergrad <- function(path){
     funcId <- triplets$name[i]
 
     rescale_name <- 'rescale'
-    if( !('rescale' %in% colnames(dt))){
-      if( 'transform' %in% colnames(dt))
+    if ( !('rescale' %in% colnames(dt))) {
+      if ( 'transform' %in% colnames(dt))
         colnames(dt)[colnames(dt) == "transform"] <- "rescale"
       else{
         dt$rescale <- NA
@@ -567,8 +567,8 @@ read_nevergrad <- function(path){
     data <- dt[optimizer_name == algId & dimension == DIM & name == funcId,
                .(budget, loss, rescale)]
 
-    for (scaled in unique(data$rescale)){
-      if (!is.na(scaled)){
+    for (scaled in unique(data$rescale)) {
+      if (!is.na(scaled)) {
         data_reduced <- data[rescale == scaled, .(budget, loss)]
       }
       else {
@@ -610,6 +610,8 @@ read_nevergrad <- function(path){
   attr(res, 'DIM') <- DIMs
   attr(res, 'funcId') <- funcIds
   attr(res, 'algId') <- algIds
+  attr(res, 'suite') <- 'NEVERGRAD'
+  attr(res, 'maximization') <- F
   res
   
 }

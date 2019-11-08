@@ -572,10 +572,19 @@ get_parId <- function(dsList) {
 #' @examples
 #' get_funvals(dsl)
 get_funvals <- function(dsList) {
-  rev(sort(unique(as.numeric(unlist(
-    lapply(dsList, function(x)
-      rownames(x$RT))
-  )))))
+  if (length(dsList) == 0)
+    return(NULL)
+  if (length(dsList[[1]]$RT) == 0) {
+    sort(unique(as.numeric(unlist(
+      lapply(dsList, function(x) 
+        as.vector(x$FV))
+    ))))
+  }
+  else
+    (sort(unique(as.numeric(unlist(
+      lapply(dsList, function(x)
+        rownames(x$RT))
+    )))))
 }
 
 #' Get all runtime values present in a DataSetList

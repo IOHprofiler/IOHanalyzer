@@ -160,7 +160,7 @@ observeEvent(selected_folders(), {
   for (folder in folder_new) {
     indexFiles <- scan_IndexFile(folder)
 
-    if (length(indexFiles) == 0)
+    if (length(indexFiles) == 0 && format_detected != NEVERGRAD)
       print_html(paste('<p style="color:red;">No .info-files detected in the
                        uploaded folder:</p>', folder))
     else {

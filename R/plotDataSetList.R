@@ -460,7 +460,7 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
                          name = legend, mode = 'lines+markers',
                          marker = list(color = rgb_str), legendgroup = legend,
-                         line = list(color = rgb_str, dash = dash), visible = T)
+                         line = list(color = rgb_str, dash = get_line_style(algId)), visible = T)
 
       if (show.mean)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~mean, type = 'scatter',
@@ -555,7 +555,7 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
         p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~mean, type = 'scatter',
                          mode = 'lines+markers', name = paste0(algId, ''),
                          marker = list(color = rgb_str), legendgroup = legend,
-                         line = list(color = rgb_str), visible = T)
+                         line = list(color = rgb_str, dash = get_line_style(algId)), visible = T)
 
       if (show.median)
         p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~median, type = 'scatter',
@@ -762,7 +762,7 @@ Plot.RT.ECDF_Per_Target.DataSetList <- function(dsList, ftargets, scale.xlog = F
                   mode = 'lines+markers', name = algId, showlegend = (i == 1),
                   legendgroup = paste0(k),
                   marker = list(color = rgb_str),
-                  line = list(color = rgb_str, width = 3))
+                  line = list(color = rgb_str, width = 3, dash = get_line_style(algId)))
       # add_trace(data = NULL, x = x, y = y, type = 'scatter',
       #           mode = 'markers',  legendgroup = paste0(k),
       #           name = sprintf('(%s, %.2e)', algId, ftargets[i]),
@@ -827,7 +827,7 @@ Plot.RT.ECDF_Single_Func.DataSetList <- function(dsList, fstart = NULL, fstop = 
       add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
                 mode = 'lines+markers', name = sprintf('%s', algId),
                 showlegend = T, legendgroup = paste0(k),
-                line = list(color = rgb_str, width = 2),
+                line = list(color = rgb_str, width = 2, dash = get_line_style(algId)),
                 marker = list(color = rgb_str, size = 9))
 
     if (show.per_target) {
@@ -942,7 +942,7 @@ Plot.FV.PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
                 name = attr(ds, 'algId'),
                 meanline = list(visible = T),
                 fillcolor = rgba_str,
-                line = list(color = 'black', width = 2),
+                line = list(color = 'black', width = 2, dash = get_line_style(algId)),
                 marker = list(color = rgb_str, size = 8))
   }
   p %<>%
@@ -1066,7 +1066,7 @@ Plot.FV.ECDF_Per_Target.DataSetList <- function(dsList, runtimes, scale.xlog = F
         add_trace(data = NULL, x = funvals, y = density, type = 'scatter',
                   mode = 'lines', name = algId, showlegend = show_legend,
                   legendgroup = algId,
-                  line = list(color = rgb_str, width = 3)) %>%
+                  line = list(color = rgb_str, width = 3, dash = get_line_style(algId))) %>%
         add_trace(data = NULL, x = x, y = y, type = 'scatter', showlegend = F,
                   mode = 'markers',  legendgroup = algId,
                   name = sprintf('%s, %.2e', algId, runtimes[i]),
@@ -1131,7 +1131,7 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
       add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
                 mode = 'lines+markers', name = sprintf('%s', algId),
                 showlegend = T, legendgroup = paste0(k),
-                line = list(color = rgb_str, width = 4.5),
+                line = list(color = rgb_str, width = 4.5, dash = get_line_style(algId)),
                 marker = list(color = rgb_str, size = 11))
 
     if (show.per_target) {
@@ -1278,10 +1278,10 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
       if (show.CI) {
       p[[j]] %<>%
         add_trace(data = dt_plot, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-                  line = list(color = rgba_str, width = 0),
+                  line = list(color = rgba_str, width = 0, dash = get_line_style(alg)),
                   showlegend = F, legendgroup = ~algId, name = 'mean +/- sd') %>%
         add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
-                  fill = 'tonexty',  line = list(color = 'transparent'),
+                  fill = 'tonexty',  line = list(color = 'transparent', dash = get_line_style(alg)),
                   fillcolor = rgba_str, showlegend = F, legendgroup = ~algId,
                   name = 'mean +/- sd')
       }
@@ -1317,10 +1317,11 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
     }
   }
 
-  subplot(p, nrows = nrows, titleX = F, titleY = T, margin = 0.05) %>%
-    add_annotations(x = 0.5 , y = -0.18, text = "Best-so-far f(x)-value",
-                    showarrow = F, xref = 'paper', yref = 'paper',
-                    font = list(size = 22, family = 'sans-serif'))
+  subplot(p, nrows = nrows, titleX = F, titleY = T, margin = 0.05) 
+  # %>%
+  #   add_annotations(x = 0.5 , y = -0.18, text = "Best-so-far f(x)-value",
+  #                   showarrow = F, xref = 'paper', yref = 'paper',
+  #                   font = list(size = 22, family = 'sans-serif'))
 }
 
 #' @rdname Plot.RT.ECDF_Multi_Func
@@ -1349,7 +1350,7 @@ Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
     p %<>% add_trace(data = df_plot, x = ~x, y = ~ecdf, type = 'scatter',
                      mode = 'lines+markers', name = sprintf('%s', Id),
                      showlegend = T,
-                     line = list(color = rgb_str),
+                     line = list(color = rgb_str, dash = get_line_style(Id)),
                      marker = list(color = rgb_str))
   }
   
@@ -1376,7 +1377,10 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
 
   colors <- get_color_scheme(algIds)
   names(colors) <- algIds
-
+  
+  dashes <- get_line_style(algIds)
+  names(dashes) <- algIds
+  
   # how many columns do we want...
   if (n_fcts <= 10) {
     n_rows <- ceiling(n_fcts / 2.)
@@ -1434,8 +1438,8 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
         add_trace(
           data = dt_plot, x = ~target, y = ~ERT, color = ~algId, legendgroup = ~algId,
           type = 'scatter', mode = 'lines+markers',
-          line = list(width = 1.8), marker = list(size = 4), # TODO: perhaps turn off the marker here
-          colors = colors, showlegend = showlegend
+          linetype = ~algId, marker = list(size = 4), # TODO: perhaps turn off the marker here
+          colors = colors, showlegend = showlegend, linetypes = dashes
         ) 
 
       p[[i]] %<>%
@@ -1474,6 +1478,9 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
 
   colors <- get_color_scheme(algIds)
   names(colors) <- algIds
+  
+  dashes <- get_line_style(algIds)
+  names(dashes) <- algIds
 
   # how many columns do we want...
   if (n_fcts <= 10) {
@@ -1531,8 +1538,8 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
         add_trace(
           data = dt_plot, x = ~runtime, y = ~`mean`, color = ~algId, legendgroup = ~algId,
           type = 'scatter', mode = 'lines+markers',
-          line = list(width = 1.8), marker = list(size = 4), # TODO: perhaps turn off the marker here
-          colors = colors, showlegend = showlegend
+          linetype = ~algId, marker = list(size = 4), # TODO: perhaps turn off the marker here
+          colors = colors, showlegend = showlegend, linetypes = dashes
         ) 
       
       disp_y <-  mod(i, n_cols) == 1
@@ -1664,10 +1671,10 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
   }
   
   # dash <- c("solid", "dot", "dash", "longdash", "dashdot")
-  dash <- c("solid")
 
   for (i in seq_along(get_algId(dsList))) {
     algId <- get_algId(dsList)[[i]]
+    dash <- get_line_style(algId)
     color <- get_color_scheme(algId)
     data <- dataert[, i]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
@@ -1696,7 +1703,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
                        mode = 'lines+markers',
                        marker = list(color = rgb_str, size = 7), hoverinfo = 'text',
                        text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
-                       line = list(color = rgb_str, dash = dash[i %% length(dash)]), 
+                       line = list(color = rgb_str, dash = dash), 
                        name = algId, legendgroup = algId)
       p %<>%
         add_trace(type = 'scatter', mode = 'markers', x = as.numeric(names(data_inf_)), 
@@ -1779,6 +1786,7 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
   for (i in seq_along(get_algId(dsList))) {
     algId <- get_algId(dsList)[[i]]
     color <- get_color_scheme(algId)
+    dash <- get_line_style(algId)
     data <- dataert[,i]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
@@ -1808,7 +1816,7 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
                        mode = 'lines+markers',
                        marker = list(color = rgb_str), hoverinfo = 'text',
                        text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
-                       line = list(color = rgb_str), name = algId, legendgroup = algId)
+                       line = list(color = rgb_str, dash = dash), name = algId, legendgroup = algId)
       data2 <- data
       data2[is.na(data2)] <- 0
       data2[!is.na(data)] <- NA

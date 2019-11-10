@@ -211,8 +211,12 @@ set_color_scheme <- function(schemename, algnames, path = NULL){
 }
 
 create_color_scheme <- function(algnames) {
+  if (length(algnames) == 0) {
+    return(NULL)
+  }
   colors <- color_palettes(length(algnames))
-  IOHanalyzer_env$alg_colors <- data.table(algnames, colors)
+  linestyles <- rep(c("solid", "dash", "dot"), ceiling(length(colors)/3))[1:length(colors)]
+  IOHanalyzer_env$alg_colors <- data.table(algnames, colors, linestyles)
 }
 
 #' Get colors according to the current colorScheme of the IOHanalyzer
@@ -232,6 +236,26 @@ get_color_scheme <- function(algnames_in){
     return(color_palettes(length(algnames_in)))
   }
   return(colors)
+}
+
+
+#' Get line styles according to the current styleScheme of the IOHanalyzer
+#' 
+#' @param algnames_in List of algorithms for which to get linestyles
+#' 
+#' @export
+#' 
+#' @examples
+#' get_line_style(get_algId(dsl))
+get_line_style <- function(algnames_in){
+  if (is.null(IOHanalyzer_env$alg_colors))
+    create_color_scheme(algnames_in)
+  cdt <- IOHanalyzer_env$alg_colors
+  linestyles <- subset(cdt, algnames %in% algnames_in)[['linestyles']]
+  if (is.null(linestyles) || length(linestyles) != length(algnames_in)) {
+    return(rep(c("solid", "dash", "dot"), ceiling(length(algnames_in)/3))[1:length(algnames_in)])
+  }
+  return(linestyles)
 }
 
 # TODO: incoporate more colors
@@ -268,7 +292,6 @@ color_palettes <- function(ncolor) {
   }
   colors
 }
-
 
 #' Save plotly figure in multiple format
 #'

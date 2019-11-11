@@ -36,6 +36,6 @@ DataSet contains the following attributes
 }
 \examples{
 path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
-info <- read_IndexFile(file.path(path,"IOHprofiler_f1_i1.info"))
+info <- read_index_file(file.path(path,"IOHprofiler_f1_i1.info"))
 DataSet(info[[1]])
 }

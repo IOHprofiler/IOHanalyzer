@@ -2,7 +2,7 @@
 % Please edit documentation in R/readFiles.R
 \name{limit.data}
 \alias{limit.data}
-\title{reduce the size of the data set by evenly subsampling the records}
+\title{Reduce the size of the data set by evenly subsampling the records}
 \usage{
 limit.data(df, n)
 }
@@ -15,5 +15,5 @@ limit.data(df, n)
 A smaller data.frame
 }
 \description{
-reduce the size of the data set by evenly subsampling the records
+Reduce the size of the data set by evenly subsampling the records
 }

@@ -21,16 +21,18 @@
 #' @export
 #' @examples 
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
-#' info <- read_IndexFile(file.path(path,"IOHprofiler_f1_i1.info"))
+#' info <- read_index_file(file.path(path,"IOHprofiler_f1_i1.info"))
 #' DataSet(info[[1]])
-DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler,
+DataSet <- function(info, 
+                    verbose = F, 
+                    maximization = NULL, 
+                    format = IOHprofiler,
                     subsampling = FALSE) {
   if (!is.null(info)) {
     path <- dirname(info$datafile)
-    
     suite <- info$suite
     
-    #Unknown suite, set best guess based on format
+    # for an unknown suite, to detect the format
     if (is.null(suite)) {
       if (verbose)
         warning("Suite-name not provided in .info-file, taking best guess based on
@@ -58,7 +60,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     
     datBaseName <- strsplit(basename(info$datafile), '\\.')[[1]][1]
     
-    #Order preference for alingment: cdat > tdat > dat
+    # NOTE: the order preference for alingment: cdat > tdat > dat
     datFile <- file.path(path, paste0(datBaseName, '.dat'))
     tdatFile <- file.path(path, paste0(datBaseName, '.tdat'))
     cdatFile <- file.path(path, paste0(datBaseName, '.cdat'))
@@ -86,12 +88,11 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
       rtFile <- tdatFile
     }
     
-    
     read_raw <- switch(format,
-                             IOHprofiler = read_dat,
-                             COCO = read_COCO_dat2,
-                             BIOBJ_COCO = read_BIOBJ_COCO_dat,
-                             TWO_COL = read_dat)
+                       IOHprofiler = read_dat,
+                       COCO = read_dat__COCO,
+                       BIOBJ_COCO = read_dat__BIOBJ_COCO,
+                       TWO_COL = read_dat)
 
     fvUnaligned <- read_raw(fvFile, subsampling)
     rtUnaligned <- read_raw(rtFile, subsampling)
@@ -152,23 +153,20 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
             c(info, list(maxRT = maxRT, finalFV = finalFV, format = format,
                          maximization = maximization, suite = suite)))
 
-  } else {
+  } else
     structure(list(), class = c('DataSet', 'list'))
-  }
 }
 
 #' S3 generic print operator for DataSet
 #'
 #' @param x A DataSet object
-#' @param verbose Verbose mode, currently not implemented
 #' @param ... Arguments passed to other methods
 #'
 #' @return A short description of the DataSet
 #' @examples 
 #' print(dsl[[1]])
 #' @export
-print.DataSet <- function(x, verbose = F, ...) {
-  # TODO: implement the verbose mode
+print.DataSet <- function(x, ...) {
   cat(as.character.DataSet(x, ...))
 }
 

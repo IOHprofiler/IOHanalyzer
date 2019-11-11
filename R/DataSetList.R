@@ -73,7 +73,7 @@ DataSetList <-
           file.path(path, list.files(path, pattern = '.csv', recursive = T))
     }
     else
-      indexFiles <- scan_IndexFile(path)
+      indexFiles <- scan_index_file(path)
     
     if (is.null(print_fun))
       print_fun <- cat
@@ -99,7 +99,7 @@ DataSetList <-
       }
       
       else{
-        indexInfo <- read_IndexFile(file)
+        indexInfo <- read_index_file(file)
         if (verbose) {
           print_fun(sprintf('   algorithm %s...\n', indexInfo[[1]]$algId))
         }

@@ -157,7 +157,7 @@ observeEvent(selected_folders(), {
   
   
   for (folder in folder_new) {
-    indexFiles <- scan_IndexFile(folder)
+    indexFiles <- scan_index_file(folder)
 
     if (length(indexFiles) == 0)
       print_html(paste('<p style="color:red;">No .info-files detected in the

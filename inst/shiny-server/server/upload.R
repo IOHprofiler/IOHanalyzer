@@ -216,6 +216,12 @@ observeEvent(selected_folders(), {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PMF"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "PARAMETER"))
   }
+  if (attr(DataList$data, 'suite') == "PBO") {
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "FCE_ECDF"))
+  }
+  else {
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "FCE_ECDF"))
+  }
   set_color_scheme("Default", get_algId(DataList$data))
   set_format_func(attr(DataList$data, 'suite'))
 })

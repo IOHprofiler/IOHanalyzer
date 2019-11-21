@@ -70,7 +70,6 @@ grad_functions <- c(
 #' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
 #' @param backend Which plotting library to use. Can be 'plotly' or 'ggplot2'
 #' @param includeOpts Whether or not to include all best points reached by each algorithm
-#' @param dash Style of ERT-lines 
 #' @param p Existing plot to which to add the current data
 #' @return A plot of ERT-values of the DataSetList
 #' @export
@@ -79,8 +78,8 @@ grad_functions <- c(
 Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
                                 show.ERT = T, show.CI = F, show.mean = F,
                                 show.median = F, backend = NULL,
-                                scale.xlog = F, scale.ylog = F, includeOpts = F,
-                                scale.reverse = F, dash = 'solid', p = NULL) 
+                                scale.xlog = F, scale.ylog = F, scale.reverse = F,
+                                includeOpts = F, p = NULL) 
   UseMethod("Plot.RT.Single_Func", dsList)
 #' Plot lineplot of the expected function values of a DataSetList
 #'
@@ -418,8 +417,8 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                             show.ERT = T, show.CI = T, show.mean = F,
                                             show.median = F, backend = NULL,
                                             scale.xlog = F, scale.ylog = F,
-                                            scale.reverse = F, dash = 'solid', p = NULL,
-                                            includeOpts = F) {
+                                            scale.reverse = F, includeOpts = F, 
+                                            p = NULL) {
   if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
 
   Fall <- get_funvals(dsList)
@@ -1575,7 +1574,7 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
 Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, 
                                            plot_mode = 'radar', use_rank = F,
                                            scale.ylog = T, maximize = T, erts = NULL,
-                                           dash = 'auto', inf.action = 'overlap') {
+                                           inf.action = 'overlap') {
   if (is.null(erts))
     erts <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, maximize = maximize)
   
@@ -1589,8 +1588,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
   in_legend <- integer(N)
   names(in_legend) <- get_algId(dsList)
 
-  aggr_attr <- if (aggr_on 
-                   'funcId') get_funcId(dsList) else get_dim(dsList)
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
   if (!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
 
   second_aggr <- if (aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)

@@ -53,7 +53,8 @@ observe({
   req(input$RTECDF.Aggr.Algs)
   req(input$Overall.Funcid)
   req(input$Overall.Dim)
-  
+  req(DATA_RAW()$suite != NEVERGRAD)
+
   dsList <- subset(DATA_RAW(), algId %in% input$RTECDF.Aggr.Algs)
   req(length(dsList) > 0)
   if (!input$RTECDF.Aggr.Func) 

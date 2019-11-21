@@ -65,6 +65,7 @@ observeEvent(input$repository.load_button, {
     return(NULL)
   }
   DataList$data <- c(DataList$data, data)
+  set_color_scheme("Default", get_algId(DataList$data))
 })
 
 # upload the compressed the data file and uncompress them
@@ -159,7 +160,7 @@ observeEvent(selected_folders(), {
   for (folder in folder_new) {
     indexFiles <- scan_IndexFile(folder)
 
-    if (length(indexFiles) == 0)
+    if (length(indexFiles) == 0 && format_detected != NEVERGRAD)
       print_html(paste('<p style="color:red;">No .info-files detected in the
                        uploaded folder:</p>', folder))
     else {
@@ -215,6 +216,7 @@ observeEvent(selected_folders(), {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PMF"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "PARAMETER"))
   }
+  set_color_scheme("Default", get_algId(DataList$data))
   set_format_func(attr(DataList$data, 'suite'))
 })
 

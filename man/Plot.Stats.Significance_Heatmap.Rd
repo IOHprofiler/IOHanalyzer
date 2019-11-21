@@ -27,5 +27,5 @@ A heatmap showing the statistical significance between algorithms
 Plot a heatmap showing the statistically different algorithms
 }
 \examples{
-Plot.Stats.Significance_Heatmap(subset(dsl, funcId==2), 16)
+Plot.Stats.Significance_Heatmap(subset(dsl, funcId == 2), 16)
 }

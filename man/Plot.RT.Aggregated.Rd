@@ -11,7 +11,7 @@ Plot.RT.Aggregated(dsList, aggr_on = "funcId", targets = NULL,
 
 \method{Plot.RT.Aggregated}{DataSetList}(dsList, aggr_on = "funcId",
   targets = NULL, plot_mode = "radar", use_rank = F,
-  scale.ylog = T, maximize = T, erts = NULL,
+  scale.ylog = T, maximize = T, erts = NULL, dash = "auto",
   inf.action = "overlap")
 }
 \arguments{

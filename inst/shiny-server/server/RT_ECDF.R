@@ -39,8 +39,7 @@ output$RTECDF.Aggr.Download <- downloadHandler(
     eval(FIG_NAME_RT_ECDF_MULT)
   },
   content = function(file) {
-    save_plotly(render_RT_ECDF_MULT(), file,
-                format = input$RTECDF.Aggr.Format)
+    save_plotly(render_RT_ECDF_MULT(), file)
   },
   contentType = paste0('image/', input$RTECDF.Aggr.Format)
 )
@@ -179,8 +178,7 @@ output$RTECDF.Multi.Download <- downloadHandler(
     eval(FIG_NAME_RT_ECDF_AGGR)
   },
   content = function(file) {
-    save_plotly(render_RT_ECDF_AGGR(), file,
-                format = input$RTECDF.Multi.Format)
+    save_plotly(render_RT_ECDF_AGGR(), file)
   },
   contentType = paste0('image/', input$RTECDF.Multi.Format)
 )
@@ -211,8 +209,7 @@ output$RTECDF.AUC.Download <- downloadHandler(
     eval(FIG_NAME_RT_AUC)
   },
   content = function(file) {
-    save_plotly(render_RT_AUC(), file,
-                format = input$RTECDF.AUC.Format)
+    save_plotly(render_RT_AUC(), file)
   },
   contentType = paste0('image/', input$RTECDF.AUC.Format)
 )

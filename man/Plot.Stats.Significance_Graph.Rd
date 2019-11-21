@@ -27,5 +27,5 @@ A graph showing the statistical significance between algorithms
 Plot a network graph showing the statistically different algorithms
 }
 \examples{
-Plot.Stats.Significance_Graph(subset(dsl, funcId==2), 16)
+Plot.Stats.Significance_Graph(subset(dsl, funcId == 2), 16)
 }

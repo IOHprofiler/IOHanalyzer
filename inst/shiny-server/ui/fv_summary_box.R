@@ -43,7 +43,7 @@ fv_stats_box <- function(width = 12, collapsible = T, collapsed = T) {
       mainPanel(
         width = 9,
         HTML(paste0('<div style="font-size:120%;">',
-                    includeMarkdown('RMD/TAR_SUMMARY_TABLE.Rmd'),
+                    includeMarkdown('markdown/TAR_SUMMARY_TABLE.Rmd'),
                     '</div>')),
         DT::dataTableOutput('FCE_SUMMARY')
       )

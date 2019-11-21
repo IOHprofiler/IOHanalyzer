@@ -15,8 +15,7 @@ output$FCEPDF.Bar.Download <- downloadHandler(
     eval(FIG_NAME_FV_PDF)
   },
   content = function(file) {
-    save_plotly(render_FV_PDF(), file,
-                format = input$FCEPDF.Bar.Format)
+    save_plotly(render_FV_PDF(), file)
   },
   contentType = paste0('image/', input$FCEPDF.Bar.Format)
 )
@@ -41,8 +40,7 @@ output$FCEPDF.Hist.Download <- downloadHandler(
     eval(FIG_NAME_FV_HIST)
   },
   content = function(file) {
-    save_plotly(render_FV_HIST(), file,
-                format = input$FCEPDF.Hist.Format)
+    save_plotly(render_FV_HIST(), file)
   },
   contentType = paste0('image/', input$FCEPDF.Hist.Format)
 )

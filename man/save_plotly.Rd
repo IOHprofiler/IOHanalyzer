@@ -26,6 +26,6 @@ inkscape is also needed.
 \examples{
 \donttest{
 p <- Plot.RT.Single_Func(dsl[1])
-save_plotly(p, 'example_file.png', format = 'png')
+save_plotly(p, 'example_file.png')
 }
 }

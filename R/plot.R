@@ -43,7 +43,7 @@ legend_inside2 <- function() {
 }
 
 legend_below <- function() { 
-  list(y = -0.15, orientation = 'h',
+  list(y = -0.2, orientation = 'h',
        font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
                    family = 'Old Standard TT, serif'))
 }
@@ -302,19 +302,17 @@ color_palettes <- function(ncolor) {
 #' @param file String. The name of the figure file
 #' @param width Optional. Width of the figure
 #' @param height Optional. Height of the figure
-#' @param format Deprecated. Optional extra specifier for format
 #' @param ... Additional arguments for orca
 #' @export
 #' @examples
 #' \donttest{
 #' p <- Plot.RT.Single_Func(dsl[1])
-#' save_plotly(p, 'example_file.png', format = 'png')
+#' save_plotly(p, 'example_file.png')
 #' }
-save_plotly <- function(p, file, width = NULL, height = NULL, format = NULL, ...) {
+save_plotly <- function(p, file, width = NULL, height = NULL, ...) {
   des <- dirname(file)
   file <- basename(file)
-  if (is.null(format))
-    format <- tools::file_ext(file)
+  format <- tools::file_ext(file)
   
   pwd <- tempdir()
   if (is.null(width)) width <- getOption("IOHanalyzer.figure_width", default = NULL)

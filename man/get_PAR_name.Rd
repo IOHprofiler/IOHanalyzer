@@ -5,12 +5,16 @@
 \alias{get_PAR_name.DataSet}
 \title{Get the parameter names of the algorithm}
 \usage{
-get_PAR_name(ds)
+get_PAR_name(ds, which)
 
-\method{get_PAR_name}{DataSet}(ds)
+\method{get_PAR_name}{DataSet}(ds, which = "by_FV")
 }
 \arguments{
 \item{ds}{A DataSet object}
+
+\item{which}{a string takes it value in `c('by_FV', 'by_RT')`, indicating the 
+parameters aligned against the running time (RT) or function value (FV). `'by_FV'`
+is the default value.}
 }
 \value{
 a character list of paramter names, if recorded in the data set

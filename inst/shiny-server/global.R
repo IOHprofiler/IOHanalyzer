@@ -150,7 +150,7 @@ FIG_NAME_FV_HIST <- parse(text = "paste0('FV_HIST-', Sys.Date(), '.', input$FCEP
 FIG_NAME_FV_ECDF_AGGR <- parse(text = "paste0('FV_ECDF_AGGR-', Sys.Date(), '.', input$FCEECDF.Mult.Format)")
 FIG_NAME_FV_AUC <- parse(text = "paste0('FV_AUC-', Sys.Date(), '.', input$FCEECDF.AUC.Format)")
 
-FIG_NAME_PAR_PER_FUN <- parse(text = "paste0('PAR-', Sys.Date(), '.', input$PAR.Plot.Format)")
+FIG_NAME_PAR_PER_FUN <- parse(text = "paste0('PAR-', Sys.Date(), '.', input$FV_PAR.Plot.Format)")
 
 
 # ID of the control widget, whose current value should de always recorded and restored ----
@@ -173,8 +173,8 @@ widget_id <- c('RTSummary.Statistics.Min',
                'RTECDF.AUC.Min',
                'RTECDF.AUC.Max',
                'RTECDF.AUC.Step',
-               'PAR.Plot.Min',
-               'PAR.Plot.Max',
+               'FV_PAR.Plot.Min',
+               'FV_PAR.Plot.Max',
                'PAR.Summary.Min',
                'PAR.Summary.Max',
                'PAR.Summary.Step',

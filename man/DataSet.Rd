@@ -4,8 +4,13 @@
 \alias{DataSet}
 \title{Constructor of S3 class 'DataSet'}
 \usage{
-DataSet(info, verbose = F, maximization = NULL, format = IOHprofiler,
-  subsampling = FALSE)
+DataSet(
+  info,
+  verbose = F,
+  maximization = NULL,
+  format = IOHprofiler,
+  subsampling = FALSE
+)
 }
 \arguments{
 \item{info}{A List. Contains a set of in a *.info file.}
@@ -35,7 +40,7 @@ DataSet contains the following attributes
  * comment
 }
 \examples{
-path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
-info <- read_index_file(file.path(path,"IOHprofiler_f1_i1.info"))
+path <- system.file('extdata', 'ONE_PLUS_LAMDA_EA', package = 'IOHanalyzer')
+info <- read_index_file(file.path(path, 'IOHprofiler_f1_i1.info'))
 DataSet(info[[1]])
 }

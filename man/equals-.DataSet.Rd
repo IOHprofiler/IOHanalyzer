@@ -7,9 +7,9 @@
 \method{==}{DataSet}(dsL, dsR)
 }
 \arguments{
-\item{dsL}{A DataSet object}
+\item{dsL}{A `DataSet` object}
 
-\item{dsR}{A DataSet object}
+\item{dsR}{A `DataSet` object}
 }
 \value{
 True if the DataSets contain the same function, dimension and algorithm,

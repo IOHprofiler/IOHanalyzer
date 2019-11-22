@@ -4,8 +4,14 @@
 \alias{seq_RT}
 \title{Function for generating sequences of runtime values}
 \usage{
-seq_RT(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
-  scale = "linear")
+seq_RT(
+  RT,
+  from = NULL,
+  to = NULL,
+  by = NULL,
+  length.out = NULL,
+  scale = "linear"
+)
 }
 \arguments{
 \item{RT}{A list of runtime values}

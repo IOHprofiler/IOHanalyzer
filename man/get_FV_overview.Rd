@@ -13,7 +13,7 @@ get_FV_overview(ds, ...)
 \method{get_FV_overview}{DataSetList}(ds, algorithm = "all", ...)
 }
 \arguments{
-\item{ds}{A DataSet or DataSetList object}
+\item{ds}{A `DataSet` or `DataSetList` object}
 
 \item{...}{Arguments passed to other methods}
 
@@ -29,5 +29,5 @@ Get Function Value condensed overview
 \examples{
 get_FV_overview(dsl)
 get_FV_overview(dsl[[1]])
-get_FV_overview(dsl, algorithm = "(1+1)_greedy_hill_climber_1" )
+get_FV_overview(dsl, algorithm = '(1+1)_greedy_hill_climber_1')
 }

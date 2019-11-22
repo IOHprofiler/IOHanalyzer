@@ -7,7 +7,8 @@ sidebar_menu <- function() {
                        menuSubItem("Data Summary", tabName = "ERT_data", icon = icon("table")),
                        menuSubItem("Expected Runtime", tabName = "ERT_convergence", icon = icon("line-chart"), selected = F),
                        menuSubItem("Probability Mass Function", tabName = "RT_PMF", icon = icon("bar-chart"), selected = F),
-                       menuSubItem("Cumulative Distribution", tabName = "RT_ECDF", icon = icon("line-chart"), selected = F)
+                       menuSubItem("Cumulative Distribution", tabName = "RT_ECDF", icon = icon("line-chart"), selected = F),
+                       menuSubItem("Algorithm Parameters", tabName = "PARAMETER", icon = icon('file-text-o'), selected = F)
               ),
 
               menuItem("Fixed-Budget Results", tabName = "FCE", icon = icon("file-text-o"),
@@ -17,7 +18,6 @@ sidebar_menu <- function() {
                        menuSubItem("Cumulative Distribution", tabName = "FCE_ECDF", icon = icon("line-chart"))
               ),
 
-              menuItem("Algorithm Parameters", tabName = "PARAMETER", icon = icon('file-text-o')),
               menuItem('Statistics', tabName = "Statistics", icon = icon('file-text-o')),
               menuItem("Data Format", tabName = "dataformat", icon = icon("fas fa-database")),
               menuItem("About", tabName = "about", icon = icon("question")),

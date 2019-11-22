@@ -271,11 +271,12 @@ check_format <- function(path) {
 read_dat <- function(fname, subsampling = FALSE) {
   # TODO: use the same data loading method as in read_dat__COCO
   df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
+  colnames(df) <- as.character(df[1, ])
   idx <- which(!grepl('\\d+', df[[1]], perl = T))
 
   # check for data consistence
-  header_len <- apply(df[idx, ] != "", 1, sum) %>% min
-  idx %<>% c(nrow(df) + 1)
+  header_len <- min(apply(df[idx, ] != "", 1, sum))
+  idx <- c(idx, nrow(df) + 1)
   df <- df[, 1:header_len]
 
   # turn off the warnings of the data coersion below
@@ -347,13 +348,7 @@ read_dat__BIOBJ_COCO <- function(fname, subsampling = FALSE) {
   idx <- which(startsWith(X, '%'))
   X <- gsub('\\s+|\\t', ' ', X, perl = T)
 
-  header <- gsub(' \\| ', '|', X[4], perl = T) %>%
-    gsub('\\.\\.\\.|% ', '', ., perl = T) %>% {
-      strsplit(., split = '\\|')[[1]][select]
-    }
-
   df <- fread(text = X[-idx], header = F, sep = ' ', select = select, fill = T)
-
   idx <- which(startsWith(X, '% function'))
   idx <- c((idx + 1) - seq_along(idx) * 4, nrow(df))
 
@@ -494,48 +489,53 @@ align_non_contiguous <- function(data, idx, rownames) {
 
 #' Align data by runtimes
 #' @param data The data to align
-#' @param format Whether the data is form IOHprofiler or COCO.
+#' @param format Whether the data is form IOHprofiler or COCO
+#' @param include_param Whether to include the recorded parameters in the alignment
 #' @noRd
-#' @return Data aligned by runtime
-align_runtime <- function(data, format = IOHprofiler, maximization = TRUE) {
-  if (format == IOHprofiler) {
+#' @return Data aligned by the running time
+align_running_time <- function(data, format = IOHprofiler, include_param = TRUE,
+                               maximization = TRUE) {
+  if (format == IOHprofiler)
     idxTarget <- 3
-  } else if (format == COCO) {
+  else if (format == COCO)
     idxTarget <- 3
-  } else if (format == BIBOJ_COCO) {
+  else if (format == BIBOJ_COCO) {
     n_data_column <- 3
     idxTarget <- 2
-  } else if (format == TWO_COL) {
+  } 
+  else if (format == TWO_COL) {
     n_data_column <- 2
     idxTarget <- 2
   }
 
-  FV <- lapply(data, function(x) x[, idxTarget]) %>%
-    unlist %>%
-    unique %>%
-    sort(decreasing = !maximization)
-
-  n_column <- sapply(data, ncol) %>% unique
+  FV <- sort(unique(unlist(lapply(data, function(x) x[, idxTarget]))),
+             decreasing = !maximization)
+  n_column <- unique(sapply(data, ncol))
 
   if (format == COCO) {
     n_param <- 0
     idxValue <- idxEvals
     param_names <- NULL
-  } else if (format == IOHprofiler) {
+  } 
+  else if (format == IOHprofiler) {
     n_param <- n_column - n_data_column
-    if (n_param > 0) {
+    if (include_param && n_param > 0) {
       param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
       idxValue <- c(idxEvals, (n_data_column + 1):n_column)
-    } else {
+    } 
+    else {
       param_names <- NULL
       idxValue <- idxEvals
     }
-  } else {
+  } 
+  else {
     param_names <- NULL
     idxValue <- idxEvals
   }
-  c_align_runtime(data, FV, idxValue - 1, maximization, idxTarget - 1) %>%
-    set_names(c('RT', param_names))
+  
+  res <- c_align_running_time(data, FV, idxValue - 1, maximization, idxTarget - 1)
+  names(res) <- c('RT', param_names)
+  res
 }
 
 #' Align data by function values
@@ -543,7 +543,7 @@ align_runtime <- function(data, format = IOHprofiler, maximization = TRUE) {
 #' @param format Whether the data is form IOHprofiler or COCO.
 #' @param include_param Whether to include the recorded parameters in the alignment
 #' @noRd
-#' @return Data aligned by function value
+#' @return Data aligned by the function value
 align_function_value <- function(data, include_param = TRUE, format = IOHprofiler) {
   n_column <- unique(sapply(data, ncol))
   stopifnot(length(n_column) == 1)
@@ -558,19 +558,17 @@ align_function_value <- function(data, include_param = TRUE, format = IOHprofile
     idxTarget <- 3
     n_param <- n_column - n_data_column
   } 
-  else if (format == BIBOJ_COCO) {  # new bi-objective COCO format
+  else if (format == BIBOJ_COCO) {  # bi-objective COCO format
     maximization <- FALSE
     idxTarget <- 2
     n_data_column <- 2
-    n_param <- 0                      # no parameter is allowed in this case
+    n_param <- 0                   # no parameter is allowed in this case
   } 
   else if (format == TWO_COL) {
     maximization <- TRUE
     idxTarget <- 2
     n_param <- 0
   }
-
-  include_param <- include_param && (n_param > 0)
 
   if (check_contiguous(data)) {
     nrow <- sapply(data, nrow) %>% max
@@ -583,6 +581,8 @@ align_function_value <- function(data, include_param = TRUE, format = IOHprofile
   }
 
   FV <- align_func(data, idxTarget, runtime)
+  include_param <- include_param && (n_param > 0)
+  
   if (include_param) {
     param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
     param <- list()

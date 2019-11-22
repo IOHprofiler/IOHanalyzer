@@ -9,11 +9,11 @@ c_impute <- function(x, y, rowname) {
     .Call('_IOHanalyzer_c_impute', PACKAGE = 'IOHanalyzer', x, y, rowname)
 }
 
-c_impute_runtime <- function(index, value, FV, maximization) {
-    .Call('_IOHanalyzer_c_impute_runtime', PACKAGE = 'IOHanalyzer', index, value, FV, maximization)
+c_impute_running_time <- function(index, value, FV, maximization) {
+    .Call('_IOHanalyzer_c_impute_running_time', PACKAGE = 'IOHanalyzer', index, value, FV, maximization)
 }
 
-#' Align a dataSetList by runtime
+#' Align a list of data set by function values
 #'
 #' @param data the data
 #' @param FV Function values
@@ -21,8 +21,8 @@ c_impute_runtime <- function(index, value, FV, maximization) {
 #' @param maximization Boolean
 #' @param idxTarget index of the target
 #' @noRd
-c_align_runtime <- function(data, FV, idxValue, maximization, idxTarget) {
-    .Call('_IOHanalyzer_c_align_runtime', PACKAGE = 'IOHanalyzer', data, FV, idxValue, maximization, idxTarget)
+c_align_running_time <- function(data, FV, idxValue, maximization, idxTarget) {
+    .Call('_IOHanalyzer_c_align_running_time', PACKAGE = 'IOHanalyzer', data, FV, idxValue, maximization, idxTarget)
 }
 
 c_read_dat <- function(dat, NC, leading) {

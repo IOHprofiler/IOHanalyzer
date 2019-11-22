@@ -60,14 +60,24 @@ IOHanalyzer_env <- new.env(parent = emptyenv())
 .sd <- function(x) sd(x, na.rm = T)
 .sum <- function(x) sum(x, na.rm = T)
 
+# Quantile function for discrete values
 IOHanalyzer_env$D_quantile <- function(x, pct = NULL) {
   if (is.null(pct)) pct <- getOption("IOHanalyzer.quantiles")
-  quantile(x, pct, names = F, type = 3, na.rm = T)
+  tryCatch(
+    quantile(x, pct, names = F, type = 3, na.rm = T),
+    error = function(e) rep(NA, length(pct)),
+    warning = function(w) rep(NA, length(pct))
+  )
 }
 
+# Quantile function for real values
 IOHanalyzer_env$C_quantile <- function(x, pct = NULL) {
   if (is.null(pct)) pct <- getOption("IOHanalyzer.quantiles")
-  quantile(x, pct, names = F, na.rm = T)
+  tryCatch(
+    quantile(x, pct, names = F, na.rm = T),
+    error = function(e) rep(NA, length(pct)),
+    warning = function(w) rep(NA, length(pct))
+  )
 }
 
 IOHprofiler <- 'IOHprofiler'

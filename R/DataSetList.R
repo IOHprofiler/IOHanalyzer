@@ -9,13 +9,8 @@
 #' @param print_fun Function used to print output when in verbose mode
 #' @noRd
 #' @return A DataSetList object
-read_dir <-
-  function(path,
-           verbose = T,
-           print_fun = NULL,
-           maximization = TRUE,
-           format = IOHprofiler,
-           subsampling = FALSE) {
+read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
+                     format = IOHprofiler, subsampling = FALSE) {
     DataSetList(
       path,
       verbose,
@@ -26,6 +21,7 @@ read_dir <-
     )
   }
 
+# TODO: improve documentation of this S3 class
 #' S3 constructor of the 'DataSetList'
 #'
 #' Attributes
@@ -52,15 +48,10 @@ read_dir <-
 #' @return A DataSetList object
 #' @export
 #' @examples
-#' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
+#' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package = "IOHanalyzer")
 #' DataSetList(path)
-DataSetList <-
-  function(path = NULL,
-           verbose = T,
-           print_fun = NULL,
-           maximization = NULL,
-           format = IOHprofiler,
-           subsampling = FALSE) {
+DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization = NULL,
+                        format = IOHprofiler, subsampling = FALSE) {
     if (is.null(path))
       return(structure(list(), class = c('DataSetList', 'list')))
     
@@ -97,41 +88,38 @@ DataSetList <-
         object %<>% c(., dsl)
         suites[i] <- NEVERGRAD
       }
-      
-      else{
+      else {
         indexInfo <- read_index_file(file)
-        if (verbose) {
+        if (verbose) 
           print_fun(sprintf('   algorithm %s...\n', indexInfo[[1]]$algId))
-        }
         
         for (info in indexInfo) {
           if (verbose) {
-            print_fun(sprintf(
-              '      %d instances on f%d %dD...\n',
-              length(info$instance),
-              info$funcId,
-              info$DIM
-            ))
+            print_fun(
+              sprintf(
+                '      %d instances on f%d %dD...\n',
+                length(info$instance),
+                info$funcId,
+                info$DIM
+              )
+            )
           }
           
           copy_flag <- TRUE
-          data <-
-            DataSet(
-              info,
-              maximization = maximization,
-              format = format,
-              subsampling = subsampling
-            )
+          data <- DataSet(info, maximization = maximization,
+                          format = format, subsampling = subsampling)
+          
           DIM[i] <- attr(data, 'DIM')
           funcId[i] <- attr(data, 'funcId')
           algId[i] <- attr(data, 'algId')
+          # TODO: double-check the following treatment on `instance`!!!
           instance <- attr(data, 'instance') #Was instance without index?
           suites[i] <- attr(data, 'suite')
           maximizations[i] <- attr(data, 'maximization')
+          
           # check for duplicated instances
           if (length(object) != 0) {
-            idx <- sapply(object, function(obj)
-              obj == data) %>% which
+            idx <- which(sapply(object, function(obj) obj == data))
             for (k in idx) {
               instance_ <- attr(object[[k]], 'instance')
               if (all(instance == instance_)) {
@@ -152,9 +140,9 @@ DataSetList <-
           }
         }
       }
-      if (verbose) {
+      
+      if (verbose) 
         print_fun("\n")
-      }
     }
     
     # TODO: sort all DataSet by multiple attributes: algId, funcId and DIM
@@ -169,9 +157,9 @@ DataSetList <-
     if (length(suite) != 1 || length(maximization) != 1) {
       warning("Multipe different suites detected!")
     }
+    
     attr(object, 'suite') <- suite
     attr(object, 'maximization') <- maximization
-    
     object
   }
 
@@ -200,6 +188,7 @@ c.DataSetList <- function(...) {
       unlist(lapply(dsl, function(x)
         attr(x, attr_str)))
   }
+  
   for (attr_str in c('suite', 'maximization')) {
     temp  <-
       unique(
@@ -223,7 +212,7 @@ c.DataSetList <- function(...) {
 #' @return The DataSetList of the DataSets at indices i of DataSetList x
 #' @export
 #' @examples
-#' dsl[c(1,3)]
+#' dsl[c(1, 3)]
 `[.DataSetList` <- function(x, i, drop = FALSE) {
   # remove the attributes firstly
   obj <- unclass(x)[i]
@@ -267,21 +256,28 @@ print.DataSetList <- function(x, ...) {
 #' @examples
 #' summary(dsl)
 summary.DataSetList <- function(object, ...) {
-  as.data.frame(t(sapply(object, function(d) {
-    list(
-      suite = attr(d, 'suite'),
-      funcId = attr(d, 'funcId'),
-      DIM = attr(d, 'DIM'),
-      algId = attr(d, 'algId'),
-      datafile = attr(d, 'datafile'),
-      comment = attr(d, 'comment')
+  as.data.frame(
+    t(
+      sapply(
+        object, 
+        function(d) {
+          list(
+            suite = attr(d, 'suite'),
+            funcId = attr(d, 'funcId'),
+            DIM = attr(d, 'DIM'),
+            algId = attr(d, 'algId'),
+            datafile = attr(d, 'datafile'),
+            comment = attr(d, 'comment')
+          )
+        }
+      )
     )
-  })))
+  )
 }
 
 #' S3 sort function for DataSetList
 #'
-#' Sorts a DataSetList based on the custom specified attributes ("algId', 'DIM' or 'funcId'). 
+#' Sorts a DataSetList based on the custom specified attributes ('algId', 'DIM' or 'funcId'). 
 #' Default is as ascending, can be made descending by adding a - in front of the attribute.
 #' Sorting accross multiple attributes is supported, in the order they are specified.
 #' 
@@ -289,7 +285,7 @@ summary.DataSetList <- function(object, ...) {
 #' @param ... attribute by which `dsl` is sorted. Multiple attributes can be specified.
 #' @export
 #' @examples 
-#' sort(dsl, DIM, -funcId, algId) 
+#' arrange(dsl, DIM, -funcId, algId) 
 arrange <- function(dsl, ...) UseMethod('arrange', dsl)
 
 #' @rdname arrange
@@ -458,13 +454,6 @@ get_RT_overview.DataSetList <-
       get_RT_overview(ds)))
   }
 
-# get_FV_runs.DataSetList <- function(dsList, runtime, algorithm = 'all') {
-#   if (algorithm != 'all')
-#     dsList <- subset(dsList, algId == algorithm)
-
-#   lapply(dsList, function(ds) get_FV_runs(ds, runtime)) %>% rbindlist
-# }
-
 #' @rdname get_FV_sample
 #' @param algorithm Which algorithms in the DataSetList to consider.
 #' @export
@@ -489,26 +478,22 @@ get_FV_sample.DataSetList <-
 #' @rdname get_PAR_summary
 #' @param algorithm Which algorithms in the DataSetList to consider.
 #' @export
-get_PAR_summary.DataSetList <-
-  function(ds, ftarget, algorithm = 'all', ...) {
-    if (algorithm != 'all')
-      ds <- subset(ds, algId == algorithm)
+get_PAR_summary.DataSetList <- function(ds, idxValue, algorithm = 'all', ...) {
+  if (algorithm != 'all')
+    ds <- subset(ds, algId == algorithm)
     
-    rbindlist(lapply(ds, function(ds)
-      get_PAR_summary(ds, ftarget, ...)))
-  }
+  rbindlist(lapply(ds, function(ds) get_PAR_summary(ds, idxValue, ...)))
+}
 
 #' @rdname get_PAR_sample
 #' @param algorithm Which algorithms in the DataSetList to consider.
 #' @export
-get_PAR_sample.DataSetList <-
-  function(ds, ftarget, algorithm = 'all', ...) {
-    if (algorithm != 'all')
-      ds <- subset(ds, algId == algorithm)
+get_PAR_sample.DataSetList <- function(ds, idxValue, algorithm = 'all', ...) {
+  if (algorithm != 'all')
+    ds <- subset(ds, algId == algorithm)
     
-    rbindlist(lapply(ds, function(ds)
-      get_PAR_sample(ds, ftarget, ...)), fill = T)
-  }
+  rbindlist(lapply(ds, function(ds) get_PAR_sample(ds, idxValue, ...)), fill = T)
+}
 
 #' Get all dimensions present in a DataSetList
 #'
@@ -548,17 +533,28 @@ get_algId <- function(dsList) {
 
 #' Get all parameter ids present in a DataSetList
 #'
-#' @param dsList The DataSetLsit
+#' @param dsList The DataSetList
+#' @param which A string takes values in `c('by_FV', 'by_RT')`. To choose the parameters aligned 
+#' by the running time (RT) or the function value (FV). Note that parameters in each case are 
+#' not necessary the same.
 #'
 #' @return A sorted list of all unique parameter ids which occur in the DataSetList
 #' @export
 #' @examples
 #' get_parId(dsl)
-get_parId <- function(dsList) {
-  unique(unlist(lapply(dsList, function(d)
-    setdiff(
-      names(d), c('RT', 'FV', 'RT.summary')
-    ))))
+get_parId <- function(dsList, which = 'by_FV') {
+  unique(
+    unlist(
+      lapply(dsList, 
+             function(d) {
+               if (which == 'by_FV') 
+                 names(d$PAR$by_FV)
+               else if (which == 'by_RT') 
+                 names(d$PAR$by_RT)
+             }
+      )
+    )
+  )
 }
 
 # TODO: let the user choose/detect whether the problem is subject to maximization

@@ -6,21 +6,33 @@
 \alias{get_PAR_sample.DataSetList}
 \title{Get Parameter Value Samples}
 \usage{
-get_PAR_sample(ds, ftarget, ...)
+get_PAR_sample(ds, idxValue, ...)
 
-\method{get_PAR_sample}{DataSet}(ds, ftarget, parId = "all",
-  output = "wide", ...)
+\method{get_PAR_sample}{DataSet}(
+  ds,
+  idxValue,
+  parId = "all",
+  which = "by_FV",
+  output = "wide",
+  ...
+)
 
-\method{get_PAR_sample}{DataSetList}(ds, ftarget, algorithm = "all", ...)
+\method{get_PAR_sample}{DataSetList}(ds, idxValue, algorithm = "all", ...)
 }
 \arguments{
 \item{ds}{A DataSet or DataSetList object}
 
-\item{ftarget}{A Numerical vector. Function values at which parameter values are observed}
+\item{idxValue}{A Numerical vector. Index values at which parameter values are observed. 
+The index value can either take its value in the range of running times, or function values.
+Such a value type is signified by `which` parameter.}
 
 \item{...}{Arguments passed to other methods}
 
 \item{parId}{A character vector. Either 'all' or the name of parameters to be retrieved}
+
+\item{which}{A string takes values in `c('by_FV', 'by_RT')`, indicating the parameters to be 
+retrieved are aligned against the running time (RT) or function value (FV). `'by_FV'`
+is the default value.}
 
 \item{output}{A character. The format of the output data: 'wide' or 'long'}
 

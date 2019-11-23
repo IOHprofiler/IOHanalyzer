@@ -51,8 +51,7 @@ output$FCEECDF.Mult.Download <- downloadHandler(
     eval(FIG_NAME_FV_ECDF_AGGR)
   },
   content = function(file) {
-    save_plotly(render_FV_ECDF_AGGR(), file,
-                format = input$FCEECDF.Mult.Format)
+    save_plotly(render_FV_ECDF_AGGR(), file)
   },
   contentType = paste0('image/', input$FCEECDF.Mult.Format)
 )
@@ -81,8 +80,7 @@ output$FCEECDF.AUC.Download <- downloadHandler(
     eval(FIG_NAME_FV_AUC)
   },
   content = function(file) {
-    save_plotly(render_FV_AUC(), file,
-                format = input$FCEECDF.AUC.Format)
+    save_plotly(render_FV_AUC(), file)
   },
   contentType = paste0('image/', input$FCEECDF.AUC.Format)
 )

@@ -5,11 +5,19 @@
 \alias{Plot.Stats.Significance_Heatmap.DataSetList}
 \title{Plot a heatmap showing the statistically different algorithms}
 \usage{
-Plot.Stats.Significance_Heatmap(dsList, ftarget, alpha = 0.01,
-  bootstrap.size = 30)
+Plot.Stats.Significance_Heatmap(
+  dsList,
+  ftarget,
+  alpha = 0.01,
+  bootstrap.size = 30
+)
 
-\method{Plot.Stats.Significance_Heatmap}{DataSetList}(dsList, ftarget,
-  alpha = 0.01, bootstrap.size = 30)
+\method{Plot.Stats.Significance_Heatmap}{DataSetList}(
+  dsList,
+  ftarget,
+  alpha = 0.01,
+  bootstrap.size = 30
+)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -27,5 +35,5 @@ A heatmap showing the statistical significance between algorithms
 Plot a heatmap showing the statistically different algorithms
 }
 \examples{
-Plot.Stats.Significance_Heatmap(subset(dsl, funcId==2), 16)
+Plot.Stats.Significance_Heatmap(subset(dsl, funcId == 2), 16)
 }

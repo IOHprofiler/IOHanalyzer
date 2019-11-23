@@ -6,21 +6,26 @@
 \alias{get_PAR_summary.DataSetList}
 \title{Get Parameter Value Summary}
 \usage{
-get_PAR_summary(ds, ftarget, ...)
+get_PAR_summary(ds, idxValue, ...)
 
-\method{get_PAR_summary}{DataSet}(ds, ftarget, parId = "all", ...)
+\method{get_PAR_summary}{DataSet}(ds, idxValue, parId = "all", which = "by_FV", ...)
 
-\method{get_PAR_summary}{DataSetList}(ds, ftarget, algorithm = "all",
-  ...)
+\method{get_PAR_summary}{DataSetList}(ds, idxValue, algorithm = "all", ...)
 }
 \arguments{
 \item{ds}{A DataSet or DataSetList object}
 
-\item{ftarget}{A Numerical vector. Function values at which parameter values are observed}
+\item{idxValue}{A Numerical vector. Index values at which parameter values are observed. 
+The index value can either take its value in the range of running times, or function values.
+Such a value type is signified by `which` parameter.}
 
 \item{...}{Arguments passed to other methods}
 
 \item{parId}{A character vector. Either 'all' or the name of parameters to be retrieved}
+
+\item{which}{A string takes values in `c('by_FV', 'by_RT')`, indicating the parameters to be 
+retrieved are aligned against the running time (RT) or function value (FV). `'by_FV'`
+is the default value.}
 
 \item{algorithm}{Which algorithms in the DataSetList to consider.}
 }

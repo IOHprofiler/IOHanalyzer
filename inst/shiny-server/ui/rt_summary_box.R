@@ -21,7 +21,7 @@ rt_stats_box <- function(width = 12, collapsible = T, collapsed = T) {
 
       mainPanel(
         width = 9,
-        HTML(paste0('<div style="font-size:120%;">', includeMarkdown('RMD/RT_SUMMARY_TABLE.Rmd'),'</div>')),
+        HTML(paste0('<div style="font-size:120%;">', includeMarkdown('markdown/RT_SUMMARY_TABLE.Rmd'),'</div>')),
         DT::dataTableOutput('table_RT_summary')
       )
   )
@@ -86,7 +86,7 @@ rt_overview_box <- function(width = 12, collapsible = T, collapsed = T) {
 
       mainPanel(
         width = 9,
-        HTML(paste0('<div style="font-size:120%;">', includeMarkdown('RMD/RT_OVERVIEW_TABLE.Rmd'), '</div>')),
+        HTML(paste0('<div style="font-size:120%;">', includeMarkdown('markdown/RT_OVERVIEW_TABLE.Rmd'), '</div>')),
         DT::dataTableOutput('table_RT_overview')
       )
   )

@@ -158,7 +158,7 @@ observeEvent(selected_folders(), {
   
   
   for (folder in folder_new) {
-    indexFiles <- scan_IndexFile(folder)
+    indexFiles <- scan_index_file(folder)
 
     if (length(indexFiles) == 0 && format_detected != NEVERGRAD)
       print_html(paste('<p style="color:red;">No .info-files detected in the
@@ -366,7 +366,7 @@ observe({
   updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'FCESummary.Overview.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'RTSummary.Sample.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'PAR.Plot.Algs', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FV_PAR.Plot.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCESummary.Statistics.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'FCESummary.Sample.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'PAR.Summary.Algid', choices = algIds, selected = 'all')
@@ -390,7 +390,7 @@ observe({
   updateSelectInput(session, 'FCEECDF.Single.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCEECDF.Mult.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCEECDF.AUC.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'PAR.Plot.Params', choices = parIds_, selected = parIds_)
+  updateSelectInput(session, 'FV_PAR.Plot.Params', choices = parIds_, selected = parIds_)
 })
 
 # update (filter) according to users selection DataSets
@@ -494,8 +494,8 @@ observe({
   setTextInput(session, 'RTECDF.AUC.Min', name, alternative = format_FV(start))
   setTextInput(session, 'RTECDF.AUC.Max', name, alternative = format_FV(stop))
   setTextInput(session, 'RTECDF.AUC.Step', name, alternative = format_FV(step))
-  setTextInput(session, 'PAR.Plot.Min', name, alternative = format_FV(start))
-  setTextInput(session, 'PAR.Plot.Max', name, alternative = format_FV(stop))
+  setTextInput(session, 'FV_PAR.Plot.Min', name, alternative = format_FV(start))
+  setTextInput(session, 'FV_PAR.Plot.Max', name, alternative = format_FV(stop))
   setTextInput(session, 'PAR.Summary.Min', name, alternative = format_FV(start))
   setTextInput(session, 'PAR.Summary.Max', name, alternative = format_FV(stop))
   setTextInput(session, 'PAR.Summary.Step', name, alternative = format_FV(step))

@@ -7,33 +7,33 @@ par_expected_value_box <- function(width = 12, collapsible = T, collapsed = T) {
       width = 3,
       HTML('<p style="font-size:120%;">Range of the function values (\\(x\\) axis)</p>'),
 
-      textInput('PAR.Plot.Min', label = F_MIN_LABEL, value = ''),
-      textInput('PAR.Plot.Max', label = F_MAX_LABEL, value = ''),
-      selectInput('PAR.Plot.Params', 'Parameters', choices = NULL, selected = NULL, multiple = T),
+      textInput('FV_PAR.Plot.Min', label = F_MIN_LABEL, value = ''),
+      textInput('FV_PAR.Plot.Max', label = F_MAX_LABEL, value = ''),
+      selectInput('FV_PAR.Plot.Params', 'Parameters', choices = NULL, selected = NULL, multiple = T),
       
-      selectInput('PAR.Plot.Algs', 'Select which algorithms to plot:', choices = NULL, selected = NULL, multiple = T) %>% shinyInput_label_embed(
+      selectInput('FV_PAR.Plot.Algs', 'Select which algorithms to plot:', choices = NULL, selected = NULL, multiple = T) %>% shinyInput_label_embed(
         custom_icon() %>%
           bs_embed_popover(
             title = "Algorithm selection", content = alg_select_info, 
             placement = "auto"
           )
       ),
-      selectInput('PAR.Plot.show.mean', label = 'Mean/median',
+      selectInput('FV_PAR.Plot.show.mean', label = 'Mean/median',
                   choices = c('mean', 'median'),
                   selected = 'mean'),
-      checkboxInput('PAR.Plot.CI', "Show standard deviations", value = T),
-      checkboxInput('PAR.Plot.Logx',
+      checkboxInput('FV_PAR.Plot.CI', "Show standard deviations", value = T),
+      checkboxInput('FV_PAR.Plot.Logx',
                     label = 'Scale x axis \\(\\log_{10}\\)',
                     value = T),
 
-      checkboxInput('PAR.Plot.Logy',
+      checkboxInput('FV_PAR.Plot.Logy',
                     label = 'Scale y axis \\(\\log_{10}\\)',
                     value = T),
 
       hr(),
-      selectInput('PAR.Plot.Format', label = 'Select the figure format',
+      selectInput('FV_PAR.Plot.Format', label = 'Select the figure format',
                   choices = supported_fig_format, selected = 'pdf'),
-      downloadButton('PAR.Plot.Download', label = 'Download the figure')
+      downloadButton('FV_PAR.Plot.Download', label = 'Download the figure')
     ),
 
     mainPanel(
@@ -76,7 +76,7 @@ par_summary_box <- function(width = 12, collapsible = T, collapsed = T) {
     mainPanel(
       width = 9,
       HTML(paste0('<div style="font-size:120%;">',
-                  includeMarkdown('RMD/PAR_SUMMARY_TABLE.Rmd'), '</div>')),
+                  includeMarkdown('markdown/PAR_SUMMARY_TABLE.Rmd'), '</div>')),
       DT::dataTableOutput('table_PAR_summary')
     )
   )

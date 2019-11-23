@@ -36,9 +36,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// c_impute_runtime
-NumericMatrix c_impute_runtime(NumericVector index, NumericMatrix value, NumericVector FV, bool maximization);
-RcppExport SEXP _IOHanalyzer_c_impute_runtime(SEXP indexSEXP, SEXP valueSEXP, SEXP FVSEXP, SEXP maximizationSEXP) {
+// c_impute_running_time
+NumericMatrix c_impute_running_time(NumericVector index, NumericMatrix value, NumericVector FV, bool maximization);
+RcppExport SEXP _IOHanalyzer_c_impute_running_time(SEXP indexSEXP, SEXP valueSEXP, SEXP FVSEXP, SEXP maximizationSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -46,13 +46,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericMatrix >::type value(valueSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type FV(FVSEXP);
     Rcpp::traits::input_parameter< bool >::type maximization(maximizationSEXP);
-    rcpp_result_gen = Rcpp::wrap(c_impute_runtime(index, value, FV, maximization));
+    rcpp_result_gen = Rcpp::wrap(c_impute_running_time(index, value, FV, maximization));
     return rcpp_result_gen;
 END_RCPP
 }
-// c_align_runtime
-List c_align_runtime(List data, NumericVector FV, NumericVector idxValue, bool maximization, int idxTarget);
-RcppExport SEXP _IOHanalyzer_c_align_runtime(SEXP dataSEXP, SEXP FVSEXP, SEXP idxValueSEXP, SEXP maximizationSEXP, SEXP idxTargetSEXP) {
+// c_align_running_time
+List c_align_running_time(List data, NumericVector FV, NumericVector idxValue, bool maximization, int idxTarget);
+RcppExport SEXP _IOHanalyzer_c_align_running_time(SEXP dataSEXP, SEXP FVSEXP, SEXP idxValueSEXP, SEXP maximizationSEXP, SEXP idxTargetSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -61,7 +61,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type idxValue(idxValueSEXP);
     Rcpp::traits::input_parameter< bool >::type maximization(maximizationSEXP);
     Rcpp::traits::input_parameter< int >::type idxTarget(idxTargetSEXP);
-    rcpp_result_gen = Rcpp::wrap(c_align_runtime(data, FV, idxValue, maximization, idxTarget));
+    rcpp_result_gen = Rcpp::wrap(c_align_running_time(data, FV, idxValue, maximization, idxTarget));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -82,8 +82,8 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_IOHanalyzer_align_by_target_inner_loop", (DL_FUNC) &_IOHanalyzer_align_by_target_inner_loop, 8},
     {"_IOHanalyzer_c_impute", (DL_FUNC) &_IOHanalyzer_c_impute, 3},
-    {"_IOHanalyzer_c_impute_runtime", (DL_FUNC) &_IOHanalyzer_c_impute_runtime, 4},
-    {"_IOHanalyzer_c_align_runtime", (DL_FUNC) &_IOHanalyzer_c_align_runtime, 5},
+    {"_IOHanalyzer_c_impute_running_time", (DL_FUNC) &_IOHanalyzer_c_impute_running_time, 4},
+    {"_IOHanalyzer_c_align_running_time", (DL_FUNC) &_IOHanalyzer_c_align_running_time, 5},
     {"_IOHanalyzer_c_read_dat", (DL_FUNC) &_IOHanalyzer_c_read_dat, 3},
     {NULL, NULL, 0}
 };

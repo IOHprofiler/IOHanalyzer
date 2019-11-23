@@ -9,8 +9,7 @@ output$FCEPlot.Download <- downloadHandler(
     eval(FIG_NAME_FV_PER_FUN)
   },
   content = function(file) {
-    save_plotly(render_FV_PER_FUN(), file,
-                format = input$FCEPlot.Format)
+    save_plotly(render_FV_PER_FUN(), file)
   },
   contentType = paste0('image/', input$FCEPlot.Format)
 )
@@ -63,8 +62,7 @@ output$FCEPlot.Multi.Download <- downloadHandler(
     eval(FIG_NAME_FV_PER_FUN_MULTI)
   },
   content = function(file) {
-    save_plotly(render_FCEPlot_multi_plot(), file,
-                format = input$FCEPlot.Multi.Format)
+    save_plotly(render_FCEPlot_multi_plot(), file)
   },
   contentType = paste0('image/', input$FCEPlot.Multi.Format)
 )
@@ -159,8 +157,7 @@ output$FCEPlot.Aggr.Download <- downloadHandler(
     eval(FIG_NAME_FV_AGGR)
   },
   content = function(file) {
-    save_plotly(render_FCEPlot_aggr_plot(), file,
-                format = input$ERTPlot.Aggr.Format)
+    save_plotly(render_FCEPlot_aggr_plot(), file)
   },
   contentType = paste0('image/', input$FCEPlot.Aggr.Format)
 )

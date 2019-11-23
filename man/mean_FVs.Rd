@@ -7,8 +7,7 @@
 \usage{
 mean_FVs(dsList, aggr_on = "funcId", runtimes = NULL)
 
-\method{mean_FVs}{DataSetList}(dsList, aggr_on = "funcId",
-  runtimes = NULL)
+\method{mean_FVs}{DataSetList}(dsList, aggr_on = "funcId", runtimes = NULL)
 }
 \arguments{
 \item{dsList}{The DataSetLsit}

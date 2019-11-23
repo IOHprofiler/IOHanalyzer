@@ -52,7 +52,8 @@ body <- dashboardBody(
   },
   tags$script(HTML('
       $(document).ready(function() {
-        $("header").find("nav").append(\'<span class="myClass">Performance Evaluation for Iterative Optimization Heuristics</span>\');
+        $("header").find("nav").append(\'<span class="myClass">Performance Evaluation for Iterative 
+        Optimization Heuristics</span>\');
       })
      ')),
   tags$script("
@@ -101,14 +102,13 @@ body <- dashboardBody(
   use_bs_popover(),
   # tabitems ----------------------
   tabItems(
-    tabItem(tabName = 'about', includeMarkdown('RMD/about.Rmd')),
-
-    tabItem(tabName = 'readme', includeMarkdown('RMD/README.md')),
+    tabItem(tabName = 'about', includeMarkdown('markdown/about.md')),
+    tabItem(tabName = 'dataformat', includeMarkdown('markdown/dataformat.md')),
 
     # data uploading functionalities -----------------
     tabItem(tabName = 'upload',
             fluidRow(
-              welcome_bar()
+              column(width = 12, welcome_bar())
             ),
             fluidRow(
               column(width = 6,
@@ -199,6 +199,7 @@ body <- dashboardBody(
                )
             )
     ),
+
     # FCE: historgrams, p.d.f. --------
     tabItem(tabName = 'FCE_PDF',
             fluidRow(
@@ -233,6 +234,7 @@ body <- dashboardBody(
               )
             )
     ),
+    
     tabItem(tabName = 'Statistics',
             fluidRow(
               column(
@@ -240,7 +242,9 @@ body <- dashboardBody(
                 heatmap_box(),
                 glicko2_box()
               )
-            )),
+            )
+    ),
+
     tabItem(tabName = 'Settings',
             fluidRow(
               column(
@@ -250,6 +254,7 @@ body <- dashboardBody(
               )
             )
     ),
+
     tabItem(tabName = 'Report',
             fluidRow(
               column(

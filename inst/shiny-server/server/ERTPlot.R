@@ -11,8 +11,7 @@ output$ERTPlot.Download <- downloadHandler(
     eval(FIG_NAME_ERT_PER_FUN)
   },
   content = function(file) {
-    save_plotly(render_ert_per_fct(), file,
-                format = input$ERTPlot.Format)
+    save_plotly(render_ert_per_fct(), file)
   },
   contentType = paste0('image/', input$ERTPlot.Format)
 )
@@ -83,8 +82,7 @@ output$ERTPlot.Multi.Download <- downloadHandler(
     eval(FIG_NAME_ERT_PER_FUN_MULTI)
   },
   content = function(file) {
-    save_plotly(render_ERTPlot_multi_plot(), file,
-                format = input$ERTPlot.Multi.Format)
+    save_plotly(render_ERTPlot_multi_plot(), file)
   },
   contentType = paste0('image/', input$ERTPlot.Multi.Format)
 )
@@ -144,8 +142,7 @@ output$ERTPlot.Aggr.Download <- downloadHandler(
     eval(FIG_NAME_ERT_AGGR)
   },
   content = function(file) {
-    save_plotly(render_ERTPlot_aggr_plot(), file,
-                format = input$ERTPlot.Aggr.Format)
+    save_plotly(render_ERTPlot_aggr_plot(), file)
   },
   contentType = paste0('image/', input$ERTPlot.Aggr.Format)
 )

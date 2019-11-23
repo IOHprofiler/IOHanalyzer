@@ -8,8 +8,7 @@ output$RTPMF.Bar.Download <- downloadHandler(
     eval(FIG_NAME_RT_PMF)
   },
   content = function(file) {
-    save_plotly(render_RT_PMF(), file,
-                format = input$RTPMF.Bar.Format)
+    save_plotly(render_RT_PMF(), file)
   },
   contentType = paste0('image/', input$RTPMF.Bar.Format)
 )
@@ -35,8 +34,7 @@ output$RTPMF.Hist.Download <- downloadHandler(
     eval(FIG_NAME_RT_HIST)
   },
   content = function(file) {
-    save_plotly(render_RT_HIST(), file,
-                format = input$RTPMF.Hist.Format)
+    save_plotly(render_RT_HIST(), file)
   },
   contentType = paste0('image/', input$RTPMF.Hist.Format)
 )

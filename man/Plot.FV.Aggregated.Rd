@@ -5,25 +5,12 @@
 \alias{Plot.FV.Aggregated.DataSetList}
 \title{Plot expected function value-based comparison over multiple functions or dimensions}
 \usage{
-Plot.FV.Aggregated(
-  dsList,
-  aggr_on = "funcId",
-  runtimes = NULL,
-  plot_mode = "radar",
-  use_rank = F,
-  scale.ylog = T,
-  fvs = NULL
-)
+Plot.FV.Aggregated(dsList, aggr_on = "funcId", runtimes = NULL,
+  plot_mode = "radar", use_rank = F, scale.ylog = T, fvs = NULL)
 
-\method{Plot.FV.Aggregated}{DataSetList}(
-  dsList,
-  aggr_on = "funcId",
-  runtimes = NULL,
-  plot_mode = "radar",
-  use_rank = F,
-  scale.ylog = T,
-  fvs = NULL
-)
+\method{Plot.FV.Aggregated}{DataSetList}(dsList, aggr_on = "funcId",
+  runtimes = NULL, plot_mode = "radar", use_rank = F,
+  scale.ylog = T, fvs = NULL)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function OR dimension).}

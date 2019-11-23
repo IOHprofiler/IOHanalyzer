@@ -96,7 +96,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
                 function value progression")
       # TODO: idxTarget should be set depending on the data format 
       idxTarget <- 2
-      cond <- unique(lapply(FV_raw, function(FV) df[1, idxTarget] >= df[nrow(df), idxTarget]))
+      cond <- unique(lapply(FV_raw, function(FV) FV[1, idxTarget] >= FV[nrow(FV), idxTarget]))
       if (length(cond) > 1)
         stop('The detected maximization differs in multiple runs')
       maximization <- cond
@@ -666,9 +666,6 @@ get_FV_sample.DataSet <- function(ds, runtime, output = 'wide', ...) {
 }
 
 #' @rdname get_PAR_name
-#' @param which a string takes it value in `c('by_FV', 'by_RT')`, indicating the 
-#' parameters aligned against the running time (RT) or function value (FV). `'by_FV'`
-#' is the default value.
 #' @export
 #'
 get_PAR_name.DataSet <- function(ds, which = 'by_FV') {

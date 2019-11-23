@@ -4,14 +4,8 @@
 \alias{DataSetList}
 \title{S3 constructor of the 'DataSetList'}
 \usage{
-DataSetList(
-  path = NULL,
-  verbose = T,
-  print_fun = NULL,
-  maximization = NULL,
-  format = IOHprofiler,
-  subsampling = FALSE
-)
+DataSetList(path = NULL, verbose = T, print_fun = NULL,
+  maximization = NULL, format = IOHprofiler, subsampling = FALSE)
 }
 \arguments{
 \item{path}{Path to the data files. Will look for all .info-files in this directory and use

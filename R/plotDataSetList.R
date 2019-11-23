@@ -258,7 +258,7 @@ Plot.FV.ECDF_Single_Func <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' Plot.FV.ECDF_AUC(subset(dsl, funcId == 1))
 Plot.FV.ECDF_AUC <- function(dsList, rt_min = NULL, rt_max = NULL,
                         rt_step = NULL) UseMethod("Plot.FV.ECDF_AUC", dsList)
-#' Plot the parameter values recorded in a DataSetList
+#' Plot the parameter values recorded in a DataSetList (aligned by funcion value)
 #'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
 #' @param f_min The starting function value.
@@ -275,12 +275,35 @@ Plot.FV.ECDF_AUC <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' @return A plot of for every recorded parameter in the DataSetList
 #' @export
 #' @examples 
-#' Plot.Parameters(subset(dsl, funcId == 1))
-Plot.Parameters <- function(dsList, f_min = NULL, f_max = NULL,
+#' Plot.RT.Parameters(subset(dsl, funcId == 1))
+Plot.RT.Parameters <- function(dsList, f_min = NULL, f_max = NULL,
                             algids = 'all', par_name = NULL,
                             scale.xlog = F, scale.ylog = F,
                             show.mean = T, show.median = F,
-                            show.CI = F) UseMethod("Plot.Parameters", dsList)
+                            show.CI = F) UseMethod("Plot.RT.Parameters", dsList)
+#' Plot the parameter values recorded in a DataSetList (aligned by budget)
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param rt_min The starting budget value.
+#' @param rt_max The final budget value.
+#' @param show.mean Whether or not to show the mean parameter values
+#' @param show.median Whether or not to show the median parameter values
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param algids Which algorithms from dsList to use
+#' @param par_name Which parameters to create plots for; set to NULL to use all 
+#' parameters found in dsList.
+#' @param show.CI Whether or not to show the standard deviation
+#'
+#' @return A plot of for every recorded parameter in the DataSetList
+#' @export
+#' @examples 
+#' Plot.FV.Parameters(subset(dsl, funcId == 1))
+Plot.FV.Parameters <- function(dsList, rt_min = NULL, rt_max = NULL,
+                               algids = 'all', par_name = NULL,
+                               scale.xlog = F, scale.ylog = F,
+                               show.mean = T, show.median = F,
+                               show.CI = F) UseMethod("Plot.FV.Parameters", dsList)
 #' Plot the aggregated empirical cumulative distriburtion as a function of the running times of
 #' a DataSetList. Aggregated over multiple functions or dimensions.
 #'
@@ -1229,9 +1252,9 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
 
 }
 
-#' @rdname Plot.Parameters
+#' @rdname Plot.RT.Parameters
 #' @export
-Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
+Plot.RT.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
                                         algids = 'all', par_name = NULL,
                                         scale.xlog = F, scale.ylog = F,
                                         show.mean = T, show.median = F,
@@ -1295,7 +1318,7 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
                               type = 'scatter',
                               mode = 'lines+markers',
                               marker = list(color = rgb_str),
-                              line = list(color = rgb_str),
+                              line = list(color = rgb_str, dash = get_line_style(alg)),
                               name = alg,
                               showlegend = showlegend,
                               legendgroup = ~algId)
@@ -1322,6 +1345,106 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
   }
 
   subplot(p, nrows = nrows, titleX = F, titleY = T, margin = 0.05) 
+  # %>%
+  #   add_annotations(x = 0.5 , y = -0.18, text = "Best-so-far f(x)-value",
+  #                   showarrow = F, xref = 'paper', yref = 'paper',
+  #                   font = list(size = 22, family = 'sans-serif'))
+}
+
+
+#' @rdname Plot.FV.Parameters
+#' @export
+Plot.FV.Parameters.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
+                                           algids = 'all', par_name = NULL,
+                                           scale.xlog = F, scale.ylog = F,
+                                           show.mean = T, show.median = F,
+                                           show.CI = F) {
+  # TODO: clean this up
+  req(xor(show.mean, show.median))
+  
+  rtall <- get_runtimes(dsList)
+  if (is.null(rt_min)) rt_min <- min(rtall)
+  if (is.null(rt_max)) rt_max <- max(rtall)
+  
+  rtseq <- seq_FV(rtall, rt_min, rt_max, length.out = 50)
+  req(rtseq)
+  
+  dt <- get_PAR_summary(dsList, rtseq, algids, which = 'by_RT')
+  req(length(dt) != 0)
+  dt[, `:=`(upper = mean + sd, lower = mean - sd)]
+  
+  if (is.null(par_name)) par_name <- dt[, parId] %>% unique
+  n_param <- length(par_name)
+  
+  algorithms <- dt[, algId] %>% unique
+  n_alg <- length(algorithms)
+  
+  nrows <- ceiling(n_param / 2)
+  # TODO: improve the efficiency of plotting here
+  p <- lapply(seq(n_param),
+              function(i) {
+                IOH_plot_ly_default(y.title = par_name[i], x.title = "Function Evaluations") %>%
+                  layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
+                         yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
+              })
+  
+  for (i in seq(n_alg)) {
+    alg <- algorithms[i]
+    
+    for (j in seq(n_param)) {
+      if (j == 1)
+        showlegend <- T
+      else
+        showlegend <- F
+      
+      name <- par_name[j]
+      dt_plot <- dt[parId == name & algId == alg]
+      rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(alg)), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(alg)), collapse = ','), ',0.3)')
+      
+      if (show.CI) {
+        p[[j]] %<>%
+          add_trace(data = dt_plot, x = ~runtime, y = ~upper, type = 'scatter', mode = 'lines',
+                    line = list(color = rgba_str, width = 0, dash = get_line_style(alg)),
+                    showlegend = F, legendgroup = ~algId, name = 'mean +/- sd') %>%
+          add_trace(x = ~runtime, y = ~lower, type = 'scatter', mode = 'lines',
+                    fill = 'tonexty',  line = list(color = 'transparent', dash = get_line_style(alg)),
+                    fillcolor = rgba_str, showlegend = F, legendgroup = ~algId,
+                    name = 'mean +/- sd')
+      }
+      
+      if (show.mean)
+        p[[j]] %<>% add_trace(data = dt_plot, x = ~runtime, y = ~mean,
+                              type = 'scatter',
+                              mode = 'lines+markers',
+                              marker = list(color = rgb_str),
+                              line = list(color = rgb_str, dash = get_line_style(alg)),
+                              name = alg,
+                              showlegend = showlegend,
+                              legendgroup = ~algId)
+      
+      else if (show.median)
+        p[[j]] %<>% add_trace(data = dt_plot, x = ~runtime, y = ~median,
+                              type = 'scatter',
+                              mode = 'lines+markers',
+                              marker = list(color = rgb_str),
+                              line = list(color = rgb_str, dash = 'dash'),
+                              name = alg,
+                              legendgroup = ~algId,
+                              showlegend = showlegend)
+      # p[[j]] %<>%
+      #   layout(
+      #     annotations = list(
+      #       text = "Function evaluations", font = f1, align = "center",
+      #       xref = "paper", yref = "paper",
+      #       yanchor = "top", xanchor = "center",
+      #       x = 0.5, y = -0.2, showarrow = FALSE
+      #     )
+      #   ) 
+    }
+  }
+  
+  subplot(p, nrows = nrows, titleX = T, titleY = T, shareX = T, margin = 0.05) 
   # %>%
   #   add_annotations(x = 0.5 , y = -0.18, text = "Best-so-far f(x)-value",
   #                   showarrow = F, xref = 'paper', yref = 'paper',
@@ -1588,8 +1711,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
   in_legend <- integer(N)
   names(in_legend) <- get_algId(dsList)
 
-  aggr_attr <- if (aggr_on 
-                   'funcId') get_funcId(dsList) else get_dim(dsList)
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
   if (!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
 
   second_aggr <- if (aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)

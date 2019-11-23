@@ -1,42 +1,42 @@
 # Expected Evolution of parameters in the algorithm
-render_PAR_PER_FUN <- reactive({
-  req(input$FV_PAR.Plot.Min, input$FV_PAR.Plot.Max)
+render_RT_PAR_PER_FUN <- reactive({
+  req(input$RT_PAR.Plot.Min, input$RT_PAR.Plot.Max)
   withProgress({
-  f_min <- as.numeric(format_FV(input$FV_PAR.Plot.Min))
-  f_max <- as.numeric(format_FV(input$FV_PAR.Plot.Max)) 
-
-  tryCatch({
-    data <- subset(DATA(), algId %in% input$FV_PAR.Plot.Algs)
-    Plot.Parameters(data, f_min, f_max,
-                    show.mean = (input$FV_PAR.Plot.show.mean == 'mean'),
-                    show.median = (input$FV_PAR.Plot.show.mean == 'median'),
-                    scale.xlog = input$FV_PAR.Plot.Logx,
-                    scale.ylog = input$FV_PAR.Plot.Logy, 
-                    show.CI = input$FV_PAR.Plot.CI,
-                    par_name = input$FV_PAR.Plot.Params)
+    f_min <- as.numeric(format_FV(input$RT_PAR.Plot.Min))
+    f_max <- as.numeric(format_FV(input$RT_PAR.Plot.Max)) 
+    
+    tryCatch({
+      data <- subset(DATA(), algId %in% input$RT_PAR.Plot.Algs)
+      Plot.RT.Parameters(data, f_min, f_max,
+                         show.mean = (input$RT_PAR.Plot.show.mean == 'mean'),
+                         show.median = (input$RT_PAR.Plot.show.mean == 'median'),
+                         scale.xlog = input$RT_PAR.Plot.Logx,
+                         scale.ylog = input$RT_PAR.Plot.Logy, 
+                         show.CI = input$RT_PAR.Plot.CI,
+                         par_name = input$RT_PAR.Plot.Params)
     },
     error = function(e) {
       # TODO: more robust error handling; don't assume this causes the error
       shinyjs::alert("Not all algorithms contain the same parameters. 
                       Please select a single algorithm to plot instead.")
     }
-  )
+    )
   },
   message = "Creating plot")
 })
 
-output$FV_PAR.Plot.Download <- downloadHandler(
+output$RT_PAR.Plot.Download <- downloadHandler(
   filename = function() {
-    eval(FIG_NAME_PAR_PER_FUN)
+    eval(FIG_NAME_RT_PAR_PER_FUN)
   },
   content = function(file) {
-    save_plotly(render_PAR_PER_FUN(), file)
+    save_plotly(render_RT_PAR_PER_FUN(), file)
   },
-  contentType = paste0('image/', input$FV_PAR.Plot.Format)
+  contentType = paste0('image/', input$RT_PAR.Plot.Format)
 )
 
-output$PAR_PER_FUN <- renderPlotly({
-  render_PAR_PER_FUN()
+output$RT_PAR.Plot.Figure <- renderPlotly({
+  render_RT_PAR_PER_FUN()
 })
 
 # TODO: add ks test for ECDF later
@@ -58,15 +58,15 @@ output$PAR_PER_FUN <- renderPlotly({
 # })
 #
 
-parameter_summary <- reactive({
-  req(input$PAR.Summary.Min, input$PAR.Summary.Max, input$PAR.Summary.Step)
-
-  fstart <- format_FV(input$PAR.Summary.Min) %>% as.numeric
-  fstop <- format_FV(input$PAR.Summary.Max) %>% as.numeric
-  fstep <- format_FV(input$PAR.Summary.Step) %>% as.numeric
+rt_parameter_summary <- reactive({
+  req(input$RT_PAR.Summary.Min, input$RT_PAR.Summary.Max, input$RT_PAR.Summary.Step)
+  
+  fstart <- format_FV(input$RT_PAR.Summary.Min) %>% as.numeric
+  fstop <- format_FV(input$RT_PAR.Summary.Max) %>% as.numeric
+  fstep <- format_FV(input$RT_PAR.Summary.Step) %>% as.numeric
   data <- DATA()
   
-  if (!input$PAR.Summary.Single) {
+  if (!input$RT_PAR.Summary.Single) {
     req(fstart <= fstop, fstep <= fstop - fstart)
     fall <- get_funvals(data)
     fseq <- seq_FV(fall, fstart, fstop, by = fstep)
@@ -74,17 +74,17 @@ parameter_summary <- reactive({
   }
   else 
     fseq <- fstart
-
-  dt <- get_PAR_summary(data, fseq, input$PAR.Summary.Algid, input$PAR.Summary.Param)
+  
+  dt <- get_PAR_summary(data, fseq, input$RT_PAR.Summary.Algid, input$RT_PAR.Summary.Param)
   req(length(dt) != 0)
-
+  
   dt$runs %<>% as.integer
   dt$mean %<>% format(digits = 2, nsmall = 2)
   dt$median %<>% format(digits = 2, nsmall = 2)
   dt$sd %<>% format(digits = 2, nsmall = 2)
   
   probs <- getOption("IOHanalyzer.quantiles")
-
+  
   # format the integers
   for (p in paste0(probs * 100, '%')) {
     dt[[p]] %<>% format(digits = 2, nsmall = 2)
@@ -92,17 +92,17 @@ parameter_summary <- reactive({
   dt
 })
 
-parameter_sample <- reactive({
-  req(input$PAR.Sample.Algid, input$PAR.Sample.Max,
-      input$PAR.Sample.Step, input$PAR.Sample.Min,
-      input$PAR.Sample.Param)
-
-  fstart <- format_FV(input$PAR.Sample.Min) %>% as.numeric
-  fstop <- format_FV(input$PAR.Sample.Max) %>% as.numeric
-  fstep <- format_FV(input$PAR.Sample.Step) %>% as.numeric
+rt_parameter_sample <- reactive({
+  req(input$RT_PAR.Sample.Algid, input$RT_PAR.Sample.Max,
+      input$RT_PAR.Sample.Step, input$RT_PAR.Sample.Min,
+      input$RT_PAR.Sample.Param)
+  
+  fstart <- format_FV(input$RT_PAR.Sample.Min) %>% as.numeric
+  fstop <- format_FV(input$RT_PAR.Sample.Max) %>% as.numeric
+  fstep <- format_FV(input$RT_PAR.Sample.Step) %>% as.numeric
   data <- DATA()
   
-  if (!input$PAR.Sample.Single) {
+  if (!input$RT_PAR.Sample.Single) {
     req(fstart <= fstop, fstep <= fstop - fstart)
     fall <- get_funvals(data)
     fseq <- seq_FV(fall, fstart, fstop, by = fstep)
@@ -110,39 +110,39 @@ parameter_sample <- reactive({
   }
   else
     fseq <- fstart
-
+  
   df <- get_PAR_sample(data, idxValue = fseq, 
-                       algorithm = input$PAR.Sample.Algid,
-                       parId = input$PAR.Sample.Param,
-                       output = input$PAR.Sample.Format)
-
+                       algorithm = input$RT_PAR.Sample.Algid,
+                       parId = input$RT_PAR.Sample.Param,
+                       output = input$RT_PAR.Sample.Format)
+  
   for (p in paste0('run.', seq(ncol(data[[1]]$FV))))
     df[[p]] %<>% format(digits = 2, nsmall = 2)
-
+  
   df
 })
 
-output$table_PAR_SAMPLE <- DT::renderDataTable({
-  dt <- parameter_sample()
+output$table_RT_PAR_SAMPLE <- DT::renderDataTable({
+  dt <- rt_parameter_sample()
   req(length(dt) != 0)
   dt[is.na(dt)] <- 'NA'
   dt
 }, filter = list(position = 'top', clear = FALSE),
 options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
 
-output$table_PAR_summary <- DT::renderDataTable({
-  parameter_summary()
+output$table_RT_PAR_summary <- DT::renderDataTable({
+  rt_parameter_summary()
 }, filter = list(position = 'top', clear = FALSE),
 options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T, digits = 2))
 
-output$PAR.Sample.Download <- downloadHandler(
+output$RT_PAR.Sample.Download <- downloadHandler(
   filename = function() {
     eval(PARSample_csv_name)
   },
   content = function(file) {
     df <- parameter_sample()
-    df <- df[input[["table_PAR_SAMPLE_rows_all"]]]
-    if (input$PAR.Sample.FileFormat == 'csv')
+    df <- df[input[["table_RT_PAR_SAMPLE_rows_all"]]]
+    if (input$RT_PAR.Sample.FileFormat == 'csv')
       write.csv(df, file, row.names = F)
     else
       print(xtable(df), file = file)
@@ -150,14 +150,14 @@ output$PAR.Sample.Download <- downloadHandler(
   contentType = "text/csv"
 )
 
-output$PAR.Summary.Download <- downloadHandler(
+output$RT_PAR.Summary.Download <- downloadHandler(
   filename = function() {
     eval(PAR_csv_name)
   },
   content = function(file) {
     df <- parameter_summary()
-    df <- df[input[["table_PAR_summary_rows_all"]]]
-    if (input$PAR.Summary.Format == 'csv')
+    df <- df[input[["table_RT_PAR_summary_rows_all"]]]
+    if (input$RT_PAR.Summary.Format == 'csv')
       write.csv(df, file, row.names = F)
     else
       print(xtable(df), file = file)

@@ -175,6 +175,18 @@ body <- dashboardBody(
               )
             )
     ),
+    
+    # Parameter tab -------
+    tabItem(tabName = 'RT_PARAMETER',
+            fluidRow(
+              column(
+                width = 12,
+                rt_par_expected_value_box(collapsed = F),
+                rt_par_summary_box(),
+                rt_par_sample_box()
+              )
+            )
+    ),
 
     # FCE: Data Summary -----------------
     tabItem(tabName = 'FCE_DATA',
@@ -224,17 +236,17 @@ body <- dashboardBody(
     ),
 
     # Parameter tab -------
-    tabItem(tabName = 'PARAMETER',
+    tabItem(tabName = 'FCE_PARAMETER',
             fluidRow(
               column(
                 width = 12,
-                par_expected_value_box(collapsed = F),
-                par_summary_box(),
-                par_sample_box()
+                fv_par_expected_value_box(collapsed = F),
+                fv_par_summary_box(),
+                fv_par_sample_box()
               )
             )
     ),
-    
+
     tabItem(tabName = 'Statistics',
             fluidRow(
               column(

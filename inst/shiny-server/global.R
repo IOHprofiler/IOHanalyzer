@@ -115,10 +115,14 @@ FV_overview_name <- parse(text = "paste0('FVOverview-', paste0(input$Overall.Dim
                              paste0('F', input$Overall.Funcid), '.', input$FCESummary.Overview.Format)")
 FVSample_csv_name <- parse(text = "paste0('FVSample-', paste0(input$Overall.Dim, 'D'),
                              paste0('F', input$Overall.Funcid), '.', input$FCESummary.Sample.FileFormat)")
-PAR_csv_name <- parse(text = "paste0('PARSummary-', paste0(input$Overall.Dim, 'D'),
-                             paste0('F', input$Overall.Funcid), '.', input$PAR.Summary.Format)")
-PARSample_csv_name <- parse(text = "paste0('PARSample-', paste0(input$Overall.Dim, 'D'),
-                             paste0('F', input$Overall.Funcid), '.', input$PAR.Sample.FileFormat)")
+FV_PAR_csv_name <- parse(text = "paste0('PARSummary-', paste0(input$Overall.Dim, 'D'),
+                             paste0('F', input$Overall.Funcid), '.', input$FV_PAR.Summary.Format)")
+FV_PARSample_csv_name <- parse(text = "paste0('PARSample-', paste0(input$Overall.Dim, 'D'),
+                             paste0('F', input$Overall.Funcid), '.', input$FV_PAR.Sample.FileFormat)")
+RT_PAR_csv_name <- parse(text = "paste0('PARSummary-', paste0(input$Overall.Dim, 'D'),
+                             paste0('F', input$Overall.Funcid), '.', input$RT_PAR.Summary.Format)")
+RT_PARSample_csv_name <- parse(text = "paste0('PARSample-', paste0(input$Overall.Dim, 'D'),
+                             paste0('F', input$Overall.Funcid), '.', input$RT_PAR.Sample.FileFormat)")
 ERT_multi_func_name <- parse(text = "paste0('MultiERT-', paste0(input$Overall.Dim, 'D'),
                              '.', input$ERTPlot.Aggr.TableFormat)")
 FCE_multi_func_name <- parse(text = "paste0('MultiFCE-', paste0(input$Overall.Dim, 'D'),
@@ -150,7 +154,8 @@ FIG_NAME_FV_HIST <- parse(text = "paste0('FV_HIST-', Sys.Date(), '.', input$FCEP
 FIG_NAME_FV_ECDF_AGGR <- parse(text = "paste0('FV_ECDF_AGGR-', Sys.Date(), '.', input$FCEECDF.Mult.Format)")
 FIG_NAME_FV_AUC <- parse(text = "paste0('FV_AUC-', Sys.Date(), '.', input$FCEECDF.AUC.Format)")
 
-FIG_NAME_PAR_PER_FUN <- parse(text = "paste0('PAR-', Sys.Date(), '.', input$FV_PAR.Plot.Format)")
+FIG_NAME_RT_PAR_PER_FUN <- parse(text = "paste0('RT_PAR-', Sys.Date(), '.', input$RT_PAR.Plot.Format)")
+FIG_NAME_FV_PAR_PER_FUN <- parse(text = "paste0('FV_PAR-', Sys.Date(), '.', input$FV_PAR.Plot.Format)")
 
 
 # ID of the control widget, whose current value should de always recorded and restored ----
@@ -175,12 +180,20 @@ widget_id <- c('RTSummary.Statistics.Min',
                'RTECDF.AUC.Step',
                'FV_PAR.Plot.Min',
                'FV_PAR.Plot.Max',
-               'PAR.Summary.Min',
-               'PAR.Summary.Max',
-               'PAR.Summary.Step',
-               'PAR.Sample.Min',
-               'PAR.Sample.Max',
-               'PAR.Sample.Step',
+               'FV_PAR.Summary.Min',
+               'FV_PAR.Summary.Max',
+               'FV_PAR.Summary.Step',
+               'FV_PAR.Sample.Min',
+               'FV_PAR.Sample.Max',
+               'FV_PAR.Sample.Step',
+               'RT_PAR.Plot.Min',
+               'RT_PAR.Plot.Max',
+               'RT_PAR.Summary.Min',
+               'RT_PAR.Summary.Max',
+               'RT_PAR.Summary.Step',
+               'RT_PAR.Sample.Min',
+               'RT_PAR.Sample.Max',
+               'RT_PAR.Sample.Step',
                'FCESummary.Statistics.Min',
                'FCESummary.Statistics.Max',
                'FCESummary.Statistics.Step',

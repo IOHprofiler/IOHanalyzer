@@ -5,19 +5,11 @@
 \alias{Plot.Stats.Significance_Graph.DataSetList}
 \title{Plot a network graph showing the statistically different algorithms}
 \usage{
-Plot.Stats.Significance_Graph(
-  dsList,
-  ftarget,
-  alpha = 0.01,
-  bootstrap.size = 30
-)
+Plot.Stats.Significance_Graph(dsList, ftarget, alpha = 0.01,
+  bootstrap.size = 30)
 
-\method{Plot.Stats.Significance_Graph}{DataSetList}(
-  dsList,
-  ftarget,
-  alpha = 0.01,
-  bootstrap.size = 30
-)
+\method{Plot.Stats.Significance_Graph}{DataSetList}(dsList, ftarget,
+  alpha = 0.01, bootstrap.size = 30)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

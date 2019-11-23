@@ -8,16 +8,11 @@
 \usage{
 get_PAR_sample(ds, idxValue, ...)
 
-\method{get_PAR_sample}{DataSet}(
-  ds,
-  idxValue,
-  parId = "all",
-  which = "by_FV",
-  output = "wide",
-  ...
-)
+\method{get_PAR_sample}{DataSet}(ds, idxValue, parId = "all",
+  which = "by_FV", output = "wide", ...)
 
-\method{get_PAR_sample}{DataSetList}(ds, idxValue, algorithm = "all", ...)
+\method{get_PAR_sample}{DataSetList}(ds, idxValue, algorithm = "all",
+  ...)
 }
 \arguments{
 \item{ds}{A DataSet or DataSetList object}

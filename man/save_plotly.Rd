@@ -4,7 +4,7 @@
 \alias{save_plotly}
 \title{Save plotly figure in multiple format}
 \usage{
-save_plotly(p, file, width = NULL, height = NULL, format = NULL, ...)
+save_plotly(p, file, width = NULL, height = NULL, ...)
 }
 \arguments{
 \item{p}{plotly object. The plot to be saved}
@@ -14,8 +14,6 @@ save_plotly(p, file, width = NULL, height = NULL, format = NULL, ...)
 \item{width}{Optional. Width of the figure}
 
 \item{height}{Optional. Height of the figure}
-
-\item{format}{Deprecated. Optional extra specifier for format}
 
 \item{...}{Additional arguments for orca}
 }

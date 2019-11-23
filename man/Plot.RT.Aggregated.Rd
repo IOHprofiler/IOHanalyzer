@@ -5,29 +5,14 @@
 \alias{Plot.RT.Aggregated.DataSetList}
 \title{Plot ERT-based comparison over multiple functions or dimensions}
 \usage{
-Plot.RT.Aggregated(
-  dsList,
-  aggr_on = "funcId",
-  targets = NULL,
-  plot_mode = "radar",
-  use_rank = F,
-  scale.ylog = T,
-  maximize = T,
-  erts = NULL,
-  inf.action = "overlap"
-)
+Plot.RT.Aggregated(dsList, aggr_on = "funcId", targets = NULL,
+  plot_mode = "radar", use_rank = F, scale.ylog = T, maximize = T,
+  erts = NULL, inf.action = "overlap")
 
-\method{Plot.RT.Aggregated}{DataSetList}(
-  dsList,
-  aggr_on = "funcId",
-  targets = NULL,
-  plot_mode = "radar",
-  use_rank = F,
-  scale.ylog = T,
-  maximize = T,
-  erts = NULL,
-  inf.action = "overlap"
-)
+\method{Plot.RT.Aggregated}{DataSetList}(dsList, aggr_on = "funcId",
+  targets = NULL, plot_mode = "radar", use_rank = F,
+  scale.ylog = T, maximize = T, erts = NULL,
+  inf.action = "overlap")
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function OR dimension).}

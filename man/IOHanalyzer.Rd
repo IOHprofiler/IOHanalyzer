@@ -3,7 +3,6 @@
 \docType{package}
 \name{IOHanalyzer}
 \alias{IOHanalyzer}
-\alias{IOHanalyzer-package}
 \title{IOHanalyzer: Data Analysis Part of IOHprofiler}
 \description{
 The data analysis module for the Iterative Optimization Heuristics Profiler (IOHprofiler).

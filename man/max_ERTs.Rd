@@ -7,8 +7,7 @@
 \usage{
 max_ERTs(dsList, aggr_on = "funcId", targets = NULL, maximize = T)
 
-\method{max_ERTs}{DataSetList}(dsList, aggr_on = "funcId",
-  targets = NULL, maximize = T)
+\method{max_ERTs}{DataSetList}(dsList, aggr_on = "funcId", targets = NULL, maximize = T)
 }
 \arguments{
 \item{dsList}{The DataSetLsit}

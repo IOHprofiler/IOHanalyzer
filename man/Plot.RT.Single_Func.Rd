@@ -36,11 +36,9 @@ Plot.RT.Single_Func(dsList, Fstart = NULL, Fstop = NULL,
 
 \item{scale.ylog}{Whether or not to scale the y-axis logaritmically}
 
-\item{includeOpts}{Whether or not to include all best points reached by each algorithm}
-
 \item{scale.reverse}{Wheter or not to reverse the x-axis (when using minimization)}
 
-\item{dash}{Style of ERT-lines}
+\item{includeOpts}{Whether or not to include all best points reached by each algorithm}
 
 \item{p}{Existing plot to which to add the current data}
 }

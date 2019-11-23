@@ -5,13 +5,31 @@
 \alias{Plot.Parameters.DataSetList}
 \title{Plot the parameter values recorded in a DataSetList}
 \usage{
-Plot.Parameters(dsList, f_min = NULL, f_max = NULL, algids = "all",
-  par_name = NULL, scale.xlog = F, scale.ylog = F, show.mean = T,
-  show.median = F, show.CI = F)
+Plot.Parameters(
+  dsList,
+  f_min = NULL,
+  f_max = NULL,
+  algids = "all",
+  par_name = NULL,
+  scale.xlog = F,
+  scale.ylog = F,
+  show.mean = T,
+  show.median = F,
+  show.CI = F
+)
 
-\method{Plot.Parameters}{DataSetList}(dsList, f_min = NULL,
-  f_max = NULL, algids = "all", par_name = NULL, scale.xlog = F,
-  scale.ylog = F, show.mean = T, show.median = F, show.CI = F)
+\method{Plot.Parameters}{DataSetList}(
+  dsList,
+  f_min = NULL,
+  f_max = NULL,
+  algids = "all",
+  par_name = NULL,
+  scale.xlog = F,
+  scale.ylog = F,
+  show.mean = T,
+  show.median = F,
+  show.CI = F
+)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

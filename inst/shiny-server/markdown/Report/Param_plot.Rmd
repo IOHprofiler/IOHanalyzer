@@ -13,9 +13,9 @@ dsl_sub <- subset(dsl, DIM == dim && funcId == fid && algId %in% algs)
 name <- get_data_id(dsl_sub)
 tryCatch(
   {
-  fv_min <- as.numeric(REG$PAR.Plot.Min[name])
+  fv_min <- as.numeric(REG$FV_PAR.Plot.Min[name])
   if (is.na(fv_min)) fv_min <- NULL
-  fv_max <- as.numeric(REG$PAR.Plot.Max[name])
+  fv_max <- as.numeric(REG$FV_PAR.Plot.Max[name])
   if (is.na(fv_max)) fv_max <- NULL
 },
 error = function(e) {
@@ -24,12 +24,12 @@ error = function(e) {
   }
 )
 p <- Plot.Parameters(dsl_sub, fv_min, fv_max,
-                  show.mean = (input$PAR.Plot.show.mean == 'mean'),
-                  show.median = (input$PAR.Plot.show.mean == 'median'),
-                  scale.xlog = input$PAR.Plot.Logx,
-                  scale.ylog = input$PAR.Plot.Logy, 
-                  show.CI = input$PAR.Plot.CI,
-                  par_name = input$PAR.Plot.Params)
+                  show.mean = (input$FV_PAR.Plot.show.mean == 'mean'),
+                  show.median = (input$FV_PAR.Plot.show.mean == 'median'),
+                  scale.xlog = input$FV_PAR.Plot.Logx,
+                  scale.ylog = input$FV_PAR.Plot.Logy, 
+                  show.CI = input$FV_PAR.Plot.CI,
+                  par_name = input$FV_PAR.Plot.Params)
 save_plotly(p, paste0('Param_F', fid, '-', dim, 'D.pdf'), 'pdf', width = 1000, height = 500)
 ```
 ## Plot of parameters of F`r paste(fid)` on `r paste(dim)`D 

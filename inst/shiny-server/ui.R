@@ -199,6 +199,7 @@ body <- dashboardBody(
                )
             )
     ),
+
     # FCE: historgrams, p.d.f. --------
     tabItem(tabName = 'FCE_PDF',
             fluidRow(
@@ -233,6 +234,7 @@ body <- dashboardBody(
               )
             )
     ),
+    
     tabItem(tabName = 'Statistics',
             fluidRow(
               column(
@@ -240,7 +242,9 @@ body <- dashboardBody(
                 heatmap_box(),
                 glicko2_box()
               )
-            )),
+            )
+    ),
+
     tabItem(tabName = 'Settings',
             fluidRow(
               column(
@@ -250,6 +254,7 @@ body <- dashboardBody(
               )
             )
     ),
+
     tabItem(tabName = 'Report',
             fluidRow(
               column(

@@ -1,36 +1,38 @@
 # Expected Evolution of parameters in the algorithm
 render_PAR_PER_FUN <- reactive({
-  req(input$PAR.Plot.Min, input$PAR.Plot.Max)
+  req(input$FV_PAR.Plot.Min, input$FV_PAR.Plot.Max)
   withProgress({
-  f_min <- format_FV(input$PAR.Plot.Min) %>% as.numeric
-  f_max <- format_FV(input$PAR.Plot.Max) %>% as.numeric
+  f_min <- as.numeric(format_FV(input$FV_PAR.Plot.Min))
+  f_max <- as.numeric(format_FV(input$FV_PAR.Plot.Max)) 
+
   tryCatch({
-    data <- subset(DATA(), algId %in% input$PAR.Plot.Algs)
-    Plot.Parameters(data,f_min,f_max,
-                  show.mean = (input$PAR.Plot.show.mean == 'mean'),
-                  show.median = (input$PAR.Plot.show.mean == 'median'),
-                  scale.xlog = input$PAR.Plot.Logx,
-                  scale.ylog = input$PAR.Plot.Logy, 
-                  show.CI = input$PAR.Plot.CI,
-                  par_name = input$PAR.Plot.Params)
+    data <- subset(DATA(), algId %in% input$FV_PAR.Plot.Algs)
+    Plot.Parameters(data, f_min, f_max,
+                    show.mean = (input$FV_PAR.Plot.show.mean == 'mean'),
+                    show.median = (input$FV_PAR.Plot.show.mean == 'median'),
+                    scale.xlog = input$FV_PAR.Plot.Logx,
+                    scale.ylog = input$FV_PAR.Plot.Logy, 
+                    show.CI = input$FV_PAR.Plot.CI,
+                    par_name = input$FV_PAR.Plot.Params)
     },
     error = function(e) {
-      #TODO: more robust error handling; don't assume this causes the error
-      shinyjs::alert("Not all algorithms contain the same parameters. Please select a single algorithm to plot instead.")
+      # TODO: more robust error handling; don't assume this causes the error
+      shinyjs::alert("Not all algorithms contain the same parameters. 
+                      Please select a single algorithm to plot instead.")
     }
   )
   },
   message = "Creating plot")
 })
 
-output$PAR.Plot.Download <- downloadHandler(
+output$FV_PAR.Plot.Download <- downloadHandler(
   filename = function() {
     eval(FIG_NAME_PAR_PER_FUN)
   },
   content = function(file) {
     save_plotly(render_PAR_PER_FUN(), file)
   },
-  contentType = paste0('image/', input$PAR.Plot.Format)
+  contentType = paste0('image/', input$FV_PAR.Plot.Format)
 )
 
 output$PAR_PER_FUN <- renderPlotly({
@@ -62,21 +64,20 @@ parameter_summary <- reactive({
   fstart <- format_FV(input$PAR.Summary.Min) %>% as.numeric
   fstop <- format_FV(input$PAR.Summary.Max) %>% as.numeric
   fstep <- format_FV(input$PAR.Summary.Step) %>% as.numeric
-
   data <- DATA()
   
-  if (!input$PAR.Summary.Single){
+  if (!input$PAR.Summary.Single) {
     req(fstart <= fstop, fstep <= fstop - fstart)
     fall <- get_funvals(data)
     fseq <- seq_FV(fall, fstart, fstop, by = fstep)
     req(fseq)
   }
-  else{
+  else 
     fseq <- fstart
-  }
 
   dt <- get_PAR_summary(data, fseq, input$PAR.Summary.Algid, input$PAR.Summary.Param)
   req(length(dt) != 0)
+
   dt$runs %<>% as.integer
   dt$mean %<>% format(digits = 2, nsmall = 2)
   dt$median %<>% format(digits = 2, nsmall = 2)
@@ -99,26 +100,25 @@ parameter_sample <- reactive({
   fstart <- format_FV(input$PAR.Sample.Min) %>% as.numeric
   fstop <- format_FV(input$PAR.Sample.Max) %>% as.numeric
   fstep <- format_FV(input$PAR.Sample.Step) %>% as.numeric
-
   data <- DATA()
   
-  if (!input$PAR.Sample.Single){
+  if (!input$PAR.Sample.Single) {
     req(fstart <= fstop, fstep <= fstop - fstart)
     fall <- get_funvals(data)
     fseq <- seq_FV(fall, fstart, fstop, by = fstep)
     req(fseq)
   }
-  else{
+  else
     fseq <- fstart
-  }
 
-  df <- get_PAR_sample(data, ftarget = fseq,
-                 algorithm = input$PAR.Sample.Algid,
-                 parId = input$PAR.Sample.Param,
-                 output = input$PAR.Sample.Format)
-  for (p in paste0('run.', seq(ncol(data[[1]]$FV)))) {
+  df <- get_PAR_sample(data, idxValue = fseq, 
+                       algorithm = input$PAR.Sample.Algid,
+                       parId = input$PAR.Sample.Param,
+                       output = input$PAR.Sample.Format)
+
+  for (p in paste0('run.', seq(ncol(data[[1]]$FV))))
     df[[p]] %<>% format(digits = 2, nsmall = 2)
-  }
+
   df
 })
 

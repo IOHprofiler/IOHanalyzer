@@ -37,24 +37,24 @@ grad_functions <- c(
   scaled_edges = function(count, amount, intensity){
     scale <- (intensity + 1)/2
     color_end <- floor(scale*amount*2)
-    if (count<color_end)
+    if (count < color_end)
       1/color_end
     else
       0
   }
   ,
-  fixed_edges = function(count, amount, intensity){
-    scale <- (intensity + 1)/2
-    color_center <- floor(scale*amount) + 1
-    if (count<=color_center)
-      1/(2*color_center)
+  fixed_edges = function(count, amount, intensity) {
+    scale <- (intensity + 1) / 2
+    color_center <- floor(scale * amount) + 1
+    if (count <= color_center)
+      1 / (2*color_center)
     else
-      1/(2*(amount-color_center))
+      1 / (2*(amount - color_center))
   }
 )
 
 #S3 generics
-#TODO: decide which parameters need to be in the generics
+# TODO: decide which parameters need to be in the generics
 
 #' Plot lineplot of the ERTs of a DataSetList
 #'
@@ -70,7 +70,6 @@ grad_functions <- c(
 #' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
 #' @param backend Which plotting library to use. Can be 'plotly' or 'ggplot2'
 #' @param includeOpts Whether or not to include all best points reached by each algorithm
-#' @param dash Style of ERT-lines 
 #' @param p Existing plot to which to add the current data
 #' @return A plot of ERT-values of the DataSetList
 #' @export
@@ -79,8 +78,8 @@ grad_functions <- c(
 Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
                                 show.ERT = T, show.CI = F, show.mean = F,
                                 show.median = F, backend = NULL,
-                                scale.xlog = F, scale.ylog = F, includeOpts = F,
-                                scale.reverse = F, dash = 'solid', p = NULL) 
+                                scale.xlog = F, scale.ylog = F, scale.reverse = F,
+                                includeOpts = F, p = NULL) 
   UseMethod("Plot.RT.Single_Func", dsList)
 #' Plot lineplot of the expected function values of a DataSetList
 #'
@@ -278,10 +277,10 @@ Plot.FV.ECDF_AUC <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' @examples 
 #' Plot.Parameters(subset(dsl, funcId == 1))
 Plot.Parameters <- function(dsList, f_min = NULL, f_max = NULL,
-                          algids = 'all', par_name = NULL,
-                          scale.xlog = F, scale.ylog = F,
-                          show.mean = T, show.median = F,
-                          show.CI = F) UseMethod("Plot.Parameters", dsList)
+                            algids = 'all', par_name = NULL,
+                            scale.xlog = F, scale.ylog = F,
+                            show.mean = T, show.median = F,
+                            show.CI = F) UseMethod("Plot.Parameters", dsList)
 #' Plot the aggregated empirical cumulative distriburtion as a function of the running times of
 #' a DataSetList. Aggregated over multiple functions or dimensions.
 #'
@@ -418,8 +417,7 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                                             show.ERT = T, show.CI = T, show.mean = F,
                                             show.median = F, backend = NULL,
                                             scale.xlog = F, scale.ylog = F,
-                                            scale.reverse = F, dash = 'solid', p = NULL,
-                                            includeOpts = F) {
+                                            scale.reverse = F, includeOpts = F, p = NULL) {
   if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
 
   Fall <- get_funvals(dsList)
@@ -1234,17 +1232,17 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
 #' @rdname Plot.Parameters
 #' @export
 Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
-                                      algids = 'all', par_name = NULL,
-                                      scale.xlog = F, scale.ylog = F,
-                                      show.mean = T, show.median = F,
-                                      show.CI = F){
-  #TODO: clean this up
-  req(xor(show.mean,show.median))
+                                        algids = 'all', par_name = NULL,
+                                        scale.xlog = F, scale.ylog = F,
+                                        show.mean = T, show.median = F,
+                                        show.CI = F) {
+  # TODO: clean this up
+  req(xor(show.mean, show.median))
 
   fall <- get_funvals(dsList)
   if (is.null(f_min)) f_min <- min(fall)
   if (is.null(f_max)) f_max <- max(fall)
-
+  
   fseq <- seq_FV(fall, f_min, f_max, length.out = 50)
   req(fseq)
 
@@ -1575,7 +1573,7 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
 Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, 
                                            plot_mode = 'radar', use_rank = F,
                                            scale.ylog = T, maximize = T, erts = NULL,
-                                           dash = 'auto', inf.action = 'overlap') {
+                                           inf.action = 'overlap') {
   if (is.null(erts))
     erts <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, maximize = maximize)
   
@@ -1583,6 +1581,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
     return(NULL)
 
   N <- length(get_algId(dsList))
+
   fid <- get_funcId(dsList)
   range <- c(min(fid) - .5, max(fid) + .5)
   
@@ -1676,8 +1675,6 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
     # dataert[idx] <- data_na[idx]
   }
   
-  # dash <- c("solid", "dot", "dash", "longdash", "dashdot")
-
   for (i in seq_along(get_algId(dsList))) {
     algId <- get_algId(dsList)[[i]]
     dash <- get_line_style(algId)

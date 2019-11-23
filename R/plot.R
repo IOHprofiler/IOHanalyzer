@@ -168,6 +168,7 @@ Set3 <- function(n) colorspace::sequential_hcl(n, c(-88, 59), c. = c(60, 75, 55)
                                    fixup = TRUE, alpha = 1)#, palette = NULL, rev = FALSE)
 
 IOHanalyzer_env$used_colorscheme <- Set3
+IOHanalyzer_env$alg_colors <- NULL
 
 #' Set the colorScheme of the IOHanalyzer plots
 #' 
@@ -176,19 +177,20 @@ IOHanalyzer_env$used_colorscheme <- Set3
 #' \item Default
 #' \item Variant 1
 #' \item Variant 2
+#' \item Variant 3
 #' }
 #' And it is also possible to select "Custom", which allows uploading of a custom set of colors
+#' @param algnames The names of the algorithms for which to set the colors
 #' @param path The path to the file containing the colors to use. Only used if 
 #' schemename is "Custom"
-#' @param nr_algs The amount of colors to set the scheme for
-#' 
+#'  
 #' @export
 #' 
 #' @examples
-#' set_color_scheme("Default")
-set_color_scheme <- function(schemename, path = NULL, nr_algs = 0){
+#' set_color_scheme("Default", get_algId(dsl))
+set_color_scheme <- function(schemename, algnames, path = NULL){
   if (schemename == "Default") {
-    options(IOHanalyzer.max_colors = 0)
+    options(IOHanalyzer.max_colors = 2)
   }
   else if (schemename == "Custom" && !is.null(path)) {
     colors <- fread(path, header = F)[[1]]
@@ -203,20 +205,57 @@ set_color_scheme <- function(schemename, path = NULL, nr_algs = 0){
     if (schemename == "Variant 1") IOHanalyzer_env$used_colorscheme <- Set1
     else if (schemename == "Variant 2") IOHanalyzer_env$used_colorscheme <- Set2
     else if (schemename == "Variant 3") IOHanalyzer_env$used_colorscheme <- Set3
-    options(IOHanalyzer.max_colors = nr_algs)
+    options(IOHanalyzer.max_colors = length(algnames))
   }
+  create_color_scheme(algnames)
+}
+
+create_color_scheme <- function(algnames) {
+  if (length(algnames) == 0) {
+    return(NULL)
+  }
+  colors <- color_palettes(length(algnames))
+  linestyles <- rep(c("solid", "dash", "dot"), ceiling(length(colors)/3))[1:length(colors)]
+  IOHanalyzer_env$alg_colors <- data.table(algnames, colors, linestyles)
 }
 
 #' Get colors according to the current colorScheme of the IOHanalyzer
 #' 
-#' @param n Number of colors to get
+#' @param algnames_in List of algorithms for which to get colors
 #' 
 #' @export
 #' 
 #' @examples
-#' get_color_scheme(5)
-get_color_scheme <- function(n){
-  color_palettes(n)
+#' get_color_scheme(get_algId(dsl))
+get_color_scheme <- function(algnames_in){
+  if (is.null(IOHanalyzer_env$alg_colors))
+    create_color_scheme(algnames_in)
+  cdt <- IOHanalyzer_env$alg_colors
+  colors <- subset(cdt, algnames %in% algnames_in)[['colors']]
+  if (is.null(colors) || length(colors) != length(algnames_in)) {
+    return(color_palettes(length(algnames_in)))
+  }
+  return(colors)
+}
+
+
+#' Get line styles according to the current styleScheme of the IOHanalyzer
+#' 
+#' @param algnames_in List of algorithms for which to get linestyles
+#' 
+#' @export
+#' 
+#' @examples
+#' get_line_style(get_algId(dsl))
+get_line_style <- function(algnames_in){
+  if (is.null(IOHanalyzer_env$alg_colors))
+    create_color_scheme(algnames_in)
+  cdt <- IOHanalyzer_env$alg_colors
+  linestyles <- subset(cdt, algnames %in% algnames_in)[['linestyles']]
+  if (is.null(linestyles) || length(linestyles) != length(algnames_in)) {
+    return(rep(c("solid", "dash", "dot"), ceiling(length(algnames_in)/3))[1:length(algnames_in)])
+  }
+  return(linestyles)
 }
 
 # TODO: incoporate more colors
@@ -253,7 +292,6 @@ color_palettes <- function(ncolor) {
   }
   colors
 }
-
 
 #' Save plotly figure in multiple format
 #'

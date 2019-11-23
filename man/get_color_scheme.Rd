@@ -4,14 +4,14 @@
 \alias{get_color_scheme}
 \title{Get colors according to the current colorScheme of the IOHanalyzer}
 \usage{
-get_color_scheme(n)
+get_color_scheme(algnames_in)
 }
 \arguments{
-\item{n}{Number of colors to get}
+\item{algnames_in}{List of algorithms for which to get colors}
 }
 \description{
 Get colors according to the current colorScheme of the IOHanalyzer
 }
 \examples{
-get_color_scheme(5)
+get_color_scheme(get_algId(dsl))
 }

@@ -359,88 +359,88 @@ read_dat__BIOBJ_COCO <- function(fname, subsampling = FALSE) {
   })
 }
 
-#' Read Nevergrad data file
-#' 
-#' Read .csv files in nevergrad format and extract information as a DataSetList
-#'
-#' @param fname The path to the .csv file
-#' @return The DataSetList extracted from the .csv file provided
-#' @noRd
-read_nevergrad <- function(path) {
-  dt <- fread(path)
+# #' Read Nevergrad data file
+# #' 
+# #' Read .csv files in nevergrad format and extract information as a DataSetList
+# #'
+# #' @param fname The path to the .csv file
+# #' @return The DataSetList extracted from the .csv file provided
+# #' @noRd
+# read_nevergrad <- function(path) {
+#   dt <- fread(path)
   
-  triplets <- unique(dt[, .(optimizer_name, dimension, name)])
-  algIds <- unique(triplets$optimizer_name)
-  DIMs <- unique(triplets$dimension)
-  funcIds <- unique(triplets$name)
+#   triplets <- unique(dt[, .(optimizer_name, dimension, name)])
+#   algIds <- unique(triplets$optimizer_name)
+#   DIMs <- unique(triplets$dimension)
+#   funcIds <- unique(triplets$name)
   
-  res <- list()
-  idx <- 1
+#   res <- list()
+#   idx <- 1
   
-  for (i in seq(nrow(triplets))) {
-    algId <- triplets$optimizer_name[i]
-    DIM <- triplets$dimension[i]
-    funcId <- triplets$name[i]
+#   for (i in seq(nrow(triplets))) {
+#     algId <- triplets$optimizer_name[i]
+#     DIM <- triplets$dimension[i]
+#     funcId <- triplets$name[i]
     
-    if (!('rescale' %in% colnames(dt))) {
-      if ('transform' %in% colnames(dt))
-        colnames(dt)[colnames(dt) == 'transform'] <- 'rescale'
-      else
-        dt$rescale <- NA
-    }
+#     if (!('rescale' %in% colnames(dt))) {
+#       if ('transform' %in% colnames(dt))
+#         colnames(dt)[colnames(dt) == 'transform'] <- 'rescale'
+#       else
+#         dt$rescale <- NA
+#     }
     
-    data <- dt[optimizer_name == algId & 
-                 dimension == DIM & 
-                 name == funcId,
-               .(budget, loss, rescale)]
+#     data <- dt[optimizer_name == algId & 
+#                  dimension == DIM & 
+#                  name == funcId,
+#                .(budget, loss, rescale)]
     
-    for (scaled in unique(data$rescale)) {
-      if (!is.na(scaled)) {
-        data_reduced <- data[rescale == scaled, .(budget, loss)]
-      }
-      else {
-        data_reduced <- data[is.na(rescale), .(budget, loss)]
-      }
+#     for (scaled in unique(data$rescale)) {
+#       if (!is.na(scaled)) {
+#         data_reduced <- data[rescale == scaled, .(budget, loss)]
+#       }
+#       else {
+#         data_reduced <- data[is.na(rescale), .(budget, loss)]
+#       }
       
-      if (!is.na(scaled) && scaled) {
-        funcId_name <- paste0(funcId, '_rescaled')
-      }
-      else {
-        funcId_name <- funcId
-      }
+#       if (!is.na(scaled) && scaled) {
+#         funcId_name <- paste0(funcId, '_rescaled')
+#       }
+#       else {
+#         funcId_name <- funcId
+#       }
       
-      rows <- unique(data_reduced$budget) %>% sort
-      FV <- lapply(rows,
-                   function(b) {
-                     data_reduced[budget == b, loss]
-                   }
-      ) %>%
-        do.call(rbind, .) %>%
-        set_rownames(rows)
+#       rows <- unique(data_reduced$budget) %>% sort
+#       FV <- lapply(rows,
+#                    function(b) {
+#                      data_reduced[budget == b, loss]
+#                    }
+#       ) %>%
+#         do.call(rbind, .) %>%
+#         set_rownames(rows)
       
-      RT <- list()
-      ds <- structure(
-        list(RT = RT, FV = FV),
-        class = c('DataSet', 'list'),
-        maxRT = max(rows),
-        finalFV = min(FV),
-        format = 'NEVERGRAD',
-        maximization = FALSE,
-        algId = algId,
-        funcId = funcId_name,
-        DIM = DIM
-      )
-      res[[idx]] <- ds
-      idx <- idx + 1
-    }
-  }
+#       RT <- list()
+#       ds <- structure(
+#         list(RT = RT, FV = FV),
+#         class = c('DataSet', 'list'),
+#         maxRT = max(rows),
+#         finalFV = min(FV),
+#         format = 'NEVERGRAD',
+#         maximization = FALSE,
+#         algId = algId,
+#         funcId = funcId_name,
+#         DIM = DIM
+#       )
+#       res[[idx]] <- ds
+#       idx <- idx + 1
+#     }
+#   }
   
-  class(res) <- c(class(res), 'DataSetList')
-  attr(res, 'DIM') <- DIMs
-  attr(res, 'funcId') <- funcIds
-  attr(res, 'algId') <- algIds
-  res
-}
+#   class(res) <- c(class(res), 'DataSetList')
+#   attr(res, 'DIM') <- DIMs
+#   attr(res, 'funcId') <- funcIds
+#   attr(res, 'algId') <- algIds
+#   res
+# }
 
 # global variables for the alignment functions
 idxEvals <- 1
@@ -597,4 +597,90 @@ align_function_value <- function(data, include_param = TRUE, format = IOHprofile
   } else {
     list(FV = FV)
   }
+}
+
+
+#' Read Nevergrad data
+#' 
+#' Read .csv files in nevergrad format and extract information as a DataSetList
+#'
+#' @param fname The path to the .csv file
+#' @return The DataSetList extracted from the .csv file provided
+#' @noRd
+read_nevergrad <- function(path){
+  dt <- fread(path)
+
+  triplets <- unique(dt[, .(optimizer_name, dimension, name)])
+  algIds <- unique(triplets$optimizer_name)
+  DIMs <- unique(triplets$dimension)
+  funcIds <- unique(triplets$name)
+
+  res <- list()
+
+  idx <- 1
+
+  for (i in seq(nrow(triplets))) {
+    algId <- triplets$optimizer_name[i]
+    DIM <- triplets$dimension[i]
+    funcId <- triplets$name[i]
+
+    rescale_name <- 'rescale'
+    if ( !('rescale' %in% colnames(dt))) {
+      if ( 'transform' %in% colnames(dt))
+        colnames(dt)[colnames(dt) == "transform"] <- "rescale"
+      else{
+        dt$rescale <- NA
+      }
+    }
+    
+    data <- dt[optimizer_name == algId & dimension == DIM & name == funcId,
+               .(budget, loss, rescale)]
+
+    for (scaled in unique(data$rescale)) {
+      if (!is.na(scaled)) {
+        data_reduced <- data[rescale == scaled, .(budget, loss)]
+      }
+      else {
+        data_reduced <- data[is.na(rescale), .(budget, loss)]
+      }
+
+      if (!is.na(scaled) && scaled) {
+        funcId_name <- paste0(funcId, '_rescaled')
+      }
+      else {
+        funcId_name <- funcId
+      }
+
+      rows <- unique(data_reduced$budget) %>% sort
+      FV <- lapply(rows,
+             function(b) {
+               data_reduced[budget == b, loss]
+             }
+          ) %>%
+        do.call(rbind, .) %>%
+        set_rownames(rows)
+
+      RT <- list()
+
+      ds <-  structure(list(RT = RT, FV = FV),
+                       class = c('DataSet', 'list'),
+                       maxRT = max(rows),
+                       finalFV = min(FV),
+                       format = 'NEVERGRAD',
+                       maximization = FALSE,
+                       algId = algId,
+                       funcId = funcId_name,
+                       DIM = DIM)
+      res[[idx]] <- ds
+      idx <- idx + 1
+    }
+  }
+  class(res) %<>% c('DataSetList')
+  attr(res, 'DIM') <- DIMs
+  attr(res, 'funcId') <- funcIds
+  attr(res, 'algId') <- algIds
+  attr(res, 'suite') <- 'NEVERGRAD'
+  attr(res, 'maximization') <- F
+  res
+  
 }

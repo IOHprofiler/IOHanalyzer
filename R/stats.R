@@ -429,7 +429,9 @@ get_default_ECDF_targets <- function(data, format_func = as.integer) {
     for (j in seq_along(dims)) {
       dim <- dims[[j]]
       data_subsub <- subset(data_sub, DIM == dim)
+      if (length(data_subsub) == 0) break
       fall <- get_funvals(data_subsub)
+      if (length(fall) < 2) break #TODO: double check why this can happen in nevergrad?
       #TODO: Account for minimization / maximization
       fmin <- min(fall)
       fmax <- max(fall)

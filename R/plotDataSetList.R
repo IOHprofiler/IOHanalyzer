@@ -430,6 +430,7 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
   
   if (includeOpts) {
     for (algid in get_algId(dsList)) {
+      #TODO: Work for minimization
       Fseq <- c(Fseq, max(get_funvals(subset(dsList, algId == algid))))
     }
     Fseq <- unique(sort(Fseq))
@@ -439,8 +440,7 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 
   N <- length(dsList)
   legends <- get_legends(dsList)
-  colors <- color_palettes(N)
-
+  
   dt <- get_RT_summary(dsList, ftarget = Fseq)
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
 
@@ -457,14 +457,14 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                      DIM == attr(dsList[[i]], 'DIM')]
 
       algId <- attr(dsList[[i]], 'algId')
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.2)')
+      rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.2)')
 
       if (show.ERT)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
                          name = legend, mode = 'lines+markers',
                          marker = list(color = rgb_str), legendgroup = legend,
-                         line = list(color = rgb_str, dash = 'dash'), visible = T)
+                         line = list(color = rgb_str, dash = get_line_style(algId)), visible = T)
 
       if (show.mean)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~mean, type = 'scatter',
@@ -533,7 +533,6 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
   if (length(RTseq) == 0) return(NULL)
 
   N <- length(dsList)
-  colors <- color_palettes(N)
   legends <- get_legends(dsList)
 
   fce <- get_FV_summary(dsList, RTseq)
@@ -553,14 +552,14 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
       if (nrow(ds_FCE) == 0)
         next
 
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
+      rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.3)')
 
       if (show.mean)
         p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~mean, type = 'scatter',
                          mode = 'lines+markers', name = paste0(algId, ''),
                          marker = list(color = rgb_str), legendgroup = legend,
-                         line = list(color = rgb_str), visible = T)
+                         line = list(color = rgb_str, dash = get_line_style(algId)), visible = T)
 
       if (show.median)
         p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~median, type = 'scatter',
@@ -611,16 +610,15 @@ Plot.RT.PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
   points <- ifelse(show.sample, 'all', FALSE)
 
   N <- length(dsList)
-  colors <- color_palettes(N)
 
   p <- IOH_plot_ly_default(x.title = "Algorithms",
                        y.title = "Runtime / function evaluations")
 
   for (i in seq_along(dsList)) {
     ds <- dsList[[i]]
-
-    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.52)')
+    algId <- attr(ds, "algId")
+    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.52)')
 
     p %<>%
       add_trace(data = get_RT_sample(ds, ftarget, output = 'long'),
@@ -654,7 +652,6 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
   }
   
   N <- length(dsList)
-  colors <- color_palettes(N)
   if (N <= 10) {
     n_rows <- ceiling(N / 2.) # keep to columns for the histograms
     n_cols <- min(2, N)
@@ -678,10 +675,12 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
   }
   
   for (i in seq_along(dsList)) {
-    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.35)')
-
     df <- dsList[[i]]
+    
+    algId <- attr(df, "algId")
+    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.35)')
+
     algId <- attr(df, 'algId')
     rt <- get_RT_sample(df, ftarget, output = 'long')
 
@@ -738,7 +737,6 @@ Plot.RT.ECDF_Per_Target.DataSetList <- function(dsList, ftargets, scale.xlog = F
   req(length(ftargets) != 0)
 
   N <- length(dsList)
-  colors <- color_palettes(N)
 
   p <- IOH_plot_ly_default(title = paste('ftarget:', paste(ftargets, collapse = ' ')),
                        x.title = "Function evaluations",
@@ -748,8 +746,8 @@ Plot.RT.ECDF_Per_Target.DataSetList <- function(dsList, ftargets, scale.xlog = F
     df <- dsList[[k]]
     algId <- attr(df, 'algId')
 
-    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.35)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.35)')
 
     for (i in seq_along(ftargets)) {
       rt <- get_RT_sample(df, ftargets[i], output = 'long')$RT %>% sort
@@ -768,7 +766,7 @@ Plot.RT.ECDF_Per_Target.DataSetList <- function(dsList, ftargets, scale.xlog = F
                   mode = 'lines+markers', name = algId, showlegend = (i == 1),
                   legendgroup = paste0(k),
                   marker = list(color = rgb_str),
-                  line = list(color = rgb_str, width = 3))
+                  line = list(color = rgb_str, width = 3, dash = get_line_style(algId)))
       # add_trace(data = NULL, x = x, y = y, type = 'scatter',
       #           mode = 'markers',  legendgroup = paste0(k),
       #           name = sprintf('(%s, %.2e)', algId, ftargets[i]),
@@ -794,7 +792,6 @@ Plot.RT.ECDF_Single_Func.DataSetList <- function(dsList, fstart = NULL, fstop = 
   req(fseq)
 
   N <- length(dsList)
-  colors <- color_palettes(N)
 
   RT <- get_runtimes(dsList)
   x <- seq_RT(RT, length.out = 50, scale = ifelse(scale.xlog, 'log', 'linear'))
@@ -805,9 +802,9 @@ Plot.RT.ECDF_Single_Func.DataSetList <- function(dsList, fstart = NULL, fstop = 
     df <- dsList[[k]]
     algId <- attr(df, 'algId')
 
-    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.15)')
-    rgba_str2 <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.8)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.15)')
+    rgba_str2 <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.8)')
 
     m <- lapply(fseq, function(f) {
       rt <- get_RT_sample(df, f, output = 'long')$RT
@@ -834,7 +831,7 @@ Plot.RT.ECDF_Single_Func.DataSetList <- function(dsList, fstart = NULL, fstop = 
       add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
                 mode = 'lines+markers', name = sprintf('%s', algId),
                 showlegend = T, legendgroup = paste0(k),
-                line = list(color = rgb_str, width = 2),
+                line = list(color = rgb_str, width = 2, dash = get_line_style(algId)),
                 marker = list(color = rgb_str, size = 9))
 
     if (show.per_target) {
@@ -872,7 +869,6 @@ Plot.RT.ECDF_AUC.DataSetList <- function(dsList, fstart = NULL,
   fseq <- seq_FV(fall, fstart, fstop, fstep)
 
   N <- length(dsList)
-  colors <- color_palettes(N)
 
   RT.max <- sapply(dsList, function(ds) max(attr(ds, 'maxRT'))) %>% max
   p <- IOH_plot_ly_default()
@@ -881,8 +877,8 @@ Plot.RT.ECDF_AUC.DataSetList <- function(dsList, fstart = NULL,
     df <- dsList[[k]]
     algId <- attr(df, 'algId')
 
-    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.2)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.2)')
 
     # calculate ECDFs on user specified targets
 
@@ -928,16 +924,15 @@ Plot.FV.PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
   points <- ifelse(show.sample, 'all', FALSE)
 
   N <- length(dsList)
-  colors <- color_palettes(N)
 
   p <- IOH_plot_ly_default(x.title = "Algorithms",
                        y.title = "Target value")
 
   for (i in seq_along(dsList)) {
     ds <- dsList[[i]]
-
-    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.55)')
+    algId <- attr(ds, "algId")
+    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.55)')
 
     p %<>%
       add_trace(data = get_FV_sample(ds, runtime, output = 'long'),
@@ -951,7 +946,7 @@ Plot.FV.PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
                 name = attr(ds, 'algId'),
                 meanline = list(visible = T),
                 fillcolor = rgba_str,
-                line = list(color = 'black', width = 2),
+                line = list(color = 'black', width = 2, dash = get_line_style(algId)),
                 marker = list(color = rgb_str, size = 8))
   }
   p %<>%
@@ -968,7 +963,6 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', 
     return(NULL)
   }
   N <- length(dsList)
-  colors <- color_palettes(N)
   if (N <= 10) {
     n_rows <- ceiling(N / 2.) # keep to columns for the histograms
     n_cols <- min(2, N)
@@ -995,11 +989,14 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', 
   }
   
   for (i in seq_along(dsList)) {
-    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.35)')
+   
 
     ds <- dsList[[i]]
     algId <- attr(ds, 'algId')
+    
+    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.35)')
+    
     fce <- get_FV_sample(ds, runtime, output = 'long')
     # skip if all target samples are NA
     if (sum(!is.na(fce$'f(x)')) < 2)
@@ -1044,7 +1041,6 @@ Plot.FV.ECDF_Per_Target.DataSetList <- function(dsList, runtimes, scale.xlog = F
   req(length(runtimes) != 0)
 
   n_algorithm <- length(dsList)
-  colors <- color_palettes(n_algorithm)
 
   p <- IOH_plot_ly_default(title = NULL,
                        x.title = "Target value",
@@ -1054,8 +1050,8 @@ Plot.FV.ECDF_Per_Target.DataSetList <- function(dsList, runtimes, scale.xlog = F
     ds <- dsList[[k]]
     algId <- attr(ds, 'algId')
 
-    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.35)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.35)')
     show_legend <- T
     for (i in seq_along(runtimes)) {
       funvals <- get_FV_sample(ds, runtimes[i], output = 'long')$'f(x)' %>% sort
@@ -1074,7 +1070,7 @@ Plot.FV.ECDF_Per_Target.DataSetList <- function(dsList, runtimes, scale.xlog = F
         add_trace(data = NULL, x = funvals, y = density, type = 'scatter',
                   mode = 'lines', name = algId, showlegend = show_legend,
                   legendgroup = algId,
-                  line = list(color = rgb_str, width = 3)) %>%
+                  line = list(color = rgb_str, width = 3, dash = get_line_style(algId))) %>%
         add_trace(data = NULL, x = x, y = y, type = 'scatter', showlegend = F,
                   mode = 'markers',  legendgroup = algId,
                   name = sprintf('%s, %.2e', algId, runtimes[i]),
@@ -1107,7 +1103,6 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
   req(rt_seq)
 
   n_algorithm <- length(dsList)
-  colors <- color_palettes(n_algorithm)
 
   funevals.max <- sapply(dsList, function(ds) max(ds$FV, na.rm = T)) %>% max
   funevals.min <- sapply(dsList, function(ds) min(ds$FV, na.rm = T)) %>% min
@@ -1126,9 +1121,9 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
     ds <- dsList[[k]]
     algId <- attr(ds, 'algId')
 
-    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.15)')
-    rgba_str2 <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.8)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.15)')
+    rgba_str2 <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.8)')
 
     fun <- get_FV_sample(ds, rt_seq, output = 'long')$'f(x)' %>% ecdf
     m <- fun(x)
@@ -1140,7 +1135,7 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
       add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
                 mode = 'lines+markers', name = sprintf('%s', algId),
                 showlegend = T, legendgroup = paste0(k),
-                line = list(color = rgb_str, width = 4.5),
+                line = list(color = rgb_str, width = 4.5, dash = get_line_style(algId)),
                 marker = list(color = rgb_str, size = 11))
 
     if (show.per_target) {
@@ -1177,8 +1172,7 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
   req(rt_seq)
 
   n_algorithm <- length(dsList)
-  colors <- color_palettes(n_algorithm)
-  
+
   funevals.max <- sapply(dsList, function(ds) max(attr(ds, 'finalFV'))) %>% max
   funevals.min <- sapply(dsList, function(ds) min(attr(ds, 'finalFV'))) %>% min
   p <- IOH_plot_ly_default()
@@ -1187,8 +1181,8 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
     df <- dsList[[k]]
     algId <- attr(df, 'algId')
 
-    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[k]), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[k]), collapse = ','), ',0.2)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.2)')
 
     # calculate ECDFs on user specified targets
     funs <- lapply(rt_seq, function(r) {
@@ -1261,7 +1255,6 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
 
   algorithms <- dt[, algId] %>% unique
   n_alg <- length(algorithms)
-  colors <- color_palettes(n_alg)
 
   nrows <- ceiling(n_param / 2)
   # TODO: improve the efficiency of plotting here
@@ -1283,16 +1276,16 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
 
       name <- par_name[j]
       dt_plot <- dt[parId == name & algId == alg]
-      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.3)')
+      rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(alg)), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(alg)), collapse = ','), ',0.3)')
       
       if (show.CI) {
       p[[j]] %<>%
         add_trace(data = dt_plot, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
-                  line = list(color = rgba_str, width = 0),
+                  line = list(color = rgba_str, width = 0, dash = get_line_style(alg)),
                   showlegend = F, legendgroup = ~algId, name = 'mean +/- sd') %>%
         add_trace(x = ~target, y = ~lower, type = 'scatter', mode = 'lines',
-                  fill = 'tonexty',  line = list(color = 'transparent'),
+                  fill = 'tonexty',  line = list(color = 'transparent', dash = get_line_style(alg)),
                   fillcolor = rgba_str, showlegend = F, legendgroup = ~algId,
                   name = 'mean +/- sd')
       }
@@ -1328,10 +1321,11 @@ Plot.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
     }
   }
 
-  subplot(p, nrows = nrows, titleX = F, titleY = T, margin = 0.05) %>%
-    add_annotations(x = 0.5 , y = -0.18, text = "Best-so-far f(x)-value",
-                    showarrow = F, xref = 'paper', yref = 'paper',
-                    font = list(size = 22, family = 'sans-serif'))
+  subplot(p, nrows = nrows, titleX = F, titleY = T, margin = 0.05) 
+  # %>%
+  #   add_annotations(x = 0.5 , y = -0.18, text = "Best-so-far f(x)-value",
+  #                   showarrow = F, xref = 'paper', yref = 'paper',
+  #                   font = list(size = 22, family = 'sans-serif'))
 }
 
 #' @rdname Plot.RT.ECDF_Multi_Func
@@ -1347,12 +1341,11 @@ Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
 
   rts <- get_runtimes(dsList)
   x <- seq_RT(rts, length.out = 50, scale = ifelse(scale.xlog, "log", "linear"))
-  colors <- color_palettes(length(algId))
 
   for (i in seq_along(algId)) {
     Id <- algId[i]
     data <- subset(dsList, algId == Id)
-    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(Id)), collapse = ','), ')')
 
     fun <- ECDF(data, ftarget = targets)
     if (is.null(fun)) next
@@ -1361,7 +1354,7 @@ Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
     p %<>% add_trace(data = df_plot, x = ~x, y = ~ecdf, type = 'scatter',
                      mode = 'lines+markers', name = sprintf('%s', Id),
                      showlegend = T,
-                     line = list(color = rgb_str),
+                     line = list(color = rgb_str, dash = get_line_style(Id)),
                      marker = list(color = rgb_str))
   }
   
@@ -1386,9 +1379,12 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
   algIds <- get_algId(dsList)
   n_algIds <- length(algIds)
 
-  colors <- color_palettes(n_algIds)
+  colors <- get_color_scheme(algIds)
   names(colors) <- algIds
-
+  
+  dashes <- get_line_style(algIds)
+  names(dashes) <- algIds
+  
   # how many columns do we want...
   if (n_fcts <= 10) {
     n_rows <- ceiling(n_fcts / 2.)
@@ -1446,8 +1442,8 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
         add_trace(
           data = dt_plot, x = ~target, y = ~ERT, color = ~algId, legendgroup = ~algId,
           type = 'scatter', mode = 'lines+markers',
-          line = list(width = 1.8), marker = list(size = 4), # TODO: perhaps turn off the marker here
-          colors = colors, showlegend = showlegend
+          linetype = ~algId, marker = list(size = 4), # TODO: perhaps turn off the marker here
+          colors = colors, showlegend = showlegend, linetypes = dashes
         ) 
 
       p[[i]] %<>%
@@ -1484,8 +1480,11 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
   algIds <- get_algId(dsList)
   n_algIds <- length(algIds)
 
-  colors <- color_palettes(n_algIds)
+  colors <- get_color_scheme(algIds)
   names(colors) <- algIds
+  
+  dashes <- get_line_style(algIds)
+  names(dashes) <- algIds
 
   # how many columns do we want...
   if (n_fcts <= 10) {
@@ -1543,8 +1542,8 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
         add_trace(
           data = dt_plot, x = ~runtime, y = ~`mean`, color = ~algId, legendgroup = ~algId,
           type = 'scatter', mode = 'lines+markers',
-          line = list(width = 1.8), marker = list(size = 4), # TODO: perhaps turn off the marker here
-          colors = colors, showlegend = showlegend
+          linetype = ~algId, marker = list(size = 4), # TODO: perhaps turn off the marker here
+          colors = colors, showlegend = showlegend, linetypes = dashes
         ) 
       
       disp_y <-  mod(i, n_cols) == 1
@@ -1582,16 +1581,15 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
     return(NULL)
 
   N <- length(get_algId(dsList))
-  colors <- color_palettes(N)
 
   fid <- get_funcId(dsList)
   range <- c(min(fid) - .5, max(fid) + .5)
   
   in_legend <- integer(N)
   names(in_legend) <- get_algId(dsList)
-  names(colors) <- get_algId(dsList)
 
-  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
+  aggr_attr <- if (aggr_on 
+                   'funcId') get_funcId(dsList) else get_dim(dsList)
   if (!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
 
   second_aggr <- if (aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
@@ -1679,7 +1677,8 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
   
   for (i in seq_along(get_algId(dsList))) {
     algId <- get_algId(dsList)[[i]]
-    color <- colors[[algId]]
+    dash <- get_line_style(algId)
+    color <- get_color_scheme(algId)
     data <- dataert[, i]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
@@ -1707,7 +1706,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
                        mode = 'lines+markers',
                        marker = list(color = rgb_str, size = 7), hoverinfo = 'text',
                        text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
-                       line = list(color = rgb_str, dash = 'dash'), 
+                       line = list(color = rgb_str, dash = dash), 
                        name = algId, legendgroup = algId)
       p %<>%
         add_trace(type = 'scatter', mode = 'markers', x = as.numeric(names(data_inf_)), 
@@ -1755,17 +1754,15 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
     return(NULL)
 
   N <- length(get_algId(dsList))
-  colors <- color_palettes(N)
 
   in_legend <- integer(N)
   names(in_legend) <- get_algId(dsList)
-  names(colors) <- get_algId(dsList)
 
   aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
   if (!is.null(runtimes) && length(runtimes) != length(aggr_attr)) runtimes <- NULL
 
   second_aggr <- if (aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
-  if (length(second_aggr) >1 ) return(NULL)
+  if (length(second_aggr) > 1 ) return(NULL)
 
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
 
@@ -1776,11 +1773,11 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
                         x.title = ifelse(aggr_on == "funcId", "Function", "Dimension"), 
                         y.title = ifelse(use_rank, "Rank", "Mean Runtime"))
 
-  if (use_rank){
+  if (use_rank) {
     ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))
     fvs2 <- -fvs
     fvs2[is.na(fvs2)] <- Inf
-    for (i in seq_along(aggr_attr)){
+    for (i in seq_along(aggr_attr)) {
       ertranks <- rbind(ertranks, rank(fvs2[i, ]))
     }
     dataert <- ertranks[-1, ]
@@ -1791,7 +1788,8 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
 
   for (i in seq_along(get_algId(dsList))) {
     algId <- get_algId(dsList)[[i]]
-    color <- colors[[algId]]
+    color <- get_color_scheme(algId)
+    dash <- get_line_style(algId)
     data <- dataert[,i]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
@@ -1821,7 +1819,7 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
                        mode = 'lines+markers',
                        marker = list(color = rgb_str), hoverinfo = 'text',
                        text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
-                       line = list(color = rgb_str), name = algId, legendgroup = algId)
+                       line = list(color = rgb_str, dash = dash), name = algId, legendgroup = algId)
       data2 <- data
       data2[is.na(data2)] <- 0
       data2[!is.na(data)] <- NA
@@ -1931,7 +1929,10 @@ Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds=100, gl
   close <- df$Rating - df$Deviation
   
   N <- length(df$Rating)
-  colors <- color_palettes(N)
+  colors <- get_color_scheme(algIds)
+  if (length(colors != N)){
+    colors <- get_color_scheme(get_algId(dsList))
+  }
   
   for (i in seq(N)){
     # rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.52)')

@@ -201,12 +201,14 @@ observeEvent(selected_folders(), {
     return(NULL)
   }
   else if (attr(DataList$data, 'suite') == NEVERGRAD) {
+    #TODO: Better way of doing this such that these pages are not even populated with data instead of just being hidden
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_ECDF"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_convergence"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_data"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_PMF"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "PARAMETER"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_PARAMETER"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_Statistics"))
   }
   else{
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_ECDF"))
@@ -214,7 +216,8 @@ observeEvent(selected_folders(), {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT_data"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PMF"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "PARAMETER"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PARAMETER"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_Statistics"))
   }
   if (attr(DataList$data, 'suite') == "PBO") {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "FCE_ECDF"))
@@ -357,11 +360,17 @@ observe({
   updateSelectInput(session, 'Report.Param.Statistics-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.Param.Statistics-Alg', choices = algIds_, selected = algIds_)
   
-  updateSelectInput(session, 'Stats.Glicko.Algid', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
-  updateSelectInput(session, 'Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'RT_Stats.Glicko.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RT_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'RT_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
   
-  updateSelectInput(session, 'Stats.Overview.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RT_Stats.Overview.Algid', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'FV_Stats.Glicko.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FV_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'FV_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
+  
+  updateSelectInput(session, 'FV_Stats.Overview.Algid', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'FCESummary.Overview.Algid', choices = algIds, selected = 'all')
@@ -508,7 +517,7 @@ observe({
   setTextInput(session, 'RT_PAR.Sample.Min', name, alternative = format_FV(start))
   setTextInput(session, 'RT_PAR.Sample.Max', name, alternative = format_FV(stop))
   setTextInput(session, 'RT_PAR.Sample.Step', name, alternative = format_FV(step))
-  setTextInput(session, 'Stats.Overview.Target', name, alternative = format_FV(stop))
+  setTextInput(session, 'RT_Stats.Overview.Target', name, alternative = format_FV(stop))
 })
 
 # update the values for the grid of running times
@@ -554,6 +563,7 @@ observe({
   setTextInput(session, 'FV_PAR.Sample.Min', name, alternative =  min(v))
   setTextInput(session, 'FV_PAR.Sample.Max', name, alternative = max(v))
   setTextInput(session, 'FV_PAR.Sample.Step', name, alternative = step)
+  setTextInput(session, 'FV_Stats.Overview.Target', name, alternative = max(v))
   #TODO: remove q and replace by single number
   setTextInput(session, 'FCEECDF.Single.Target', name, alternative = q[2])
 })

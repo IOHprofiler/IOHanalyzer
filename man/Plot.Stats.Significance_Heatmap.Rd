@@ -6,10 +6,10 @@
 \title{Plot a heatmap showing the statistically different algorithms}
 \usage{
 Plot.Stats.Significance_Heatmap(dsList, ftarget, alpha = 0.01,
-  bootstrap.size = 30)
+  bootstrap.size = 30, which = "by_FV")
 
 \method{Plot.Stats.Significance_Heatmap}{DataSetList}(dsList, ftarget,
-  alpha = 0.01, bootstrap.size = 30)
+  alpha = 0.01, bootstrap.size = 30, which = "by_FV")
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}
@@ -19,6 +19,8 @@ Plot.Stats.Significance_Heatmap(dsList, ftarget, alpha = 0.01,
 \item{alpha}{The cutoff for statistical significance}
 
 \item{bootstrap.size}{The amound of bootstrapped samples used}
+
+\item{which}{Whether to use fixed-target ('by_FV') or fixed-budget ('by_RT') perspective}
 }
 \value{
 A heatmap showing the statistical significance between algorithms

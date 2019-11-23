@@ -1,28 +1,28 @@
-rt_heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
+fv_heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
   box(title = HTML('<p style="font-size:120%;">Statistical Significance</p>'),
       width = width, solidHeader = T, status = "primary",
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        selectInput('RT_Stats.Overview.Algid', 'Algorithms to compare', choices = NULL, 
+        selectInput('FV_Stats.Overview.Algid', 'Algorithms to compare', choices = NULL, 
                     selected = NULL, multiple = T),
-        textInput('RT_Stats.Overview.Target', label = F_TAR_LABEL),
-        textInput('RT_Stats.Overview.Alpha', 
+        textInput('FV_Stats.Overview.Target', label = RT_TAR_LABEL),
+        textInput('FV_Stats.Overview.Alpha', 
                   label = HTML('<p>significant level \\(\\alpha\\)</p>'), 
                   value = 0.01),
-        numericInput('RT_Stats.Overview.Samples', 
-                     label = 'size of the bootstrap sample', 
-                     min = 1, max = 1000, step = 1, value = 0),
+        # numericInput('FV_Stats.Overview.Samples', 
+        #              label = 'size of the bootstrap sample', 
+        #              min = 1, max = 1000, step = 1, value = 0),
         hr(),
-        selectInput('RT_Stats.Overview.TableFormat', label = 'Select the table format',
+        selectInput('FV_Stats.Overview.TableFormat', label = 'Select the table format',
                     choices = c('csv','tex'), selected = 'csv'),
-        downloadButton('RT_Stats.Overview.DownloadTable', label = 'Download the table'),
+        downloadButton('FV_Stats.Overview.DownloadTable', label = 'Download the table'),
         hr(),
-        selectInput('RT_Stats.Overview.Format', label = 'Select the figure format',
+        selectInput('FV_Stats.Overview.Format', label = 'Select the figure format',
                     choices = supported_fig_format, selected = 'pdf'),
-        downloadButton('RT_Stats.Overview.DownloadHeatmap', 
+        downloadButton('FV_Stats.Overview.DownloadHeatmap', 
                        label = 'Download the heatmap')
-        # downloadButton('RT_Stats.Overview.DownloadNetwork', 
+        # downloadButton('FV_Stats.Overview.DownloadNetwork', 
         #                label = 'Download the network-graph', status = F)
         
       ),
@@ -34,9 +34,9 @@ rt_heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
                 smaller running time distribution. The resulting p-values are arranged in a matrix, where
                 each cell \\((i, j)\\) contains a p-value from the test with the alternative hypothesis:
                 the running time of algorithm \\(i\\) is smaller (thus better) than that of \\(j\\).'),
-        DT::dataTableOutput('RT_Stats.Overview.Pmatrix')
+        DT::dataTableOutput('FV_Stats.Overview.Pmatrix')
       ),
-
+      
       fluidRow(
         column(
           width = 12,
@@ -56,47 +56,47 @@ rt_heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
                   \\(B\\) with the specified \\(\\alpha\\) value.')
         )
       ),
-
+      
       fluidRow(
         column(
           width = 6, align = 'center',
           HTML('<div style="margin-top: 30px;"></div>'),
-          plotlyOutput.IOHanalyzer('RT_Stats.Overview.Heatmap', aspect_ratio = 1)
+          plotlyOutput.IOHanalyzer('FV_Stats.Overview.Heatmap', aspect_ratio = 1)
         ),
         column(
           width = 6, align = 'center',
           HTML('<div style="margin-top: 30px;"></div>'),
-          plotOutput("RT_Stats.Overview.Graph", height = '70vh')
+          plotOutput("FV_Stats.Overview.Graph", height = '70vh')
         )
       )
   )
 }
 
-rt_glicko2_box <- function(width = 12, collapsible = T, collapsed = T) {
+fv_glicko2_box <- function(width = 12, collapsible = T, collapsed = T) {
   box(title = HTML('<p style="font-size:120%;">Glicko2-based ranking</p>'),
       width = width, solidHeader = T, status = "primary",
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        selectInput('RT_Stats.Glicko.Algid', 'Algorithms to compare', choices = NULL, 
+        selectInput('FV_Stats.Glicko.Algid', 'Algorithms to compare', choices = NULL, 
                     selected = NULL, multiple = T),
-        selectInput('RT_Stats.Glicko.Funcid', 'Functions to use', choices = NULL, 
+        selectInput('FV_Stats.Glicko.Funcid', 'Functions to use', choices = NULL, 
                     selected = NULL, multiple = T),
-        selectInput('RT_Stats.Glicko.Dim', 'Dimensions to use', choices = NULL, 
+        selectInput('FV_Stats.Glicko.Dim', 'Dimensions to use', choices = NULL, 
                     selected = NULL, multiple = T),
-        textInput('RT_Stats.Glicko.Nrgames', 
+        textInput('FV_Stats.Glicko.Nrgames', 
                   label = "Number of games per (function,dimension) pair", 
                   value = 25),
-        actionButton('RT_Stats.Glicko.Create', 'Create Ranking'),
+        actionButton('FV_Stats.Glicko.Create', 'Create Ranking'),
         hr(),
-        selectInput('RT_Stats.Glicko.Format', label = 'Select the figure format',
+        selectInput('FV_Stats.Glicko.Format', label = 'Select the figure format',
                     choices = supported_fig_format, selected = 'pdf'),
         
-        downloadButton('RT_Stats.Glicko.Download', label = 'Download the figure'),
+        downloadButton('FV_Stats.Glicko.Download', label = 'Download the figure'),
         hr(),
-        selectInput('RT_Stats.Glicko.TableFormat', label = 'Select the table format',
+        selectInput('FV_Stats.Glicko.TableFormat', label = 'Select the table format',
                     choices = c('csv','tex'), selected = 'csv'),
-        downloadButton('RT_Stats.Glicko.DownloadTable', label = 'Download the table')
+        downloadButton('FV_Stats.Glicko.DownloadTable', label = 'Download the table')
       ),
       
       mainPanel(
@@ -106,8 +106,8 @@ rt_glicko2_box <- function(width = 12, collapsible = T, collapsed = T) {
                 each pair of algorithms competes. This competition samples a random runtime for the 
                 provided target (best achieved target among all algorithms). Whichever algorithm has the lower
                 runtime wins the game. Then, from these games, the glico2-rating is used to determine the ranking.'),
-        DT::dataTableOutput('RT_Stats.Glicko.Dataframe'),
-        plotlyOutput.IOHanalyzer("RT_Stats.Glicko.Candlestick")
+        DT::dataTableOutput('FV_Stats.Glicko.Dataframe'),
+        plotlyOutput.IOHanalyzer("FV_Stats.Glicko.Candlestick")
       )
   )
 }

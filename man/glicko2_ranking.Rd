@@ -4,13 +4,15 @@
 \alias{glicko2_ranking}
 \title{Glicko2 raning of algorithms}
 \usage{
-glicko2_ranking(dsl, nr_rounds = 100)
+glicko2_ranking(dsl, nr_rounds = 100, which = "by_FV")
 }
 \arguments{
 \item{dsl}{The DataSetList, can contain multiple functions and dimensions, but should have the 
 same algorithms for all of them}
 
 \item{nr_rounds}{The number of rounds to run. More rounds leads to a more accurate ranking.}
+
+\item{which}{Whether to use fixed-target ('by_FV') or fixed-budget ('by_RT') perspective}
 }
 \value{
 A dataframe containing the glicko2-ratings and some additional info

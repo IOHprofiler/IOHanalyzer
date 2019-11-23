@@ -188,6 +188,16 @@ body <- dashboardBody(
             )
     ),
 
+    tabItem(tabName = 'RT_Statistics',
+            fluidRow(
+              column(
+                width = 12,
+                rt_heatmap_box(),
+                rt_glicko2_box()
+              )
+            )
+    ),
+    
     # FCE: Data Summary -----------------
     tabItem(tabName = 'FCE_DATA',
             fluidRow(
@@ -247,12 +257,12 @@ body <- dashboardBody(
             )
     ),
 
-    tabItem(tabName = 'Statistics',
+    tabItem(tabName = 'FCE_Statistics',
             fluidRow(
               column(
                 width = 12,
-                heatmap_box(),
-                glicko2_box()
+                fv_heatmap_box(),
+                fv_glicko2_box()
               )
             )
     ),

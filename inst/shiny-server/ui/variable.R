@@ -2,6 +2,7 @@ FCE_GRID_INPUT_TEXT <- '<p align="justify">Set the range and the granularity of 
                         The table will show function values that have been reached within evenly
                         spaced evaluation budgets.</p>'
 
+RT_TAR_LABEL <- HTML('<p>\\(B:\\) Budget value</p>')
 RT_MIN_LABEL <- HTML('<p>\\(B_{\\text{min}}:\\) Smallest budget value</p>')
 RT_MAX_LABEL <- HTML('<p>\\(B_{\\text{max}}:\\) Largest budget value</p>')
 RT_STEP_LABEL <- HTML('<p>\\(\\Delta B:\\) Granularity (step size)</p>')

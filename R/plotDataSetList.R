@@ -397,12 +397,14 @@ Plot.FV.Multi_Func <- function(dsList, scale.xlog = F, scale.ylog = F, backend =
 #' @param ftarget The target function value to use
 #' @param alpha The cutoff for statistical significance
 #' @param bootstrap.size The amound of bootstrapped samples used
+#' @param which Whether to use fixed-target ('by_FV') or fixed-budget ('by_RT') perspective
 #'
 #' @return A heatmap showing the statistical significance between algorithms
 #' @export
 #' @examples 
 #' Plot.Stats.Significance_Heatmap(subset(dsl, funcId == 2), 16)
-Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01, bootstrap.size = 30) 
+Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01, bootstrap.size = 30, 
+                                            which = 'by_FV') 
   UseMethod("Plot.Stats.Significance_Heatmap", dsList)
   
 #' Plot a network graph showing the statistically different algorithms
@@ -411,12 +413,14 @@ Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01, boots
 #' @param ftarget The target function value to use
 #' @param alpha The cutoff for statistical significance
 #' @param bootstrap.size The amound of bootstrapped samples used
+#' @param which Whether to use fixed-target ('by_FV') or fixed-budget ('by_RT') perspective
 #'
 #' @return A graph showing the statistical significance between algorithms
 #' @export
 #' @examples 
 #' Plot.Stats.Significance_Graph(subset(dsl, funcId == 2), 16)
-Plot.Stats.Significance_Graph <- function(dsList, ftarget, alpha = 0.01, bootstrap.size = 30) 
+Plot.Stats.Significance_Graph <- function(dsList, ftarget, alpha = 0.01, bootstrap.size = 30, 
+                                          which = 'by_FV') 
   UseMethod("Plot.Stats.Significance_Graph", dsList)
 
 #' Create a candlestick plot of Glicko2-rankings
@@ -424,11 +428,13 @@ Plot.Stats.Significance_Graph <- function(dsList, ftarget, alpha = 0.01, bootstr
 #' @param dsList A DataSetList
 #' @param nr_rounds The number of rounds in the tournament
 #' @param glicko2_rank_df Optional. Dataframe containing the glicko2 rating to avoid needless recalculation.
+#' @param which Whether to use fixed-target ('by_FV') or fixed-budget ('by_RT') perspective
 #' 
 #' @export
 #' @examples 
 #' Plot.Stats.Glicko2_Candlestick(dsl, nr_rounds=2)
-Plot.Stats.Glicko2_Candlestick <- function(dsList, nr_rounds = 100, glicko2_rank_df = NULL) 
+Plot.Stats.Glicko2_Candlestick <- function(dsList, nr_rounds = 100, glicko2_rank_df = NULL, 
+                                           which = 'by_FV') 
   UseMethod("Plot.Stats.Glicko2_Candlestick", dsList)
 
 
@@ -1978,13 +1984,13 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
 #' @rdname Plot.Stats.Significance_Heatmap
 #' @export 
 Plot.Stats.Significance_Heatmap.DataSetList <- function(dsList, ftarget, alpha = 0.01,
-                                            bootstrap.size = 30){
+                                            bootstrap.size = 30, which = 'by_FV'){
   if (length(get_dim(dsList)) != 1 || 
       length(get_funcId(dsList)) != 1 || 
       length(get_algId(dsList)) < 2)
     return(NULL)
   
-  p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size)
+  p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size, which)
   y <- p_matrix <= alpha
   colorScale <- data.frame(x = c(-1, -0.33, -0.33, 0.33, 0.33, 1),
                            col = c('blue', 'blue', 'white', 'white', 'red', 'red')
@@ -2013,11 +2019,11 @@ radian.rescale <- function(x, start=0, direction=1) {
 #' @rdname Plot.Stats.Significance_Graph
 #' @export
 Plot.Stats.Significance_Graph.DataSetList <- function(dsList, ftarget, alpha = 0.01,
-                                                      bootstrap.size = 30){
-  if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1 || length(get_algId(dsList)) < 2){
+                                                      bootstrap.size = 30, which = 'by_FV'){
+  if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1 || length(get_algId(dsList)) < 2) {
     return(NULL)
   }
-  p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size)
+  p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size, which)
   g <- graph_from_adjacency_matrix(p_matrix <= alpha, mode = 'directed', diag = F)
   lab.locs <- radian.rescale(x = 1:nrow(p_matrix), direction = -1, start = 0)
   
@@ -2030,11 +2036,12 @@ Plot.Stats.Significance_Graph.DataSetList <- function(dsList, ftarget, alpha = 0
 
 #' @rdname Plot.Stats.Glicko2_Candlestick
 #' @export
-Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds=100, glicko2_rank_df=NULL){
+Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds=100, glicko2_rank_df=NULL,
+                                                       which = 'by_FV'){
   df <- glicko2_rank_df
   
-  if(is.null(df)){
-    df <- glicko2_ranking(dsList, nr_rounds)$ratings
+  if (is.null(df)) {
+    df <- glicko2_ranking(dsList, nr_rounds, which)$ratings
     algIds <- df$Player$algId
   }
   else{
@@ -2052,17 +2059,18 @@ Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds=100, gl
   
   N <- length(df$Rating)
   colors <- get_color_scheme(algIds)
-  if (length(colors != N)){
+  if (length(colors != N)) {
     colors <- get_color_scheme(get_algId(dsList))
   }
   
-  for (i in seq(N)){
+  for (i in seq(N)) {
     # rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.52)')
-    color <- list(line=list(color = colors[[i]]))
-    p %<>% add_trace(type="candlestick", x = algIds[[i]], open=open[[i]], close=close[[i]], 
-                     high=high[[i]], low=low[[i]], legendgroup=algIds[[i]], 
-                     name=algIds[[i]], increasing = color, decreasing = color,
-                     hovertext = paste0(format(df$Rating[[i]], digits = 3), '+-', format(df$Deviation[[i]], digits = 3)),
+    color <- list(line = list(color = colors[[i]]))
+    p %<>% add_trace(type = "candlestick", x = algIds[[i]], open = open[[i]], close = close[[i]], 
+                     high = high[[i]], low = low[[i]], legendgroup = algIds[[i]], 
+                     name = algIds[[i]], increasing = color, decreasing = color,
+                     hovertext = paste0(format(df$Rating[[i]], digits = 3), '+-', 
+                                        format(df$Deviation[[i]], digits = 3)),
                      hoverinfo = "text")
   }
   p %<>% layout(xaxis = list(rangeslider = list(visible = F)))

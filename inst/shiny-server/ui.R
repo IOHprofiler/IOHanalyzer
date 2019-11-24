@@ -133,7 +133,8 @@ body <- dashboardBody(
     tabItem(tabName = 'overview',
             fluidRow(
               column(width = 12,
-                     general_overview_box_single(collapsed = F)
+                     general_overview_box_single(collapsed = F),
+                     general_overview_box_all(collapsed = F)
               )
             )
     ),

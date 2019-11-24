@@ -457,8 +457,17 @@ get_RT_overview.DataSetList <-
 #' @export
 get_overview.DataSetList <-
   function(ds, ...) {
-    rbindlist(lapply(ds, function(ds)
+    df <- rbindlist(lapply(ds, function(ds)
       get_overview(ds)))
+    if (length(get_funcId(ds)) > 1 || length(get_dim(ds)) > 1) {
+      p1 <- df[,lapply(.SD, max, na.rm = TRUE), by = c('DIM', 'funcId'), .SDcols = c('budget', 'best reached')]
+      p2 <- df[,lapply(.SD, mean, na.rm = TRUE), by = c('DIM', 'funcId'), .SDcols = c('mean reached')]
+      p3 <- df[,lapply(.SD, min, na.rm = TRUE), by = c('DIM', 'funcId'), .SDcols = c('worst recorded', 'worst reached')]
+      return(merge(merge(p1,p2),p3))
+    }
+    else {
+      return(df)
+    }
 }
 
 #' @rdname get_FV_sample

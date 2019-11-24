@@ -105,6 +105,7 @@ print_html <- function(s, widget_id = 'process_data_promt')
 # download file names: csv, image ---------------------
 overview_single_name <- parse(text = "paste0('Overview-', paste0(input$Overall.Dim, 'D'),
                              paste0('F', input$Overall.Funcid), '.', input$Overview.Single.Format)")
+overview_all_name <- parse(text = "paste0('Overview-All-', '.', input$Overview.All.Format)")
 RT_csv_name <- parse(text = "paste0('RTStats-', paste0(input$Overall.Dim, 'D'),
                              paste0('F', input$Overall.Funcid), '.', input$RTSummary.Statistics.Format)")
 RT_overview_name <- parse(text = "paste0('RTOverview-', paste0(input$Overall.Dim, 'D'),

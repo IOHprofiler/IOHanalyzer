@@ -425,7 +425,7 @@ get_FV_summary.DataSetList <-
       colnames(res)[2] <- 'funcId'
       res
     }))
-  }
+}
 
 #' @param algorithm Which algorithms in the DataSetList to consider.
 #' @export
@@ -439,7 +439,7 @@ get_FV_overview.DataSetList <-
     rbindlist(lapply(ds, function(ds)
       get_FV_overview(ds)))
     
-  }
+}
 
 #' @rdname get_RT_overview
 #' @param algorithm Which algorithms in the DataSetList to consider.
@@ -451,7 +451,15 @@ get_RT_overview.DataSetList <-
     
     rbindlist(lapply(ds, function(ds)
       get_RT_overview(ds)))
-  }
+}
+
+#' @rdname get_overview
+#' @export
+get_overview.DataSetList <-
+  function(ds, ...) {
+    rbindlist(lapply(ds, function(ds)
+      get_overview(ds)))
+}
 
 #' @rdname get_FV_sample
 #' @param algorithm Which algorithms in the DataSetList to consider.

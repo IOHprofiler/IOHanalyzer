@@ -129,6 +129,15 @@ body <- dashboardBody(
             )
     ),
 
+    # General data overview ----------------------
+    tabItem(tabName = 'overview',
+            fluidRow(
+              column(width = 12,
+                     general_overview_box_single(collapsed = F)
+              )
+            )
+    ),
+    
     # RT (RunTime): Data Summary -----------------
     tabItem(tabName = 'ERT_data',
       fluidRow(

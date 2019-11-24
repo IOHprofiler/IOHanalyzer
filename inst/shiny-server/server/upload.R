@@ -272,6 +272,9 @@ observe({
   
   updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = selected_f)
+  
+  updateSelectInput(session, 'Overview.Single.Algid', choices = algIds_, selected = algIds_)
+  
   updateSelectInput(session, 'Report.RT.Overview-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.RT.Overview-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.RT.Overview-Alg', choices = algIds_, selected = algIds_)

@@ -395,6 +395,18 @@ get_FV_overview <- function(ds, ...) UseMethod("get_FV_overview", ds)
 #' @export
 get_RT_overview <- function(ds, ...) UseMethod("get_RT_overview", ds)
 
+#' Get condensed overview of datasets
+#'
+#' @param ds A DataSet or DataSetList object
+#' @param ... Arguments passed to other methods
+#'
+#' @return A data.table containing some basic information about the provided DataSet(List)
+#' @examples 
+#' get_overview(dsl)
+#' get_overview(dsl[[1]])
+#' @export
+get_overview <- function(ds, ...) UseMethod("get_overview", ds)
+
 #' @rdname get_FV_overview
 #' @export
 get_FV_overview.DataSet <- function(ds, ...) {
@@ -432,7 +444,7 @@ get_FV_overview.DataSet <- function(ds, ...) {
 #'
 get_RT_overview.DataSet <- function(ds, ...) {
   
-  if(!is.null(attr(ds, "format")) && attr(ds, "format") == NEVERGRAD){
+  if (!is.null(attr(ds, "format")) && attr(ds, "format") == NEVERGRAD) {
     data <- ds$FV
     budget <- max(attr(ds, 'maxRT'))
     runs <- ncol(data)
@@ -455,6 +467,49 @@ get_RT_overview.DataSet <- function(ds, ...) {
              `maximal runtime` = max_rt,
              `runs` = runs,
              `Budget` = budget)
+}
+
+#' @rdname get_overview
+#' @export
+#'
+get_overview.DataSet <- function(ds, ...) {
+  data <- ds$FV
+  runs <- ncol(data)
+  
+  budget <- max(attr(ds, 'maxRT'))
+  if (!is.null(ds$RT)) {
+    max_rt <- max(ds$RT, na.rm = T)
+    budget <- max(budget, max_rt)
+  }
+  else max_rt <- budget
+
+  last_row <- data[nrow(data), ]
+  maximization <- attr(ds, 'maximization')
+  
+  op <- ifelse(maximization, max, min)
+  op_inv <- ifelse(maximization, min, max)
+  
+  best_fv <- op(last_row, na.rm = T)
+  worst_recorded_fv <- op_inv(data, na.rm = T)
+  worst_fv <- op_inv(last_row, na.rm = T)
+  mean_fv <- mean(last_row, na.rm = T)
+  median_fv <- median(last_row, na.rm = T)
+  runs_reached <- sum(last_row == best_fv)
+  
+  data.table(`algId` = attr(ds, 'algId'),
+             `DIM` = attr(ds, 'DIM'),
+             `funcId` = attr(ds, 'funcId'),
+             `runs` = runs,
+             `best reached` = best_fv,
+             `succ` = runs_reached,
+             `budget` = budget,
+             `max evals used` = max_rt,
+             `worst recorded` = worst_recorded_fv,
+             `worst reached` = worst_fv,
+             `mean reached` = mean_fv,
+             `median reached` = median_fv
+            )
+  
 }
 
 #' @rdname get_ERT

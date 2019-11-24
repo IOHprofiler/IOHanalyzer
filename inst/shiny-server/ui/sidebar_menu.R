@@ -2,7 +2,8 @@ sidebar_menu <- function() {
   sidebarMenu(id = "tabs",
               menuItem("Upload Data", tabName = "upload", icon = icon('upload', lib = 'glyphicon'),
                        selected = T),
-
+              menuItem("General Overview", tabName = "overview", icon = icon("table")),
+              
               menuItem("Fixed-Target Results", tabName = "ERT", icon = icon("file-text-o"),
                        menuSubItem("Data Summary", tabName = "ERT_data", icon = icon("table")),
                        menuSubItem("Expected Runtime", tabName = "ERT_convergence", icon = icon("line-chart"), selected = F),

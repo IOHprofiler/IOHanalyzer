@@ -125,6 +125,10 @@ observe({
   options("IOHanalyzer.label_fontsize" = input$Settings.Font.Label)
 })
 
+observe({
+  options("IOHanalyzer.precision" = input$Settings.General.Precision)
+})
+
 output$Settings.Download <- downloadHandler(
   filename = "IOHanalyzer_settings.rds",
   content = function(file){

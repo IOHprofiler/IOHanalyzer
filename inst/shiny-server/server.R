@@ -4,7 +4,8 @@ repo_dir <- ''         # repository directory
 repo_data <- NULL      # repository data
 has_rendered_ERT_per_fct <- FALSE
 # Formatter for function values
-format_FV <- function(v) format(v, digits = 2, nsmall = 2)
+format_FV <- function(v) format(v, digits = getOption("IOHanalyzer.precision", 2), 
+                                nsmall = getOption("IOHanalyzer.precision", 2))
 format_RT <- function(v) as.integer(v)
 
 # directory where data are extracted from the zip file
@@ -21,9 +22,11 @@ setTextInput <- function(session, id, name, alternative) {
 #TODO: this function could be made more clear
 set_format_func <- function(suite) {
    if (grepl("\\w*bbob\\w*", suite, ignore.case = T))
-     format_FV <- function(v) format(v, format = 'e', digits = 3, nsmall = 2)
+     format_FV <- function(v) format(v, format = 'e', digits = getOption("IOHanalyzer.precision", 2),
+                                     nsmall = getOption("IOHanalyzer.precision", 2))
    else  
-     format_FV <- function(v) format(v, digits = 2, nsmall = 2)
+     format_FV <- function(v) format(v, digits = getOption("IOHanalyzer.precision", 2),
+                                     nsmall = getOption("IOHanalyzer.precision", 2))
 }
 
 # register previous text inputs, which is used to restore those values

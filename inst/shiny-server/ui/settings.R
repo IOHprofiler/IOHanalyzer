@@ -49,6 +49,8 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
                        value = 100),
           selectInput("Settings.General.Backend", "Plotting backend", 
                       c('plotly', 'ggplot2'), 'plotly'),
+          numericInput("Settings.General.Precision", label = "Function value precision (digits)",
+                       value = 2),
           hr(),
           downloadButton("Settings.Download", "Download current settings file"),
           fileInput("Settings.Upload", "Upload a settings file", accept = "rds")

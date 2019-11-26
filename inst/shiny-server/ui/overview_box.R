@@ -1,5 +1,5 @@
 general_overview_box_single <- function(width = 12, collapsible = T, collapsed = T) {
-  box(title = HTML('<p style="font-size:120%;">Data Overview (selected function)</p>'),
+  box(title = HTML('<p style="font-size:120%;">Overview of Selected Function</p>'),
       width = width, solidHeader = T, status = "primary",
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
@@ -20,7 +20,7 @@ general_overview_box_single <- function(width = 12, collapsible = T, collapsed =
 }
 
 general_overview_box_all <- function(width = 12, collapsible = T, collapsed = T) {
-  box(title = HTML('<p style="font-size:120%;">Data Overview (all functions)</p>'),
+  box(title = HTML('<p style="font-size:120%;">Overview of All Available Functions</p>'),
       width = width, solidHeader = T, status = "primary",
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(

@@ -52,7 +52,7 @@ fv_par_expected_value_box <- function(width = 12, collapsible = T, collapsed = T
 
 fv_par_summary_box <- function(width = 12, collapsible = T, collapsed = T) {
   box(
-    title = HTML('<p style="font-size:120%;">Parameter Statistics at Chosen Target Values</p>'),
+    title = HTML('<p style="font-size:120%;">Parameter Statistics at Chosen Runtime Values</p>'),
     width = width, collapsible = collapsible, collapsed = collapsed,
     solidHeader = T, status = "primary",
     sidebarPanel(
@@ -76,7 +76,7 @@ fv_par_summary_box <- function(width = 12, collapsible = T, collapsed = T) {
     mainPanel(
       width = 9,
       HTML(paste0('<div style="font-size:120%;">',
-                  includeMarkdown('markdown/PAR_SUMMARY_TABLE.Rmd'), '</div>')),
+                  includeMarkdown('markdown/FV_PAR_SUMMARY_TABLE.Rmd'), '</div>')),
       DT::dataTableOutput('table_FV_PAR_summary')
     )
   )
@@ -84,7 +84,7 @@ fv_par_summary_box <- function(width = 12, collapsible = T, collapsed = T) {
 
 fv_par_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
   box(
-    title = HTML('<p style="font-size:120%;">Parameter Sample at Chosen Target Values</p>'),
+    title = HTML('<p style="font-size:120%;">Parameter Sample at Chosen Runtime Values</p>'),
     width = width, collapsible = collapsible, collapsed = collapsed,
     solidHeader = T, status = "primary",
     sidebarPanel(
@@ -110,8 +110,8 @@ fv_par_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
     mainPanel(
       width = 9,
       HTML('<p style="font-size:120%;">This table shows for each selected algorithm \\(A\\),
-           each selected target value \\(f(x)\\), and each run \\(r\\) the parameter value
-           observed when the target value \\(f(x)\\) is reached for the first time.</p>'),
+           each selected runtime value \\(b\\), and each run \\(r\\) the parameter value
+           observed when the after a total budget of \\(b\\) function evaluations has been used.</p>'),
       DT::dataTableOutput('table_FV_PAR_SAMPLE')
     )
   )

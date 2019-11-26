@@ -8,11 +8,18 @@ rt_heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
                     selected = NULL, multiple = T),
         textInput('RT_Stats.Overview.Target', label = F_TAR_LABEL),
         textInput('RT_Stats.Overview.Alpha', 
-                  label = HTML('<p>significant level \\(\\alpha\\)</p>'), 
+                  label = HTML('<p>Significe level \\(\\alpha\\)</p>'), 
                   value = 0.01),
         numericInput('RT_Stats.Overview.Samples', 
-                     label = 'size of the bootstrap sample', 
-                     min = 1, max = 1000, step = 1, value = 0),
+                     label = 'Size of the bootstrap sample', 
+                     min = 1, max = 1000, step = 1, value = 0) %>%
+          shinyInput_label_embed(
+            custom_icon("exclamation-triangle") %>%
+              bs_embed_tooltip(
+                title = "Using bootstrapped running times might result in misleading significance 
+                levels. Use only when absolutely sure bootstrapping is applicable."
+              )
+          ),
         hr(),
         selectInput('RT_Stats.Overview.TableFormat', label = 'Select the table format',
                     choices = c('csv','tex'), selected = 'csv'),

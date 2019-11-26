@@ -511,10 +511,12 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV'){
           #TODO: replace with other target-selection options, even modifyable by users
           target <- max(get_funvals(dsl_s))
           x_arr <- get_RT_sample(dsl_s, target)
+          win_operator <- `<`
         }
         else {
           target <- max(get_runtimes(dsl_s))
           x_arr <- get_FV_sample(dsl_s, target)
+          win_operator <- ifelse(attr(dsl, 'maximization'), `>`, `<`)
         }
         vals = array(dim = c(n_algs,ncol(x_arr) - 4))
         for (i in seq(1,n_algs)) { 
@@ -546,7 +548,7 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV'){
                 won <- 0.5 #Tie
               }
               else {
-                won <- s1 < s2
+                won <- win_operator(s1, s2)
               }
             }
             p1 <- c(p1, i)

@@ -14,7 +14,8 @@ sidebar <- dashboardSidebar(
 body <- dashboardBody(
   tags$style(HTML('.popover-title {color:black;}
                    .popover-content {color:black;}
-                   .main-sidebar {z-index:auto;}')
+                   .main-sidebar {z-index:auto;}
+                   .fa-exclamation-triangle {color:#E87722})')
   ),
   # javascript, headers ----------------------
   # to show text on the header (heading banner)
@@ -133,8 +134,8 @@ body <- dashboardBody(
     tabItem(tabName = 'overview',
             fluidRow(
               column(width = 12,
-                     general_overview_box_single(collapsed = F),
-                     general_overview_box_all(collapsed = F)
+                     general_overview_box_all(collapsed = F),
+                     general_overview_box_single(collapsed = F)
               )
             )
     ),

@@ -8,7 +8,7 @@ fv_heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
                     selected = NULL, multiple = T),
         textInput('FV_Stats.Overview.Target', label = RT_TAR_LABEL),
         textInput('FV_Stats.Overview.Alpha', 
-                  label = HTML('<p>significant level \\(\\alpha\\)</p>'), 
+                  label = HTML('<p>Significe level \\(\\alpha\\)</p>'), 
                   value = 0.01),
         # numericInput('FV_Stats.Overview.Samples', 
         #              label = 'size of the bootstrap sample', 
@@ -103,9 +103,9 @@ fv_glicko2_box <- function(width = 12, collapsible = T, collapsed = T) {
         width = 9,
         HTML_P('The <b>Glicko2</b> This procedure ranks algorithms based on a glico2-procedure. 
                 Every round, for every function and dimension of the datasetlist, 
-                each pair of algorithms competes. This competition samples a random runtime for the 
-                provided target (best achieved target among all algorithms). Whichever algorithm has the lower
-                runtime wins the game. Then, from these games, the glico2-rating is used to determine the ranking.'),
+                each pair of algorithms competes. This competition samples a random function value for the 
+                provided runtime (maximum used among all algorithms). Whichever algorithm has the better
+                function value wins the game. Then, from these games, the glico2-rating is used to determine the ranking.'),
         DT::dataTableOutput('FV_Stats.Glicko.Dataframe'),
         plotlyOutput.IOHanalyzer("FV_Stats.Glicko.Candlestick")
       )

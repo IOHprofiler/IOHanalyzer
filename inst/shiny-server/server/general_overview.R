@@ -8,11 +8,11 @@ overview_table_single <- reactive({
   df$funcId %<>% as.integer
   df$DIM %<>% as.integer
   df$succ %<>% as.integer
-  df$"worst recorded" <- format_FV(df$"worst recorded") %>% as.numeric
-  df$"worst reached" <- format_FV(df$"worst reached") %>% as.numeric
-  df$"mean reached" <- format_FV(df$"mean reached") %>% as.numeric
-  df$"median reached" <- format_FV(df$"median reached") %>% as.numeric
-  df$"best reached" <- format_FV(df$"best reached") %>% as.numeric
+  df$"worst recorded" <- format_FV(df$"worst recorded")
+  df$"worst reached" <- format_FV(df$"worst reached")
+  df$"mean reached" <- format_FV(df$"mean reached")
+  df$"median reached" <- format_FV(df$"median reached")
+  df$"best reached" <- format_FV(df$"best reached")
   df$"max evals used" %<>% as.numeric
   df
 })
@@ -42,7 +42,10 @@ overview_table_all <- reactive({
   data <- DATA_RAW()
   req(length(data) > 0)
   df <- get_overview(data)
-  
+  df$"worst recorded" <- format_FV(df$"worst recorded")
+  df$"worst reached" <- format_FV(df$"worst reached")
+  df$"mean reached" <- format_FV(df$"mean reached")
+  df$"best reached" <- format_FV(df$"best reached")
   df
 })
 

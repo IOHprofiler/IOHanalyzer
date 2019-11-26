@@ -1,0 +1,9 @@
+This table summarizes for each algorithm and each runtime value chosen on the left:
+
+  * runs: the number of runs where non-missing parameter values are observed, for each required runtime value, 
+  * mean: the average value of the specified __parameter__ after the specified amount of function evaluations.
+  * median, $2\%, 5\%,\ldots,98\%$ : the quantiles of these parameter values
+
+When not all runs used the specified runtime value, the statistics hold only for those runs that did. That is, the mean value is the mean of the applicable runs. Same for the quantiles.
+
+

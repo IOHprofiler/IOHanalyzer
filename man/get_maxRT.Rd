@@ -22,7 +22,7 @@ get_maxRT(ds, ...)
 \item{algorithm}{Which algorithms in the DataSetList to consider.}
 }
 \value{
-A data.table object containing the algorithm ID and the running time 
+A data.table object containing the algorithm ID and the running time
 when the algorithm terminates in each run
 }
 \description{

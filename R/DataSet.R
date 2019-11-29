@@ -13,23 +13,23 @@
 #'
 #' @param info A List. Contains a set of in a *.info file.
 #' @param verbose Logical.
-#' @param maximization Logical. Whether the underlying optimization algorithm performs a maximization? 
+#' @param maximization Logical. Whether the underlying optimization algorithm performs a maximization?
 #' Set to NULL to determine automatically based on format
 #' @param format A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL"
 #' @param subsampling Logical. Whether *.cdat files are subsampled?
-#' 
+#'
 #' @return A S3 object 'DataSet'
 #' @export
-#' @examples 
+#' @examples
 #' path <- system.file('extdata', 'ONE_PLUS_LAMDA_EA', package = 'IOHanalyzer')
 #' info <- read_index_file(file.path(path, 'IOHprofiler_f1_i1.info'))
 #' DataSet(info[[1]])
-DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler, 
+DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler,
                     subsampling = FALSE) {
   if (!is.null(info)) {
     path <- dirname(info$datafile)
-    suite <- info$suite
-    
+    suite <- toupper(info$suite)
+
     # for an unknown suite, to detect the format
     if (is.null(suite)) {
       if (verbose)
@@ -41,12 +41,12 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
                       BIOBJ_COCO = "biobj-bbob",
                       TWO_COL = NULL)
     }
-    
+
     if (is.null(maximization)) {
       maximization <- info$maximization
       if (is.null(maximization) && !is.null(suite)) {
         if (verbose)
-          warning("maximization or minimization not specified in .info-file, 
+          warning("maximization or minimization not specified in .info-file,
                   taking best guess based on the suite-name.")
         if (grepl("\\w*bbob\\w*", suite, ignore.case = T) != 0)
           maximization <- F
@@ -54,12 +54,12 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
           maximization <- T
       }
     }
-    
+
     datBaseName <- strsplit(basename(info$datafile), '\\.')[[1]][1]
     datFile <- file.path(path, paste0(datBaseName, '.dat'))
     tdatFile <- file.path(path, paste0(datBaseName, '.tdat'))
     cdatFile <- file.path(path, paste0(datBaseName, '.cdat'))
-    
+
     # NOTE: preference on data file for the alignment by RT: cdat > tdat > dat
     if (file.exists(cdatFile))
       fvFile <- cdatFile
@@ -69,8 +69,8 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
       fvFile <- datFile
     else
       stop('No datafiles found, please verify the integrity of the chosen files')
-    
-    # NOTE: preference on data file for the alignment by FV: dat > tdat > cdat 
+
+    # NOTE: preference on data file for the alignment by FV: dat > tdat > cdat
     if (file.exists(datFile))
       rtFile <- datFile
     else if (file.exists(tdatFile))
@@ -78,7 +78,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     else if (file.exists(cdatFile))
       # TODO: perhaps turn on `subsampling` here as this would take quite some time
       rtFile <- cdatFile
-    
+
     read_raw <- switch(
       format,
       IOHprofiler = read_dat,
@@ -86,7 +86,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
       BIOBJ_COCO = read_dat__BIOBJ_COCO,
       TWO_COL = read_dat
     )
-    
+
     RT_raw <- read_raw(rtFile, subsampling)
     FV_raw <- read_raw(fvFile, subsampling)
 
@@ -94,29 +94,29 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
       if (verbose)
         warning("Did not find maximization / minimization, auto-detecting based on
                 function value progression")
-      # TODO: idxTarget should be set depending on the data format 
+      # TODO: idxTarget should be set depending on the data format
       idxTarget <- 2
       cond <- unique(lapply(FV_raw, function(FV) FV[1, idxTarget] >= FV[nrow(FV), idxTarget]))
       if (length(cond) > 1)
         stop('The detected maximization differs in multiple runs')
       maximization <- cond
     }
-    
+
     RT <- align_running_time(RT_raw, format = format, maximization = maximization)
-    FV <- align_function_value(FV_raw, format = format)  
-    
+    FV <- align_function_value(FV_raw, format = format)
+
     PAR <- list(
       'by_FV' = RT[names(RT) != 'RT'],
       'by_RT' = FV[names(FV) != 'FV']
     )
-    
+
     RT <- RT$RT
     FV <- FV$FV
 
     # TODO: add more data sanity checks
     maxRT <- set_names(sapply(RT_raw, function(d) d[nrow(d), idxEvals]), NULL)
     # Fix for old-format files which do not store used runtime in .dat-files
-    maxRT <- pmax(maxRT, info$maxRT) 
+    maxRT <- pmax(maxRT, info$maxRT)
     if (any(maxRT != info$maxRT) && verbose)
       warning('Inconsitent maxRT in *.info file and *.cdat file')
 
@@ -135,14 +135,14 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
         warning('The number of instances found in the info is inconsistent with the data!')
       info$instance <- seq(length(RT_raw))
     }
-    
+
     do.call(
-      function(...) 
+      function(...)
         structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
-      c(info, list(maxRT = maxRT, finalFV = finalFV, format = format, 
+      c(info, list(maxRT = maxRT, finalFV = finalFV, format = format,
                    maximization = maximization, suite = suite))
     )
-  } 
+  }
   else
     structure(list(), class = c('DataSet', 'list'))
 }
@@ -153,7 +153,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
 #' @param ... Arguments passed to other methods
 #'
 #' @return A short description of the DataSet
-#' @examples 
+#' @examples
 #' print(dsl[[1]])
 #' @export
 print.DataSet <- function(x, ...) {
@@ -166,7 +166,7 @@ print.DataSet <- function(x, ...) {
 #'
 #' @return A short description of the DataSet
 #' @export
-#' @examples 
+#' @examples
 #' cat.DataSet(dsl[[1]])
 cat.DataSet <- function(x) cat(as.character(x))
 
@@ -178,7 +178,7 @@ cat.DataSet <- function(x) cat(as.character(x))
 #'
 #' @return A short description of the DataSet
 #' @export
-#' @examples 
+#' @examples
 #' as.character(dsl[[1]])
 as.character.DataSet <- function(x, verbose = F, ...) {
   # TODO: implement the verbose mode
@@ -192,7 +192,7 @@ as.character.DataSet <- function(x, verbose = F, ...) {
 #' @param ... Arguments passed to other methods
 #'
 #' @return A summary of the DataSet containing both function-value and runtime based statistics.
-#' @examples 
+#' @examples
 #' summary(dsl[[1]])
 #' @export
 summary.DataSet <- function(object, ...) {
@@ -240,7 +240,7 @@ summary.DataSet <- function(object, ...) {
 #'
 #' @return True if the DataSets contain the same function, dimension and algorithm,
 #' and have equal precision and comments; False otherwise
-#' @examples 
+#' @examples
 #' dsl[[1]] == dsl[[2]]
 #' @export
 `==.DataSet` <- function(dsL, dsR) {
@@ -262,7 +262,7 @@ summary.DataSet <- function(object, ...) {
 #'
 #' @return A data.table containing the runtime samples for each provided target
 #' function value
-#' @examples 
+#' @examples
 #' get_ERT(dsl, 14)
 #' get_ERT(dsl[[1]], 14)
 #' @export
@@ -278,7 +278,7 @@ get_ERT <- function(ds, ftarget, ...) UseMethod("get_ERT", ds)
 #'
 #' @return A data.table containing the runtime samples for each provided target
 #' function value
-#' @examples 
+#' @examples
 #' get_RT_sample(dsl, 14)
 #' get_RT_sample(dsl[[1]], 14)
 #' @export
@@ -289,10 +289,10 @@ get_RT_sample <- function(ds, ftarget, ...) UseMethod("get_RT_sample", ds)
 #' @param ds A DataSet or DataSetList object
 #' @param ... Arguments passed to other methods
 #' @param ftarget The function target(s) for which to get the runtime summary
-#' 
+#'
 #' @return A data.table containing the runtime statistics for each provided target
 #' function value
-#' @examples 
+#' @examples
 #' get_RT_summary(dsl, 14)
 #' get_RT_summary(dsl[[1]], 14)
 #' @export
@@ -306,7 +306,7 @@ get_RT_summary <- function(ds, ftarget, ...) UseMethod("get_RT_summary", ds)
 #'
 #' @return A data.table containing the function value samples for each provided
 #' target runtime
-#' @examples 
+#' @examples
 #' get_FV_sample(dsl, 100)
 #' get_FV_sample(dsl[[1]], 100)
 #' @export
@@ -320,7 +320,7 @@ get_FV_sample <- function(ds, ...) UseMethod("get_FV_sample", ds)
 #'
 #' @return A data.table containing the function value statistics for each provided
 #' target runtime value
-#' @examples 
+#' @examples
 #' get_FV_summary(dsl, 100)
 #' get_FV_summary(dsl[[1]], 100)
 #' @export
@@ -329,13 +329,13 @@ get_FV_summary <- function(ds, ...) UseMethod("get_FV_summary", ds)
 #' Get Parameter Value Samples
 #'
 #' @param ds A DataSet or DataSetList object
-#' @param idxValue A Numerical vector. Index values at which parameter values are observed. 
+#' @param idxValue A Numerical vector. Index values at which parameter values are observed.
 #' The index value can either take its value in the range of running times, or function values.
 #' Such a value type is signified by `which` parameter.
 #' @param ... Arguments passed to other methods
-#' 
+#'
 #' @return A data.table object containing parameter values aligned at each given target value
-#' @examples 
+#' @examples
 #' get_PAR_sample(dsl, 14)
 #' get_PAR_sample(dsl[[1]], 14)
 #' @export
@@ -344,13 +344,13 @@ get_PAR_sample <- function(ds, idxValue, ...) UseMethod("get_PAR_sample", ds)
 #' Get Parameter Value Summary
 #'
 #' @param ds A DataSet or DataSetList object
-#' @param idxValue A Numerical vector. Index values at which parameter values are observed. 
+#' @param idxValue A Numerical vector. Index values at which parameter values are observed.
 #' The index value can either take its value in the range of running times, or function values.
 #' Such a value type is signified by `which` parameter.
 #' @param ... Arguments passed to other methods
 #'
 #' @return A data.table object containing basic statistics of parameter values aligned at each given target value
-#' @examples 
+#' @examples
 #' get_PAR_summary(dsl, 14)
 #' get_PAR_summary(dsl[[1]], 14)
 #' @export
@@ -359,11 +359,11 @@ get_PAR_summary <- function(ds, idxValue, ...) UseMethod("get_PAR_summary", ds)
 #' Get the parameter names of the algorithm
 #'
 #' @param ds A DataSet object
-#' @param which a string takes it value in `c('by_FV', 'by_RT')`, indicating the 
+#' @param which a string takes it value in `c('by_FV', 'by_RT')`, indicating the
 #' parameters aligned against the running time (RT) or function value (FV). `'by_FV'`
 #' is the default value.
 #' @return a character list of paramter names, if recorded in the data set
-#' @examples 
+#' @examples
 #' get_PAR_name(dsl[[1]])
 #' @export
 get_PAR_name <- function(ds, which) UseMethod("get_PAR_name", ds)
@@ -375,7 +375,7 @@ get_PAR_name <- function(ds, which) UseMethod("get_PAR_name", ds)
 #'
 #' @return A data.table containing the algorithm ID, best, worst and mean reached function
 #' values, the number of runs and available budget for the DataSet
-#' @examples 
+#' @examples
 #' get_FV_overview(dsl)
 #' get_FV_overview(dsl[[1]])
 #' get_FV_overview(dsl, algorithm = '(1+1)_greedy_hill_climber_1')
@@ -389,7 +389,7 @@ get_FV_overview <- function(ds, ...) UseMethod("get_FV_overview", ds)
 #'
 #' @return A data.table containing the algorithm ID, minimum and maximum used evaluations,
 #' number of runs and available budget for the DataSet
-#' @examples 
+#' @examples
 #' get_RT_overview(dsl)
 #' get_RT_overview(dsl[[1]])
 #' @export
@@ -401,7 +401,7 @@ get_RT_overview <- function(ds, ...) UseMethod("get_RT_overview", ds)
 #' @param ... Arguments passed to other methods
 #'
 #' @return A data.table containing some basic information about the provided DataSet(List)
-#' @examples 
+#' @examples
 #' get_overview(dsl)
 #' get_overview(dsl[[1]])
 #' @export
@@ -443,7 +443,7 @@ get_FV_overview.DataSet <- function(ds, ...) {
 #' @export
 #'
 get_RT_overview.DataSet <- function(ds, ...) {
-  
+
   if (!is.null(attr(ds, "format")) && attr(ds, "format") == NEVERGRAD) {
     data <- ds$FV
     budget <- max(attr(ds, 'maxRT'))
@@ -451,7 +451,7 @@ get_RT_overview.DataSet <- function(ds, ...) {
     min_rt <- rownames(data) %>% as.integer %>% min
     max_rt <- budget
   }
-  
+
   else{
     data <- ds$RT
     runs <- ncol(data)
@@ -459,7 +459,7 @@ get_RT_overview.DataSet <- function(ds, ...) {
     min_rt <- min(data, na.rm = T)
     max_rt <- max(data, na.rm = T)
   }
-  
+
   data.table(algId = attr(ds, 'algId'),
              DIM = attr(ds, 'DIM'),
              funcId = attr(ds, 'funcId'),
@@ -475,7 +475,7 @@ get_RT_overview.DataSet <- function(ds, ...) {
 get_overview.DataSet <- function(ds, ...) {
   data <- ds$FV
   runs <- ncol(data)
-  
+
   budget <- max(attr(ds, 'maxRT'))
   if (!is.null(ds$RT)) {
     max_rt <- max(ds$RT, na.rm = T)
@@ -485,17 +485,17 @@ get_overview.DataSet <- function(ds, ...) {
 
   last_row <- data[nrow(data), ]
   maximization <- attr(ds, 'maximization')
-  
+
   op <- ifelse(maximization, max, min)
   op_inv <- ifelse(maximization, min, max)
-  
+
   best_fv <- op(last_row, na.rm = T)
   worst_recorded_fv <- op_inv(data, na.rm = T)
   worst_fv <- op_inv(last_row, na.rm = T)
   mean_fv <- mean(last_row, na.rm = T)
   median_fv <- median(last_row, na.rm = T)
   runs_reached <- sum(last_row == best_fv)
-  
+
   data.table(`algId` = attr(ds, 'algId'),
              `DIM` = attr(ds, 'DIM'),
              `funcId` = attr(ds, 'funcId'),
@@ -508,8 +508,8 @@ get_overview.DataSet <- function(ds, ...) {
              `worst reached` = worst_fv,
              `mean reached` = mean_fv,
              `median reached` = median_fv
-            )
-  
+  )
+
 }
 
 #' @rdname get_ERT
@@ -528,7 +528,7 @@ get_ERT.DataSet <- function(ds, ftarget, ...) {
 
   matched <- sapply(ftarget, function(f) idx[`op`(FValues, f)][1])
 
-  if (is.list(matched)) 
+  if (is.list(matched))
     return(data.table())
 
   data <- data[matched, , drop = FALSE]
@@ -595,9 +595,9 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
 #' @param ds A DataSet or DataSetList object
 #' @param ... Arguments passed to other methods
 #'
-#' @return A data.table object containing the algorithm ID and the running time 
+#' @return A data.table object containing the algorithm ID and the running time
 #' when the algorithm terminates in each run
-#' @examples 
+#' @examples
 #' get_maxRT(dsl)
 #' get_maxRT(dsl[[1]])
 #' @export
@@ -680,10 +680,10 @@ get_FV_summary.DataSet <- function(ds, runtime, ...) {
   df <- cbind(algId, runtime, NC,
               apply(data, 1, .mean),
               apply(data, 1, .median),
-              apply(data, 1, .sd), 
+              apply(data, 1, .sd),
               as.data.table(t(apply(data, 1, IOHanalyzer_env$C_quantile)))
-              )
-  colnames(df) <- c('algId', 'runtime', 'runs', 'mean', 'median', 'sd', 
+  )
+  colnames(df) <- c('algId', 'runtime', 'runs', 'mean', 'median', 'sd',
                     paste0(getOption("IOHanalyzer.quantiles") * 100, '%'))
   df
 }
@@ -729,7 +729,7 @@ get_PAR_name.DataSet <- function(ds, which = 'by_FV') {
 
 #' @rdname get_PAR_summary
 #' @param parId A character vector. Either 'all' or the name of parameters to be retrieved
-#' @param which A string takes values in `c('by_FV', 'by_RT')`, indicating the parameters to be 
+#' @param which A string takes values in `c('by_FV', 'by_RT')`, indicating the parameters to be
 #' retrieved are aligned against the running time (RT) or function value (FV). `'by_FV'`
 #' is the default value.
 #' @export
@@ -744,21 +744,21 @@ get_PAR_summary.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV'
     ds_par <- ds$PAR$by_RT
     idx_name <- 'runtime'
   }
-  
+
   idx <- seq_along(RefValues)
   algId <- attr(ds, 'algId')
   par_name <- get_PAR_name(ds, which = which)
-  
+
   if (parId != 'all')
     par_name <- intersect(par_name, parId)
   if (length(par_name) == 0)
     return(NULL)
-  
+
   maximization <- attr(ds, 'maximization')
   cond <- maximization || which == 'by_RT'
   op <- ifelse(cond, `>=`, `<=`)
   idxValue <- sort(as.numeric(c(idxValue)), decreasing = !cond)
-  
+
   matched <- sapply(
     idxValue,
     function(f) {
@@ -774,7 +774,7 @@ get_PAR_summary.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV'
              apply(data, 1, function(x) length(x[!is.na(x)])),
              apply(data, 1, .mean),
              apply(data, 1, .median),
-             apply(data, 1, .sd), 
+             apply(data, 1, .sd),
              as.data.table(t(apply(data, 1, IOHanalyzer_env$C_quantile)))
            )
            colnames(df) <- c('algId', 'parId', idx_name, 'runs', 'mean', 'median', 'sd',
@@ -786,12 +786,12 @@ get_PAR_summary.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV'
 
 #' @rdname get_PAR_sample
 #' @param parId A character vector. Either 'all' or the name of parameters to be retrieved
-#' @param which A string takes values in `c('by_FV', 'by_RT')`, indicating the parameters to be 
+#' @param which A string takes values in `c('by_FV', 'by_RT')`, indicating the parameters to be
 #' retrieved are aligned against the running time (RT) or function value (FV). `'by_FV'`
 #' is the default value.
 #' @param output A character. The format of the output data: 'wide' or 'long'
 #' @export
-get_PAR_sample.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV', 
+get_PAR_sample.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV',
                                    output = 'wide', ...) {
   N <- length(attr(ds, 'instance'))
   if (which == 'by_FV') {
@@ -804,11 +804,11 @@ get_PAR_sample.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV',
     ds_par <- ds$PAR$by_RT
     idx_name <- 'runtime'
   }
-  
+
   idx <- seq_along(RefValues)
   algId <- attr(ds, 'algId')
   par_name <- get_PAR_name(ds, which = which)
-  
+
   if (parId != 'all')
     par_name <- intersect(par_name, parId)
   if (length(par_name) == 0)
@@ -824,7 +824,7 @@ get_PAR_sample.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV',
                 function(parId) {
                   data <- ds_par[[parId]]
                   data <- as.data.table(data[matched, , drop = FALSE])
-                  data <- cbind(algId, parId, idxValue, data) 
+                  data <- cbind(algId, parId, idxValue, data)
                   colnames(data) <- c('algId', 'parId', idx_name, paste0('run.', seq(N)))
                   data
                 })
@@ -835,7 +835,7 @@ get_PAR_sample.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV',
     res[, run := as.integer(as.numeric(gsub('run.', '', run)))]
     if (which == 'by_FV')
       res[order(target, run)]
-    else if (which == 'by_RT') 
+    else if (which == 'by_RT')
       res[order(runtime, run)]
   }
   res

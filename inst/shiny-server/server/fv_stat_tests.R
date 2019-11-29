@@ -72,10 +72,11 @@ fv_data_table_glicko2 <- reactive({
   input$FV_Stats.Glicko.Create
   isolate({
     withProgress({
-      data <- subset(DATA_RAW(), algId %in% input$FV_Stats.Glicko.Algid && funcId %in% input$FV_Stats.Glicko.Funcid && DIM %in% input$FV_Stats.Glicko.Dim)
+      data <- FV_glicko_data()
       req(length(data) > 0 && length(get_algId(data)) > 0)
       nr_games <- as.numeric(input$FV_Stats.Glicko.Nrgames)
-      df <- glicko2_ranking(data, nr_games, which = 'by_RT')$ratings
+      df <- glicko2_ranking(data, nr_games, which = 'by_RT', 
+                            target_dt = FV_stats_glicko_targets_obj)$ratings
       format(df, digits = 3)
     }, message = "Creating Ranking, this might take a while")
   })
@@ -89,10 +90,11 @@ output$FV_Stats.Glicko.Dataframe <- DT::renderDataTable({
 
 fv_render_glico2_plot <- reactive({
   isolate({
-    data <- subset(DATA_RAW(), algId %in% input$FV_Stats.Glicko.Algid && funcId %in% input$FV_Stats.Glicko.Funcid && DIM %in% input$FV_Stats.Glicko.Dim)
+    data <- FV_glicko_data()
     nr_games <- as.numeric(input$FV_Stats.Glicko.Nrgames)
   })
-  Plot.Stats.Glicko2_Candlestick(data, nr_games, fv_data_table_glicko2(), which = 'by_RT')
+  Plot.Stats.Glicko2_Candlestick(data, nr_games, fv_data_table_glicko2(), which = 'by_RT', 
+                                 target_dt = FV_stats_glicko_targets_obj)
 })
 
 output$FV_Stats.Glicko.Candlestick <- renderPlotly({
@@ -122,3 +124,46 @@ output$FV_Stats.Glicko.Download <- downloadHandler(
   },
   contentType = paste0('image/', input$FV_Stats.Glicko.Format)
 )
+
+
+FV_glicko_data <- function() {
+  data <- subset(DATA_RAW(), algId %in% isolate(input$FV_Stats.Glicko.Algid))
+  if (length(data) == 0) return(NULL)
+  data <- subset(data, DIM %in% input$FV_Stats.Glicko.Dim)
+  data <- subset(data, funcId %in% input$FV_Stats.Glicko.Funcid)
+  if (length(unique(get_algId(data))) < 2) {
+    shinyjs::alert("This plot is only available when the dataset contains
+                   multiple algorithms for the selected functions and dimensions.")
+    return(NULL)
+  }
+  data
+}
+
+FV_stats_glicko_targets <- reactive({
+  data <- FV_glicko_data()
+  if (is.null(data)) return(NULL)
+  get_target_dt(data, "by_RT")
+})
+
+FV_stats_glicko_targets_obj <- NULL
+
+proxy_FV_Stats.Glicko.Targets <- dataTableProxy('FV_Stats.Glicko.Targets')
+
+output$FV_Stats.Glicko.Targets <- DT::renderDataTable({
+  req(length(DATA_RAW()) > 0)
+  FV_stats_glicko_targets_obj <<- FV_stats_glicko_targets()
+  FV_stats_glicko_targets_obj
+}, editable = list(target = 'cell', disable = list(columns = c(0,1))), rownames = FALSE,
+options = list(pageLength = 5, lengthMenu = c(5, 10, 25, -1), scrollX = T, server = T))
+
+
+observeEvent(input$FV_Stats.Glicko.Targets_cell_edit, {
+  info <- input$FV_Stats.Glicko.Targets_cell_edit
+  i <- info$row
+  j <- info$col
+  v <- info$value
+  data <- FV_glicko_data()
+  if (is.null(data)) return(NULL)
+  FV_stats_glicko_targets_obj$target[[i]] <<- v
+  replaceData(proxy, FV_stats_glicko_targets_obj, resetPaging = FALSE, rownames = FALSE)
+})

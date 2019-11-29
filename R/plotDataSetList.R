@@ -429,12 +429,13 @@ Plot.Stats.Significance_Graph <- function(dsList, ftarget, alpha = 0.01, bootstr
 #' @param nr_rounds The number of rounds in the tournament
 #' @param glicko2_rank_df Optional. Dataframe containing the glicko2 rating to avoid needless recalculation.
 #' @param which Whether to use fixed-target ('by_FV') or fixed-budget ('by_RT') perspective
+#' @param target_dt Optional: data table containing the targets for each function and dimension
 #' 
 #' @export
 #' @examples 
 #' Plot.Stats.Glicko2_Candlestick(dsl, nr_rounds=2)
 Plot.Stats.Glicko2_Candlestick <- function(dsList, nr_rounds = 100, glicko2_rank_df = NULL, 
-                                           which = 'by_FV') 
+                                           which = 'by_FV', target_dt = NULL) 
   UseMethod("Plot.Stats.Glicko2_Candlestick", dsList)
 
 
@@ -2036,12 +2037,12 @@ Plot.Stats.Significance_Graph.DataSetList <- function(dsList, ftarget, alpha = 0
 
 #' @rdname Plot.Stats.Glicko2_Candlestick
 #' @export
-Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds=100, glicko2_rank_df=NULL,
-                                                       which = 'by_FV'){
+Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds = 100, glicko2_rank_df = NULL,
+                                                       which = 'by_FV', target_dt = NULL) {
   df <- glicko2_rank_df
   
   if (is.null(df)) {
-    df <- glicko2_ranking(dsList, nr_rounds, which)$ratings
+    df <- glicko2_ranking(dsList, nr_rounds, which, target_dt = target_dt)$ratings
     algIds <- df$Player$algId
   }
   else{

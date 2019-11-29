@@ -12,7 +12,7 @@ DataSet(info, verbose = F, maximization = NULL, format = IOHprofiler,
 
 \item{verbose}{Logical.}
 
-\item{maximization}{Logical. Whether the underlying optimization algorithm performs a maximization? 
+\item{maximization}{Logical. Whether the underlying optimization algorithm performs a maximization?
 Set to NULL to determine automatically based on format}
 
 \item{format}{A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL"}

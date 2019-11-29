@@ -28,7 +28,13 @@ rt_par_expected_value_box <- function(width = 12, collapsible = T, collapsed = T
       
       checkboxInput('RT_PAR.Plot.Logy',
                     label = 'Scale y axis \\(\\log_{10}\\)',
-                    value = T),
+                    value = F) %>%
+        shinyInput_label_embed(
+          custom_icon("exclamation-triangle") %>%
+            bs_embed_tooltip(
+              title = "Be mindful of using logarithmic scaling when the parameter-values can be <= 0"
+            )
+        ),
       
       hr(),
       selectInput('RT_PAR.Plot.Format', label = 'Select the figure format',

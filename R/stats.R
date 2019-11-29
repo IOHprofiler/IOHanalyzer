@@ -462,6 +462,56 @@ get_default_ECDF_targets <- function(data, format_func = as.integer) {
   targets %>% set_names(names)
 }
 
+#' Generate datatables of runtime or function value targets for a DataSetList
+#' 
+#' Only one target is generated per (function, dimension)-pair, as opposed to the 
+#' function `get_default_ECDF_targets`, which generates multiple targets.
+#'
+#' @param dsList A DataSetList
+#' @param which Whether to generate fixed-target ('by_FV') or fixed-budget ('by_RT') targets
+#'
+#' @return a data.table of targets
+#' @export
+#' @examples 
+#' get_target_dt(dsl)
+get_target_dt <- function(dsList, which = 'by_FV') {
+  vals <- c()
+  funcs <- get_funcId(dsList)
+  dims <- get_dim(dsList)
+  dt <- as.data.table(expand.grid(funcs, dims))
+  colnames(dt) <- c("funcId", "DIM")
+  if (which == 'by_FV') {
+    target_func <- get_target_FV
+  }
+  else if (which == 'by_RT') {
+    target_func <- get_target_RT
+  }
+  else stop("Invalid argument for `which`; can only be `by_FV` or `by_RT`.")
+  targets <- apply(dt, 1, 
+                   function(x) {target_func(subset(dsList, funcId == x[[1]], DIM == x[[2]]))})
+  dt[, target := targets]
+  
+  return(dt)
+}
+
+#' Helper function for `get_target_dt`
+#' @noRd
+get_target_FV <- function(dsList){
+  vals <- get_FV_summary(dsList, Inf)[[paste0(100*getOption("IOHanalyzer.quantiles", 0.02)[[1]], '%')]]
+  if (is.null(dsList$maximization) || dsList$maximization) {
+    return(max(vals))
+  }
+  else {
+    return(min(vals))
+  }
+}
+
+#' Helper function for `get_target_dt`
+#' @noRd
+get_target_RT <- function(dsList){
+  return(max(get_runtimes(dsList)))
+}
+
 #' Glicko2 raning of algorithms
 #' 
 #' This procedure ranks algorithms based on a glicko2-procedure. 
@@ -474,14 +524,25 @@ get_default_ECDF_targets <- function(data, format_func = as.integer) {
 #' same algorithms for all of them
 #' @param nr_rounds The number of rounds to run. More rounds leads to a more accurate ranking.
 #' @param which Whether to use fixed-target ('by_FV') or fixed-budget ('by_RT') perspective
+#' @param target_dt Custom data.table target value to use. When NULL, this is selected automatically.
 #' @return A dataframe containing the glicko2-ratings and some additional info
 #' 
 #' @export
 #' @examples 
-#' glicko2_ranking(dsl)
-glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV'){
+#' glicko2_ranking(dsl, nr_round = 25)
+#' glicko2_ranking(dsl, nr_round = 25, which = 'by_RT')
+glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = NULL){
   req(length(get_algId(dsl)) > 1)
-  if ( !which %in% c('by_FV', 'by_RT'))
+  
+  if (!is.null(target_dt) && !('data.table' %in% class(target_dt))) {
+    warning("Provided `target_dt` argument is not a data.table")
+    target_dt <- NULL
+  }
+  
+  if (is.null(target_dt))
+    target_dt <- get_target_dt(dsl, which)
+  
+  if (!(which %in% c('by_FV', 'by_RT')))
     stop("Invalid argument: 'which' can only be 'by_FV' or 'by_RT'")
   p1 <- NULL
   p2 <- NULL
@@ -505,16 +566,16 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV'){
   alg_names <- NULL
   for (k in seq(1,nr_rounds)) {
     for (dim in get_dims()) {
+      targets_temp <- target_dt[target_dt$DIM == dim]
       for (fid in get_funcs()) {
         dsl_s <- subset(dsl, funcId == fid && DIM == dim)
         if (which == 'by_FV') {
-          #TODO: replace with other target-selection options, even modifyable by users
-          target <- max(get_funvals(dsl_s))
+          target <- targets_temp[targets_temp$funcId == fid]$target
           x_arr <- get_RT_sample(dsl_s, target)
           win_operator <- `<`
         }
         else {
-          target <- max(get_runtimes(dsl_s))
+          target <- targets_temp[targets_temp$funcId == fid]$target
           x_arr <- get_FV_sample(dsl_s, target)
           win_operator <- ifelse(attr(dsl, 'maximization'), `>`, `<`)
         }

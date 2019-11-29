@@ -25,7 +25,7 @@ limit.data <- function(df, n) {
 #' scan_index_file(path)
 scan_index_file <- function(folder) {
   folder <- trimws(folder)
-  file.path(folder, list.files(folder, pattern = '.info', recursive = T))
+  file.path(folder, list.files(folder, pattern = '.info$', recursive = T))
 }
 
 #' Read .info files and extract information

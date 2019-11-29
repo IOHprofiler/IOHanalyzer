@@ -87,7 +87,7 @@ fv_glicko2_box <- function(width = 12, collapsible = T, collapsed = T) {
         textInput('FV_Stats.Glicko.Nrgames', 
                   label = "Number of games per (function,dimension) pair", 
                   value = 25),
-        actionButton('FV_Stats.Glicko.Create', 'Create Ranking'),
+        actionButton('FV_Stats.Glicko.Create', 'Create / Update Ranking'),
         hr(),
         selectInput('FV_Stats.Glicko.Format', label = 'Select the figure format',
                     choices = supported_fig_format, selected = 'pdf'),
@@ -106,8 +106,13 @@ fv_glicko2_box <- function(width = 12, collapsible = T, collapsed = T) {
                 each pair of algorithms competes. This competition samples a random function value for the 
                 provided runtime (maximum used among all algorithms). Whichever algorithm has the better
                 function value wins the game. Then, from these games, the glico2-rating is used to determine the ranking.'),
-        DT::dataTableOutput('FV_Stats.Glicko.Dataframe'),
-        plotlyOutput.IOHanalyzer("FV_Stats.Glicko.Candlestick")
+        HTML_P("The chosen <b>budget values</b> per (function, dimension)-pair are as follows 
+                 (double click an entry to edit it):"),
+        DT::dataTableOutput("FV_Stats.Glicko.Targets"),
+        hr(), 
+        HTML_P("The results of the ranking are:"),
+        plotlyOutput.IOHanalyzer("FV_Stats.Glicko.Candlestick"),
+        DT::dataTableOutput('FV_Stats.Glicko.Dataframe')
       )
   )
 }

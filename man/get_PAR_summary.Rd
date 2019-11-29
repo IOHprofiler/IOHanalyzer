@@ -17,7 +17,7 @@ get_PAR_summary(ds, idxValue, ...)
 \arguments{
 \item{ds}{A DataSet or DataSetList object}
 
-\item{idxValue}{A Numerical vector. Index values at which parameter values are observed. 
+\item{idxValue}{A Numerical vector. Index values at which parameter values are observed.
 The index value can either take its value in the range of running times, or function values.
 Such a value type is signified by `which` parameter.}
 
@@ -25,7 +25,7 @@ Such a value type is signified by `which` parameter.}
 
 \item{parId}{A character vector. Either 'all' or the name of parameters to be retrieved}
 
-\item{which}{A string takes values in `c('by_FV', 'by_RT')`, indicating the parameters to be 
+\item{which}{A string takes values in `c('by_FV', 'by_RT')`, indicating the parameters to be
 retrieved are aligned against the running time (RT) or function value (FV). `'by_FV'`
 is the default value.}
 

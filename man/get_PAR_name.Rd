@@ -12,7 +12,7 @@ get_PAR_name(ds, which)
 \arguments{
 \item{ds}{A DataSet object}
 
-\item{which}{a string takes it value in `c('by_FV', 'by_RT')`, indicating the 
+\item{which}{a string takes it value in `c('by_FV', 'by_RT')`, indicating the
 parameters aligned against the running time (RT) or function value (FV). `'by_FV'`
 is the default value.}
 }

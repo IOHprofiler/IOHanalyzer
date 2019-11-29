@@ -4,7 +4,8 @@
 \alias{glicko2_ranking}
 \title{Glicko2 raning of algorithms}
 \usage{
-glicko2_ranking(dsl, nr_rounds = 100, which = "by_FV")
+glicko2_ranking(dsl, nr_rounds = 100, which = "by_FV",
+  target_dt = NULL)
 }
 \arguments{
 \item{dsl}{The DataSetList, can contain multiple functions and dimensions, but should have the 
@@ -13,6 +14,8 @@ same algorithms for all of them}
 \item{nr_rounds}{The number of rounds to run. More rounds leads to a more accurate ranking.}
 
 \item{which}{Whether to use fixed-target ('by_FV') or fixed-budget ('by_RT') perspective}
+
+\item{target_dt}{Custom data.table target value to use. When NULL, this is selected automatically.}
 }
 \value{
 A dataframe containing the glicko2-ratings and some additional info
@@ -25,5 +28,6 @@ provided target (defaults to best achieved target). Whichever algorithm has the 
 runtime wins the game. Then, from these games, the glicko2-rating is determined.
 }
 \examples{
-glicko2_ranking(dsl)
+glicko2_ranking(dsl, nr_round = 25)
+glicko2_ranking(dsl, nr_round = 25, which = 'by_RT')
 }

@@ -217,7 +217,7 @@ observeEvent(selected_folders(), {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PMF"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PARAMETER"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_Statistics"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_Statistics"))
   }
   if (attr(DataList$data, 'suite') == "PBO") {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "FCE_ECDF"))

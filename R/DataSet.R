@@ -188,7 +188,7 @@ c.DataSet <- function(...) {
   else
     finalFV <- min(unlist(lapply(dsl, function(x) attr(x, "finalFV"))))
   
-  format <- attr(x[[1]], "format")
+  format <- attr(dsl[[1]], "format")
   
   RT_raw <- c()
   #Note: Currently only works for data split in a way that there is one run per DataSet

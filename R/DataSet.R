@@ -31,7 +31,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     suite <- toupper(info$suite)
 
     # for an unknown suite, to detect the format
-    if (is.null(suite)) {
+    if (is.null(suite) || length(suite) == 0) {
       if (verbose)
         warning("Suite-name not provided in .info-file, taking best guess based on
                 the format of data-files.")
@@ -145,6 +145,74 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
   }
   else
     structure(list(), class = c('DataSet', 'list'))
+}
+
+#' S3 concatenation function for DataSet
+#'
+#' @description Concatenation for DataSets. Combines multiple runs from separate DataSets
+#' into a single DataSet object if all provided arguments have the same dimension, function ID and
+#' algorithm ID, and each contains only a single run. Currently does not support parameter tracking
+#' 
+#' @param ... The DataSets to concatenate
+#' @return A new DataSet
+#' @export
+c.DataSet <- function(...) {
+  dsl <- list(...)
+  dsl <- dsl[sapply(dsl, length) != 0]
+  
+  if (length(dsl) == 0)
+    return()
+  
+  for (ds in dsl) {
+    if (!any((class(dsl[[1]])) == 'DataSet'))
+      stop("Operation only possible when all arguments are DataSets")
+  }
+  
+  info <- list()
+  for (attr_str in c('suite', 'maximization', 'DIM', 'funcId', 'algId')) {
+    temp  <-
+      unique(
+        unlist(lapply(dsl, function(x)
+          attr(x, attr_str))))
+    if (length(temp) > 1) {
+      stop(paste0("Attempted to add datasets with different ", attr_str, 
+                  "-attributes! Tis is not allowed, please keep them as separate DataSets!"))
+    }
+    info <- c(info,temp)
+  }
+  names(info) <- c('suite', 'maximization', 'DIM', 'funcId', 'algId')
+  
+  maxRT <- max(unlist(lapply(dsl, function(x) attr(x, "maxRT"))))
+  if (info$maximization)
+    finalFV <- max(unlist(lapply(dsl, function(x) attr(x, "finalFV"))))
+  else
+    finalFV <- min(unlist(lapply(dsl, function(x) attr(x, "finalFV"))))
+  
+  format <- attr(x[[1]], "format")
+  
+  RT_raw <- c()
+  #Note: Currently only works for data split in a way that there is one run per DataSet
+  #TODO: Generalize to more runs -> detection + dealing with it
+  for (i in seq(length(dsl))) {
+    rt_temp <- as.matrix(dsl[[i]]$RT)
+    rt_temp <- cbind(rt_temp, as.numeric(rownames(dsl[[i]]$RT)))
+    RT_raw[[i]] <- rt_temp
+  }
+  
+  RT <- align_running_time(RT_raw, format = "TWO_COL", maximization = info$maximization)
+  FV <- align_function_value(RT_raw, format = "TWO_COL")
+  
+  #TODO: Deal with cases where parameters are present in original DataSets
+  PAR <- list(
+    'by_FV' = RT[names(RT) != 'RT'],
+    'by_RT' = FV[names(FV) != 'FV']
+  )
+  
+  do.call(
+    function(...)
+      structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
+    c(info, list(maxRT = maxRT, finalFV = finalFV, format = format))
+  )
 }
 
 #' S3 generic print operator for DataSet

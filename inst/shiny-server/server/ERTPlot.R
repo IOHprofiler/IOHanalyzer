@@ -92,17 +92,22 @@ output$ERTPlot.Aggr.Plot <- renderPlotly(
 )
 
 get_max_targets <- function(data, aggr_on, maximize){
-  targets <- c()
+  # targets <- c()
   aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_dim(data)
-
-  for (j in seq_along(aggr_attr)) {
-    dsList_filetered <- if (aggr_on == 'funcId') subset(data,funcId == aggr_attr[[j]])
-    else subset(data, DIM == aggr_attr[[j]])
-
-    Fall <- get_funvals(dsList_filetered)
-    Fval <- ifelse(maximize, max(Fall), min(Fall))
-    targets <- c(targets,Fval)
-  }
+  # 
+  # for (j in seq_along(aggr_attr)) {
+  #   dsList_filetered <- if (aggr_on == 'funcId') subset(data,funcId == aggr_attr[[j]])
+  #   else subset(data, DIM == aggr_attr[[j]])
+  # 
+  #   Fall <- get_funvals(dsList_filetered)
+  #   Fval <- ifelse(maximize, max(Fall), min(Fall))
+  #   targets <- c(targets,Fval)
+  # }
+  # names(targets) <- aggr_attr
+  # targets
+  
+  targets <- get_target_dt(data)[['target']]
+  # print(targets)
   names(targets) <- aggr_attr
   targets
 }
@@ -272,6 +277,138 @@ output$ERTPlot.Aggr.DownloadTable <- downloadHandler(
   content = function(file) {
     df <- ert_multi_function()
     if (input$ERTPlot.Aggr.TableFormat == 'csv')
+      write.csv(df, file, row.names = F)
+    else{
+      print(xtable(df), file = file)
+    }
+  }
+)
+
+
+
+output$ERTPlot.Aggr_Dim.Plot <- renderPlotly(
+  render_ERTPlot_aggr_plot_dim()
+)
+
+output$ERTPlot.Aggr_Dim.Download <- downloadHandler(
+  filename = function() {
+    eval(FIG_NAME_ERT_AGGR_DIM)
+  },
+  content = function(file) {
+    save_plotly(render_ERTPlot_aggr_plot_dim(), file)
+  },
+  contentType = paste0('image/', input$ERTPlot.Aggr_Dim.Format)
+)
+
+
+render_ERTPlot_aggr_plot_dim <- reactive({
+  input$ERTPlot.Aggr_Dim.Refresh
+  withProgress({
+    #TODO: figure out how to avoid plotting again when default targets are written to input
+    req(length(DATA_RAW()) > 0)
+    data <- ERTPlot.Aggr_Dim.data()
+    if (is.null(data)) return(NULL)
+    aggr_on <- 'DIM'
+    aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_dim(data)
+    
+    targets <- ERTPlot.Aggr_Dim.Targets_obj
+    names(targets) <- NULL
+    Plot.RT.Aggregated(data, plot_mode = input$ERTPlot.Aggr_Dim.Mode, targets = targets,
+                       scale.ylog = input$ERTPlot.Aggr_Dim.Logy,
+                       use_rank = input$ERTPlot.Aggr_Dim.Ranking,
+                       aggr_on = aggr_on)
+  },
+  message = "Creating plot")
+})
+
+ERTPlot.Aggr_Dim.data <- function() {
+  data <- subset(DATA_RAW(), algId %in% isolate(input$ERTPlot.Aggr_Dim.Algs))
+  if (length(data) == 0) return(NULL)
+  data <- subset(data, funcId == input$Overall.Funcid)
+  
+  if (length(unique(get_dim(data))) <= 1) {
+    shinyjs::alert("This plot is only available when the dataset contains 
+                   multiple dimensions for the selected function")
+    return(NULL)
+  }
+  
+  if (length(unique(get_algId(data))) <= 1) {
+    shinyjs::alert("This plot is only available when the dataset contains
+                   multiple algorithms for the selected function")
+    return(NULL)
+  }
+  data
+}
+
+default_targets_table_dim <- reactive({
+  data <- ERTPlot.Aggr_Dim.data()
+  if (is.null(data)) return(NULL)
+  aggr_on <- 'DIM'
+  as.data.table(
+    t(
+      get_max_targets(data, aggr_on, maximize = attr(data,'maximization'))
+    ),
+    keep.rownames = F)
+})
+
+ERTPlot.Aggr_Dim.Targets_obj <- NULL
+
+proxy_ERTPlot.Aggr_Dim.Targets <- dataTableProxy('ERTPlot.Aggr_Dim.Targets')
+
+output$ERTPlot.Aggr_Dim.Targets <- DT::renderDataTable({
+  req(length(DATA_RAW()) > 0)
+  ERTPlot.Aggr_Dim.Targets_obj <<- default_targets_table_dim()
+  ERTPlot.Aggr_Dim.Targets_obj
+}, editable = TRUE, rownames = FALSE,
+options = list(pageLength = 5, lengthMenu = c(5, 10, 25, -1), scrollX = T, server = T))
+
+
+observeEvent(input$ERTPlot.Aggr_Dim.Targets_cell_edit, {
+  info <- input$ERTPlot.Aggr_Dim.Targets_cell_edit
+  i <- info$row
+  j <- info$col + 1
+  v <- info$value
+  data <- ERTPlot.Aggr_Dim.data()
+  if (is.null(data)) return(NULL)
+  aggr_on <- 'DIM'
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_dim(data)
+  suppressWarnings(ERTPlot.Aggr_Dim.Targets_obj[i, paste0(aggr_attr[[j]])] <<- 
+                     DT::coerceValue(v, ERTPlot.Aggr_Dim.Targets_obj[i, paste0(aggr_attr[[j]])]))
+  replaceData(proxy, ERTPlot.Aggr_Dim.Targets_obj, resetPaging = FALSE, rownames = FALSE)
+})
+
+
+ert_multi_dim <- function(){
+  dsList <- ERTPlot.Aggr_Dim.data()
+  if (is.null(dsList)) return(NULL)
+  aggr_on <- 'DIM'
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
+  
+  targets <- ERTPlot.Aggr_Dim.Targets_obj
+  erts <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, 
+                   maximize = attr(dsList, "maximization"))
+  rownames(erts) <- aggr_attr
+  formatC(erts, digits = 4)
+}
+
+output$ERTPlot.Aggr_Dim.ERTTable <- DT::renderDataTable({
+  input$ERTPlot.Aggr_Dim.Refresh
+  req(length(DATA_RAW()) > 0)
+  
+  withProgress({
+    ert_multi_dim()
+  },
+  message = "Creating table")
+}, editable = FALSE, rownames = TRUE,
+options = list(pageLength = 5, lengthMenu = c(5, 10, 25, -1), scrollX = T, server = T))
+
+output$ERTPlot.Aggr_Dim.DownloadTable <- downloadHandler(
+  filename = function() {
+    eval(ERT_multi_dim_name)
+  },
+  content = function(file) {
+    df <- ert_multi_dim()
+    if (input$ERTPlot.Aggr_Dim.TableFormat == 'csv')
       write.csv(df, file, row.names = F)
     else{
       print(xtable(df), file = file)

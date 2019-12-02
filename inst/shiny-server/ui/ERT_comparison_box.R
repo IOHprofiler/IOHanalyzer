@@ -59,3 +59,66 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
     )
   )
 }
+
+#TODO: combine with other function using proper namespacing and modularity
+ERT_comparison_box_dim <- function(width = 12, collapsible = T, collapsed = T) {
+  box(title = HTML('<p style="font-size:120%;">Expected Runtime Comparisons</p>'), 
+      width = width, collapsible = collapsible, solidHeader = TRUE, 
+      status = "primary", collapsed = collapsed,
+      sidebarLayout(
+        sidebarPanel(
+          width = 2,
+          selectInput('ERTPlot.Aggr_Dim.Algs', label = 'Select which algorithms to plot:',
+                      multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+                        custom_icon() %>%
+                          bs_embed_popover(
+                            title = "Algorithm selection", content = alg_select_info, 
+                            placement = "auto"
+                          )
+                      ),
+          selectInput('ERTPlot.Aggr_Dim.Mode', label = 'Select the plotting mode',
+                      choices = c('radar', 'line'), selected = 'line'),
+          
+          checkboxInput('ERTPlot.Aggr_Dim.Ranking', 
+                        label = 'Use ranking instead of ERT-values',
+                        value = F),
+          
+          checkboxInput('ERTPlot.Aggr_Dim.Logy', 
+                        label = 'Scale y axis \\(\\log_{10}\\)',
+                        value = T),
+          actionButton("ERTPlot.Aggr_Dim.Refresh", "Refresh the figure and table"),
+          hr(),
+          
+          selectInput('ERTPlot.Aggr_Dim.Format', label = 'Select the figure format',
+                      choices = supported_fig_format, selected = 'pdf'),
+          
+          downloadButton('ERTPlot.Aggr_Dim.Download', label = 'Download the figure'),
+          hr(),
+          selectInput('ERTPlot.Aggr_Dim.TableFormat', label = 'Select the table format',
+                      choices = c('csv','tex'), selected = 'csv'),
+          downloadButton('ERTPlot.Aggr_Dim.DownloadTable', label = 'Download the table')
+          
+        ),
+        
+        mainPanel(
+          width = 10,
+          column(
+            width = 12, align = "center",
+            HTML_P('The <b><i>ERT</i></b> of the runtime samples across all functions. 
+                  ERT is decided based on the target values in the table below,
+                  with the default being the <b>best reached f(x) by any of the 
+                  selected algorithms</b>. <i>Infinite ERTS</i> are shown as 
+                  seperate dots on the graph.'),
+            plotlyOutput.IOHanalyzer('ERTPlot.Aggr_Dim.Plot'),
+            hr(),
+            HTML_P("The chosen <b>target values</b> per dimension are as follows 
+                 (double click an entry to edit it):"),
+            DT::dataTableOutput("ERTPlot.Aggr_Dim.Targets"),
+            hr(),
+            HTML_P("The raw <b>ERT</b>-values are:"),
+            DT::dataTableOutput("ERTPlot.Aggr_Dim.ERTTable")
+          )
+        )
+      )
+  )
+}

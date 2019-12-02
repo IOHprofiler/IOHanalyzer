@@ -389,6 +389,7 @@ observe({
   updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = algIds_, selected = selected_alg)
   updateSelectInput(session, 'ERTPlot.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'ERTPlot.Aggr.Algs', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'ERTPlot.Aggr_Dim.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = algIds_, selected = selected_alg)
   updateSelectInput(session, 'FCEPlot.Aggr.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCEPlot.Algs', choices = algIds_, selected = algIds_)

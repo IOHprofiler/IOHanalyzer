@@ -1791,7 +1791,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
                       function(i) {
                         idx_ <- idx[, i]
                         v <- data_inf[idx_, i]
-                        names(v) <- which(idx_)
+                        names(v) <- aggr_attr[idx_]
                         v
                       })
     
@@ -1860,14 +1860,13 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
                                                    autorange = 'reverse')))
     
   } else {
-    if (use_rank)
+    if (aggr_on == 'funcId' && class(aggr_attr) == class(1))
       p %<>% layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
                     xaxis = list(tick0 = 1, dtick = 1, range = range,
                                  type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
     else
       p %<>% layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
-                    xaxis = list(tick0 = 1, dtick = 1, range = range,
-                                 type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+                    xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
   }
   p
 }

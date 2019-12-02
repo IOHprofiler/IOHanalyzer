@@ -156,9 +156,8 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                ERT_box(collapsed = F)
-                # ERT_agg_box(height = '800px'),
-                # ERT_comparison_box()
+                ERT_box(collapsed = F),
+                ERT_comparison_box_dim()
               )
             )
     ),
@@ -167,23 +166,11 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                # ERT_box(collapsed = F),
-                ERT_agg_box(height = '800px'),
+                ERT_agg_box(height = '800px', collapsed = F),
                 ERT_comparison_box()
               )
             )
     ),
-    
-    # tabItem(tabName = 'ERT_convergence',
-    #         fluidRow(
-    #           column(
-    #             width = 12,
-    #             ERT_box(collapsed = F),
-    #             ERT_agg_box(height = '800px'),
-    #             ERT_comparison_box()
-    #           )
-    #         )
-    # ),
     
     # RT: histograms, violin plots ------------------------------------------
     tabItem(tabName = 'RT_PMF',
@@ -203,7 +190,6 @@ body <- dashboardBody(
                 width = 12,
                 rt_ecdf_single_target_box(collapsed = F),
                 rt_ecdf_agg_targets_box(),
-                # rt_ecdf_agg_fct_box(),
                 rt_ecdf_auc_box()
               )
             )
@@ -212,24 +198,11 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                # rt_ecdf_single_target_box(collapsed = F),
-                # rt_ecdf_agg_targets_box(),
                 rt_ecdf_agg_fct_box(collapsed = F)
-                # rt_ecdf_auc_box()
               )
             )
     ),
-    # tabItem(tabName = 'RT_ECDF',
-    #         fluidRow(
-    #           column(
-    #             width = 12,
-    #             rt_ecdf_single_target_box(collapsed = F),
-    #             rt_ecdf_agg_targets_box(),
-    #             rt_ecdf_agg_fct_box(),
-    #             rt_ecdf_auc_box()
-    #           )
-    #         )
-    # ),
+
     # Parameter tab -------
     tabItem(tabName = 'RT_PARAMETER',
             fluidRow(
@@ -247,7 +220,6 @@ body <- dashboardBody(
               column(
                 width = 12,
                 rt_heatmap_box()
-                # rt_glicko2_box()
               )
             )
     ),
@@ -255,20 +227,11 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                # rt_heatmap_box(),
                 rt_glicko2_box(collapsed = F)
               )
             )
     ),    
-    # tabItem(tabName = 'RT_Statistics',
-    #               fluidRow(
-    #                 column(
-    #                   width = 12,
-    #                   rt_heatmap_box(),
-    #                   rt_glicko2_box()
-    #                 )
-    #               )
-    # ),   
+
     # FCE: Data Summary -----------------
     tabItem(tabName = 'FCE_DATA',
             fluidRow(
@@ -282,17 +245,24 @@ body <- dashboardBody(
     ),
 
     # FCE: Expected Convergence Curve ---------------------------------------------
-    tabItem(tabName = 'FCE_convergence',
+    tabItem(tabName = 'FCE_convergence_single',
             fluidRow(
               column(
                 width = 12,
-                fv_per_fct_box(collapsed = F),
-                fv_agg_box(),
-                fv_comparison_box()
+                fv_per_fct_box(collapsed = F)
                )
             )
     ),
 
+    tabItem(tabName = 'FCE_convergence_aggr',
+            fluidRow(
+              column(
+                width = 12,
+                fv_agg_box(collapsed = F),
+                fv_comparison_box()
+              )
+            )
+    ),
     # FCE: historgrams, p.d.f. --------
     tabItem(tabName = 'FCE_PDF',
             fluidRow(
@@ -315,7 +285,7 @@ body <- dashboardBody(
               )
             )
     ),
-
+    
     # Parameter tab -------
     tabItem(tabName = 'FCE_PARAMETER',
             fluidRow(
@@ -328,16 +298,23 @@ body <- dashboardBody(
             )
     ),
 
-    tabItem(tabName = 'FCE_Statistics',
+    tabItem(tabName = 'FCE_Statistics_single',
             fluidRow(
               column(
                 width = 12,
-                fv_heatmap_box(),
-                fv_glicko2_box()
+                fv_heatmap_box(collapsed = F)
               )
             )
     ),
 
+    tabItem(tabName = 'FCE_Statistics_aggr',
+            fluidRow(
+              column(
+                width = 12,
+                fv_glicko2_box(collapsed = F)
+              )
+            )
+    ),
     tabItem(tabName = 'Settings',
             fluidRow(
               column(

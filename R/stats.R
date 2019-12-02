@@ -116,16 +116,27 @@ pairwise.test.list <- function(x, max_eval, bootstrap.size = 30, ...) {
 }
 
 #' @param ftarget float, the target value used to determine the running / hitting 
+#' @param which wheter to do fixed-target ('by_FV') or fixed-budget ('by_RT') comparison
 #' time
 #' @export
 #' @rdname pairwise.test
-pairwise.test.DataSetList <- function(x, ftarget, bootstrap.size = 30, ...) {
-  dt <- get_RT_sample(x, ftarget, output = 'long')
-  maxRT <- get_maxRT(x, output = 'long')
-  s <- split(dt$RT, dt$algId)
-  maxRT <- split(maxRT$maxRT, maxRT$algId)
-  p.value <- pairwise.test.list(s, maxRT, bootstrap.size)
-  p.value
+pairwise.test.DataSetList <- function(x, ftarget, bootstrap.size = 0, which = 'by_FV', ...) {
+  if (which == 'by_FV') {
+    dt <- get_RT_sample(x, ftarget, output = 'long')
+    maxRT <- get_maxRT(x, output = 'long')
+    maxRT <- split(maxRT$maxRT, maxRT$algId)
+    s <- split(dt$RT, dt$algId)
+  }
+  else if (which == 'by_RT') {
+    dt <- get_FV_sample(x, ftarget, output = 'long')
+    maxRT <- NULL
+    if (bootstrap.size > 0) warning("Bootstrapping is currently not supported for 
+                                    fixed-budget statistics.")
+    bootstrap.size = 0
+    s <- split(dt$`f(x)`, dt$algId)
+  }
+  else stop("Unsupported argument 'which'. Available options are 'by_FV' and 'by_RT'")
+  return(pairwise.test.list(s, maxRT, bootstrap.size))
 }
 
 # TODO: move those two functions to a separate file
@@ -176,11 +187,11 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
   }
 
   #Avoid generating too many samples
-  if(!is.null(by)){
-    nr_samples_generated <- (to-from)/by
-    if (nr_samples_generated > getOption("IOHanalyzer.max_samples", default = 100)){
+  if (!is.null(by)) {
+    nr_samples_generated <- (to - from) / by
+    if (nr_samples_generated > getOption("IOHanalyzer.max_samples", default = 100)) {
       by <- NULL
-      if(is.null(length.out))
+      if (is.null(length.out))
         length.out <- getOption("IOHanalyzer.max_samples", default = 100)
     }
   }
@@ -241,11 +252,11 @@ seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
   }
 
   #Avoid generating too many samples
-  if(!is.null(by)){
-    nr_samples_generated <- (to-from)/by
-    if (nr_samples_generated > getOption("IOHanalyzer.max_samples", default = 100)){
+  if (!is.null(by)) {
+    nr_samples_generated <- (to - from) / by
+    if (nr_samples_generated > getOption("IOHanalyzer.max_samples", default = 100)) {
       by <- NULL
-      if(is.null(length.out))
+      if (is.null(length.out))
         length.out <- getOption("IOHanalyzer.max_samples", default = 100)
     }
   }
@@ -451,6 +462,56 @@ get_default_ECDF_targets <- function(data, format_func = as.integer) {
   targets %>% set_names(names)
 }
 
+#' Generate datatables of runtime or function value targets for a DataSetList
+#' 
+#' Only one target is generated per (function, dimension)-pair, as opposed to the 
+#' function `get_default_ECDF_targets`, which generates multiple targets.
+#'
+#' @param dsList A DataSetList
+#' @param which Whether to generate fixed-target ('by_FV') or fixed-budget ('by_RT') targets
+#'
+#' @return a data.table of targets
+#' @export
+#' @examples 
+#' get_target_dt(dsl)
+get_target_dt <- function(dsList, which = 'by_FV') {
+  vals <- c()
+  funcs <- get_funcId(dsList)
+  dims <- get_dim(dsList)
+  dt <- as.data.table(expand.grid(funcs, dims))
+  colnames(dt) <- c("funcId", "DIM")
+  if (which == 'by_FV') {
+    target_func <- get_target_FV
+  }
+  else if (which == 'by_RT') {
+    target_func <- get_target_RT
+  }
+  else stop("Invalid argument for `which`; can only be `by_FV` or `by_RT`.")
+  targets <- apply(dt, 1, 
+                   function(x) {target_func(subset(dsList, funcId == x[[1]], DIM == x[[2]]))})
+  dt[, target := targets]
+  
+  return(dt)
+}
+
+#' Helper function for `get_target_dt`
+#' @noRd
+get_target_FV <- function(dsList){
+  vals <- get_FV_summary(dsList, Inf)[[paste0(100*getOption("IOHanalyzer.quantiles", 0.02)[[1]], '%')]]
+  if (is.null(dsList$maximization) || dsList$maximization) {
+    return(max(vals))
+  }
+  else {
+    return(min(vals))
+  }
+}
+
+#' Helper function for `get_target_dt`
+#' @noRd
+get_target_RT <- function(dsList){
+  return(max(get_runtimes(dsList)))
+}
+
 #' Glicko2 raning of algorithms
 #' 
 #' This procedure ranks algorithms based on a glicko2-procedure. 
@@ -462,55 +523,78 @@ get_default_ECDF_targets <- function(data, format_func = as.integer) {
 #' @param dsl The DataSetList, can contain multiple functions and dimensions, but should have the 
 #' same algorithms for all of them
 #' @param nr_rounds The number of rounds to run. More rounds leads to a more accurate ranking.
+#' @param which Whether to use fixed-target ('by_FV') or fixed-budget ('by_RT') perspective
+#' @param target_dt Custom data.table target value to use. When NULL, this is selected automatically.
 #' @return A dataframe containing the glicko2-ratings and some additional info
 #' 
 #' @export
 #' @examples 
-#' glicko2_ranking(dsl)
-glicko2_ranking <- function(dsl, nr_rounds = 100){
+#' glicko2_ranking(dsl, nr_round = 25)
+#' glicko2_ranking(dsl, nr_round = 25, which = 'by_RT')
+glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = NULL){
   req(length(get_algId(dsl)) > 1)
+  
+  if (!is.null(target_dt) && !('data.table' %in% class(target_dt))) {
+    warning("Provided `target_dt` argument is not a data.table")
+    target_dt <- NULL
+  }
+  
+  if (is.null(target_dt))
+    target_dt <- get_target_dt(dsl, which)
+  
+  if (!(which %in% c('by_FV', 'by_RT')))
+    stop("Invalid argument: 'which' can only be 'by_FV' or 'by_RT'")
   p1 <- NULL
   p2 <- NULL
   scores <- NULL
   weeks <- NULL
   get_dims <- function(){
     dims <- get_dim(dsl)
-    if (length(dims) > 1){
+    if (length(dims) > 1) {
       dims <- sample(dims)
     }
     dims
   }
   get_funcs <- function(){
     funcs <- get_funcId(dsl)
-    if (length(funcs) > 1){
+    if (length(funcs) > 1) {
       funcs <- sample(funcs)
     }
     funcs
   }
   n_algs = length(get_algId(dsl))
   alg_names <- NULL
-  for (k in seq(1,nr_rounds)){
-    for (dim in get_dims()){
-      for (fid in get_funcs()){
+  for (k in seq(1,nr_rounds)) {
+    for (dim in get_dims()) {
+      targets_temp <- target_dt[target_dt$DIM == dim]
+      for (fid in get_funcs()) {
         dsl_s <- subset(dsl, funcId == fid && DIM == dim)
-        target <- max(get_funvals(dsl_s))
-        x_arr <- get_RT_sample(dsl_s, target)
-        vals = array(dim=c(n_algs,ncol(x_arr)-4))
-        for (i in seq(1,n_algs)){ 
+        if (which == 'by_FV') {
+          target <- targets_temp[targets_temp$funcId == fid]$target
+          x_arr <- get_RT_sample(dsl_s, target)
+          win_operator <- `<`
+        }
+        else {
+          target <- targets_temp[targets_temp$funcId == fid]$target
+          x_arr <- get_FV_sample(dsl_s, target)
+          win_operator <- ifelse(attr(dsl, 'maximization'), `>`, `<`)
+        }
+        vals = array(dim = c(n_algs,ncol(x_arr) - 4))
+        for (i in seq(1,n_algs)) { 
           z <- x_arr[i]
           y <- as.numeric(z[,5:ncol(x_arr)])
           vals[i,] = y
         }
         if (is.null(alg_names)) alg_names <- x_arr[,3]
         
-        for (i in seq(1,n_algs)){
-          for (j in seq(i,n_algs)){
+        for (i in seq(1,n_algs)) {
+          for (j in seq(i,n_algs)) {
             if (i == j) next
             weeks <- c(weeks, k)
             s1 <- sample(vals[i,], 1) 
             s2 <- sample(vals[j,], 1)
-            if (is.na(s1)){
-              if (is.na(s2)){
+            if (is.na(s1)) {
+              if (is.na(s2)) {
                 won <- 0.5
               }
               else{
@@ -518,11 +602,14 @@ glicko2_ranking <- function(dsl, nr_rounds = 100){
               }
             }
             else{
-              if (is.na(s2)){
+              if (is.na(s2)) {
                 won <- 1
               }
-              else{
-                won <- s1 < s2
+              else if (s1 == s2) {
+                won <- 0.5 #Tie
+              }
+              else {
+                won <- win_operator(s1, s2)
               }
             }
             p1 <- c(p1, i)
@@ -536,7 +623,7 @@ glicko2_ranking <- function(dsl, nr_rounds = 100){
   }
   # weeks <- seq(1,1,length.out = length(p1))
   games <- data.frame(Weeks = weeks, Player1 = p1, Player2 = p2, Scores = as.numeric(scores))
-  lout <- glicko2(games,init=c(1500,350,0.06))
+  lout <- glicko2(games, init =  c(1500,350,0.06))
   lout$ratings$Player <- alg_names[lout$ratings$Player]
   lout
 }

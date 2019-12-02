@@ -39,6 +39,6 @@ Attributes
   algId
 }
 \examples{
-path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
+path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package = "IOHanalyzer")
 DataSetList(path)
 }

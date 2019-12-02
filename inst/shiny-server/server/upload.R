@@ -158,7 +158,7 @@ observeEvent(selected_folders(), {
   
   
   for (folder in folder_new) {
-    indexFiles <- scan_IndexFile(folder)
+    indexFiles <- scan_index_file(folder)
 
     if (length(indexFiles) == 0 && format_detected != NEVERGRAD)
       print_html(paste('<p style="color:red;">No .info-files detected in the
@@ -201,12 +201,14 @@ observeEvent(selected_folders(), {
     return(NULL)
   }
   else if (attr(DataList$data, 'suite') == NEVERGRAD) {
+    #TODO: Better way of doing this such that these pages are not even populated with data instead of just being hidden
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_ECDF"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_convergence"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_data"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_PMF"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "PARAMETER"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_PARAMETER"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_Statistics"))
   }
   else{
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_ECDF"))
@@ -214,7 +216,14 @@ observeEvent(selected_folders(), {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT_data"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT"))
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PMF"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "PARAMETER"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PARAMETER"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_Statistics"))
+  }
+  if (attr(DataList$data, 'suite') == "PBO") {
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "FCE_ECDF"))
+  }
+  else {
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "FCE_ECDF"))
   }
   set_color_scheme("Default", get_algId(DataList$data))
   set_format_func(attr(DataList$data, 'suite'))
@@ -263,6 +272,9 @@ observe({
   
   updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = selected_f)
+  
+  updateSelectInput(session, 'Overview.Single.Algid', choices = algIds_, selected = algIds_)
+  
   updateSelectInput(session, 'Report.RT.Overview-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.RT.Overview-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.RT.Overview-Alg', choices = algIds_, selected = algIds_)
@@ -351,20 +363,29 @@ observe({
   updateSelectInput(session, 'Report.Param.Statistics-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.Param.Statistics-Alg', choices = algIds_, selected = algIds_)
   
-  updateSelectInput(session, 'Stats.Glicko.Algid', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
-  updateSelectInput(session, 'Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'RT_Stats.Glicko.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RT_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'RT_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
   
-  updateSelectInput(session, 'Stats.Overview.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RT_Stats.Overview.Algid', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'FV_Stats.Glicko.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FV_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'FV_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
+  
+  updateSelectInput(session, 'FV_Stats.Overview.Algid', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'FCESummary.Overview.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'RTSummary.Sample.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'PAR.Plot.Algs', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FV_PAR.Plot.Algs', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RT_PAR.Plot.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCESummary.Statistics.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'FCESummary.Sample.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'PAR.Summary.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'PAR.Sample.Algid', choices = algIds, selected = 'all')
+  updateSelectInput(session, 'FV_PAR.Summary.Algid', choices = algIds, selected = 'all')
+  updateSelectInput(session, 'FV_PAR.Sample.Algid', choices = algIds, selected = 'all')
+  updateSelectInput(session, 'RT_PAR.Summary.Algid', choices = algIds, selected = 'all')
+  updateSelectInput(session, 'RT_PAR.Sample.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = algIds_, selected = selected_alg)
   updateSelectInput(session, 'ERTPlot.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'ERTPlot.Aggr.Algs', choices = algIds_, selected = algIds_)
@@ -375,8 +396,10 @@ observe({
   updateSelectInput(session, 'FCEPDF.Hist.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RTPMF.Bar.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RTPMF.Hist.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'PAR.Summary.Param', choices = parIds, selected = 'all')
-  updateSelectInput(session, 'PAR.Sample.Param', choices = parIds, selected = 'all')
+  updateSelectInput(session, 'FV_PAR.Summary.Param', choices = parIds, selected = 'all')
+  updateSelectInput(session, 'FV_PAR.Sample.Param', choices = parIds, selected = 'all')
+  updateSelectInput(session, 'RT_PAR.Summary.Param', choices = parIds, selected = 'all')
+  updateSelectInput(session, 'RT_PAR.Sample.Param', choices = parIds, selected = 'all')
   updateSelectInput(session, 'RTECDF.Single.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RTECDF.Aggr.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RTECDF.AUC.Algs', choices = algIds_, selected = algIds_)
@@ -384,7 +407,8 @@ observe({
   updateSelectInput(session, 'FCEECDF.Single.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCEECDF.Mult.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCEECDF.AUC.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'PAR.Plot.Params', choices = parIds_, selected = parIds_)
+  updateSelectInput(session, 'FV_PAR.Plot.Params', choices = parIds_, selected = parIds_)
+  updateSelectInput(session, 'RT_PAR.Plot.Params', choices = parIds_, selected = parIds_)
 })
 
 # update (filter) according to users selection DataSets
@@ -488,15 +512,15 @@ observe({
   setTextInput(session, 'RTECDF.AUC.Min', name, alternative = format_FV(start))
   setTextInput(session, 'RTECDF.AUC.Max', name, alternative = format_FV(stop))
   setTextInput(session, 'RTECDF.AUC.Step', name, alternative = format_FV(step))
-  setTextInput(session, 'PAR.Plot.Min', name, alternative = format_FV(start))
-  setTextInput(session, 'PAR.Plot.Max', name, alternative = format_FV(stop))
-  setTextInput(session, 'PAR.Summary.Min', name, alternative = format_FV(start))
-  setTextInput(session, 'PAR.Summary.Max', name, alternative = format_FV(stop))
-  setTextInput(session, 'PAR.Summary.Step', name, alternative = format_FV(step))
-  setTextInput(session, 'PAR.Sample.Min', name, alternative = format_FV(start))
-  setTextInput(session, 'PAR.Sample.Max', name, alternative = format_FV(stop))
-  setTextInput(session, 'PAR.Sample.Step', name, alternative = format_FV(step))
-  setTextInput(session, 'Stats.Overview.Target', name, alternative = format_FV(stop))
+  setTextInput(session, 'RT_PAR.Plot.Min', name, alternative = format_FV(start))
+  setTextInput(session, 'RT_PAR.Plot.Max', name, alternative = format_FV(stop))
+  setTextInput(session, 'RT_PAR.Summary.Min', name, alternative = format_FV(start))
+  setTextInput(session, 'RT_PAR.Summary.Max', name, alternative = format_FV(stop))
+  setTextInput(session, 'RT_PAR.Summary.Step', name, alternative = format_FV(step))
+  setTextInput(session, 'RT_PAR.Sample.Min', name, alternative = format_FV(start))
+  setTextInput(session, 'RT_PAR.Sample.Max', name, alternative = format_FV(stop))
+  setTextInput(session, 'RT_PAR.Sample.Step', name, alternative = format_FV(step))
+  setTextInput(session, 'RT_Stats.Overview.Target', name, alternative = format_FV(stop))
 })
 
 # update the values for the grid of running times
@@ -534,7 +558,15 @@ observe({
   setTextInput(session, 'FCEECDF.AUC.Min', name, alternative = min(v))
   setTextInput(session, 'FCEECDF.AUC.Max', name, alternative = max(v))
   setTextInput(session, 'FCEECDF.AUC.Step', name, alternative = step)
-  
+  setTextInput(session, 'FV_PAR.Plot.Min', name, alternative =  min(v))
+  setTextInput(session, 'FV_PAR.Plot.Max', name, alternative = max(v))
+  setTextInput(session, 'FV_PAR.Summary.Min', name, alternative =  min(v))
+  setTextInput(session, 'FV_PAR.Summary.Max', name, alternative = max(v))
+  setTextInput(session, 'FV_PAR.Summary.Step', name, alternative = step)
+  setTextInput(session, 'FV_PAR.Sample.Min', name, alternative =  min(v))
+  setTextInput(session, 'FV_PAR.Sample.Max', name, alternative = max(v))
+  setTextInput(session, 'FV_PAR.Sample.Step', name, alternative = step)
+  setTextInput(session, 'FV_Stats.Overview.Target', name, alternative = max(v))
   #TODO: remove q and replace by single number
   setTextInput(session, 'FCEECDF.Single.Target', name, alternative = q[2])
 })

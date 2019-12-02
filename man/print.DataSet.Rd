@@ -4,12 +4,10 @@
 \alias{print.DataSet}
 \title{S3 generic print operator for DataSet}
 \usage{
-\method{print}{DataSet}(x, verbose = F, ...)
+\method{print}{DataSet}(x, ...)
 }
 \arguments{
 \item{x}{A DataSet object}
-
-\item{verbose}{Verbose mode, currently not implemented}
 
 \item{...}{Arguments passed to other methods}
 }

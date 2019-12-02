@@ -11,7 +11,8 @@ pairwise.test(x, ...)
 
 \method{pairwise.test}{list}(x, max_eval, bootstrap.size = 30, ...)
 
-\method{pairwise.test}{DataSetList}(x, ftarget, bootstrap.size = 30, ...)
+\method{pairwise.test}{DataSetList}(x, ftarget, bootstrap.size = 0,
+  which = "by_FV", ...)
 }
 \arguments{
 \item{x}{either a list that contains running time sample for each algorithm as 
@@ -24,7 +25,9 @@ as sub-lists}
 
 \item{bootstrap.size}{integer, the size of the bootstrapped sample. Set to 0 to disable bootstrapping}
 
-\item{ftarget}{float, the target value used to determine the running / hitting 
+\item{ftarget}{float, the target value used to determine the running / hitting}
+
+\item{which}{wheter to do fixed-target ('by_FV') or fixed-budget ('by_RT') comparison
 time}
 }
 \value{

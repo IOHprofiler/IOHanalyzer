@@ -6,10 +6,11 @@
 \title{Create a candlestick plot of Glicko2-rankings}
 \usage{
 Plot.Stats.Glicko2_Candlestick(dsList, nr_rounds = 100,
-  glicko2_rank_df = NULL)
+  glicko2_rank_df = NULL, which = "by_FV", target_dt = NULL)
 
 \method{Plot.Stats.Glicko2_Candlestick}{DataSetList}(dsList,
-  nr_rounds = 100, glicko2_rank_df = NULL)
+  nr_rounds = 100, glicko2_rank_df = NULL, which = "by_FV",
+  target_dt = NULL)
 }
 \arguments{
 \item{dsList}{A DataSetList}
@@ -17,6 +18,10 @@ Plot.Stats.Glicko2_Candlestick(dsList, nr_rounds = 100,
 \item{nr_rounds}{The number of rounds in the tournament}
 
 \item{glicko2_rank_df}{Optional. Dataframe containing the glicko2 rating to avoid needless recalculation.}
+
+\item{which}{Whether to use fixed-target ('by_FV') or fixed-budget ('by_RT') perspective}
+
+\item{target_dt}{Optional: data table containing the targets for each function and dimension}
 }
 \description{
 Create a candlestick plot of Glicko2-rankings

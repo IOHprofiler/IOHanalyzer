@@ -14,7 +14,8 @@ sidebar <- dashboardSidebar(
 body <- dashboardBody(
   tags$style(HTML('.popover-title {color:black;}
                    .popover-content {color:black;}
-                   .main-sidebar {z-index:auto;}')
+                   .main-sidebar {z-index:auto;}
+                   .fa-exclamation-triangle {color:#E87722})')
   ),
   # javascript, headers ----------------------
   # to show text on the header (heading banner)
@@ -129,6 +130,16 @@ body <- dashboardBody(
             )
     ),
 
+    # General data overview ----------------------
+    tabItem(tabName = 'overview',
+            fluidRow(
+              column(width = 12,
+                     general_overview_box_all(collapsed = F),
+                     general_overview_box_single(collapsed = F)
+              )
+            )
+    ),
+    
     # RT (RunTime): Data Summary -----------------
     tabItem(tabName = 'ERT_data',
       fluidRow(
@@ -175,7 +186,29 @@ body <- dashboardBody(
               )
             )
     ),
+    
+    # Parameter tab -------
+    tabItem(tabName = 'RT_PARAMETER',
+            fluidRow(
+              column(
+                width = 12,
+                rt_par_expected_value_box(collapsed = F),
+                rt_par_summary_box(),
+                rt_par_sample_box()
+              )
+            )
+    ),
 
+    tabItem(tabName = 'RT_Statistics',
+            fluidRow(
+              column(
+                width = 12,
+                rt_heatmap_box(),
+                rt_glicko2_box()
+              )
+            )
+    ),
+    
     # FCE: Data Summary -----------------
     tabItem(tabName = 'FCE_DATA',
             fluidRow(
@@ -199,6 +232,7 @@ body <- dashboardBody(
                )
             )
     ),
+
     # FCE: historgrams, p.d.f. --------
     tabItem(tabName = 'FCE_PDF',
             fluidRow(
@@ -223,24 +257,27 @@ body <- dashboardBody(
     ),
 
     # Parameter tab -------
-    tabItem(tabName = 'PARAMETER',
+    tabItem(tabName = 'FCE_PARAMETER',
             fluidRow(
               column(
                 width = 12,
-                par_expected_value_box(collapsed = F),
-                par_summary_box(),
-                par_sample_box()
+                fv_par_expected_value_box(collapsed = F),
+                fv_par_summary_box(),
+                fv_par_sample_box()
               )
             )
     ),
-    tabItem(tabName = 'Statistics',
+
+    tabItem(tabName = 'FCE_Statistics',
             fluidRow(
               column(
                 width = 12,
-                heatmap_box(),
-                glicko2_box()
+                fv_heatmap_box(),
+                fv_glicko2_box()
               )
-            )),
+            )
+    ),
+
     tabItem(tabName = 'Settings',
             fluidRow(
               column(
@@ -250,6 +287,7 @@ body <- dashboardBody(
               )
             )
     ),
+
     tabItem(tabName = 'Report',
             fluidRow(
               column(

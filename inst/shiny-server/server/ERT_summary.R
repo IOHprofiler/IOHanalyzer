@@ -9,11 +9,11 @@ runtime_summary_condensed <- reactive({
   df$funcId %<>% as.integer
   df$DIM %<>% as.integer
   df$succ %<>% as.integer
-  df$"worst recorded" <- format_FV(df$"worst recorded") %>% as.numeric
-  df$"worst reached" <- format_FV(df$"worst reached") %>% as.numeric
-  df$"mean reached" <- format_FV(df$"mean reached") %>% as.numeric
-  df$"median reached" <- format_FV(df$"median reached") %>% as.numeric
-  df$"best reached" <- format_FV(df$"best reached") %>% as.numeric
+  df$"worst recorded" <- format_FV(df$"worst recorded")
+  df$"worst reached" <- format_FV(df$"worst reached")
+  df$"mean reached" <- format_FV(df$"mean reached")
+  df$"median reached" <- format_FV(df$"median reached")
+  df$"best reached" <- format_FV(df$"best reached")
   df
 })
 
@@ -44,9 +44,9 @@ runtime_summary <- reactive({
       input$RTSummary.Statistics.Max,
       input$RTSummary.Statistics.Step)
 
-  fstart <- format_FV(input$RTSummary.Statistics.Min) %>% as.numeric
-  fstop <- format_FV(input$RTSummary.Statistics.Max) %>% as.numeric
-  fstep <- format_FV(input$RTSummary.Statistics.Step) %>% as.numeric
+  fstart <- format_FV(input$RTSummary.Statistics.Min)
+  fstop <- format_FV(input$RTSummary.Statistics.Max)
+  fstep <- format_FV(input$RTSummary.Statistics.Step)
   data <- DATA()
   
   if (!input$RTSummary.Statistics.Single) {
@@ -102,9 +102,9 @@ get_RT <- reactive({
       input$RTSummary.Sample.Max,
       input$RTSummary.Sample.Step)
 
-  fstart <- format_FV(input$RTSummary.Sample.Min) %>% as.numeric
-  fstop <- format_FV(input$RTSummary.Sample.Max) %>% as.numeric
-  fstep <- format_FV(input$RTSummary.Sample.Step) %>% as.numeric
+  fstart <- format_FV(input$RTSummary.Sample.Min)
+  fstop <- format_FV(input$RTSummary.Sample.Max)
+  fstep <- format_FV(input$RTSummary.Sample.Step)
   data <- DATA()
 
   if (!input$RTSummary.Sample.Single) {

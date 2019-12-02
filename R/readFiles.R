@@ -1,8 +1,7 @@
 sourceCpp('src/align.cc')
 sourceCpp('src/read.cc')
-# source('global.R')
 
-#' reduce the size of the data set by evenly subsampling the records
+#' Reduce the size of the data set by evenly subsampling the records
 #'
 #' @param df The data to subsample
 #' @param n The amount of samples
@@ -10,7 +9,7 @@ sourceCpp('src/read.cc')
 limit.data <- function(df, n) {
   N <- nrow(df)
   if (N > n) {
-    idx <- c(1, seq(1, N, length.out = n), N) %>% unique
+    idx <- unique(c(1, seq(1, N, length.out = n), N))
     df[idx, ]
   } else
     df
@@ -23,12 +22,11 @@ limit.data <- function(df, n) {
 #' @export
 #' @examples 
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
-#' scan_IndexFile(path)
-scan_IndexFile <- function(folder) {
+#' scan_index_file(path)
+scan_index_file <- function(folder) {
   folder <- trimws(folder)
-  file.path(folder, list.files(folder, pattern = '.info', recursive = T))
+  file.path(folder, list.files(folder, pattern = '.info$', recursive = T))
 }
-
 
 #' Read .info files and extract information
 #'
@@ -37,21 +35,22 @@ scan_IndexFile <- function(folder) {
 #' @export
 #' @examples 
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
-#' info <- read_IndexFile(file.path(path,"IOHprofiler_f1_i1.info"))
-read_IndexFile <- function(fname) {
-  tryCatch(read_IndexFile_IOH(fname),
-           warning = function(e) read_IndexFile_BIOBJ_COCO(fname),
-           error = function(e) read_IndexFile_BIOBJ_COCO(fname),
-           finally = function(e) stop(paste0('Error in reading .info files ', e)))
+#' info <- read_index_file(file.path(path,"IOHprofiler_f1_i1.info"))
+read_index_file <- function(fname) {
+  tryCatch(
+    read_index_file__IOH(fname),
+    warning = function(e) read_index_file__BIOBJ_COCO(fname),
+    error = function(e) read_index_file__BIOBJ_COCO(fname),
+    finally = function(e) stop(paste0('Error in reading .info files ', e))
+  )
 }
-
 
 #' Read IOHprofiler-based .info files and extract information
 #'
 #' @param fname The path to the .info file
 #' @return The data contained in the .info file
 #' @noRd
-read_IndexFile_IOH <- function(fname) {
+read_index_file__IOH <- function(fname) {
   f <- file(fname, 'r')
   path <- dirname(fname)
   data <- list()
@@ -89,7 +88,7 @@ read_IndexFile_IOH <- function(fname) {
         ans
       }
 
-    record <- strsplit(lines[3], ',')[[1]] %>% trimws
+    record <- trimws(strsplit(lines[3], ',')[[1]])
 
     # TODO: this must also be removed...
     if (record[2] == "") {
@@ -97,11 +96,11 @@ read_IndexFile_IOH <- function(fname) {
       res <- NULL
       info <- NULL
     } else {
-      res <- strsplit(record[-1], ':') %>% unlist %>% matrix(nrow = 2)
-      info <- strsplit(res[2, ], '\\|') %>% unlist %>% matrix(nrow = 2)
+      res <- matrix(unlist(strsplit(record[-1], ':')), nrow = 2)
+      info <- matrix(unlist(strsplit(res[2, ], '\\|')), nrow = 2)
     }
 
-    record[1] <-  gsub("\\\\", "/", record[1])
+    record[1] <- gsub("\\\\", "/", record[1])
     datafile <- file.path(path, record[1])
 
     # TODO: check the name of the attributes and fix them!
@@ -121,12 +120,12 @@ read_IndexFile_IOH <- function(fname) {
   data
 }
 
-#' Read Biobjective COCO-based .info files and extract information
+#' Read bi-objective COCO-based .info files and extract information
 #'
 #' @param fname The path to the .info file
 #' @return The data contained in the .info file
 #' @noRd
-read_IndexFile_BIOBJ_COCO <- function(fname) {
+read_index_file__BIOBJ_COCO <- function(fname) {
   f <- file(fname, 'r')
   path <- dirname(fname)
   data <- list()
@@ -134,12 +133,10 @@ read_IndexFile_BIOBJ_COCO <- function(fname) {
 
   lines <- suppressWarnings(readLines(f, n = 2))  # read header and comments
   comment <- lines[2]
-  name_value <- read.csv(text = lines[1], header = F, quote = "'") %>%
-    as.list %>% unlist %>% as.vector
+  name_value <- as.vector(unlist(as.list(read.csv(text = lines[1], header = F, quote = "'"))))
 
-  header <- name_value %>%
-    trimws %>% {
-      regmatches(., regexpr("=", .), invert = T) # match the first appearance of '='
+  header <- trimws(name_value) %>% {
+      regmatches(., regexpr("=", .), invert = T)  # match the first appearance of '='
     } %>%
     unlist %>%
     trimws %>%
@@ -157,7 +154,6 @@ read_IndexFile_BIOBJ_COCO <- function(fname) {
     }
 
   names(header) <- gsub('algorithm', 'algId', names(header))
-
   while (TRUE) {
     # TODO: remove suppressWarnings later
     lines <- suppressWarnings(readLines(f, n = 1))
@@ -172,8 +168,8 @@ read_IndexFile_BIOBJ_COCO <- function(fname) {
       res <- NULL
       info <- NULL
     } else {
-      res <- strsplit(record[-c(1, 2, 3)], ':') %>% unlist %>% matrix(nrow = 2)
-      info <- strsplit(res[2, ], '\\|') %>% unlist %>% as.numeric %>% matrix(nrow = 2)
+      res <- matrix(unlist(strsplit(record[-c(1, 2, 3)], ':')), nrow = 2)
+      info <- matrix(as.numeric(unlist(strsplit(res[2, ], '\\|'))), nrow = 2)
     }
 
     record[3] <-  gsub("\\\\", "/", record[3])
@@ -182,8 +178,8 @@ read_IndexFile_BIOBJ_COCO <- function(fname) {
     else
       datafile <- file.path(path, record[3])
 
-    funcId <- strsplit(record[1], '=')[[1]][2] %>% trimws %>% as.numeric
-    DIM <- strsplit(record[2], '=')[[1]][2] %>% trimws %>% as.numeric
+    funcId <- as.numeric(trimws(strsplit(record[1], '=')[[1]][2]))
+    DIM <- as.numeric(trimws(strsplit(record[2], '=')[[1]][2]))
 
     # TODO: check the name of the attributes and fix them!
     data[[i]] <- c(
@@ -212,16 +208,15 @@ read_IndexFile_BIOBJ_COCO <- function(fname) {
 #' @return The format of the data in the given folder. Either 'COCO' or 'IOHprofiler'.
 #' @export
 #' @examples 
-#' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
+#' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package = "IOHanalyzer")
 #' check_format(path)
 check_format <- function(path) {
   if (sub('[^\\.]*\\.', '', basename(path), perl = T) == "csv")
     return(NEVERGRAD)
   
-  index_files <- scan_IndexFile(path)
-  info <- lapply(index_files, read_IndexFile) %>% unlist(recursive = F)
+  index_files <- scan_index_file(path)
+  info <- unlist(lapply(index_files, read_index_file), recursive = F)
   datafile <- sapply(info, function(item) item$datafile)
-  
   
   format <- lapply(datafile, function(file) {
     tryCatch({
@@ -234,7 +229,8 @@ check_format <- function(path) {
     if (startsWith(first_line, '% function') || startsWith(first_line, '% f evaluations'))
       COCO
     else if (startsWith(first_line, '\"function')) {
-      n_col = ncol(fread(file, header = FALSE, sep = ' ', colClasses = 'character', fill = T, nrows = 1))
+      n_col <- ncol(fread(file, header = FALSE, sep = ' ', 
+                         colClasses = 'character', fill = T, nrows = 1))
       if (n_col == 2)
         TWO_COL
       else
@@ -250,10 +246,9 @@ check_format <- function(path) {
     unlist %>%
     unique
   
-  
   csv_files <- file.path(path, list.files(path, pattern = '.csv', recursive = T))
   if (length(csv_files) > 0)
-    format %<>% c(NEVERGRAD)
+    format <- c(format, NEVERGRAD)
   
   if (length(format) > 1) {
     stop(
@@ -267,7 +262,6 @@ check_format <- function(path) {
     format
 }
 
-
 #' Read IOHProfiler *.dat files
 #'
 #' @param fname The path to the .dat file
@@ -275,22 +269,20 @@ check_format <- function(path) {
 #' @noRd
 #' @return A list of data.frames
 read_dat <- function(fname, subsampling = FALSE) {
-  # TODO: use the same data loading method as in read_COCO_dat
+  # TODO: use the same data loading method as in read_dat__COCO
   df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
+  colnames(df) <- as.character(df[1, ])
   idx <- which(!grepl('\\d+', df[[1]], perl = T))
 
   # check for data consistence
-  header_len <- apply(df[idx, ] != "", 1, sum) %>% min
-  idx %<>% c(nrow(df) + 1)
+  header_len <- min(apply(df[idx, ] != "", 1, sum))
+  idx <- c(idx, nrow(df) + 1)
   df <- df[, 1:header_len]
 
   # turn off the warnings of the data coersion below
   options(warn = -1)
-  columns <- colnames(df) <- as.matrix(df[1, ])
   # TOOD: this opeartor is the bottelneck
-  df %<>% sapply(function(c) {class(c) <- 'numeric'; c})
-  # df <- df[, lapply(.SD, as.numeric)]
-  # df %<>% mutate_all(funs(as.numeric(.)))
+  df <- sapply(df, function(c) {class(c) <- 'numeric'; c})
   options(warn = 0)
 
   res <- lapply(seq(length(idx) - 1), function(i) {
@@ -298,7 +290,7 @@ read_dat <- function(fname, subsampling = FALSE) {
     i2 <- idx[i + 1] - 1
     ans <- df[i1:i2, ]
     if (i1 == i2)
-      ans <- t(ans) %>% as.matrix
+      ans <- as.matrix(t(ans))
 
     # TODO: determine the number of record in the 'efficient mode'
     if (subsampling)
@@ -309,6 +301,7 @@ read_dat <- function(fname, subsampling = FALSE) {
   res
 }
 
+# TODO: this method is deprecated. Remove it later
 # TODO: maybe not subsampling for COCO data
 #' read COCO '.dat'-like file
 #'
@@ -316,7 +309,7 @@ read_dat <- function(fname, subsampling = FALSE) {
 #' @param subsampling Whether to subsample the data or not
 #' @noRd
 #' @return A list of data.frames
-read_COCO_dat <- function(fname, subsampling = FALSE) {
+read_dat__COCO_ <- function(fname, subsampling = FALSE) {
   c_read_dat(path.expand(fname), 7, '%')
 }
 
@@ -326,29 +319,25 @@ read_COCO_dat <- function(fname, subsampling = FALSE) {
 #' @param subsampling Whether to subsample the data or not
 #' @noRd
 #' @return A list of data.frames
-read_COCO_dat2 <- function(fname, subsampling = FALSE) {
+read_dat__COCO <- function(fname, subsampling = FALSE) {
   select <- seq(5)
   # read the file as a character vector (one string per row)
   X <- fread(fname, header = FALSE, sep = '\n', colClasses = 'character')[[1]]
   idx <- which(startsWith(X, '%'))
   X <- gsub('\\s+|\\t', ' ', X, perl = T)
 
-  header <- gsub(' \\| ', '|', X[1], perl = T) %>%
-    gsub('\\.\\.\\.|% ', '', ., perl = T) %>% {
-      strsplit(., split = '\\|')[[1]][select]
-    }
-  
   df <- fread(text = X[-idx], header = F, sep = ' ', select = select, fill = T)
   idx <- c((idx + 1) - seq_along(idx), nrow(df))
 
-  lapply(seq(length(idx) - 1), function(i) {
-    i1 <- idx[i]
-    i2 <- idx[i + 1] - 1
-    as.matrix(df[i1:i2, ])
-  })
+  lapply(seq(length(idx) - 1), 
+         function(i) {
+           i1 <- idx[i]
+           i2 <- idx[i + 1] - 1
+           as.matrix(df[i1:i2, ])
+         })
 }
 
-read_BIOBJ_COCO_dat <- function(fname, subsampling = FALSE) {
+read_dat__BIOBJ_COCO <- function(fname, subsampling = FALSE) {
   if (endsWith(fname, '.dat'))
     select <- seq(3)
   else if (endsWith(fname, '.tdat'))
@@ -359,13 +348,7 @@ read_BIOBJ_COCO_dat <- function(fname, subsampling = FALSE) {
   idx <- which(startsWith(X, '%'))
   X <- gsub('\\s+|\\t', ' ', X, perl = T)
 
-  header <- gsub(' \\| ', '|', X[4], perl = T) %>%
-    gsub('\\.\\.\\.|% ', '', ., perl = T) %>% {
-      strsplit(., split = '\\|')[[1]][select]
-    }
-
   df <- fread(text = X[-idx], header = F, sep = ' ', select = select, fill = T)
-
   idx <- which(startsWith(X, '% function'))
   idx <- c((idx + 1) - seq_along(idx) * 4, nrow(df))
 
@@ -376,60 +359,95 @@ read_BIOBJ_COCO_dat <- function(fname, subsampling = FALSE) {
   })
 }
 
-# TODO: double check the index of the target column
-# global variables for the alignment
+# #' Read Nevergrad data file
+# #' 
+# #' Read .csv files in nevergrad format and extract information as a DataSetList
+# #'
+# #' @param fname The path to the .csv file
+# #' @return The DataSetList extracted from the .csv file provided
+# #' @noRd
+# read_nevergrad <- function(path) {
+#   dt <- fread(path)
+  
+#   triplets <- unique(dt[, .(optimizer_name, dimension, name)])
+#   algIds <- unique(triplets$optimizer_name)
+#   DIMs <- unique(triplets$dimension)
+#   funcIds <- unique(triplets$name)
+  
+#   res <- list()
+#   idx <- 1
+  
+#   for (i in seq(nrow(triplets))) {
+#     algId <- triplets$optimizer_name[i]
+#     DIM <- triplets$dimension[i]
+#     funcId <- triplets$name[i]
+    
+#     if (!('rescale' %in% colnames(dt))) {
+#       if ('transform' %in% colnames(dt))
+#         colnames(dt)[colnames(dt) == 'transform'] <- 'rescale'
+#       else
+#         dt$rescale <- NA
+#     }
+    
+#     data <- dt[optimizer_name == algId & 
+#                  dimension == DIM & 
+#                  name == funcId,
+#                .(budget, loss, rescale)]
+    
+#     for (scaled in unique(data$rescale)) {
+#       if (!is.na(scaled)) {
+#         data_reduced <- data[rescale == scaled, .(budget, loss)]
+#       }
+#       else {
+#         data_reduced <- data[is.na(rescale), .(budget, loss)]
+#       }
+      
+#       if (!is.na(scaled) && scaled) {
+#         funcId_name <- paste0(funcId, '_rescaled')
+#       }
+#       else {
+#         funcId_name <- funcId
+#       }
+      
+#       rows <- unique(data_reduced$budget) %>% sort
+#       FV <- lapply(rows,
+#                    function(b) {
+#                      data_reduced[budget == b, loss]
+#                    }
+#       ) %>%
+#         do.call(rbind, .) %>%
+#         set_rownames(rows)
+      
+#       RT <- list()
+#       ds <- structure(
+#         list(RT = RT, FV = FV),
+#         class = c('DataSet', 'list'),
+#         maxRT = max(rows),
+#         finalFV = min(FV),
+#         format = 'NEVERGRAD',
+#         maximization = FALSE,
+#         algId = algId,
+#         funcId = funcId_name,
+#         DIM = DIM
+#       )
+#       res[[idx]] <- ds
+#       idx <- idx + 1
+#     }
+#   }
+  
+#   class(res) <- c(class(res), 'DataSetList')
+#   attr(res, 'DIM') <- DIMs
+#   attr(res, 'funcId') <- funcIds
+#   attr(res, 'algId') <- algIds
+#   res
+# }
+
+# global variables for the alignment functions
 idxEvals <- 1
 idxTarget <- 3
 n_data_column <- 5
 
-#' Align data by runtimes
-#' @param data The data to align
-#' @param format Whether the data is form IOHprofiler or COCO.
-#' @noRd
-#' @return Data aligned by runtime
-align_runtime <- function(data, format = IOHprofiler, maximization = TRUE) {
-  if (format == IOHprofiler) {
-    idxTarget <- 3
-  } else if (format == COCO) {
-    idxTarget <- 3
-  } else if (format == BIBOJ_COCO) {
-    n_data_column <- 3
-    idxTarget <- 2
-  } else if (format == TWO_COL) {
-    n_data_column <- 2
-    idxTarget <- 2
-  }
-
-  FV <- lapply(data, function(x) x[, idxTarget]) %>%
-    unlist %>%
-    unique %>%
-    sort(decreasing = !maximization)
-
-  n_rows <- sapply(data, nrow)
-  n_column <- sapply(data, ncol) %>% unique
-
-  if (format == COCO) {
-    n_param <- 0
-    idxValue <- idxEvals
-    param_names <- NULL
-  } else if (format == IOHprofiler) {
-    n_param <- n_column - n_data_column
-    if (n_param > 0) {
-      param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
-      idxValue <- c(idxEvals, (n_data_column + 1):n_column)
-    } else {
-      param_names <- NULL
-      idxValue <- idxEvals
-    }
-  } else {
-    param_names <- NULL
-    idxValue <- idxEvals
-  }
-  c_align_runtime(data, FV, idxValue - 1, maximization, idxTarget - 1) %>%
-    set_names(c('RT', param_names))
-}
-
-
+# TODO: add docs to the following three functions
 check_contiguous <- function(data) {
   sapply(data,
          function(d) {
@@ -469,51 +487,102 @@ align_non_contiguous <- function(data, idx, rownames) {
     set_rownames(rownames)
 }
 
+#' Align data by runtimes
+#' @param data The data to align
+#' @param format Whether the data is form IOHprofiler or COCO
+#' @param include_param Whether to include the recorded parameters in the alignment
+#' @noRd
+#' @return Data aligned by the running time
+align_running_time <- function(data, format = IOHprofiler, include_param = TRUE,
+                               maximization = TRUE) {
+  if (format == IOHprofiler)
+    idxTarget <- 3
+  else if (format == COCO)
+    idxTarget <- 3
+  else if (format == BIBOJ_COCO) {
+    n_data_column <- 3
+    idxTarget <- 2
+  } 
+  else if (format == TWO_COL) {
+    n_data_column <- 2
+    idxTarget <- 2
+  }
+
+  FV <- sort(unique(unlist(lapply(data, function(x) x[, idxTarget]))),
+             decreasing = !maximization)
+  n_column <- unique(sapply(data, ncol))
+
+  if (format == COCO) {
+    n_param <- 0
+    idxValue <- idxEvals
+    param_names <- NULL
+  } 
+  else if (format == IOHprofiler) {
+    n_param <- n_column - n_data_column
+    if (include_param && n_param > 0) {
+      param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
+      idxValue <- c(idxEvals, (n_data_column + 1):n_column)
+    } 
+    else {
+      param_names <- NULL
+      idxValue <- idxEvals
+    }
+  } 
+  else {
+    param_names <- NULL
+    idxValue <- idxEvals
+  }
+  
+  res <- c_align_running_time(data, FV, idxValue - 1, maximization, idxTarget - 1)
+  names(res) <- c('RT', param_names)
+  res
+}
 
 #' Align data by function values
 #' @param data The data to align
 #' @param format Whether the data is form IOHprofiler or COCO.
 #' @param include_param Whether to include the recorded parameters in the alignment
 #' @noRd
-#' @return Data aligned by function value
+#' @return Data aligned by the function value
 align_function_value <- function(data, include_param = TRUE, format = IOHprofiler) {
-  N <- length(data)
-  n_column <- sapply(data, ncol) %>% unique
+  n_column <- unique(sapply(data, ncol))
   stopifnot(length(n_column) == 1)
 
   if (format == COCO) {
     maximization <- FALSE
     idxTarget <- 3
     n_param <- 0
-  } else if (format == IOHprofiler) {
+  } 
+  else if (format == IOHprofiler) {
     maximization <- TRUE
     idxTarget <- 3
     n_param <- n_column - n_data_column
-  } else if (format == BIBOJ_COCO) {  # new bi-objective COCO format
+  } 
+  else if (format == BIBOJ_COCO) {  # bi-objective COCO format
     maximization <- FALSE
     idxTarget <- 2
     n_data_column <- 2
-    n_param <- 0                      # no parameter is allowed in this case
-  } else if (format == TWO_COL) {
+    n_param <- 0                   # no parameter is allowed in this case
+  } 
+  else if (format == TWO_COL) {
     maximization <- TRUE
     idxTarget <- 2
     n_param <- 0
   }
-
-  include_param <- include_param && (n_param > 0)
 
   if (check_contiguous(data)) {
     nrow <- sapply(data, nrow) %>% max
     runtime <- seq(nrow)
     align_func <- align_contiguous
   } else {
-    runtime <- lapply(data, function(x) x[, idxEvals]) %>% unlist %>% unique %>% sort
+    runtime <- sort(unique(unlist(lapply(data, function(x) x[, idxEvals]))))
     nrow <- length(runtime)
     align_func <- align_non_contiguous
   }
 
   FV <- align_func(data, idxTarget, runtime)
-
+  include_param <- include_param && (n_param > 0)
+  
   if (include_param) {
     param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
     param <- list()

@@ -12,7 +12,7 @@ DataSet(info, verbose = F, maximization = NULL, format = IOHprofiler,
 
 \item{verbose}{Logical.}
 
-\item{maximization}{Logical. Whether the underlying optimization algorithm performs a maximization? 
+\item{maximization}{Logical. Whether the underlying optimization algorithm performs a maximization?
 Set to NULL to determine automatically based on format}
 
 \item{format}{A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL"}
@@ -35,7 +35,7 @@ DataSet contains the following attributes
  * comment
 }
 \examples{
-path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
-info <- read_IndexFile(file.path(path,"IOHprofiler_f1_i1.info"))
+path <- system.file('extdata', 'ONE_PLUS_LAMDA_EA', package = 'IOHanalyzer')
+info <- read_index_file(file.path(path, 'IOHprofiler_f1_i1.info'))
 DataSet(info[[1]])
 }

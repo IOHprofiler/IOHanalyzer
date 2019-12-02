@@ -20,5 +20,5 @@ The DataSetList of the DataSets at indices i of DataSetList x
 S3 extraction function for DataSetList
 }
 \examples{
-dsl[c(1,3)]
+dsl[c(1, 3)]
 }

@@ -42,9 +42,15 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
           align = "Left",
           HTML_P('Set the general properties'),
           #TODO: get probabilities from get_probability and put them as default
-          textInput("Settings.General.Probs", label = "Probability-quantiles", value = "0.02,0.05,0.10,0.25,0.50,0.75,0.90,0.95,0.98"),
-          numericInput("Settings.General.Max_samples", label = "Maximum samples shown per algorithm", value = 100),
-          selectInput("Settings.General.Backend", "Plotting backend", c('plotly','ggplot2'),'plotly'),
+          textInput("Settings.General.Probs", label = "Probability-quantiles", 
+                    value = "0.02,0.05,0.10,0.25,0.50,0.75,0.90,0.95,0.98"),
+          numericInput("Settings.General.Max_samples", 
+                       label = "Maximum samples shown per algorithm", 
+                       value = 100),
+          selectInput("Settings.General.Backend", "Plotting backend", 
+                      c('plotly', 'ggplot2'), 'plotly'),
+          numericInput("Settings.General.Precision", label = "Function value precision (digits)",
+                       value = 2),
           hr(),
           downloadButton("Settings.Download", "Download current settings file"),
           fileInput("Settings.Upload", "Upload a settings file", accept = "rds")

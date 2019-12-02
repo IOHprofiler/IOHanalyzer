@@ -49,14 +49,20 @@ trigger_renderDT <- reactiveVal(NULL)
 proxy <- dataTableProxy('RT_GRID_GENERATED')
 
 observe({
-  req(length(DATA_RAW()) > 0)
-  req(input$RTECDF.Aggr.Algs)
-  req(input$Overall.Funcid)
-  req(input$Overall.Dim)
-  req(DATA_RAW()$suite != NEVERGRAD)
+  alg <- input$RTECDF.Aggr.Algs
+  funcid <- input$Overall.Funcid
+  data <- DATA_RAW()
+  dim <- input$Overall.Dim
+  
+  req(length(data) > 0)
+  req(alg)
+  req(funcid)
+  req(dim)
+  # req(data$suite != NEVERGRAD)
 
-  dsList <- subset(DATA_RAW(), algId %in% input$RTECDF.Aggr.Algs)
+  dsList <- subset(data, algId %in% alg)
   req(length(dsList) > 0)
+
   if (!input$RTECDF.Aggr.Func) 
     dsList <- subset(dsList, funcId == input$Overall.Funcid)
   
@@ -79,7 +85,7 @@ observe({
   else
     colnames(dt)[[1]] <- "Func; Dim"
   
-  RT_ECDF_MULTI_TABLE(dt)
+  RT_ECDF_MULTI_TABLE(dt) # add values to `RT_ECDF_MULTI_TABLE`
   trigger_renderDT(rnorm(1))
 })
 

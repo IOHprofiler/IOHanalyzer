@@ -92,17 +92,22 @@ output$ERTPlot.Aggr.Plot <- renderPlotly(
 )
 
 get_max_targets <- function(data, aggr_on, maximize){
-  targets <- c()
+  # targets <- c()
   aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_dim(data)
-
-  for (j in seq_along(aggr_attr)) {
-    dsList_filetered <- if (aggr_on == 'funcId') subset(data,funcId == aggr_attr[[j]])
-    else subset(data, DIM == aggr_attr[[j]])
-
-    Fall <- get_funvals(dsList_filetered)
-    Fval <- ifelse(maximize, max(Fall), min(Fall))
-    targets <- c(targets,Fval)
-  }
+  # 
+  # for (j in seq_along(aggr_attr)) {
+  #   dsList_filetered <- if (aggr_on == 'funcId') subset(data,funcId == aggr_attr[[j]])
+  #   else subset(data, DIM == aggr_attr[[j]])
+  # 
+  #   Fall <- get_funvals(dsList_filetered)
+  #   Fval <- ifelse(maximize, max(Fall), min(Fall))
+  #   targets <- c(targets,Fval)
+  # }
+  # names(targets) <- aggr_attr
+  # targets
+  
+  targets <- get_target_dt(data)[['target']]
+  # print(targets)
   names(targets) <- aggr_attr
   targets
 }

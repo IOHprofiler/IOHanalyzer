@@ -9,7 +9,7 @@ sidebar_menu <- function() {
                             menuSubItem("Data Summary", tabName = "ERT_data", icon = icon("table")),
                             menuSubItem("Expected Runtime", tabName = "ERT_convergence_single", icon = icon("line-chart"), selected = F),
                             menuSubItem("Probability Mass Function", tabName = "RT_PMF", icon = icon("bar-chart"), selected = F),
-                            menuSubItem("Cumulative Distribution", tabName = "ERT_ECDF_single", icon = icon("line-chart"), selected = F),
+                            menuSubItem("Cumulative Distribution", tabName = "RT_ECDF_single", icon = icon("line-chart"), selected = F),
                             menuSubItem("Algorithm Parameters", tabName = "RT_PARAMETER", icon = icon('file-text-o'), selected = F),
                             menuSubItem("Statistics", tabName = "RT_Statistics_single", icon = icon("file-text-o"), selected = F)
                        ),

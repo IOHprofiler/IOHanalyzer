@@ -6,58 +6,81 @@ DataList <- reactiveValues(data = DataSetList())
 # set up list of datasets (scan the repository, looking for .rds files)
 observe({
   repo_dir <<- get_repo_location()
-  rds_files <- list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
-
+  if (input$respository.type == 'PBO') {
+    rds_files <- list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
+    rds_files <- c(rds_files, "Example_small", "Example_large")
+  }
+  else if (input$respository.type == 'NEVERGRAD'){
+    rds_files <- list.files(paste0(repo_dir, "/nevergrad"), pattern = '.rds') %>% sub('\\.rds$', '', .)
+  }
+  
   if (length(rds_files) != 0) {
-    updateSelectInput(session, 'repository.dataset', choices = c(rds_files, "Example_small", "Example_large"), selected = NULL)
+    updateSelectInput(session, 'repository.dataset', choices = rds_files, selected = NULL)
   } else { # TODO: the alert msg should be updated
     shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository,
                    please create a folder called 'repository' in your home directory
                    and make sure it contains at least one '.rds'-file, such as the ones
                    provided on the IOHProfiler github-page.")
-    updateSelectInput(session, 'repository.dataset', choices = c("Example_small", "Example_large"), selected = NULL)
+    updateSelectInput(session, 'repository.dataset', choices = NULL, selected = NULL)
   }
-  })
+})
+
+
+observeEvent(input$repository.type, {
+  req(input$repository.type)
+  if (input$respository.type == 'PBO') {
+    names <- list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
+    names <- c(names, "Example_small", "Example_large")
+  }
+  else {
+    names <- list.files(paste0(repo_dir, "/nevergrad"), pattern = '.rds') %>% sub('\\.rds$', '', .)
+  }
+  updateSelectInput(session, 'repository.dataset', choices = names, selected = NULL)
+})
 
 # load repository that is selected
 observeEvent(input$repository.dataset, {
   req(input$repository.dataset)
-
-  if (input$repository.dataset  == "Example_small") {
-    repo_data <<- IOHanalyzer::dsl
+  if (input$respository.type == 'PBO') {
+    if (input$repository.dataset  == "Example_small") {
+      repo_data <<- IOHanalyzer::dsl
+    }
+    else if (input$repository.dataset == "Example_large") {
+      repo_data <<- IOHanalyzer::dsl_large
+    }
+    else{
+      rds_file <- file.path(repo_dir, paste0(input$repository.dataset, ".rds"))
+    
+      repo_data <<- readRDS(rds_file)
+    }
+    if ( is.null(attr(repo_data, 'maximization'))) {
+      attr(repo_data, 'maximization') <<- T
+    } 
+    if ( is.null(attr(repo_data, 'suite'))) {
+      attr(repo_data, 'suite') <<- 'PBO'
+    } 
   }
-  else if (input$repository.dataset == "Example_large") {
-    repo_data <<- IOHanalyzer::dsl_large
-  }
-  else{
-    rds_file <- file.path(repo_dir, paste0(input$repository.dataset, ".rds"))
-  
+  else if (input$respository.type == 'NEVERGRAD') {
+    rds_file <- file.path(paste0(repo_dir, "/nevergrad"), paste0(input$repository.dataset, ".rds"))
     repo_data <<- readRDS(rds_file)
   }
-  algIds <- c(get_algId(repo_data), 'all')
-  dims <- c(get_dim(repo_data), 'all')
-  funcIds <- c(get_funcId(repo_data), 'all')
-  if ( is.null(attr(repo_data, 'maximization'))) {
-    attr(repo_data, 'maximization') <<- T
-  } 
-  if ( is.null(attr(repo_data, 'suite'))) {
-    attr(repo_data, 'suite') <<- 'PBO'
-  } 
-  updateSelectInput(session, 'repository.algId', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'repository.dim', choices = dims, selected = 'all')
-  updateSelectInput(session, 'repository.funcId', choices = funcIds, selected = 'all')
+  
+  algIds <- c(get_algId(repo_data))
+  dims <- c(get_dim(repo_data))
+  funcIds <- c(get_funcId(repo_data))
+
+  updateSelectInput(session, 'repository.algId', choices = algIds, selected = algIds)
+  updateSelectInput(session, 'repository.dim', choices = dims, selected = dims)
+  updateSelectInput(session, 'repository.funcId', choices = funcIds, selected = funcIds)
   shinyjs::enable('repository.load_button')
 })
 
 # add the data from repository
 observeEvent(input$repository.load_button, {
   data <- repo_data
-  if (input$repository.funcId != 'all')
-    data <- subset(data, funcId == input$repository.funcId)
-  if (input$repository.dim != 'all')
-    data <- subset(data, DIM == input$repository.dim)
-  if (input$repository.algId != 'all')
-    data <- subset(data, algId == input$repository.algId)
+  data <- subset(data, funcId %in% input$repository.funcId)
+  data <- subset(data, DIM %in% input$repository.dim)
+  data <- subset(data, algId %in% input$repository.algId)
   if (length(DataList$data) > 0 && attr(data, 'suite') != attr(DataList$data, 'suite')) {
     shinyjs::alert(paste0("Attempting to add data from a different suite to the currently",
                    " loaded data.\nPlease either remove the currently loaded data or", 
@@ -65,6 +88,8 @@ observeEvent(input$repository.load_button, {
     return(NULL)
   }
   DataList$data <- c(DataList$data, data)
+  update_menu_visibility(attr(DataList$data, 'suite'))
+  set_format_func(attr(DataList$data, 'suite'))
   set_color_scheme("Default", get_algId(DataList$data))
 })
 
@@ -200,34 +225,38 @@ observeEvent(selected_folders(), {
                    Please ensure the data is not corrupted.")
     return(NULL)
   }
-  else if (attr(DataList$data, 'suite') == NEVERGRAD) {
+  update_menu_visibility(attr(DataList$data, 'suite'))
+  set_format_func(attr(DataList$data, 'suite'))
+  set_color_scheme("Default", get_algId(DataList$data))
+})
+
+update_menu_visibility <- function(suite){
+  if (suite == NEVERGRAD) {
     #TODO: Better way of doing this such that these pages are not even populated with data instead of just being hidden
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_ECDF"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_convergence"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_data"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_PMF"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_PARAMETER"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_Statistics"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "#shiny-tab-ERT"))
+    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_convergence"))
+    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_data"))
+    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT"))
+    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_PMF"))
+    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_PARAMETER"))
+    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_Statistics"))
   }
   else{
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_ECDF"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT_convergence"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT_data"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PMF"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PARAMETER"))
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_Statistics"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "#shiny-tab-ERT"))
+    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT_convergence"))
+    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT_data"))
+    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT"))
+    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PMF"))
+    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PARAMETER"))
+    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_Statistics"))
   }
-  if (attr(DataList$data, 'suite') == "PBO") {
+  if (suite == "PBO") {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "FCE_ECDF"))
   }
   else {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "FCE_ECDF"))
   }
-  set_color_scheme("Default", get_algId(DataList$data))
-  set_format_func(attr(DataList$data, 'suite'))
-})
+}
 
 # remove all uploaded data set
 observeEvent(input$upload.remove_data, {

@@ -79,7 +79,7 @@ body <- dashboardBody(
         var aNodeList = document.getElementsByTagName('a');
 
         for (var i = 0; i < aNodeList.length; i++) {
-          if(aNodeList[i].getAttribute('data-value') == message.tabName) {
+          if(aNodeList[i].getAttribute('data-value') == message.tabName || aNodeList[i].getAttribute('href') == message.tabName) {
             if(message.action == 'hide'){
               aNodeList[i].setAttribute('style', 'display: none;');
             } else {

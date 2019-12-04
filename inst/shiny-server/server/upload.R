@@ -71,12 +71,14 @@ observeEvent(input$repository.load_button, {
 # upload the compressed the data file and uncompress them
 selected_folders <- reactive({
   if (!is.null(input$upload.add_zip)) {
+    tryCatch({
     datapath <- input$upload.add_zip$datapath
     folders <- rep('', length(datapath))
 
     for (i in seq(datapath)) {
       filetype <- sub('[^\\.]*\\.', '', basename(datapath[i]), perl = T)
-
+      print_html(paste0('<p style="color:blue;">Handling ', filetype, '-data.<br>'))
+      
       if (filetype == 'csv') {
         folders[i] <- datapath[[i]]
         next
@@ -114,6 +116,7 @@ selected_folders <- reactive({
         .exdir <- file.path(exdir, folder)
         dir.create(.exdir, recursive = T)
         unzip_fct(datapath[i], list = FALSE, exdir = .exdir)
+        print_html(paste0('<p style="color:blue;">Succesfully unzipped ', basename(datapath[i]), '.<br>'))
         folders[i] <- .exdir
       } else {
         folder <- dirname(info)
@@ -124,10 +127,13 @@ selected_folders <- reactive({
                in base-64.")
           return(NULL)
         }
+        print_html(paste0('<p style="color:blue;">Succesfully unzipped ', basename(datapath[i]), '.<br>'))
         folders[i] <- file.path(exdir, folder)
       }
     }
     folders
+    }, error = function(e) {shinyjs::alert(paste0("The following error occured when processing the uploaded data: ", e))
+      })
   } else
     NULL
 })
@@ -154,7 +160,7 @@ observeEvent(selected_folders(), {
                      'is detected in the uploaded data set... skip the uploaded data'))
   else
     format_detected <- format_detected[[1]]
-  
+  print_html(paste0('<p style="color:blue;">Data processing of source type:', format_detected, ' <br>'))
   
   
   for (folder in folder_new) {

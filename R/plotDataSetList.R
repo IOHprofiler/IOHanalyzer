@@ -478,7 +478,9 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
     if (is.null(p))
       p <- IOH_plot_ly_default(x.title = "Best-so-far f(x)-value",
                                y.title = "Function evaluations")
-
+    algnames <- get_algId(dsList)
+    colors <- get_color_scheme(algnames) %>% set_names(algnames)
+    dashes <- get_line_style(algnames) %>% set_names(algnames)
     # TODO: improve this part, get rid of the loop
     for (i in seq_along(dsList)) {
       legend <- legends[i]
@@ -487,14 +489,14 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
                      DIM == attr(dsList[[i]], 'DIM')]
 
       algId <- attr(dsList[[i]], 'algId')
-      rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.2)')
+      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[[algId]]), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.2)')
 
       if (show.ERT)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~ERT, type = 'scatter',
                          name = legend, mode = 'lines+markers',
                          marker = list(color = rgb_str), legendgroup = legend,
-                         line = list(color = rgb_str, dash = get_line_style(algId)), visible = T)
+                         line = list(color = rgb_str, dash = dashes[[algId]]), visible = T)
 
       if (show.mean)
         p %<>% add_trace(data = ds_ERT, x = ~target, y = ~mean, type = 'scatter',
@@ -570,7 +572,10 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
 
   if (backend == 'plotly') {
     p <- IOH_plot_ly_default(y.title = "Best-so-far f(x)-value", x.title = "Runtime")
-
+    algnames <- get_algId(dsList)
+    colors <- get_color_scheme(algnames) %>% set_names(algnames)
+    dashes <- get_line_style(algnames) %>% set_names(algnames)
+    
     for (i in seq_along(dsList)) {
       legend <- legends[i]
       algId <- attr(dsList[[i]], 'algId')
@@ -582,14 +587,14 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
       if (nrow(ds_FCE) == 0)
         next
 
-      rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
-      rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.3)')
+      rgb_str <- paste0('rgb(', paste0(col2rgb(colors[[algId]]), collapse = ','), ')')
+      rgba_str <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.3)')
 
       if (show.mean)
         p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~mean, type = 'scatter',
                          mode = 'lines+markers', name = paste0(algId, ''),
                          marker = list(color = rgb_str), legendgroup = legend,
-                         line = list(color = rgb_str, dash = get_line_style(algId)), visible = T)
+                         line = list(color = rgb_str, dash = dashes[[algId]]), visible = T)
 
       if (show.median)
         p %<>% add_trace(data = ds_FCE, x = ~runtime, y = ~median, type = 'scatter',
@@ -643,12 +648,14 @@ Plot.RT.PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
 
   p <- IOH_plot_ly_default(x.title = "Algorithms",
                        y.title = "Runtime / function evaluations")
+  algnames <- get_algId(dsList)
+  colors <- get_color_scheme(algnames) %>% set_names(algnames)
 
   for (i in seq_along(dsList)) {
     ds <- dsList[[i]]
     algId <- attr(ds, "algId")
-    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.52)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[[algId]]), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.52)')
 
     p %<>%
       add_trace(data = get_RT_sample(ds, ftarget, output = 'long'),
@@ -703,13 +710,15 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
   if (use.equal.bins) {
     res1 <- hist(get_RT_sample(dsList, ftarget, output = 'long')$RT, breaks = nclass.FD, plot = F)
   }
+  algnames <- get_algId(dsList)
+  colors <- get_color_scheme(algnames) %>% set_names(algnames)
   
   for (i in seq_along(dsList)) {
     df <- dsList[[i]]
     
     algId <- attr(df, "algId")
-    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.35)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[[algId]]), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.35)')
 
     algId <- attr(df, 'algId')
     rt <- get_RT_sample(df, ftarget, output = 'long')
@@ -771,13 +780,16 @@ Plot.RT.ECDF_Per_Target.DataSetList <- function(dsList, ftargets, scale.xlog = F
   p <- IOH_plot_ly_default(title = paste('ftarget:', paste(ftargets, collapse = ' ')),
                        x.title = "Function evaluations",
                        y.title = "Proportion of runs")
-
+  algnames <- get_algId(dsList)
+  colors <- get_color_scheme(algnames) %>% set_names(algnames)
+  dashes <- get_line_style(algnames) %>% set_names(algnames)
+  
   for (k in seq_along(dsList)) {
     df <- dsList[[k]]
     algId <- attr(df, 'algId')
 
-    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.35)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[[algId]]), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.35)')
 
     for (i in seq_along(ftargets)) {
       rt <- get_RT_sample(df, ftargets[i], output = 'long')$RT %>% sort
@@ -796,7 +808,7 @@ Plot.RT.ECDF_Per_Target.DataSetList <- function(dsList, ftargets, scale.xlog = F
                   mode = 'lines+markers', name = algId, showlegend = (i == 1),
                   legendgroup = paste0(k),
                   marker = list(color = rgb_str),
-                  line = list(color = rgb_str, width = 3, dash = get_line_style(algId)))
+                  line = list(color = rgb_str, width = 3, dash = dashes[[algId]]))
       # add_trace(data = NULL, x = x, y = y, type = 'scatter',
       #           mode = 'markers',  legendgroup = paste0(k),
       #           name = sprintf('(%s, %.2e)', algId, ftargets[i]),
@@ -827,14 +839,16 @@ Plot.RT.ECDF_Single_Func.DataSetList <- function(dsList, fstart = NULL, fstop = 
   x <- seq_RT(RT, length.out = 50, scale = ifelse(scale.xlog, 'log', 'linear'))
   p <- IOH_plot_ly_default(x.title = "Function evaluations",
                        y.title = "Proportion of (run, target) pairs")
-
+  algnames <- get_algId(dsList)
+  colors <- get_color_scheme(algnames) %>% set_names(algnames)
+  dashes <- get_line_style(algnames) %>% set_names(algnames)
   for (k in seq_along(dsList)) {
     df <- dsList[[k]]
     algId <- attr(df, 'algId')
 
-    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.15)')
-    rgba_str2 <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.8)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[[algId]]), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.15)')
+    rgba_str2 <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.8)')
 
     m <- lapply(fseq, function(f) {
       rt <- get_RT_sample(df, f, output = 'long')$RT
@@ -861,7 +875,7 @@ Plot.RT.ECDF_Single_Func.DataSetList <- function(dsList, fstart = NULL, fstop = 
       add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
                 mode = 'lines+markers', name = sprintf('%s', algId),
                 showlegend = T, legendgroup = paste0(k),
-                line = list(color = rgb_str, width = 2, dash = get_line_style(algId)),
+                line = list(color = rgb_str, width = 2, dash = dashes[[algId]]),
                 marker = list(color = rgb_str, size = 9))
 
     if (show.per_target) {
@@ -902,13 +916,15 @@ Plot.RT.ECDF_AUC.DataSetList <- function(dsList, fstart = NULL,
 
   RT.max <- sapply(dsList, function(ds) max(attr(ds, 'maxRT'))) %>% max
   p <- IOH_plot_ly_default()
-
+  algnames <- get_algId(dsList)
+  colors <- get_color_scheme(algnames) %>% set_names(algnames)
+  dashes <- get_line_style(algnames) %>% set_names(algnames)
   for (k in seq_along(dsList)) {
     df <- dsList[[k]]
     algId <- attr(df, 'algId')
 
-    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.2)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[[algId]]), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.2)')
 
     # calculate ECDFs on user specified targets
 
@@ -957,12 +973,14 @@ Plot.FV.PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
 
   p <- IOH_plot_ly_default(x.title = "Algorithms",
                        y.title = "Target value")
-
+  algnames <- get_algId(dsList)
+  colors <- get_color_scheme(algnames) %>% set_names(algnames)
+  dashes <- get_line_style(algnames) %>% set_names(algnames)
   for (i in seq_along(dsList)) {
     ds <- dsList[[i]]
     algId <- attr(ds, "algId")
-    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.55)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[[algId]]), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.55)')
 
     p %<>%
       add_trace(data = get_FV_sample(ds, runtime, output = 'long'),
@@ -976,7 +994,7 @@ Plot.FV.PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
                 name = attr(ds, 'algId'),
                 meanline = list(visible = T),
                 fillcolor = rgba_str,
-                line = list(color = 'black', width = 2, dash = get_line_style(algId)),
+                line = list(color = 'black', width = 2, dash = dashes[[algId]]),
                 marker = list(color = rgb_str, size = 8))
   }
   p %<>%
@@ -1017,15 +1035,17 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', 
   if (use.equal.bins) {
     res1 <- hist(get_FV_sample(dsList, runtime, output = 'long')$'f(x)', breaks = nclass.FD, plot = F)
   }
-  
+  algnames <- get_algId(dsList)
+  colors <- get_color_scheme(algnames) %>% set_names(algnames)
+  dashes <- get_line_style(algnames) %>% set_names(algnames)
   for (i in seq_along(dsList)) {
    
 
     ds <- dsList[[i]]
     algId <- attr(ds, 'algId')
     
-    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.35)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[[algId]]), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.35)')
     
     fce <- get_FV_sample(ds, runtime, output = 'long')
     # skip if all target samples are NA
@@ -1075,13 +1095,15 @@ Plot.FV.ECDF_Per_Target.DataSetList <- function(dsList, runtimes, scale.xlog = F
   p <- IOH_plot_ly_default(title = NULL,
                        x.title = "Target value",
                        y.title = "Proportion of runs")
-
+  algnames <- get_algId(dsList)
+  colors <- get_color_scheme(algnames) %>% set_names(algnames)
+  dashes <- get_line_style(algnames) %>% set_names(algnames)
   for (k in seq_along(dsList)) {
     ds <- dsList[[k]]
     algId <- attr(ds, 'algId')
 
-    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.35)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[[algId]]), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.35)')
     show_legend <- T
     for (i in seq_along(runtimes)) {
       funvals <- get_FV_sample(ds, runtimes[i], output = 'long')$'f(x)' %>% sort
@@ -1100,7 +1122,7 @@ Plot.FV.ECDF_Per_Target.DataSetList <- function(dsList, runtimes, scale.xlog = F
         add_trace(data = NULL, x = funvals, y = density, type = 'scatter',
                   mode = 'lines', name = algId, showlegend = show_legend,
                   legendgroup = algId,
-                  line = list(color = rgb_str, width = 3, dash = get_line_style(algId))) %>%
+                  line = list(color = rgb_str, width = 3, dash = dashes[[algId]])) %>%
         add_trace(data = NULL, x = x, y = y, type = 'scatter', showlegend = F,
                   mode = 'markers',  legendgroup = algId,
                   name = sprintf('%s, %.2e', algId, runtimes[i]),
@@ -1146,14 +1168,16 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
   p <- IOH_plot_ly_default(x.title = "Target value",
                        y.title = "Proportion of (run, budget) pairs") %>%
                       layout(xaxis = list(autorange = autorange))
-
+  algnames <- get_algId(dsList)
+  colors <- get_color_scheme(algnames) %>% set_names(algnames)
+  dashes <- get_line_style(algnames) %>% set_names(algnames)
   for (k in seq_along(dsList)) {
     ds <- dsList[[k]]
     algId <- attr(ds, 'algId')
 
-    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.15)')
-    rgba_str2 <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.8)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[[algId]]), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.15)')
+    rgba_str2 <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.8)')
 
     fun <- get_FV_sample(ds, rt_seq, output = 'long')$'f(x)' %>% ecdf
     m <- fun(x)
@@ -1165,7 +1189,7 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
       add_trace(data = df_plot, x = ~x, y = ~mean, type = 'scatter',
                 mode = 'lines+markers', name = sprintf('%s', algId),
                 showlegend = T, legendgroup = paste0(k),
-                line = list(color = rgb_str, width = 4.5, dash = get_line_style(algId)),
+                line = list(color = rgb_str, width = 4.5, dash = dashes[[algId]]),
                 marker = list(color = rgb_str, size = 11))
 
     if (show.per_target) {
@@ -1206,13 +1230,15 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
   funevals.max <- sapply(dsList, function(ds) max(attr(ds, 'finalFV'))) %>% max
   funevals.min <- sapply(dsList, function(ds) min(attr(ds, 'finalFV'))) %>% min
   p <- IOH_plot_ly_default()
-
+  algnames <- get_algId(dsList)
+  colors <- get_color_scheme(algnames) %>% set_names(algnames)
+  dashes <- get_line_style(algnames) %>% set_names(algnames)
   for (k in seq_along(dsList)) {
     df <- dsList[[k]]
     algId <- attr(df, 'algId')
 
-    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(algId)), collapse = ','), ',0.2)')
+    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[[algId]]), collapse = ','), ')')
+    rgba_str <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.2)')
 
     # calculate ECDFs on user specified targets
     funs <- lapply(rt_seq, function(r) {

@@ -61,6 +61,12 @@ observeEvent(input$repository.dataset, {
     } 
   }
   else if (input$respository.type == 'NEVERGRAD') {
+    if (!dir.exists(paste0(repo_dir, "/nevergrad"))) {
+      updateSelectInput(session, 'respository.type', choices = 'PBO', selected = 'PBO')
+      shinyjs::alert("No nevergrad data available in repository. Please make sure a folder named
+                     'nevergrad' exists in the repository-folder.")
+      return(NULL)
+    }
     rds_file <- file.path(paste0(repo_dir, "/nevergrad"), paste0(input$repository.dataset, ".rds"))
     repo_data <<- readRDS(rds_file)
   }

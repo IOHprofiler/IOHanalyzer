@@ -545,7 +545,7 @@ get_overview.DataSet <- function(ds, ...) {
   runs <- ncol(data)
 
   budget <- max(attr(ds, 'maxRT'))
-  if (!is.null(ds$RT)) {
+  if (!is.null(ds$RT) && length(ds$RT) > 0) {
     max_rt <- max(ds$RT, na.rm = T)
     budget <- max(budget, max_rt)
   }

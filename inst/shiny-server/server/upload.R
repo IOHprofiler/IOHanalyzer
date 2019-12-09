@@ -10,7 +10,7 @@ observe({
     rds_files <- list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
     rds_files <- c(rds_files, "Example_small", "Example_large")
   }
-  else if (input$respository.type == 'NEVERGRAD'){
+  else if (input$respository.type == 'NEVERGRAD') {
     rds_files <- list.files(paste0(repo_dir, "/nevergrad"), pattern = '.rds') %>% sub('\\.rds$', '', .)
   }
   
@@ -240,21 +240,9 @@ update_menu_visibility <- function(suite){
   if (suite == NEVERGRAD) {
     #TODO: Better way of doing this such that these pages are not even populated with data instead of just being hidden
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "#shiny-tab-ERT"))
-    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_convergence"))
-    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT_data"))
-    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "ERT"))
-    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_PMF"))
-    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_PARAMETER"))
-    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "RT_Statistics"))
   }
   else{
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "#shiny-tab-ERT"))
-    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT_convergence"))
-    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT_data"))
-    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "ERT"))
-    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PMF"))
-    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_PARAMETER"))
-    # session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "RT_Statistics"))
   }
   if (suite == "PBO") {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "FCE_ECDF"))

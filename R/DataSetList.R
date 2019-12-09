@@ -588,16 +588,17 @@ get_funvals <- function(dsList) {
   if (length(dsList) == 0)
     return(NULL)
   if (length(dsList[[1]]$RT) == 0) {
-    sort(unique(as.numeric(unlist(
+    x <- sort(unique(as.numeric(unlist(
       lapply(dsList, function(x) 
         as.vector(x$FV))
     ))))
   }
   else
-    (sort(unique(as.numeric(unlist(
+    x <- (sort(unique(as.numeric(unlist(
       lapply(dsList, function(x)
         rownames(x$RT))
     )))))
+  x[!is.na(x) & !is.infinite(x)]
 }
 
 #' Get all runtime values present in a DataSetList

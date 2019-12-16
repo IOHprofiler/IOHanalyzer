@@ -156,8 +156,8 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                ERT_box(collapsed = F),
-                ERT_comparison_box_dim()
+                ERT_box(collapsed = F)#,
+                # ERT_comparison_box_dim()
               )
             )
     ),

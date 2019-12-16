@@ -1,5 +1,5 @@
 fv_heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
-  box(title = HTML('<p style="font-size:120%;">Statistical Significance</p>'),
+  box(title = HTML('<p style="font-size:120%;">Hypothesis Testing</p>'),
       width = width, solidHeader = T, status = "primary",
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(

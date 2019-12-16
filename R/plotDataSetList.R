@@ -614,7 +614,7 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
       }
     }
     p %<>%
-      layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear'), tickmode = 'linear'),
+      layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
              yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
 
     if (scale.reverse)

@@ -1159,7 +1159,7 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
   funevals.max <- sapply(dsList, function(ds) max(ds$FV, na.rm = T)) %>% max
   funevals.min <- sapply(dsList, function(ds) min(ds$FV, na.rm = T)) %>% min
   
-  if (!attr(dsList[[1]], "maximization"))
+  if (!attr(dsList[[1]], "maximization") && funevals.min != 0)
     x <- 10 ** seq(log10(funevals.max), log10(funevals.min), length.out = 40)
   else
     x <- seq(funevals.min, funevals.max, length.out = 40)

@@ -37,7 +37,8 @@ sidebar_menu <- function() {
 
               menuItem("Data Format", tabName = "dataformat", icon = icon("fas fa-database")),
               menuItem("About", tabName = "about", icon = icon("question")),
-              menuItem("Settings", tabName = "Settings", icon = icon("cog")),
-              menuItem("Report", tabName = "Report", icon = icon("file-pdf"))
+              menuItem("Settings", tabName = "Settings", icon = icon("cog"))
+              # ,
+              # menuItem("Report", tabName = "Report", icon = icon("file-pdf"))
   )
 }

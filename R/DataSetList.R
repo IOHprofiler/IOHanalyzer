@@ -460,9 +460,15 @@ get_overview.DataSetList <-
     df <- rbindlist(lapply(ds, function(ds)
       get_overview(ds)))
     if (length(get_funcId(ds)) > 1 || length(get_dim(ds)) > 1) {
-      p1 <- df[,lapply(.SD, max, na.rm = TRUE), by = c('DIM', 'funcId'), .SDcols = c('budget', 'best reached')]
       p2 <- df[,lapply(.SD, mean, na.rm = TRUE), by = c('DIM', 'funcId'), .SDcols = c('mean reached')]
-      p3 <- df[,lapply(.SD, min, na.rm = TRUE), by = c('DIM', 'funcId'), .SDcols = c('worst recorded', 'worst reached')]
+      if (attr(ds, 'maximization')) {
+        p1 <- df[,lapply(.SD, max, na.rm = TRUE), by = c('DIM', 'funcId'), .SDcols = c('budget', 'best reached')]
+        p3 <- df[,lapply(.SD, min, na.rm = TRUE), by = c('DIM', 'funcId'), .SDcols = c('worst recorded', 'worst reached')]
+      }
+      else {
+        p1 <- df[,lapply(.SD, min, na.rm = TRUE), by = c('DIM', 'funcId'), .SDcols = c('best reached')]
+        p3 <- df[,lapply(.SD, max, na.rm = TRUE), by = c('DIM', 'funcId'), .SDcols = c('budget', 'worst recorded', 'worst reached')]
+      }
       return(merge(merge(p1,p2),p3))
     }
     else {

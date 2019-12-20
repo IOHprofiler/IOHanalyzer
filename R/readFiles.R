@@ -63,8 +63,8 @@ read_index_file__IOH <- function(fname) {
       break
 
     # TODO: make this quote symbol ' or " as the configurable parameter
-    # or simply fix it
-    name_value <- read.csv(text = lines[1], header = F, quote = "'") %>%
+    # TODO: Fix this
+    name_value <- read.csv(text = lines[1], header = F, quote = c("\"","'")) %>%
       as.list %>%
       unlist %>%
       as.vector

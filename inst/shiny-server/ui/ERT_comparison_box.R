@@ -1,5 +1,5 @@
 ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
-  box(title = HTML('<p style="font-size:120%;">Expected Runtime Comparisons</p>'), 
+  box(title = HTML('<p style="font-size:120%;">Expected Runtime Comparisons (across functions on one dimension)</p>'), 
       width = width, collapsible = collapsible, solidHeader = TRUE, 
       status = "primary", collapsed = collapsed,
       sidebarLayout(
@@ -62,7 +62,7 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
 
 #TODO: combine with other function using proper namespacing and modularity
 ERT_comparison_box_dim <- function(width = 12, collapsible = T, collapsed = T) {
-  box(title = HTML('<p style="font-size:120%;">Expected Runtime Comparisons</p>'), 
+  box(title = HTML('<p style="font-size:120%;">Expected Runtime Comparisons (across dimensions)</p>'), 
       width = width, collapsible = collapsible, solidHeader = TRUE, 
       status = "primary", collapsed = collapsed,
       sidebarLayout(

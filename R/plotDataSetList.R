@@ -614,7 +614,7 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
       }
     }
     p %<>%
-      layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear'), tickmode = 'linear'),
+      layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
              yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
 
     if (scale.reverse)
@@ -1159,7 +1159,7 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
   funevals.max <- sapply(dsList, function(ds) max(ds$FV, na.rm = T)) %>% max
   funevals.min <- sapply(dsList, function(ds) min(ds$FV, na.rm = T)) %>% min
   
-  if (!attr(dsList[[1]], "maximization"))
+  if (!attr(dsList[[1]], "maximization") && funevals.min != 0)
     x <- 10 ** seq(log10(funevals.max), log10(funevals.min), length.out = 40)
   else
     x <- seq(funevals.min, funevals.max, length.out = 40)
@@ -1757,7 +1757,8 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
                         x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), 
                         y.title = "ERT")
   } else 
-    IOH_plot_ly_default(title = plot_title)
+    IOH_plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), 
+                        y.title = ifelse(ues_rank, "Rank", "ERT"))
     
   if (use_rank) {
     ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))

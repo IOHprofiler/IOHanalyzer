@@ -498,7 +498,7 @@ get_target_dt <- function(dsList, which = 'by_FV') {
 #' @noRd
 get_target_FV <- function(dsList){
   vals <- get_FV_summary(dsList, Inf)[[paste0(100*getOption("IOHanalyzer.quantiles", 0.02)[[1]], '%')]]
-  if (is.null(dsList$maximization) || dsList$maximization) {
+  if (is.null(attr(dsList, 'maximization')) || attr(dsList, 'maximization')) {
     return(max(vals))
   }
   else {

@@ -16,7 +16,7 @@ sidebar_menu <- function() {
                        menuItem("Multiple Functions", tabName = "RT_aggr", icon = icon("bar-chart"), selected = F,
                             menuSubItem("Expected Runtime", tabName = "ERT_convergence_aggr", icon = icon("line-chart"), selected = F),
                             menuSubItem("Cumulative Distribution", tabName = "RT_ECDF_aggr", icon = icon("line-chart"), selected = F),
-                            menuSubItem("Statistics", tabName = "RT_Statistics_aggr", icon = icon("file-text-o"), selected = F)
+                            menuSubItem("Ranking", tabName = "RT_Statistics_aggr", icon = icon("file-text-o"), selected = F)
                        )
                        ),
 
@@ -31,13 +31,14 @@ sidebar_menu <- function() {
                        ),
                        menuItem("Multiple Functions", tabName = "RT_aggr", icon = icon("bar-chart"), selected = F,
                            menuSubItem("Expected Target Value", tabName = "FCE_convergence_aggr", icon = icon("bar-chart")),
-                           menuSubItem('Statistics', tabName = "FCE_Statistics_aggr", icon = icon('file-text-o'))
+                           menuSubItem('Ranking', tabName = "FCE_Statistics_aggr", icon = icon('file-text-o'))
                        )
                        ),
 
               menuItem("Data Format", tabName = "dataformat", icon = icon("fas fa-database")),
               menuItem("About", tabName = "about", icon = icon("question")),
-              menuItem("Settings", tabName = "Settings", icon = icon("cog")),
-              menuItem("Report", tabName = "Report", icon = icon("file-pdf"))
+              menuItem("Settings", tabName = "Settings", icon = icon("cog"))
+              # ,
+              # menuItem("Report", tabName = "Report", icon = icon("file-pdf"))
   )
 }

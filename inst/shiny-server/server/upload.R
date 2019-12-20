@@ -6,17 +6,19 @@ DataList <- reactiveValues(data = DataSetList())
 # set up list of datasets (scan the repository, looking for .rds files)
 observe({
   repo_dir <<- get_repo_location()
-  if (input$respository.type == 'PBO') {
+  if (input$repository.type == 'PBO') {
     rds_files <- list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
     rds_files <- c(rds_files, "Example_small", "Example_large")
   }
-  else if (input$respository.type == 'NEVERGRAD') {
+  else if (input$repository.type == 'NEVERGRAD') {
     rds_files <- list.files(paste0(repo_dir, "/nevergrad"), pattern = '.rds') %>% sub('\\.rds$', '', .)
   }
-  
+  else if (input$repository.type == 'BBOB') {
+    rds_files <- list.files(paste0(repo_dir, "/bbob"), pattern = '.rds') %>% sub('\\.rds$', '', .)
+  }
   if (length(rds_files) != 0) {
     updateSelectInput(session, 'repository.dataset', choices = rds_files, selected = NULL)
-  } else { # TODO: the alert msg should be updated
+  } else {# TODO: the alert msg should be updated
     shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository,
                    please create a folder called 'repository' in your home directory
                    and make sure it contains at least one '.rds'-file, such as the ones
@@ -28,12 +30,15 @@ observe({
 
 observeEvent(input$repository.type, {
   req(input$repository.type)
-  if (input$respository.type == 'PBO') {
+  if (input$repository.type == 'PBO') {
     names <- list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
     names <- c(names, "Example_small", "Example_large")
   }
-  else {
+  else if (input$repository.type == 'NEVERGRAD') {
     names <- list.files(paste0(repo_dir, "/nevergrad"), pattern = '.rds') %>% sub('\\.rds$', '', .)
+  }
+  else if (input$repository.type == 'BBOB') {
+    names <- list.files(paste0(repo_dir, "/bbob"), pattern = '.rds') %>% sub('\\.rds$', '', .)
   }
   updateSelectInput(session, 'repository.dataset', choices = names, selected = NULL)
 })
@@ -41,7 +46,7 @@ observeEvent(input$repository.type, {
 # load repository that is selected
 observeEvent(input$repository.dataset, {
   req(input$repository.dataset)
-  if (input$respository.type == 'PBO') {
+  if (input$repository.type == 'PBO') {
     if (input$repository.dataset  == "Example_small") {
       repo_data <<- IOHanalyzer::dsl
     }
@@ -60,9 +65,9 @@ observeEvent(input$repository.dataset, {
       attr(repo_data, 'suite') <<- 'PBO'
     } 
   }
-  else if (input$respository.type == 'NEVERGRAD') {
+  else if (input$repository.type == 'NEVERGRAD') {
     if (!dir.exists(paste0(repo_dir, "/nevergrad"))) {
-      updateSelectInput(session, 'respository.type', choices = 'PBO', selected = 'PBO')
+      updateSelectInput(session, 'repository.type', choices = 'PBO', selected = 'PBO')
       shinyjs::alert("No nevergrad data available in repository. Please make sure a folder named
                      'nevergrad' exists in the repository-folder.")
       return(NULL)
@@ -70,7 +75,16 @@ observeEvent(input$repository.dataset, {
     rds_file <- file.path(paste0(repo_dir, "/nevergrad"), paste0(input$repository.dataset, ".rds"))
     repo_data <<- readRDS(rds_file)
   }
-  
+  else if (input$repository.type == 'BBOB') {
+    if (!dir.exists(paste0(repo_dir, "/bbob"))) {
+      updateSelectInput(session, 'repository.type', choices = 'PBO', selected = 'PBO')
+      shinyjs::alert("No bbob data available in repository. Please make sure a folder named
+                     'bbob' exists in the repository-folder.")
+      return(NULL)
+    }
+    rds_file <- file.path(paste0(repo_dir, "/bbob"), paste0(input$repository.dataset, ".rds"))
+    repo_data <<- readRDS(rds_file)
+  }
   algIds <- c(get_algId(repo_data))
   dims <- c(get_dim(repo_data))
   funcIds <- c(get_funcId(repo_data))

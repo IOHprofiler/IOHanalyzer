@@ -1758,7 +1758,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
                         y.title = "ERT")
   } else 
     IOH_plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), 
-                        y.title = ifelse(ues_rank, "Rank", "ERT"))
+                        y.title = ifelse(use_rank, "Rank", "ERT"))
     
   if (use_rank) {
     ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))

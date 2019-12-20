@@ -1,6 +1,6 @@
 <div class="row">
   <img src="../img/leiden.png" style="width:15%">
-  <img src="../img/CNRS.gif" style="width:7%"> 
+  <img src="../img/CNRS.png" style="width:7%"> 
   <img src="../img/SU.jpg" style="width:15%"> 
   <img src="../img/telhai.png" style="width:15%">
 </div>

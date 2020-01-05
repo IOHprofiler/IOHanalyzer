@@ -253,7 +253,8 @@ get_line_style <- function(algnames_in){
   cdt <- IOHanalyzer_env$alg_colors
   linestyles <- subset(cdt, algnames %in% algnames_in)[['linestyles']]
   if (is.null(linestyles) || length(linestyles) != length(algnames_in)) {
-    return(rep(c("solid", "dash", "dot"), ceiling(length(algnames_in)/3))[1:length(algnames_in)])
+    return(rep(c("solid", "dot", "dash", "longdash", "dashdot", "longdashdot"), 
+               ceiling(length(algnames_in)/3))[1:length(algnames_in)])
   }
   return(linestyles)
 }

@@ -7,7 +7,7 @@
 #' @importFrom colorspace sequential_hcl
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom colorRamps primary.colors
-#' @importFrom data.table as.data.table rbindlist data.table fread := melt is.data.table setorderv
+#' @importFrom data.table as.data.table rbindlist data.table fread := melt is.data.table setorderv frank
 #' @importFrom plotly add_annotations add_trace orca plot_ly rename_ subplot layout
 #' @importFrom ggplot2 aes geom_jitter geom_line geom_ribbon geom_violin ggplot element_text
 #' @importFrom ggplot2 guides scale_color_manual scale_colour_manual scale_fill_manual
@@ -18,6 +18,7 @@
 #' @importFrom igraph graph_from_adjacency_matrix layout.circle plot.igraph 
 #' @importFrom scales rescale
 #' @importFrom PlayerRatings glicko2
+#' @importFrom stringi stri_detect_regex stri_detect_fixed stri_locate_all
 #' @useDynLib IOHanalyzer
 NULL
 # Ugly hack, but appears to be required to appease CRAN

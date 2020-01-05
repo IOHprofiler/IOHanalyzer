@@ -1,3 +1,9 @@
+
+get_data_RT_PAR_PER_FUN <- reactive({
+  data <- subset(DATA(), algId %in% input$RT_PAR.Plot.Algs)
+  generate_data.Parameters(data, scale_log = input$RT_PAR.Plot.Logx, which = 'by_FV')
+})
+
 # Expected Evolution of parameters in the algorithm
 render_RT_PAR_PER_FUN <- reactive({
   req(input$RT_PAR.Plot.Min, input$RT_PAR.Plot.Max)
@@ -5,22 +11,21 @@ render_RT_PAR_PER_FUN <- reactive({
     f_min <- as.numeric(format_FV(input$RT_PAR.Plot.Min))
     f_max <- as.numeric(format_FV(input$RT_PAR.Plot.Max)) 
     
-    tryCatch({
-      data <- subset(DATA(), algId %in% input$RT_PAR.Plot.Algs)
-      Plot.RT.Parameters(data, f_min, f_max,
-                         show.mean = (input$RT_PAR.Plot.show.mean == 'mean'),
-                         show.median = (input$RT_PAR.Plot.show.mean == 'median'),
-                         scale.xlog = input$RT_PAR.Plot.Logx,
-                         scale.ylog = input$RT_PAR.Plot.Logy, 
-                         show.CI = input$RT_PAR.Plot.CI,
-                         par_name = input$RT_PAR.Plot.Params)
-    },
-    error = function(e) {
-      # TODO: more robust error handling; don't assume this causes the error
-      shinyjs::alert("Not all algorithms contain the same parameters. 
-                      Please select a single algorithm to plot instead.")
-    }
-    )
+    dt <- get_data_RT_PAR_PER_FUN()
+    dt <- dt[parId %in% input$RT_PAR.Plot.Params]
+    type <- if (input$RT_PAR.Plot.CI) 'line+ribbon' else 'line'
+    plot_general_data(dt, 'target', input$RT_PAR.Plot.show.mean, type,
+                      subplot_attr = 'parId', scale.xlog = input$RT_PAR.Plot.Logx,
+                      scale.ylog = input$RT_PAR.Plot.Logy, 
+                      lower_attr = 'lower', upper_attr = 'upper')
+    # data <- subset(DATA(), algId %in% input$RT_PAR.Plot.Algs)
+    # Plot.RT.Parameters(data, f_min, f_max,
+    #                    show.mean = (input$RT_PAR.Plot.show.mean == 'mean'),
+    #                    show.median = (input$RT_PAR.Plot.show.mean == 'median'),
+    #                    scale.xlog = input$RT_PAR.Plot.Logx,
+    #                    scale.ylog = input$RT_PAR.Plot.Logy, 
+    #                    show.CI = input$RT_PAR.Plot.CI,
+    #                    par_name = input$RT_PAR.Plot.Params)
   },
   message = "Creating plot")
 })

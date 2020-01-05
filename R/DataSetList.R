@@ -796,4 +796,386 @@ mean_FVs.DataSetList <-
       erts <- rbind(erts, ert[get_algId(dsList)])
     }
     return(erts[-1, ])
+  }
+
+### __________________________ Rewritten data generation functions _______________________ ###
+#' Generate dataframe of a single function/dimension pair
+#' 
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
+#' 
+#' @param dsList The DataSetList object
+#' @param start Optional start value (Runtime or target value)
+#' @param stop Optional end value (Runtime or target value)
+#' @param scale_log Wheterh to use logarithmic scaling or not
+#' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
+#' @param include_opts Whether or not to also include the best value hit by each algorithm to
+#' the generated datapoints
+#' 
+#' @export
+generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL, 
+                                          scale_log = F, which = 'by_RT', include_opts = F) {
+  
+  if (length(get_funcId(dsList)) != 1 || length(get_dim(dsList)) != 1 ) {
+    #Required because target generation is included in this function, 
+    #which needs to be done on a per-function basis
+    stop("Multiple functions / dimensions are present in provided DataSetList. 
+    Please call this function for each individual function/dimension pair instead.") 
+  }
+  
+  by_rt <- (which == 'by_RT')
+  
+  if (by_rt)
+    all <- get_funvals(dsList)
+  else
+    all <- get_runtimes(dsList)
+  maximization <- attr(dsList, 'maximization')
+  if (is.null(maximization)) maximization <- T
+  
+  if (is.null(start)) start <- min(all)
+  if (is.null(stop)) stop <- max(all)
+  
+  if (by_rt) {
+    Xseq <- seq_FV(all, start, stop, length.out = 60,
+                   scale = ifelse(scale_log, 'log', 'linear'))
+    if (include_opts) {
+      for (algid in get_algId(dsList)) {
+        if (maximization)
+          Xseq <- c(Xseq, max(get_funvals(subset(dsList, algId == algid))))
+        else
+          Xseq <- c(Xseq, min(get_funvals(subset(dsList, algId == algid))))
+      }
+      Xseq <- unique(sort(Xseq))
+    }
+    dt <- get_RT_summary(dsList, ftarget = Xseq)
+  }
+  else {
+    Xseq <- seq_RT(all, start, stop, length.out = 60,
+                   scale = ifelse(scale_log, 'log', 'linear'))
+    if (include_opts) {
+      for (algid in get_algId(dsList)) {
+        Xseq <- c(Xseq, max(get_funvals(subset(dsList, algId == algid))))
+      }
+      Xseq <- unique(sort(Xseq))
+    }
+    dt <- get_FV_summary(dsList, Xseq)
+  }
+  
+  
+  dt[, `:=`(upper = mean + sd, lower = mean - sd)]
+  return(dt)
 }
+
+#' Generate dataframe of a single function/dimension pair for creating PDF or PMF plots
+#' 
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
+#' 
+#' @param dsList The DataSetList object
+#' @param target The target value (Runtime or target value)
+#' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
+#' 
+#' @export
+generate_data.PMF <- function(dsList, target, which = 'by_RT') {
+  if (which == 'by_RT')
+    return(get_RT_sample(dsList, target, output = 'long'))
+  return(get_FV_sample(dsList, target, output = 'long'))
+}
+
+#' Generate dataframe of a single function/dimension pair
+#' 
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
+#' 
+#' @param dsList The DataSetList object
+#' @param target The target value (Runtime or target value)
+#' @param use.equal.bins Whether all bins should be equal size for each algorithm or not
+#' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
+#' 
+#' @export
+generate_data.hist <- function(dsList, target, use.equal.bins = F, which = 'by_RT') {
+  width <- NULL #Set local binding to remove warnings
+  if (length(get_funcId(dsList)) != 1 || length(get_dim(dsList)) != 1) {
+    warning("Invalid dataset uploaded. Please ensure the datasetlist contains data
+            from only one function and only one dimension.")
+    return(NULL)
+  }
+  
+  if (use.equal.bins) {
+    if (which == "by_RT") {
+      res1 <- hist(get_RT_sample(dsList, target, output = 'long')$RT, breaks = nclass.FD, plot = F)
+    }
+    else
+      res1 <- hist(get_FV_sample(dsList, target, output = 'long')$`f(x)`, breaks = nclass.FD, plot = F)
+  }
+  
+  dt <- as.data.table(rbindlist(lapply(dsList, function(df) {
+    algId <- attr(df, "algId")
+    if (which == "by_RT") {
+      data <- get_RT_sample(df, target, output = 'long')$RT
+    }
+    else if (which == "by_FV") {
+      data <- get_FV_sample(df, target, output = 'long')$`f(x)`
+    }
+    else stop("Invalid argument for parameter `which`.")
+    # TODO: skip if all runtime samples are NA
+    # if (sum(!is.na(data)) < 2)
+    #   next
+    if (use.equal.bins) breaks <- res1$breaks
+    else breaks <- nclass.FD
+    res <- hist(data, breaks = breaks, plot = F)
+    breaks <- res$breaks
+    
+    plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
+                            text = paste0('<b>count</b>: ', res$counts, '<br><b>breaks</b>: [',
+                                          breaks[-length(breaks)], ',', breaks[-1], ']')) %>%
+      mutate(width = width, algId = algId)
+  })))
+  dt
+}
+
+
+
+#' Generate dataframe of a single function/dimension pair
+#' 
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
+#' 
+#' @param dsList The DataSetList object
+#' @param targets A list or data.table containing the targets per function / dimension. If this is 
+#' a data.table, it needs columns 'target', 'DIM' and 'funcId'
+#' @param scale_log Wheterh to use logarithmic scaling or not
+#' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
+#' 
+#' @export
+generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT') {
+  V1 <- NULL #Set local binding to remove warnings
+  by_rt <- which == 'by_RT'
+  if (by_rt) {
+    RT <- get_runtimes(dsList)
+    x <- unique(seq_RT(RT, length.out = 50, scale = ifelse(scale_log, 'log', 'linear')))
+    #TODO: Some scaling by dimension?
+    
+    
+    if (!is.data.table(targets)) {
+      if (length(get_funcId(dsList)) > 1 || length(get_dim(dsList)) > 1 )
+        stop("Targets provided are not in data.table format, while multiple functions / dimensions 
+             are present in provided DataSetList.")
+      targets <- data.table(
+        target = targets, 
+        funcId = get_funcId(dsList), 
+        DIM = get_dim(dsList)
+      )
+    }
+  }
+  else {
+    FV <- get_funvals(dsList)
+    x <- unique(seq_FV(FV, length.out = 50, scale = ifelse(scale_log, 'log', 'linear')))
+  }
+  
+  dt <- as.data.table(rbindlist(lapply(dsList, function(df) {
+    algId <- attr(df, 'algId')
+    if (by_rt) {
+      temp <- targets[DIM == attr(df, 'DIM'), c('target', 'funcId')]
+      targets_ <- temp[funcId == attr(df, 'funcId'), 'target']
+    }
+    else 
+      targets_ <- targets
+    m <- lapply(targets_, function(target) {
+      if (by_rt)
+        data <- get_RT_sample(df, target, output = 'long')$RT
+      else
+        data <- get_FV_sample(df, target, output = 'long')$`f(x)`
+      
+      if (all(is.na(data)))
+        return(rep(0, length(x)))
+      fun <- ecdf(data)
+      if (is.function(fun)) fun(x) else NA
+    }) %>%
+      do.call(rbind, .)
+    
+    data.frame(x = x,
+               mean = apply(m, 2, . %>% mean(na.rm = T)),
+               sd = apply(m, 2, . %>% sd(na.rm = T))) %>%
+      mutate(upper = mean + sd, lower = mean - sd, algId = algId)
+  })))
+  dt[, mean(mean), by = .(x, algId)][, .(mean = V1, algId = algId, x = x)]
+}
+
+#' Generate dataframe of a single function/dimension pair
+#' 
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
+#' 
+#' @param dsList The DataSetList object
+#' @param targets A list of the target value for which to calculate the AUC (Runtime or target value)
+#' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
+#' 
+#' @export
+generate_data.AUC <- function(dsList, targets, which = 'by_RT') {
+  
+  by_rt <- which == 'by_RT'
+  
+  if (by_rt)
+    RT.max <- sapply(dsList, function(ds) max(attr(ds, 'maxRT'))) %>% max
+  else {
+    funevals.max <- sapply(dsList, function(ds) max(attr(ds, 'finalFV'))) %>% max
+    funevals.min <- sapply(dsList, function(ds) min(attr(ds, 'finalFV'))) %>% min
+  }
+  
+  as.data.table(rbindlist(lapply(dsList, function(df) {
+    algId <- attr(df, 'algId')
+    if (by_rt)
+      auc <- sapply(targets, function(fv) {
+        ECDF(df, fv) %>% AUC(from = 1, to = RT.max)
+      })
+    else {
+      funs <- lapply(targets, function(r) {
+        get_FV_sample(df, r, output = 'long')$'f(x)' %>% {
+          if (all(is.na(.))) NULL
+          else  {
+            f <- ecdf(.)
+            attr(f, 'min') <- min(.)
+            attr(f, 'max') <- max(.)
+            f
+          }
+        }
+      })
+      
+      auc <- sapply(funs,
+                    function(fun) {
+                      if (is.null(fun)) 0
+                      else{ 
+                        if (attr(df, 'maximization'))
+                          integrate(fun, lower = attr(fun, 'min') - 1, upper = funevals.max,
+                                    subdivisions = 1e3) %>% {'$'(., 'value') / funevals.max}
+                        else 
+                          integrate(fun, lower =  funevals.min, upper = attr(fun, 'max') + 1,
+                                    subdivisions = 1e3) %>% {'$'(., 'value') / (attr(fun, 'max') + 1)}
+                      }
+                    })
+    }
+    data.frame(x = targets, AUC = auc, algId = algId)
+  })))
+}
+
+#' Generate dataframe of a single function/dimension pair
+#' 
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
+#' 
+#' @param dsList The DataSetList object
+#' @param scale_log Wheterh to use logarithmic scaling or not
+#' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
+#' 
+#' @export
+generate_data.Parameters <- function(dsList, which = 'by_RT', scale_log = F) {
+  if (which == 'by_RT') {
+    rtall <- get_runtimes(dsList)
+    
+    rtseq <- seq_RT(rtall, length.out = 50,  scale = ifelse(scale_log, 'log', 'linear'))
+    req(rtseq)
+    
+    dt <- get_PAR_summary(dsList, rtseq, which = 'by_RT')
+  }
+  else if (which == 'by_FV') {
+    rtall <- get_funvals(dsList)
+    
+    rtseq <- seq_FV(rtall, length.out = 50,  scale = ifelse(scale_log, 'log', 'linear'))
+    req(rtseq)
+    
+    dt <- get_PAR_summary(dsList, rtseq, which = 'by_FV')
+  }
+  else stop("Invalid value for parameter `which`")
+  dt[, `:=`(upper = mean + sd, lower = mean - sd)]
+}
+
+#' Generate dataframe of a single function/dimension pair
+#' 
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
+#' 
+#' @param dsList The DataSetList object
+#' @param aggr_on Which attribute to use for aggregation. Either 'funcId' or 'DIM'
+#' @param targets Optional list of target values (Runtime or target value)
+#' @param values Optional precacluated table of ERT or extected target values
+#' @param inf_action How to deal with infinite values. Either 'none', 'overlap' or 'jitter'
+#' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
+#' 
+#' @export
+generate_data.Aggr <- function(dsList, aggr_on = 'funcId', targets = NULL, values = NULL, 
+                               inf_action = 'none', which = 'by_RT') {
+  maximize <- attr(dsList, 'maximization')
+  variable <- fid <- value <- NULL #Set local binding to remove warnings
+  by_rt <- which == 'by_RT'
+  
+  
+  if (is.null(values)) {
+    if (by_rt)
+      values <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, maximize = maximize)
+    else
+      values <- mean_FVs(dsList, aggr_on = aggr_on, runtimes = targets)
+  }
+  if (is.null(values))
+    return(NULL)
+  
+  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
+  N <- length(get_algId(dsList))
+  
+  #TODO: figure out how to better incorporate this into the dataframe
+  res = switch(inf_action, 
+               'jitter' = {
+                 stop("This mode is not yet supported")
+                 data_inf <- values
+                 idx <- apply(data_inf, 2, is.infinite)
+                 data_inf[idx] <- NA
+                 
+                 for (i in seq(nrow(data_inf))) {
+                   idx_ <- idx[i, ]
+                   x <- data_inf[i, ]
+                   max_ <- max(x[!is.infinite(x)], na.rm = T)
+                   n_inf <- sum(idx_)
+                   data_inf[i, idx_] <- 10 ^ (log10(max_ * 2) + seq(0, log10(10), length.out = n_inf))
+                 }
+                 
+                 values[idx] <- data_inf[idx]
+                 data_inf <- lapply(seq(N),
+                                    function(i) {
+                                      idx_ <- idx[, i]
+                                      v <- data_inf[idx_, i]
+                                      names(v) <- which(idx_)
+                                      v
+                                    })
+               },
+               'overlap' = {
+                 if (!by_rt) {
+                   stop("This mode is only supported for value `by_RT` of parameter `which`")
+                 }
+                 data_inf <- values
+                 idx <- apply(data_inf, 2, is.infinite)
+                 x <- as.vector(data_inf)
+                 data_inf[idx] <- max(x[!is.infinite(x)], na.rm = T) * 2.5
+                 values[idx] <- data_inf[idx]
+                 
+                 data_inf <- lapply(seq(N),
+                                    function(i) {
+                                      idx_ <- idx[, i]
+                                      v <- data_inf[idx_, i]
+                                      names(v) <- aggr_attr[idx_]
+                                      v
+                                    })
+               },
+               'none' = {
+                 data_inf <- values
+               }
+  )
+  if (is.null(res)) {
+    stop("Invalid agrument for parameter `inf_action`.")
+  }
+  
+  if (by_rt) order_sel <- 1
+  else order_sel <- -1*(maximize*2 - 1)
+  
+  dt <- as.data.table(values)[, `:=`(fid = get_funcId(dsList), dim = get_dim(dsList))]
+  dt <- melt(dt, id.vars = c('fid', 'dim'))[,.(algId = variable, funcId = fid, DIM = dim, value = value)]
+  dt[, rank := frank(order_sel*value, na.last = T), by = .(DIM, funcId)]
+  return(dt)
+}
+
+
+
+
+

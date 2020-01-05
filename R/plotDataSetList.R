@@ -2103,3 +2103,322 @@ Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds = 100, 
   p %<>% layout(xaxis = list(rangeslider = list(visible = F)))
   p
 }
+
+### _______________________ Rewritten plotting function ____________________ ###
+
+#' Add transparancy to named list of colors
+#' 
+#' @param colors Named list of colors (in hex-notation)
+#' @param percentage The percentage of opacity. 0 is fully transparant, 1 is fully opaque
+#' 
+#' @noRd
+add_transparancy <- function(colors, percentage){
+  hex_val <- format(as.hexmode(as.integer(255 * percentage)), upper.case = T, width = 2)
+  sapply(colors, function(col) { col <- paste0('#',  substr(col, 2, 7), hex_val) })
+}
+
+#' General function for plotting within IOHanalyzer
+#'
+#' @param df The dataframe containing the data to plot. It should contain at least two columns:
+#' 'x_attr' and 'y_attr'
+#' @param x_attr The column to specify the x_axis. Default is 'algId'
+#' @param legend_attr Default is 'algId' This is also used for the selection of colorschemes
+#' @param y_attr The column to specify the y_axis
+#' @param type The type of plot to use. Currently available: 'violin', 'line', 'radar', 'hist' and 'ribbon'
+#' @param upper_attr When using ribbon-plot, this can be used to create a shaded area. 
+#' Only works in combination with`lower_attr` and `type` == 'ribbon' 
+#' @param lower_attr When using ribbon-plot, this can be used to create a shaded area. 
+#' Only works in combination with`upper_attr` and `type` == 'ribbon' 
+#' @param subplot_attr Which attribute of the dataframe to use for creating subplots
+#' @param scale.xlog Logarithmic scaling of x-axis
+#' @param scale.ylog Logarithmic scaling of y-axis
+#' @param scale.reverse Decreasing or increasing x-axis
+#' @param x_title Title of x-axis. Defaults to x_attr
+#' @param y_title Title of x-axis. Defaults to x_attr
+#' @param plot_title Title of x-axis. Defaults to no title
+#' @param p A previously existing plot on which to add traces. If NULL, a new canvas is created
+#' @param show.legend Whether or not to include a legend
+#' @param ... Additional parameters for the add_trace function
+#' 
+#' @export
+plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'violin',
+                              legend_attr = 'algId', scale.xlog = F, scale.ylog = F,
+                              scale.reverse = F, p = NULL, x_title = NULL,
+                              y_title = NULL, plot_title = NULL, upper_attr = NULL,
+                              lower_attr = NULL, subplot_attr = NULL, show.legend = F, ...){
+  
+  l <- x <- NULL #Set local binding to remove warnings
+  
+  #Only allow valid plot types
+  if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon'))) {
+    stop(paste0("Provided plot type ('", type, "') is not supported"))
+  }
+  
+  #And valid number of y-attributes
+  if (length(y_attr) == 0) {
+    stop("At least one y-attribute is needed to plot")
+  }
+  
+  #Deal with subplots
+  if (!is.null(subplot_attr)) {
+    if (!subplot_attr %in% colnames(df)) {
+      stop("Provided subplot-attribut is not a colname of the selected data.table.")
+    }
+    colnames(df)[colnames(df) == subplot_attr] <- "subplot_attr"
+    attrs <- unique(df[, subplot_attr])
+    if (length(attrs) <= 1) stop("Attempting to create subplots with fewer than 2 unique values of 
+                                 `subplot_attrs`-column")
+    
+    if (subplot_attr == legend_attr) {
+      df[, l := subplot_attr]
+    }
+    
+    #Only need one legend for the whole plot
+    legends_show <- rep(F, length(attrs))
+    legends_show[[1]] <- show.legend
+    names(legends_show) <- attrs
+    
+    #Get some number of rows and columns
+    n_cols <- 1 +  ceiling(length(attrs)/10)
+    n_rows <- ceiling(length(attrs) / n_cols)
+    
+    p <- lapply(seq(length(attrs)), function(idx) {
+      attr_val <- attrs[[idx]]
+      df_sub <- df[subplot_attr == attr_val]
+      disp_y <-  idx %% n_cols == 1
+      disp_x <- idx > (length(attrs) - n_cols)
+      x.title = if (disp_x) x_title else ""
+      y.title = if (disp_y) y_title else ""
+      
+      #Generate title for the subplots
+      if (stri_detect_regex(subplot_attr, "(?i)fun"))
+        sub_title <- paste0('F', attr_val)
+      else if (stri_detect_regex(subplot_attr, "(?i)dim"))
+        sub_title <- paste0('D', attr_val)
+      else
+        sub_title <- paste0(attr_val)
+      p <- NULL
+      if (stri_detect_fixed(type, '+')) {
+        type1 <- substr(type, 0, stri_locate_all(type, fixed = '+')[[1]][[1]] - 1)
+        p <- plot_general_data(df_sub, x_attr, y_attr, type1, legend_attr, scale.xlog, scale.ylog, 
+                               scale.reverse, NULL, x.title, y.title, plot_title, upper_attr, lower_attr, 
+                               show.legend = legends_show[[attr_val]], subplot_attr = NULL, ...)
+        type <- substr(type, stri_locate_all(type, fixed = '+')[[1]][[1]] + 1, nchar(type))
+      }
+      plot_general_data(df_sub, x_attr, y_attr, type, legend_attr, scale.xlog, scale.ylog, 
+                        scale.reverse, p, x.title, y.title, plot_title, upper_attr, lower_attr, 
+                        show.legend = legends_show[[attr_val]], subplot_attr = NULL, ...) %>%
+        layout(
+          annotations = list(
+            text = sub_title, 
+            font = f2,
+            xref = "paper", yref = "paper", align = "center",
+            yanchor = "bottom", 
+            xanchor = "center", textangle = 0,
+            x = 0.5, y = 1, showarrow = FALSE
+          )
+        )
+    })
+    
+    
+    p <- subplot(p, nrows = n_rows, titleX = T, titleY = T, margin = 0.03) %>% 
+      layout(title = plot_title)
+    return(p)
+  }
+  
+  # Replace colnames to have easier matching
+  if (!x_attr %in% colnames(df) || !all(y_attr %in% colnames(df))) {
+    stop("Not all provided attributes are colnames of the selected data.table.")
+  }
+  colnames(df)[colnames(df) == x_attr] <- "x"
+  
+  
+  if (length(y_attr) == 1 && type != 'line')
+    colnames(df)[colnames(df) == y_attr] <- "y"
+  else if (type != 'line') stop("Multiple y-attrs is currently only supported for line-plots")
+  
+  if ( !is.null(upper_attr) && !is.null(lower_attr)) {
+    if (!upper_attr %in% colnames(df) || !lower_attr %in% colnames(df)) {
+      stop("Provided upper and lower attributes are not colnames of the selected data.table.")
+    }
+    colnames(df)[colnames(df) == upper_attr] <- "upper"
+    colnames(df)[colnames(df) == lower_attr] <- "lower"
+  }
+  
+  if ( x_attr != legend_attr) {
+    colnames(df)[colnames(df) == legend_attr] <- "l"
+    xs <- unique(df[['l']])
+  }
+  else{
+    xs <- unique(df[['x']])
+  }
+  
+  #Get color and based on legend-attribute
+  colors <- get_color_scheme(xs)
+  names(colors) <- xs
+  
+  xscale <- if (scale.xlog) 'log' else 'linear'
+  yscale <- if (scale.ylog) 'log' else 'linear'
+  
+  #If new plot is needed, create one. Store in bool to decide if axis scaling is needed.
+  is_new_plot <- F
+  if (is.null(p)) {
+    p <- IOH_plot_ly_default(x.title = ifelse(is.null(x_title), x_attr, x_title),
+                             y.title = ifelse(is.null(y_title), y_attr, y_title),
+                             title = plot_title)
+    is_new_plot <- T
+  }
+  
+  switch(type,
+         'violin' = {
+           if (legend_attr != x_attr) {
+             warning("Inconsistent attribute selected for x-axis and legend. Using x_attr as name")
+           }
+           p %<>%
+             add_trace(data = df,
+                       x = ~x, y = ~y, type = 'violin',
+                       hoveron = "points+kde",
+                       points = 'all',
+                       pointpos = 1.5,
+                       jitter = 0,
+                       scalemode = 'count',
+                       meanline = list(visible = F),
+                       name = ~x,
+                       colors = colors,
+                       color = ~x,
+                       split = ~x,
+                       line = list(color = 'black', width = 1.1),
+                       box = list(visible = T),
+                       ...
+             )
+           if (is_new_plot) {
+             p %<>% layout(yaxis = list(type = yscale, tickfont = f1, ticklen = 3))
+           }
+         },
+         'line' = {
+           if (legend_attr == x_attr) {
+             stop("Duplicated attribute selected for x-axis and legend.")
+           }
+           #Use linestyles to differentiate traces if only one attribute is selected to be plotted
+           #TODO: Combine these two options more elegantly
+           if (length(y_attr) == 1) {
+             dashes <- get_line_style(xs)
+             names(dashes) <- xs
+             colnames(df)[colnames(df) == y_attr] <- "y"
+             suppressWarnings(
+               p %<>%
+                 add_trace(
+                   data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l,
+                   type = 'scatter', mode = 'lines+markers', 
+                   linetype = ~l, marker = list(size = 4), linetypes = dashes,
+                   colors = colors, showlegend = show.legend,
+                   text = y_attr, line = list(width = 2),
+                   ...
+                 ) )
+           }
+           else {
+             dashes_full <- rep(c("solid", "dot", "dash", "longdash", "dashdot", "longdashdot"), 
+                                ceiling(length(y_attr)/3))[1:length(y_attr)]
+             names(dashes_full) <- y_attr
+             
+             for (y_atr in y_attr) {
+               colnames(df)[colnames(df) == y_atr] <- "y"
+               
+               #TODO: Figure out how to supress warning about 6 linetypes
+               dashstyle <- dashes_full[[y_atr]]
+               suppressWarnings(
+                 p %<>%
+                   add_trace(
+                     data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l,
+                     type = 'scatter', mode = 'lines+markers', 
+                     marker = list(size = 4), linetype = dashstyle,
+                     colors = colors, showlegend = show.legend, name = ~l,
+                     text = y_atr, line = list(width = 2),
+                     ...
+                   )         
+               )
+               colnames(df)[colnames(df) == "y"] <- y_atr
+               show.legend <- F
+             }
+           }
+           if (is_new_plot) {
+             p %<>% layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 3,
+                                        autorange = ifelse(scale.reverse, "reversed", T)),
+                           yaxis = list(type = yscale, tickfont = f1, ticklen = 3))
+           }
+         },
+         'ribbon' = {
+           if (legend_attr == x_attr) {
+             stop("Duplicated attribute selected for x-axis and legend.")
+           }
+           if (is.null(upper_attr) || is.null(lower_attr)) {
+             stop("No upper or lower attribute provided for ribbon-plot")
+           }
+           
+           for (name in xs) {
+             df_small <- df[l == name]
+             legend_name <- as.character(name)
+             rgba_str <- paste0('rgba(', paste0(col2rgb(colors[[name]]), collapse = ','), ',0.2)')
+             p %<>%
+               add_trace(data = df_small, x = ~x, y = ~upper, type = 'scatter', mode = 'lines',
+                         line = list(color = rgba_str, width = 0), legendgroup = legend_name,
+                         showlegend = F, name = 'mean +/- sd', ...) %>%
+               add_trace(x = ~x, y = ~lower, type = 'scatter', mode = 'lines',
+                         fill = 'tonexty',  line = list(color = 'transparent'), legendgroup = legend_name,
+                         fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd', ...)
+           }
+           
+           
+           
+           if (is_new_plot) {
+             p %<>% layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 3,
+                                        autorange = ifelse(scale.reverse, "reversed", T)),
+                           yaxis = list(type = yscale, tickfont = f1, ticklen = 3))
+           }
+         },
+         'radar' = {
+           if (legend_attr == x_attr) {
+             stop("Duplicated attribute selected for x-axis and legend.")
+           }
+           #TODO: better way to force to string
+           if (stri_detect_regex(x_attr, "(?i)fun"))
+             df <- df[, x := paste0('F', as.character(x))]
+           else if (stri_detect_regex(x_attr, "(?i)dim"))
+             df <- df[, x := paste0('D', as.character(x))]
+           else
+             df <- df[, x := paste0('*', as.character(x))]
+           
+           df <- df[, col := add_transparancy(colors, 0.4)[l]]
+           p %<>%
+             add_trace(data = df, type = 'scatterpolar', r = ~y,
+                       theta = ~x, mode = 'markers', #marker = list(color = 'lightgrey', size=0),
+                       fill = 'toself', connectgaps = T, fillcolor = ~col, color = ~l, colors = colors,
+                       name =  ~l, legendgroup = ~l, ...)
+           if (is_new_plot) {
+             p %<>% layout(polar = list(radialaxis = list(type = yscale, tickfont = f1, ticklen = 3,
+                                                          autorange = ifelse(scale.reverse, "reversed", T))))
+           }
+         },
+         'hist' = {
+           if (legend_attr == x_attr) {
+             stop("Duplicated attribute selected for x-axis and legend.")
+           }
+           if (!'width' %in% colnames(df)) {
+             stop("No 'width'-column included in the provided dataframe. This is required for a histogram-plot")
+           }
+           p %<>%
+             add_trace(data = df, x = ~x, y = ~y, width = ~width, type = 'bar',
+                       name = ~l, text = ~text, hoverinfo = 'text',
+                       colors = add_transparancy(colors, 0.6), color = ~l,
+                       marker = list(line = list(color = 'rgb(8,48,107)', width = 1)),
+                       ...)
+           
+           if (is_new_plot) {
+             p %<>% layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 3,
+                                        autorange = ifelse(scale.reverse, "reversed", T)),
+                           yaxis = list(type = yscale, tickfont = f1, ticklen = 3))
+           }
+         }
+  )
+  return(p)
+}

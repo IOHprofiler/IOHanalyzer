@@ -3,33 +3,64 @@ output$RT_ECDF_MULT <- renderPlotly({
   render_RT_ECDF_MULT()
 })
 
-render_RT_ECDF_MULT <- reactive({
+get_data_RT_ECDF_MULT <- reactive({
   req(input$RTECDF.Aggr.Func || input$RTECDF.Aggr.Dim)
   input$RTECDF.Aggr.Refresh
+  dsList <- subset(DATA_RAW(), algId %in% input$RTECDF.Aggr.Algs)
   
-  withProgress({
-    dsList <- subset(DATA_RAW(), algId %in% input$RTECDF.Aggr.Algs)
-    
-    if (!input$RTECDF.Aggr.Func) 
-      dsList <- subset(dsList, funcId == input$Overall.Funcid)
-    
-    if (!input$RTECDF.Aggr.Dim) 
-      dsList <- subset(dsList, DIM == input$Overall.Dim)
-    
-    if (length(dsList) <= 1) {
-      shinyjs::alert("This is an invalid configuration for this plot. \n
+  if (!input$RTECDF.Aggr.Func) 
+    dsList <- subset(dsList, funcId == input$Overall.Funcid)
+  
+  if (!input$RTECDF.Aggr.Dim) 
+    dsList <- subset(dsList, DIM == input$Overall.Dim)
+  
+  if (length(dsList) <= 1) {
+    shinyjs::alert("This is an invalid configuration for this plot. \n
                      Please ensure that the dataset contains multiple functions / 
                      dimensions to aggregate over.")
-      return(NULL)
-    }
-    
-    isolate({
-      targets <- RT_ECDF_MULTI_TABLE()
-    })
+    return(NULL)
+  }
   
-    Plot.RT.ECDF_Multi_Func(dsList, 
-                            targets = targets, 
-                            scale.xlog = input$RTECDF.Aggr.Logx)
+  isolate({
+    targets <- RT_ECDF_MULTI_TABLE()
+  })
+  
+  if (input$RTECDF.Aggr.Func && input$RTECDF.Aggr.Dim) {
+    extract_funcId <- function(x) {
+      substr(x, 0, stringi::stri_locate_all(x, fixed = ';')[[1]][[1]] - 1) 
+    }
+    extract_dim <- function(x) {
+      substr(x, stringi::stri_locate_all(x, fixed = ';')[[1]][[1]] + 1, nchar(x)) 
+    }
+    targets <- melt(targets, id.vars = "funcId; DIM")
+    targets[, funcId := extract_funcId(`funcId; DIM`), DIM := extract_dim(`funcId; DIM`)]
+  }
+  else if (input$RTECDF.Aggr.Func) {
+    targets <- melt(targets, id.vars = "funcId")
+    targets[, DIM := get_dim(dsList)]
+  }
+  else if (input$RTECDF.Aggr.Dim) {
+    targets <- melt(targets, id.vars = "DIM")
+    targets[, funcId := get_funcId(dsList)]
+  }
+  
+  colnames(targets)[colnames(targets) == "value"] <- "target"
+  generate_data.ECDF(dsList, targets, input$RTECDF.Aggr.Logx)
+})
+
+render_RT_ECDF_MULT <- reactive({
+  req(input$RTECDF.Aggr.Func || input$RTECDF.Aggr.Dim)
+
+  withProgress({
+    plot_general_data(get_data_RT_ECDF_MULT(), 'x', 'mean', 'line', 
+                      scale.xlog = input$RTECDF.Aggr.Logx, 
+                      x_title = "Function Evaluations",
+                      y_title = "Proportion of (run, target, ...) pairs", 
+                      show.legend = T)
+    # 
+    # Plot.RT.ECDF_Multi_Func(dsList, 
+    #                         targets = targets, 
+    #                         scale.xlog = input$RTECDF.Aggr.Logx)
   },
   message = "Creating plot")
 })
@@ -81,9 +112,9 @@ observe({
   if (!input$RTECDF.Aggr.Func)
     colnames(dt)[[1]] <- "Dim"
   else if (!input$RTECDF.Aggr.Dim)
-    colnames(dt)[[1]] <- "Func"
+    colnames(dt)[[1]] <- "funcId"
   else
-    colnames(dt)[[1]] <- "Func; Dim"
+    colnames(dt)[[1]] <- "funcId; Dim"
   
   RT_ECDF_MULTI_TABLE(dt) # add values to `RT_ECDF_MULTI_TABLE`
   trigger_renderDT(rnorm(1))
@@ -154,11 +185,21 @@ output$RTECDF.Aggr.Table.Download <- downloadHandler(
 )
 
 # The ECDF plots for the runtime ----------------
-output$RT_ECDF <- renderPlotly({
-  req(input$RTECDF.Single.Target)
+
+get_data_RT_ECDF_Single <- reactive({
   ftargets <- as.numeric(format_FV(input$RTECDF.Single.Target))
   data <- subset(DATA(), algId %in% input$RTECDF.Single.Algs)
-  Plot.RT.ECDF_Per_Target(data, ftargets, scale.xlog = input$RTECDF.Single.Logx)
+  generate_data.ECDF(data, ftargets, input$RTECDF.Single.Logx)
+})
+
+output$RT_ECDF <- renderPlotly({
+  req(input$RTECDF.Single.Target)
+  plot_general_data(get_data_RT_ECDF_Single(), 'x', 'mean', 'line', 
+                    x_title = "Function Evaluations",
+                    y_title = "Proportion of runs", scale.xlog = input$RTECDF.Single.Logx, show.legend = T)
+  # ftargets <- as.numeric(format_FV(input$RTECDF.Single.Target))
+  # data <- subset(DATA(), algId %in% input$RTECDF.Single.Algs)
+  # Plot.RT.ECDF_Per_Target(data, ftargets, scale.xlog = input$RTECDF.Single.Logx)
 })
 
 output$RT_GRID <- renderPrint({
@@ -189,18 +230,28 @@ output$RTECDF.Multi.Download <- downloadHandler(
   contentType = paste0('image/', input$RTECDF.Multi.Format)
 )
 
-render_RT_ECDF_AGGR <- reactive({
+get_data_RT_ECDF_AGGR <- reactive({
   req(input$RTECDF.Multi.Min, input$RTECDF.Multi.Max, input$RTECDF.Multi.Step)
-  withProgress({
   fstart <- format_FV(input$RTECDF.Multi.Min) %>% as.numeric
   fstop <- format_FV(input$RTECDF.Multi.Max) %>% as.numeric
   fstep <- format_FV(input$RTECDF.Multi.Step) %>% as.numeric
   data <- subset(DATA(), algId %in% input$RTECDF.Multi.Algs)
+  targets <- seq_FV(get_funvals(data), fstart, fstop, fstep)
+  generate_data.ECDF(data, targets, input$RTECDF.Multi.Logx)
+})
+
+render_RT_ECDF_AGGR <- reactive({
+  withProgress({
   
-  Plot.RT.ECDF_Single_Func(
-    data, fstart, fstop, fstep,
-    scale.xlog = input$RTECDF.Multi.Logx
-  )
+    plot_general_data(get_data_RT_ECDF_AGGR(), 'x', 'mean', 'line', 
+                      x_title = "Function Evaluations",
+                      y_title = "Proportion of (run, target) pairs", 
+                      scale.xlog = input$RTECDF.Multi.Logx, show.legend = T)
+  
+  # Plot.RT.ECDF_Single_Func(
+  #   data, fstart, fstop, fstep,
+  #   scale.xlog = input$RTECDF.Multi.Logx
+  # )
   },
   message = "Creating plot")
 })
@@ -220,15 +271,27 @@ output$RTECDF.AUC.Download <- downloadHandler(
   contentType = paste0('image/', input$RTECDF.AUC.Format)
 )
 
-render_RT_AUC <- reactive({
+get_data_RT_AUC <- reactive({
   req(input$RTECDF.AUC.Min, input$RTECDF.AUC.Max, input$RTECDF.AUC.Step)
-
+  
   fstart <- format_FV(input$RTECDF.AUC.Min) %>% as.numeric
   fstop <- format_FV(input$RTECDF.AUC.Max) %>% as.numeric
   fstep <- format_FV(input$RTECDF.AUC.Step) %>% as.numeric
   data <- subset(DATA(), algId %in% input$RTECDF.AUC.Algs)
-  
-  Plot.RT.ECDF_AUC(
-    data, fstart, fstop, fstep, fval_formatter = format_FV
-  )
+  targets <- seq_FV(get_funvals(data), fstart, fstop, fstep, length.out = 10)
+  generate_data.AUC(data, targets)
+})
+
+render_RT_AUC <- reactive({
+  # req(input$RTECDF.AUC.Min, input$RTECDF.AUC.Max, input$RTECDF.AUC.Step)
+  # 
+  # fstart <- format_FV(input$RTECDF.AUC.Min) %>% as.numeric
+  # fstop <- format_FV(input$RTECDF.AUC.Max) %>% as.numeric
+  # fstep <- format_FV(input$RTECDF.AUC.Step) %>% as.numeric
+  # data <- subset(DATA(), algId %in% input$RTECDF.AUC.Algs)
+  # 
+  # Plot.RT.ECDF_AUC(
+  #   data, fstart, fstop, fstep, fval_formatter = format_FV
+  # )
+  plot_general_data(get_data_RT_AUC(), 'x', 'AUC', 'radar')
 })

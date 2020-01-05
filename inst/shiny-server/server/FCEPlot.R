@@ -4,6 +4,38 @@ output$FCE_PER_FUN <- renderPlotly({
   render_FV_PER_FUN()
 })
 
+get_data_FCE_PER_FUN <- reactive({
+  req(input$FCEPlot.Min, input$FCEPlot.Max, length(DATA()) > 0)
+  data <- subset(DATA(), algId %in% input$FCEPlot.Algs)
+  fstart <- input$FCEPlot.Min %>% as.numeric
+  fstop <- input$FCEPlot.Max %>% as.numeric
+  generate_data.Single_Function(data, fstart, fstop, input$FCEPlot.semilogx, 
+                                'by_FV')
+})
+
+render_FV_PER_FUN <- reactive({
+  withProgress({
+    y_attrs <- c()
+    if (input$FCEPlot.show.mean) y_attrs <- c(y_attrs, 'mean')
+    if (input$FCEPlot.show.median) y_attrs <- c(y_attrs, 'median')
+    if (length(y_attrs) > 0)
+      p <- plot_general_data(get_data_FCE_PER_FUN(), x_attr = 'runtime', y_attr = y_attrs, 
+                             type = 'line', legend_attr = 'algId', show.legend = T, 
+                             scale.ylog = isolate(input$FCEPlot.semilogy),
+                             scale.xlog = input$FCEPlot.semilogx, x_title = "Runtime",
+                             y_title = "Best-so-far f(x)-value")
+    else
+      p <- NULL
+    if (input$FCEPlot.show.CI)
+      p <- plot_general_data(get_data_FCE_PER_FUN(), x_attr = 'runtime', y_attr = 'mean', 
+                             type = 'ribbon', legend_attr = 'algId', lower_attr = 'lower', 
+                             upper_attr = 'upper', p = p)
+    p
+  },
+  message = "Creating plot"
+  )
+})
+
 output$FCEPlot.Download <- downloadHandler(
   filename = function() {
     eval(FIG_NAME_FV_PER_FUN)
@@ -21,38 +53,28 @@ update_fv_per_fct_axis <- observe({
 })
 
 
-render_FV_PER_FUN <- reactive({
-  withProgress({
-  rt_min <- input$FCEPlot.Min %>% as.numeric
-  rt_max <- input$FCEPlot.Max %>% as.numeric
-  data <- subset(DATA(), algId %in% input$FCEPlot.Algs)
-  Plot.FV.Single_Func(data, RTstart = rt_min, RTstop = rt_max, show.CI = input$FCEPlot.show.CI,
-               show.mean = input$FCEPlot.show.mean, show.median = input$FCEPlot.show.median,
-               scale.xlog = input$FCEPlot.semilogx, scale.ylog = isolate(input$FCEPlot.semilogy))
-  },
-  message = "Creating plot")
-})
-
-
 output$FCEPlot.Multi.Plot <- renderPlotly(
   render_FCEPlot_multi_plot()
 )
 
-render_FCEPlot_multi_plot <- reactive({
+get_data_FCEPlot_multi <- reactive({
   req(isolate(input$FCEPlot.Multi.Algs))
   input$FCEPlot.Multi.PlotButton
-  withProgress({
   data <- subset(DATA_RAW(),
                  algId %in% isolate(input$FCEPlot.Multi.Algs),
                  DIM == input$Overall.Dim)
-  req(length(data) > 0)
-  if (length(unique(get_funcId(data))) == 1){
-    shinyjs::alert("This plot is only available when the dataset contains multiple functions for the selected dimension.")
-    return(NULL)
-  }
-  Plot.FV.Multi_Func(data,
-                   scale.xlog = input$FCEPlot.Multi.Logx,
-                   scale.ylog = input$FCEPlot.Multi.Logy)
+  rbindlist(lapply(get_funcId(data), function(fid) {
+    generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$FCEPlot.Multi.Logx, 
+                                  which = 'by_FV')
+  }))
+})
+
+render_FCEPlot_multi_plot <- reactive({
+  withProgress({
+  plot_general_data(get_data_FCEPlot_multi(), x_attr = 'runtime', y_attr = 'mean', 
+                    subplot_attr = 'funcId', type = 'line', scale.xlog = input$FCEPlot.Multi.Logx, 
+                    scale.ylog = input$FCEPlot.Multi.Logy, x_title = 'Runtime', 
+                    y_title = 'Best-so-far f(x)', show.legend = T)
   },
   message = "Creating plot")
 })
@@ -76,8 +98,8 @@ get_max_runtimes <- function(data, aggr_on){
   aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_dim(data)
 
   for (j in seq_along(aggr_attr)) {
-    dsList_filetered <- if (aggr_on == 'funcId') subset(data,funcId==aggr_attr[[j]])
-    else subset(data, DIM==aggr_attr[[j]])
+    dsList_filetered <- if (aggr_on == 'funcId') subset(data,funcId == aggr_attr[[j]])
+    else subset(data, DIM == aggr_attr[[j]])
 
     RTall <- get_runtimes(dsList_filetered)
     RTval <- max(RTall)
@@ -87,23 +109,27 @@ get_max_runtimes <- function(data, aggr_on){
   runtimes
 }
 
-render_FCEPlot_aggr_plot <- reactive({
-  input$FCEPlot.Aggr.Refresh
-  withProgress({
-  #TODO: figure out how to avoid plotting again when default targets are written to input
+get_data_FCE_aggr <- reactive({
   req(length(DATA_RAW()) > 0)
   data <- FCEPlot.Aggr.data()
   if (is.null(data)) return(NULL)
   aggr_on <- ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
-  aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_dim(data)
-
+  
   runtimes <- FCEPlot.Aggr.Targets_obj
   names(runtimes) <- NULL
-  fvs <- mean_FVs(data, aggr_on, runtimes)
-  Plot.FV.Aggregated(data, plot_mode = input$FCEPlot.Aggr.Mode, runtimes = runtimes,
-                scale.ylog = input$FCEPlot.Aggr.Logy,
-                use_rank = input$FCEPlot.Aggr.Ranking,
-                aggr_on = aggr_on, fvs = fvs)
+  generate_data.Aggr(data, aggr_on, runtimes, inf_action = 'none', which = 'by_FV')
+})
+
+
+render_FCEPlot_aggr_plot <- reactive({
+  input$FCEPlot.Aggr.Refresh
+  withProgress({
+    y_attr <- if (input$FCEPlot.Aggr.Ranking) 'rank' else 'value'
+    y_title <- if (input$FCEPlot.Aggr.Ranking) 'Rank' else 'Best-so-far f(x)'
+    reverse_scale <- input$FCEPlot.Aggr.Mode == 'radar'
+    plot_general_data(get_data_FCE_aggr(), type = input$FCEPlot.Aggr.Mode, x_attr = 'funcId',
+                      y_attr = y_attr, x_title = "FuncId", y_title = y_title, show.legend = T,
+                      scale.ylog = input$FCEPlot.Aggr.Logy, scale.reverse = reverse_scale)
   },
   message = "Creating plot")
 })
@@ -111,23 +137,23 @@ render_FCEPlot_aggr_plot <- reactive({
 FCEPlot.Aggr.data <- function() {
   data <- subset(DATA_RAW(), algId %in% isolate(input$FCEPlot.Aggr.Algs))
   if (length(data) == 0) return(NULL)
-  if (input$FCEPlot.Aggr.Aggregator == 'Functions'){
-    data <- subset(data, DIM==input$Overall.Dim)
-    if (length(unique(get_funcId(data))) == 1){
+  if (input$FCEPlot.Aggr.Aggregator == 'Functions') {
+    data <- subset(data, DIM == input$Overall.Dim)
+    if (length(unique(get_funcId(data))) == 1) {
       shinyjs::alert("This plot is only available when the dataset contains multiple functions for the selected dimension.")
       return(NULL)
     }
     fvs <- MEAN_FVALS_FUNC()
   }
   else{
-    data <- subset(data, funcId==input$Overall.Funcid)
-    if (length(unique(get_dim(data))) == 1){
+    data <- subset(data, funcId == input$Overall.Funcid)
+    if (length(unique(get_dim(data))) == 1) {
       shinyjs::alert("This plot is only available when the dataset contains multiple dimensions for the selected function")
       return(NULL)
     }
     fvs <- MEAN_FVALS_DIM()
   }
-  if (length(unique(get_algId(data))) == 1){
+  if (length(unique(get_algId(data))) == 1) {
     shinyjs::alert("This plot is only available when the dataset contains multiple algorithms for the selected dimension.")
     return(NULL)
   }

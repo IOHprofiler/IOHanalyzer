@@ -27,7 +27,8 @@ render_ert_per_fct <- reactive({
                              type = 'line', legend_attr = 'algId', show.legend = T, 
                              scale.ylog = input$ERTPlot.semilogy,
                              scale.xlog = input$ERTPlot.semilogx, x_title = "Best-so-far f(x)-value",
-                             y_title = "Function Evaluations")
+                             y_title = "Function Evaluations",
+                             scale.reverse = !attr(DATA(), 'maximization'))
     else
       p <- NULL
     if (input$ERTPlot.show.CI)
@@ -107,7 +108,8 @@ render_ERTPlot_multi_plot <- reactive({
   plot_general_data(get_data_ERT_multi_func(), x_attr = 'target', y_attr = 'ERT', 
                     subplot_attr = 'funcId', type = 'line', scale.xlog = input$ERTPlot.Multi.Logx, 
                     scale.ylog = input$ERTPlot.Multi.Logy, x_title = 'Best-so-far f(x)', 
-                    y_title = 'ERT', show.legend = T)
+                    y_title = 'ERT', show.legend = T,
+                    scale.reverse = !attr(DATA(), 'maximization'))
   },
   message = "Creating plot")
 })

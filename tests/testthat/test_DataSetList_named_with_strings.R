@@ -13,7 +13,7 @@ test_that("Validate reading of files",{
   expect_true(any(match(class(dsl1), "DataSetList")))
   expect_equal(get_dim(dsl1), 100)
   expect_equal(get_algId(dsl1), "ONE_PLUS_LAMDA_EA")
-  expect_equal(get_funcId(dsl1), 'bla')
+  expect_equal(get_funcId(dsl1), c('bla', 'blubb'))
 
   ds1 <- dsl1[[1]]
   expect_true(any(match(class(ds1), "DataSet")))
@@ -21,6 +21,16 @@ test_that("Validate reading of files",{
   expect_equal(attr(ds1,'algId'), "ONE_PLUS_LAMDA_EA")
   #expect_equal(attr(ds1,'suite'), "PBO")
   expect_equal(attr(ds1,'funcId'), 'bla')
+  expect_equal(attr(ds1,'instance'), c(1,1,1,1,1,1,1,1,1,1))
+  expect_equal(attr(ds1,'format'), "IOHprofiler")
+  expect_equal(attr(ds1,'maximization'), TRUE)
+
+  ds1 <- dsl1[[2]]
+  expect_true(any(match(class(ds1), "DataSet")))
+  expect_equal(attr(ds1,'DIM'), 100)
+  expect_equal(attr(ds1,'algId'), "ONE_PLUS_LAMDA_EA")
+  #expect_equal(attr(ds1,'suite'), "PBO")
+  expect_equal(attr(ds1,'funcId'), 'blubb')
   expect_equal(attr(ds1,'instance'), c(1,1,1,1,1,1,1,1,1,1))
   expect_equal(attr(ds1,'format'), "IOHprofiler")
   expect_equal(attr(ds1,'maximization'), TRUE)

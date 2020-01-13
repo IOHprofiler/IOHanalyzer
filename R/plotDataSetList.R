@@ -4,13 +4,13 @@ symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
 get_legends <- function(dsList) {
   N <- length(dsList)
   legends <- sapply(dsList, function(d) attr(d, 'algId'))
-  
+
   if (length(unique(legends)) < N) {
     funcId <- sapply(dsList, function(d) attr(d, 'funcId'))
     if (length(unique(funcId)) > 1)
       legends <- paste0(legends, '-F', funcId)
   }
-  
+
   if (length(unique(legends)) < N) {
     DIM <- sapply(dsList, function(d) attr(d, 'DIM'))
     if (length(unique(DIM)) > 1)
@@ -73,13 +73,13 @@ grad_functions <- c(
 #' @param p Existing plot to which to add the current data
 #' @return A plot of ERT-values of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.Single_Func(subset(dsl, funcId == 1))
 Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
                                 show.ERT = T, show.CI = F, show.mean = F,
                                 show.median = F, backend = NULL,
                                 scale.xlog = F, scale.ylog = F, scale.reverse = F,
-                                includeOpts = F, p = NULL) 
+                                includeOpts = F, p = NULL)
   UseMethod("Plot.RT.Single_Func", dsList)
 #' Plot lineplot of the expected function values of a DataSetList
 #'
@@ -96,9 +96,9 @@ Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
 #'
 #' @return A plot of ERT-values of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.Single_Func(subset(dsl, funcId == 1))
-Plot.FV.Single_Func <- function(dsList, RTstart = NULL, RTstop = NULL, show.CI = F, show.mean = T, 
+Plot.FV.Single_Func <- function(dsList, RTstart = NULL, RTstop = NULL, show.CI = F, show.mean = T,
                                 show.median = F, backend = NULL, scale.xlog = F, scale.ylog = F,
                          scale.reverse = F) UseMethod("Plot.FV.Single_Func", dsList)
 #' Plot probablity mass function of the runtimes of a DataSetList at a certain target function value
@@ -112,9 +112,9 @@ Plot.FV.Single_Func <- function(dsList, RTstart = NULL, RTstop = NULL, show.CI =
 #' @return A plot of the probablity mass function of the runtimes at a the
 #'         target function value of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.PMF(subset(dsl, funcId == 1), 14)
-Plot.RT.PMF <- function(dsList, ftarget, show.sample = F, scale.ylog = F, backend = NULL) 
+Plot.RT.PMF <- function(dsList, ftarget, show.sample = F, scale.ylog = F, backend = NULL)
   UseMethod("Plot.RT.PMF", dsList)
 #' Plot histograms of the runtimes of a DataSetList at a certain target function value
 #'
@@ -122,15 +122,15 @@ Plot.RT.PMF <- function(dsList, ftarget, show.sample = F, scale.ylog = F, backen
 #' @param ftarget The target function value.
 #' @param plot_mode How to plot the different hisograms for each algorithm. Can be either
 #'  'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.
-#' @param use.equal.bins Whether to determine one bin size for all plots or have individual 
+#' @param use.equal.bins Whether to determine one bin size for all plots or have individual
 #' bin sizes for each algorithm
 #'
 #' @return A plot of the histograms of the runtimes at a the
 #'         target function value of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.Histogram(subset(dsl, funcId == 1), 14)
-Plot.RT.Histogram <- function(dsList, ftarget, plot_mode = 'overlay', use.equal.bins = F) 
+Plot.RT.Histogram <- function(dsList, ftarget, plot_mode = 'overlay', use.equal.bins = F)
   UseMethod("Plot.RT.Histogram", dsList)
 #' Plot the empirical cumulative distriburtion as a function of the running times of
 #' a DataSetList at certain target function values
@@ -142,9 +142,9 @@ Plot.RT.Histogram <- function(dsList, ftarget, plot_mode = 'overlay', use.equal.
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the running times of the DataSetList at the target function values
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.ECDF_Per_Target(subset(dsl, funcId == 1), 14)
-Plot.RT.ECDF_Per_Target <- function(dsList, ftargets, scale.xlog = F) 
+Plot.RT.ECDF_Per_Target <- function(dsList, ftargets, scale.xlog = F)
   UseMethod("Plot.RT.ECDF_Per_Target", dsList)
 #' Plot the aggregated empirical cumulative distriburtion as a function of the running times of
 #' a DataSetList.
@@ -159,7 +159,7 @@ Plot.RT.ECDF_Per_Target <- function(dsList, ftargets, scale.xlog = F)
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the running times of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.ECDF_Single_Func(subset(dsl, funcId == 1))
 Plot.RT.ECDF_Single_Func <- function(dsList, fstart = NULL, fstop = NULL,
                               fstep = NULL, show.per_target = F,
@@ -174,7 +174,7 @@ Plot.RT.ECDF_Single_Func <- function(dsList, fstart = NULL, fstop = NULL,
 #'
 #' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.ECDF_AUC(subset(dsl, funcId == 1))
 Plot.RT.ECDF_AUC <- function(dsList, fstart = NULL,
                         fstop = NULL, fstep = NULL,
@@ -190,9 +190,9 @@ Plot.RT.ECDF_AUC <- function(dsList, fstart = NULL,
 #' @return A plot of the probablity density function of the runtimes at a the
 #'         target function value of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.PDF(subset(dsl, funcId == 1), 100)
-Plot.FV.PDF <- function(dsList, runtime, show.sample = F, scale.ylog = F) 
+Plot.FV.PDF <- function(dsList, runtime, show.sample = F, scale.ylog = F)
   UseMethod("Plot.FV.PDF", dsList)
 #' Plot histograms of the function values of a DataSetList at a certain target runtime
 #'
@@ -200,15 +200,15 @@ Plot.FV.PDF <- function(dsList, runtime, show.sample = F, scale.ylog = F)
 #' @param runtime The target runtime
 #' @param plot_mode How to plot the different hisograms for each algorithm. Can be either
 #'  'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.
-#' @param use.equal.bins Whether to determine one bin size for all plots or have individual 
+#' @param use.equal.bins Whether to determine one bin size for all plots or have individual
 #' bin sizes for each algorithm
-#' 
+#'
 #' @return A plot of the histograms of the function values at a the
 #'         target runtime of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.Histogram(subset(dsl, funcId == 1), 100)
-Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay', use.equal.bins = F) 
+Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay', use.equal.bins = F)
   UseMethod("Plot.FV.Histogram", dsList)
 #' Plot the empirical cumulative distriburtion as a function of the target values of
 #' a DataSetList at certain target runtimes
@@ -221,9 +221,9 @@ Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay', use.equal.bi
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the fucntion values of the DataSetList at the target runtimes
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.ECDF_Per_Target(subset(dsl, funcId == 1), 10)
-Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F, scale.reverse = F) 
+Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F, scale.reverse = F)
   UseMethod("Plot.FV.ECDF_Per_Target", dsList)
 #' Plot the aggregated empirical cumulative distriburtion as a function of the function values of
 #' a DataSetList.
@@ -235,15 +235,15 @@ Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F, scale.reve
 #' @param show.per_target Whether or not to show the individual ECDF-curves for each runtime
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
 #' @param scale.reverse Whether or not to reverse the x-axis (when using minimization)
-#' 
+#'
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the function values of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.ECDF_Single_Func(subset(dsl, funcId == 1))
 Plot.FV.ECDF_Single_Func <- function(dsList, rt_min = NULL, rt_max = NULL,
                               rt_step = NULL, scale.xlog = F,
-                              show.per_target = F, scale.reverse = F) 
+                              show.per_target = F, scale.reverse = F)
   UseMethod("Plot.FV.ECDF_Single_Func", dsList)
 #' Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
 #'
@@ -254,7 +254,7 @@ Plot.FV.ECDF_Single_Func <- function(dsList, rt_min = NULL, rt_max = NULL,
 #'
 #' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.ECDF_AUC(subset(dsl, funcId == 1))
 Plot.FV.ECDF_AUC <- function(dsList, rt_min = NULL, rt_max = NULL,
                         rt_step = NULL) UseMethod("Plot.FV.ECDF_AUC", dsList)
@@ -268,13 +268,13 @@ Plot.FV.ECDF_AUC <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
 #' @param scale.ylog Whether or not to scale the y-axis logaritmically
 #' @param algids Which algorithms from dsList to use
-#' @param par_name Which parameters to create plots for; set to NULL to use all 
+#' @param par_name Which parameters to create plots for; set to NULL to use all
 #' parameters found in dsList.
 #' @param show.CI Whether or not to show the standard deviation
 #'
 #' @return A plot of for every recorded parameter in the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.Parameters(subset(dsl, funcId == 1))
 Plot.RT.Parameters <- function(dsList, f_min = NULL, f_max = NULL,
                             algids = 'all', par_name = NULL,
@@ -291,13 +291,13 @@ Plot.RT.Parameters <- function(dsList, f_min = NULL, f_max = NULL,
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
 #' @param scale.ylog Whether or not to scale the y-axis logaritmically
 #' @param algids Which algorithms from dsList to use
-#' @param par_name Which parameters to create plots for; set to NULL to use all 
+#' @param par_name Which parameters to create plots for; set to NULL to use all
 #' parameters found in dsList.
 #' @param show.CI Whether or not to show the standard deviation
 #'
 #' @return A plot of for every recorded parameter in the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.Parameters(subset(dsl, funcId == 1))
 Plot.FV.Parameters <- function(dsList, rt_min = NULL, rt_max = NULL,
                                algids = 'all', par_name = NULL,
@@ -315,9 +315,9 @@ Plot.FV.Parameters <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the running times of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.ECDF_Multi_Func(dsl)
-Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = F) 
+Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = F)
   UseMethod("Plot.RT.ECDF_Multi_Func", dsList)
 #' Plot ERT-plots for multiple functions or dimensions
 #'
@@ -326,13 +326,13 @@ Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = F)
 #' @param scale.ylog Whether or not to scale the y-axis logaritmically
 #' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
 #' @param backend Which plotting library to use. Either 'plotly' or 'ggplot2'.
-#' 
+#'
 #' @return A plot of ERT-values of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.Multi_Func(dsl)
-Plot.RT.Multi_Func <- function(dsList, scale.xlog = F, scale.ylog = F, scale.reverse = F, 
-                               backend = NULL) 
+Plot.RT.Multi_Func <- function(dsList, scale.xlog = F, scale.ylog = F, scale.reverse = F,
+                               backend = NULL)
   UseMethod("Plot.RT.Multi_Func", dsList)
 #' Plot ERT-based comparison over multiple functions or dimensions
 #'
@@ -349,11 +349,11 @@ Plot.RT.Multi_Func <- function(dsList, scale.xlog = F, scale.ylog = F, scale.rev
 #' @param inf.action How to handle infinite ERTs ('overlap' or 'jitter')
 #' @return A plot of ERT-based comparison on the provided functions or dimensions of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.Aggregated(dsl)
-Plot.RT.Aggregated <- function(dsList, aggr_on = 'funcId', targets = NULL, 
+Plot.RT.Aggregated <- function(dsList, aggr_on = 'funcId', targets = NULL,
                                plot_mode = 'radar', use_rank = F, scale.ylog = T, maximize = T,
-                               erts = NULL, inf.action = 'overlap') 
+                               erts = NULL, inf.action = 'overlap')
   UseMethod("Plot.RT.Aggregated", dsList)
 #' Plot expected function value-based comparison over multiple functions or dimensions
 #'
@@ -371,10 +371,10 @@ Plot.RT.Aggregated <- function(dsList, aggr_on = 'funcId', targets = NULL,
 #' @return A plot of expected function value-based comparison on the provided functions
 #'  or dimensions of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.Aggregated(dsl)
-Plot.FV.Aggregated <- function(dsList, aggr_on = 'funcId', runtimes = NULL, plot_mode = 'radar', 
-                               use_rank = F, scale.ylog = T, fvs = NULL) 
+Plot.FV.Aggregated <- function(dsList, aggr_on = 'funcId', runtimes = NULL, plot_mode = 'radar',
+                               use_rank = F, scale.ylog = T, fvs = NULL)
   UseMethod("Plot.FV.Aggregated", dsList)
 
 #' Plot FV-plots for multiple functions or dimensions
@@ -386,13 +386,13 @@ Plot.FV.Aggregated <- function(dsList, aggr_on = 'funcId', runtimes = NULL, plot
 #'
 #' @return A plot of Function-values of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.Multi_Func(dsl)
-Plot.FV.Multi_Func <- function(dsList, scale.xlog = F, scale.ylog = F, backend = NULL) 
+Plot.FV.Multi_Func <- function(dsList, scale.xlog = F, scale.ylog = F, backend = NULL)
   UseMethod("Plot.FV.Multi_Func", dsList)
 
 #' Plot a heatmap showing the statistically different algorithms
-#' 
+#'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
 #' @param ftarget The target function value to use
 #' @param alpha The cutoff for statistical significance
@@ -401,14 +401,14 @@ Plot.FV.Multi_Func <- function(dsList, scale.xlog = F, scale.ylog = F, backend =
 #'
 #' @return A heatmap showing the statistical significance between algorithms
 #' @export
-#' @examples 
+#' @examples
 #' Plot.Stats.Significance_Heatmap(subset(dsl, funcId == 2), 16)
-Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01, bootstrap.size = 30, 
-                                            which = 'by_FV') 
+Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01, bootstrap.size = 30,
+                                            which = 'by_FV')
   UseMethod("Plot.Stats.Significance_Heatmap", dsList)
-  
+
 #' Plot a network graph showing the statistically different algorithms
-#' 
+#'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
 #' @param ftarget The target function value to use
 #' @param alpha The cutoff for statistical significance
@@ -417,25 +417,25 @@ Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01, boots
 #'
 #' @return A graph showing the statistical significance between algorithms
 #' @export
-#' @examples 
+#' @examples
 #' Plot.Stats.Significance_Graph(subset(dsl, funcId == 2), 16)
-Plot.Stats.Significance_Graph <- function(dsList, ftarget, alpha = 0.01, bootstrap.size = 30, 
-                                          which = 'by_FV') 
+Plot.Stats.Significance_Graph <- function(dsList, ftarget, alpha = 0.01, bootstrap.size = 30,
+                                          which = 'by_FV')
   UseMethod("Plot.Stats.Significance_Graph", dsList)
 
 #' Create a candlestick plot of Glicko2-rankings
-#' 
+#'
 #' @param dsList A DataSetList
 #' @param nr_rounds The number of rounds in the tournament
 #' @param glicko2_rank_df Optional. Dataframe containing the glicko2 rating to avoid needless recalculation.
 #' @param which Whether to use fixed-target ('by_FV') or fixed-budget ('by_RT') perspective
 #' @param target_dt Optional: data table containing the targets for each function and dimension
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' Plot.Stats.Glicko2_Candlestick(dsl, nr_rounds=2)
-Plot.Stats.Glicko2_Candlestick <- function(dsList, nr_rounds = 100, glicko2_rank_df = NULL, 
-                                           which = 'by_FV', target_dt = NULL) 
+Plot.Stats.Glicko2_Candlestick <- function(dsList, nr_rounds = 100, glicko2_rank_df = NULL,
+                                           which = 'by_FV', target_dt = NULL)
   UseMethod("Plot.Stats.Glicko2_Candlestick", dsList)
 
 
@@ -457,7 +457,7 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 
   Fseq <- seq_FV(Fall, Fstart, Fstop, length.out = 60,
                  scale = ifelse(scale.xlog, 'log', 'linear'))
-  
+
   if (includeOpts) {
     for (algid in get_algId(dsList)) {
       #TODO: Work for minimization
@@ -465,12 +465,12 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
     }
     Fseq <- unique(sort(Fseq))
   }
-  
+
   if (length(Fseq) == 0) return(NULL)
 
   N <- length(dsList)
   legends <- get_legends(dsList)
-  
+
   dt <- get_RT_summary(dsList, ftarget = Fseq)
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
 
@@ -521,7 +521,7 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 
 
     }
-    
+
     p %<>%
       layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear'), showexponent = 'none'),
              yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
@@ -555,7 +555,7 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
                                      scale.xlog = F, scale.ylog = F,
                                      scale.reverse = F) {
   if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
-  
+
   RTall <- get_runtimes(dsList)
   if (is.null(RTstart)) RTstart <- min(RTall)
   if (is.null(RTstop)) RTstop <- max(RTall)
@@ -575,7 +575,7 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
     algnames <- get_algId(dsList)
     colors <- get_color_scheme(algnames) %>% set_names(algnames)
     dashes <- get_line_style(algnames) %>% set_names(algnames)
-    
+
     for (i in seq_along(dsList)) {
       legend <- legends[i]
       algId <- attr(dsList[[i]], 'algId')
@@ -619,7 +619,7 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
 
     if (scale.reverse)
       p %<>% layout(xaxis = list(autorange = "reversed", showexponent = 'none'))
-    
+
   } else if (backend == 'ggplot2') {
     fce[, 'group' := paste(algId, funcId, DIM, sep = '-')]
     p <- ggplot(data = fce, aes(group = `group`, colour = `group`))
@@ -641,7 +641,7 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
 Plot.RT.PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
                                     scale.ylog = F, backend = NULL){
   if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
-  
+
   points <- ifelse(show.sample, 'all', FALSE)
 
   N <- length(dsList)
@@ -683,11 +683,11 @@ Plot.RT.PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
 #' @export
 Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay', use.equal.bins = F){
   if (length(get_funcId(dsList)) != 1 || length(get_dim(dsList)) != 1) {
-    warning("Invalid dataset uploaded. Please ensure the datasetlist contains data 
+    warning("Invalid dataset uploaded. Please ensure the datasetlist contains data
             from only one function and only one dimension.")
     return(NULL)
   }
-  
+
   N <- length(dsList)
   if (N <= 10) {
     n_rows <- ceiling(N / 2.) # keep to columns for the histograms
@@ -703,7 +703,7 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
     p <- lapply(seq(N), function(x) {
       disp_y <-  mod(x, n_cols) == 1
       disp_x <- x > (N - n_cols)
-      IOH_plot_ly_default(x.title = if (disp_x) "Function evaluations" else "", 
+      IOH_plot_ly_default(x.title = if (disp_x) "Function evaluations" else "",
                           y.title = if (disp_y) "Runs" else "")
     })
   }
@@ -712,10 +712,10 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
   }
   algnames <- get_algId(dsList)
   colors <- get_color_scheme(algnames) %>% set_names(algnames)
-  
+
   for (i in seq_along(dsList)) {
     df <- dsList[[i]]
-    
+
     algId <- attr(df, "algId")
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[[algId]]), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.35)')
@@ -730,7 +730,7 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
     else breaks <- nclass.FD
     res <- hist(rt$RT, breaks = breaks, plot = F)
     breaks <- res$breaks
-    
+
     plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
                             text = paste0('<b>count</b>: ', res$counts, '<br><b>breaks</b>: [',
                                           breaks[-length(breaks)], ',', breaks[-1], ']'))
@@ -745,16 +745,16 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
       disp_y <-  mod(i, n_cols) == 1
       disp_x <- i > (N - n_cols)
       disp <- c(disp_x, disp_y)
-      
+
       p[[i]] %<>%
         add_trace(data = plot_data, x = ~x, y = ~y, width = ~width, type = 'bar',
                   name = algId, text = ~text, hoverinfo = 'text',
                   marker = list(color = rgba_str,
-                                line = list(color = 'rgb(8,48,107)', width = 1.5))) 
+                                line = list(color = 'rgb(8,48,107)', width = 1.5)))
       # %>%
       #   layout(
       #     annotations = list(
-      #       text = c("Function Evaluations", "Runs")[disp], font = list(f2, f2)[disp], 
+      #       text = c("Function Evaluations", "Runs")[disp], font = list(f2, f2)[disp],
       #       align = "center",
       #       xref = "paper", yref = "paper",
       #       yanchor = c("top","top")[disp], xanchor = "center", textangle = c(0, -90),
@@ -783,7 +783,7 @@ Plot.RT.ECDF_Per_Target.DataSetList <- function(dsList, ftargets, scale.xlog = F
   algnames <- get_algId(dsList)
   colors <- get_color_scheme(algnames) %>% set_names(algnames)
   dashes <- get_line_style(algnames) %>% set_names(algnames)
-  
+
   for (k in seq_along(dsList)) {
     df <- dsList[[k]]
     algId <- attr(df, 'algId')
@@ -1006,7 +1006,7 @@ Plot.FV.PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
 #' @export
 Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', use.equal.bins = F){
   if (length(get_funcId(dsList)) != 1 || length(get_dim(dsList)) != 1) {
-    warning("Invalid dataset uploaded. Please ensure the datasetlist contains data 
+    warning("Invalid dataset uploaded. Please ensure the datasetlist contains data
             from only one function and only one dimension.")
     return(NULL)
   }
@@ -1019,7 +1019,7 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', 
     n_rows <- ceiling(N / 3.) # keep to columns for the histograms
     n_cols <- 3
   }
-  
+
   if (plot_mode == 'overlay') {
     p <- IOH_plot_ly_default(x.title = "Target values", y.title = "Runs")
 
@@ -1027,11 +1027,11 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', 
     p <- lapply(seq(N), function(x) {
       disp_y <-  mod(x, n_cols) == 1
       disp_x <- x > (N - n_cols)
-      IOH_plot_ly_default(x.title = if (disp_x) "Target values" else "", 
+      IOH_plot_ly_default(x.title = if (disp_x) "Target values" else "",
                           y.title = if (disp_y) "Runs" else "")
     })
   }
-  
+
   if (use.equal.bins) {
     res1 <- hist(get_FV_sample(dsList, runtime, output = 'long')$'f(x)', breaks = nclass.FD, plot = F)
   }
@@ -1039,24 +1039,24 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', 
   colors <- get_color_scheme(algnames) %>% set_names(algnames)
   dashes <- get_line_style(algnames) %>% set_names(algnames)
   for (i in seq_along(dsList)) {
-   
+
 
     ds <- dsList[[i]]
     algId <- attr(ds, 'algId')
-    
+
     rgb_str <- paste0('rgb(', paste0(col2rgb(colors[[algId]]), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(colors[[algId]]), collapse = ','), ',0.35)')
-    
+
     fce <- get_FV_sample(ds, runtime, output = 'long')
     # skip if all target samples are NA
     if (sum(!is.na(fce$'f(x)')) < 2)
       next
-    
+
     if (use.equal.bins) breaks <- res1$breaks
     else breaks <- nclass.FD
     res <- hist(fce$'f(x)', breaks = breaks, plot = F)
     breaks <- res$breaks
-    
+
     plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
                             text = paste0('<b>count</b>: ', res$counts,
                                           '<br><b>breaks</b>: [',
@@ -1148,22 +1148,22 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
 
   rt_seq <- seq_RT(rt, from = rt_min, to = rt_max, by = rt_step,
                    scale = ifelse(scale.xlog,'log','linear'))
-  
+
   if (!attr(dsList[[1]],"maximization"))
     rt_seq <- rev(rt_seq)
-  
+
   req(rt_seq)
 
   n_algorithm <- length(dsList)
 
   funevals.max <- sapply(dsList, function(ds) max(ds$FV, na.rm = T)) %>% max
   funevals.min <- sapply(dsList, function(ds) min(ds$FV, na.rm = T)) %>% min
-  
+
   if (!attr(dsList[[1]], "maximization") && funevals.min != 0)
     x <- 10 ** seq(log10(funevals.max), log10(funevals.min), length.out = 40)
   else
     x <- seq(funevals.min, funevals.max, length.out = 40)
-  
+
   autorange <- ifelse(attr(dsList[[1]],"maximization"), T, 'reversed')
   p <- IOH_plot_ly_default(x.title = "Target value",
                        y.title = "Proportion of (run, budget) pairs") %>%
@@ -1256,11 +1256,11 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
     auc <- sapply(funs,
                   function(fun) {
                     if (is.null(fun)) 0
-                    else{ 
+                    else{
                       if (attr(df, 'maximization'))
                           integrate(fun, lower = attr(fun, 'min') - 1, upper = funevals.max,
                                    subdivisions = 1e3) %>% {'$'(., 'value') / funevals.max}
-                      else 
+                      else
                         integrate(fun, lower =  funevals.min, upper = attr(fun, 'max') + 1,
                                   subdivisions = 1e3) %>% {'$'(., 'value') / (attr(fun, 'max') + 1)}
                     }
@@ -1298,7 +1298,7 @@ Plot.RT.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
   fall <- get_funvals(dsList)
   if (is.null(f_min)) f_min <- min(fall)
   if (is.null(f_max)) f_max <- max(fall)
-  
+
   fseq <- seq_FV(fall, f_min, f_max, length.out = 50)
   req(fseq)
 
@@ -1334,7 +1334,7 @@ Plot.RT.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
       dt_plot <- dt[parId == name & algId == alg]
       rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(alg)), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(alg)), collapse = ','), ',0.3)')
-      
+
       if (show.CI) {
       p[[j]] %<>%
         add_trace(data = dt_plot, x = ~target, y = ~upper, type = 'scatter', mode = 'lines',
@@ -1373,11 +1373,11 @@ Plot.RT.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
             yanchor = "top", xanchor = "center",
             x = 0.5, y = -0.2, showarrow = FALSE
           )
-        ) 
+        )
     }
   }
 
-  subplot(p, nrows = nrows, titleX = F, titleY = T, margin = 0.05) 
+  subplot(p, nrows = nrows, titleX = F, titleY = T, margin = 0.05)
   # %>%
   #   add_annotations(x = 0.5 , y = -0.18, text = "Best-so-far f(x)-value",
   #                   showarrow = F, xref = 'paper', yref = 'paper',
@@ -1394,24 +1394,24 @@ Plot.FV.Parameters.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
                                            show.CI = F) {
   # TODO: clean this up
   req(xor(show.mean, show.median))
-  
+
   rtall <- get_runtimes(dsList)
   if (is.null(rt_min)) rt_min <- min(rtall)
   if (is.null(rt_max)) rt_max <- max(rtall)
-  
+
   rtseq <- seq_FV(rtall, rt_min, rt_max, length.out = 50)
   req(rtseq)
-  
+
   dt <- get_PAR_summary(dsList, rtseq, algids, which = 'by_RT')
   req(length(dt) != 0)
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
-  
+
   if (is.null(par_name)) par_name <- dt[, parId] %>% unique
   n_param <- length(par_name)
-  
+
   algorithms <- dt[, algId] %>% unique
   n_alg <- length(algorithms)
-  
+
   nrows <- ceiling(n_param / 2)
   # TODO: improve the efficiency of plotting here
   p <- lapply(seq(n_param),
@@ -1420,21 +1420,21 @@ Plot.FV.Parameters.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
                   layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')),
                          yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')))
               })
-  
+
   for (i in seq(n_alg)) {
     alg <- algorithms[i]
-    
+
     for (j in seq(n_param)) {
       if (j == 1)
         showlegend <- T
       else
         showlegend <- F
-      
+
       name <- par_name[j]
       dt_plot <- dt[parId == name & algId == alg]
       rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(alg)), collapse = ','), ')')
       rgba_str <- paste0('rgba(', paste0(col2rgb(get_color_scheme(alg)), collapse = ','), ',0.3)')
-      
+
       if (show.CI) {
         p[[j]] %<>%
           add_trace(data = dt_plot, x = ~runtime, y = ~upper, type = 'scatter', mode = 'lines',
@@ -1445,7 +1445,7 @@ Plot.FV.Parameters.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
                     fillcolor = rgba_str, showlegend = F, legendgroup = ~algId,
                     name = 'mean +/- sd')
       }
-      
+
       if (show.mean)
         p[[j]] %<>% add_trace(data = dt_plot, x = ~runtime, y = ~mean,
                               type = 'scatter',
@@ -1455,7 +1455,7 @@ Plot.FV.Parameters.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
                               name = alg,
                               showlegend = showlegend,
                               legendgroup = ~algId)
-      
+
       else if (show.median)
         p[[j]] %<>% add_trace(data = dt_plot, x = ~runtime, y = ~median,
                               type = 'scatter',
@@ -1473,11 +1473,11 @@ Plot.FV.Parameters.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
       #       yanchor = "top", xanchor = "center",
       #       x = 0.5, y = -0.2, showarrow = FALSE
       #     )
-      #   ) 
+      #   )
     }
   }
-  
-  subplot(p, nrows = nrows, titleX = T, titleY = T, shareX = T, margin = 0.05) 
+
+  subplot(p, nrows = nrows, titleX = T, titleY = T, shareX = T, margin = 0.05)
   # %>%
   #   add_annotations(x = 0.5 , y = -0.18, text = "Best-so-far f(x)-value",
   #                   showarrow = F, xref = 'paper', yref = 'paper',
@@ -1513,7 +1513,7 @@ Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
                      line = list(color = rgb_str, dash = get_line_style(Id)),
                      marker = list(color = rgb_str))
   }
-  
+
   p %<>%
     layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')))
   p
@@ -1526,7 +1526,7 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
                                            scale.reverse = F,
                                            backend = NULL) {
   if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
-  
+
   xscale <- if (scale.xlog) 'log' else 'linear'
   yscale <- if (scale.ylog) 'log' else 'linear'
   funcIds <- get_funcId(dsList)
@@ -1537,10 +1537,10 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
 
   colors <- get_color_scheme(algIds)
   names(colors) <- algIds
-  
+
   dashes <- get_line_style(algIds)
   names(dashes) <- algIds
-  
+
   # how many columns do we want...
   if (n_fcts <= 10) {
     n_rows <- ceiling(n_fcts / 2.)
@@ -1551,7 +1551,7 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
   } else {
     n_rows <- ceiling(n_fcts / 4.)
     n_cols <- 4
-  } 
+  }
 
   dt <- list()
   for (i in seq(n_fcts)) {
@@ -1583,7 +1583,7 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
       function(x){
         disp_y <-  mod(x, n_cols) == 1
         disp_x <- x > (n_fcts - n_cols)
-        IOH_plot_ly_default(x.title = if (disp_x) "Best-so-far f(x)" else "", 
+        IOH_plot_ly_default(x.title = if (disp_x) "Best-so-far f(x)" else "",
                             y.title = if (disp_y) "ERT" else "") %>%
             layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 3, autorange = autorange),
                    yaxis = list(type = yscale, tickfont = f1, ticklen = 3))
@@ -1600,7 +1600,7 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
           type = 'scatter', mode = 'lines+markers',
           linetype = ~algId, marker = list(size = 4), # TODO: perhaps turn off the marker here
           colors = colors, showlegend = showlegend, linetypes = dashes
-        ) 
+        )
 
       p[[i]] %<>%
         layout(
@@ -1627,7 +1627,7 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
                                          scale.ylog = F,
                                          backend = NULL) {
   if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
-  
+
   xscale <- if (scale.xlog) 'log' else 'linear'
   yscale <- if (scale.ylog) 'log' else 'linear'
   funcIds <- get_funcId(dsList)
@@ -1638,7 +1638,7 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
 
   colors <- get_color_scheme(algIds)
   names(colors) <- algIds
-  
+
   dashes <- get_line_style(algIds)
   names(dashes) <- algIds
 
@@ -1683,7 +1683,7 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
       function(x){
         disp_y <-  mod(x, n_cols) == 1
         disp_x <- x > (n_fcts - n_cols)
-        IOH_plot_ly_default(x.title = if (disp_x) "Function Evaluations" else "", 
+        IOH_plot_ly_default(x.title = if (disp_x) "Function Evaluations" else "",
                           y.title = if (disp_y) "Target value" else "") %>%
         layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 3, autorange = T),
                yaxis = list(type = yscale, tickfont = f1, ticklen = 3))
@@ -1700,8 +1700,8 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
           type = 'scatter', mode = 'lines+markers',
           linetype = ~algId, marker = list(size = 4), # TODO: perhaps turn off the marker here
           colors = colors, showlegend = showlegend, linetypes = dashes
-        ) 
-      
+        )
+
       disp_y <-  mod(i, n_cols) == 1
       disp_x <- i > (n_fcts - n_cols)
       disp <- c(disp_x, disp_y, T)
@@ -1709,16 +1709,16 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
       p[[i]] %<>%
         layout(
           annotations = list(
-            text = paste0('F', funcIds[[i]]), 
+            text = paste0('F', funcIds[[i]]),
             font = f2,
             xref = "paper", yref = "paper", align = "center",
-            yanchor = "bottom", 
+            yanchor = "bottom",
             xanchor = "center", textangle = 0,
             x = 0.5, y = 1, showarrow = FALSE
           )
         )
     }
-    
+
     p <- subplot(p, nrows = n_rows, titleX = T, titleY = T, margin = 0.05)
   }
   p %>% layout(margin = 2)
@@ -1726,21 +1726,26 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
 
 #' @rdname Plot.RT.Aggregated
 #' @export
-Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, 
+Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL,
                                            plot_mode = 'radar', use_rank = F,
                                            scale.ylog = T, maximize = T, erts = NULL,
                                            inf.action = 'overlap') {
   if (is.null(erts))
     erts <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, maximize = maximize)
-  
+
   if (is.null(erts))
     return(NULL)
 
   N <- length(get_algId(dsList))
 
   fid <- get_funcId(dsList)
-  range <- c(min(fid) - .5, max(fid) + .5)
-  
+  if(is.numeric(fid)) {
+    range <- range(fid);
+    range <- range(c(range[[1]] - .5, range[[2]] + .5))
+  } else {
+    range <- NULL; # <- if the function IDs are strings, we cannot use the traditional range
+  }
+
   in_legend <- integer(N)
   names(in_legend) <- get_algId(dsList)
 
@@ -1753,30 +1758,30 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
 
   p <- if (plot_mode == "radar") {
-    IOH_plot_ly_default(title = plot_title, 
-                        x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), 
+    IOH_plot_ly_default(title = plot_title,
+                        x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"),
                         y.title = "ERT")
-  } else 
-    IOH_plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), 
+  } else
+    IOH_plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"),
                         y.title = ifelse(use_rank, "Rank", "ERT"))
-    
+
   if (use_rank) {
     ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))
-    
+
     for (i in seq_along(aggr_attr)) {
       ertranks <- rbind(ertranks, rank(erts[i, ]))
     }
     dataert <- ertranks[-1, ]
-    
+
   } else {
     dataert <- erts
   }
-  
+
   if (inf.action == 'jitter') {
     data_inf <- dataert
     idx <- apply(data_inf, 2, is.infinite)
     data_inf[idx] <- NA
-    
+
     for (i in seq(nrow(data_inf))) {
       idx_ <- idx[i, ]
       x <- data_inf[i, ]
@@ -1784,7 +1789,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
       n_inf <- sum(idx_)
       data_inf[i, idx_] <- 10 ^ (log10(max_ * 2) + seq(0, log10(10), length.out = n_inf))
     }
-    
+
     dataert[idx] <- data_inf[idx]
     data_inf <- lapply(seq(N),
                        function(i) {
@@ -1793,7 +1798,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
                          names(v) <- which(idx_)
                          v
                        })
-    
+
     # data_na <- dataert
     # idx <- apply(data_na, 2, is.na)
     # data_na[idx] <- NA
@@ -1806,14 +1811,14 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
     # }
     # data_na[!idx] <- NA
     # dataert[idx] <- data_na[idx]
-    
+
   } else if (inf.action == 'overlap') {
     data_inf <- dataert
     idx <- apply(data_inf, 2, is.infinite)
     x <- as.vector(data_inf)
     data_inf[idx] <- max(x[!is.infinite(x)], na.rm = T) * 2.5
     dataert[idx] <- data_inf[idx]
-    
+
     data_inf <- lapply(seq(N),
                       function(i) {
                         idx_ <- idx[, i]
@@ -1821,7 +1826,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
                         names(v) <- aggr_attr[idx_]
                         v
                       })
-    
+
     # TODO: ask diederick when NA will be generated...
     # data_na <- dataert
     # idx <- apply(data_na, 2, is.na)
@@ -1830,7 +1835,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
     # data_na[!idx] <- NA
     # dataert[idx] <- data_na[idx]
   }
-  
+
   for (i in seq_along(get_algId(dsList))) {
     algId <- get_algId(dsList)[[i]]
     dash <- get_line_style(algId)
@@ -1838,10 +1843,10 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
     data <- dataert[, i]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
-    
+
     data_inf_ <- data_inf[[i]]
     # data_na_ <- data_na[, i]
-    
+
     if (plot_mode == "radar") {
       p %<>%
         add_trace(type = 'scatterpolar', r = data,
@@ -1854,7 +1859,7 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
       # p %<>%
       #   add_trace(type = 'scatterpolar', mode = 'markers', r = data_inf_ ,
       #             theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
-      #             marker = list(color = rgb_str, symbol = 'diamond', size = '10'), 
+      #             marker = list(color = rgb_str, symbol = 'diamond', size = '10'),
       #             text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
       #             hoverinfo = 'text', showlegend = F, legendgroup = algId)
     } else {
@@ -1862,14 +1867,14 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
                        mode = 'lines+markers',
                        marker = list(color = rgb_str, size = 7), hoverinfo = 'text',
                        text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
-                       line = list(color = rgb_str, dash = dash), 
+                       line = list(color = rgb_str, dash = dash),
                        name = algId, legendgroup = algId)
       p %<>%
-        add_trace(type = 'scatter', mode = 'markers', x = as.numeric(names(data_inf_)), 
-                  y = data_inf_, marker = list(color = rgb_str, symbol = 'circle-open', size = 13), 
+        add_trace(type = 'scatter', mode = 'markers', x = as.numeric(names(data_inf_)),
+                  y = data_inf_, marker = list(color = rgb_str, symbol = 'circle-open', size = 13),
                   # text = paste0('ERT: ', format(rep(Inf, length(data_inf_)), digits = 3, nsmall = 3)),
                   hoverinfo = 'none', showlegend = F, legendgroup = algId)
-      
+
       # p %<>%
       #   add_trace(type='scatter', mode='markers', x = aggr_attr, y = data_na_,
       #             marker = list(color = rgb_str, symbol = 'x', size = '10'),
@@ -1877,20 +1882,29 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
       #             hoverinfo = 'text', showlegend = F, legendgroup = algId)
     }
   }
-  
+
   if (plot_mode == "radar") {
     if (use_rank)
-      p %<>% layout(p, polar = list(radialaxis = list(type = 'linear', visible = F, 
+      p %<>% layout(p, polar = list(radialaxis = list(type = 'linear', visible = F,
                                                       autorange = 'reversed')))
     else
-      p %<>% layout(polar = list(radialaxis = list(type = 'log', visible = F, 
+      p %<>% layout(polar = list(radialaxis = list(type = 'log', visible = F,
                                                    autorange = 'reverse')))
-    
+
   } else {
-    if (aggr_on == 'funcId' && class(aggr_attr) == class(1))
-      p %<>% layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
-                    xaxis = list(tick0 = 1, dtick = 1, range = range,
-                                 type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+    if (aggr_on == 'funcId' && class(aggr_attr) == class(1)) {
+      if(!is.null(range)) {
+        p %<>% layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
+                      xaxis = list(tick0 = 1, dtick = 1, range = range,
+                                   type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+      } else {
+       # range is null if we have string-based function names
+       # cannot test this, because example data not available
+        p %<>% layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
+                      xaxis = list(tick0 = 1, dtick = 1, # range = range,
+                                   type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+      }
+    }
     else
       p %<>% layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
                     xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
@@ -1921,11 +1935,11 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
 
   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
 
-  p <- if (plot_mode == "radar") 
+  p <- if (plot_mode == "radar")
     IOH_plot_ly_default(title = plot_title)
-  else 
-    IOH_plot_ly_default(title = plot_title, 
-                        x.title = ifelse(aggr_on == "funcId", "Function", "Dimension"), 
+  else
+    IOH_plot_ly_default(title = plot_title,
+                        x.title = ifelse(aggr_on == "funcId", "Function", "Dimension"),
                         y.title = ifelse(use_rank, "Rank", "Mean Runtime"))
 
   if (use_rank) {
@@ -1957,7 +1971,7 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
                   marker = list(color = rgb_str), hoverinfo = 'text',
                   text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
                   name = algId, legendgroup = algId)
-                  
+
       #TODO: cleaner solution!!!!!
       data2 <- data
       data2[is.na(data2)] <- 0
@@ -2009,35 +2023,35 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
 }
 
 #' @rdname Plot.Stats.Significance_Heatmap
-#' @export 
+#' @export
 Plot.Stats.Significance_Heatmap.DataSetList <- function(dsList, ftarget, alpha = 0.01,
                                             bootstrap.size = 30, which = 'by_FV'){
-  if (length(get_dim(dsList)) != 1 || 
-      length(get_funcId(dsList)) != 1 || 
+  if (length(get_dim(dsList)) != 1 ||
+      length(get_funcId(dsList)) != 1 ||
       length(get_algId(dsList)) < 2)
     return(NULL)
-  
+
   p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size, which)
   y <- p_matrix <= alpha
   colorScale <- data.frame(x = c(-1, -0.33, -0.33, 0.33, 0.33, 1),
                            col = c('blue', 'blue', 'white', 'white', 'red', 'red')
                            )
   heatmap <-  y - t(y)
-  
+
   p <- plot_ly(x = colnames(y), y = rownames(y), z = heatmap, type = 'heatmap',
-               xgap = 0.2, ygap = 0.2, colorscale = colorScale, showscale = F) 
+               xgap = 0.2, ygap = 0.2, colorscale = colorScale, showscale = F)
   p %<>% layout(yaxis = list(autorange = 'reversed', scaleratio = 1),
                 xaxis = list(tickangle = 45))
   p
 }
 
 #' Helper function for Plot.Stats.Significance_Graph
-#' 
+#'
 #' @param x x
 #' @param start default is 0
 #' @param direction default is 1
-#' 
-#' @noRd 
+#'
+#' @noRd
 radian.rescale <- function(x, start=0, direction=1) {
   c.rotate <- function(x) (x + start) %% (2 * pi) * direction
   c.rotate(rescale(x, c(0, 2 * pi), range(x)))
@@ -2053,7 +2067,7 @@ Plot.Stats.Significance_Graph.DataSetList <- function(dsList, ftarget, alpha = 0
   p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size, which)
   g <- graph_from_adjacency_matrix(p_matrix <= alpha, mode = 'directed', diag = F)
   lab.locs <- radian.rescale(x = 1:nrow(p_matrix), direction = -1, start = 0)
-  
+
   plot.igraph(g, layout = layout.circle(g), vertex.size = 10, edge.arrow.size = 1,
               vertex.label.color = 'black',
               vertex.label.dist = 2,
@@ -2066,7 +2080,7 @@ Plot.Stats.Significance_Graph.DataSetList <- function(dsList, ftarget, alpha = 0
 Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds = 100, glicko2_rank_df = NULL,
                                                        which = 'by_FV', target_dt = NULL) {
   df <- glicko2_rank_df
-  
+
   if (is.null(df)) {
     df <- glicko2_ranking(dsList, nr_rounds, which, target_dt = target_dt)$ratings
     algIds <- df$Player$algId
@@ -2074,8 +2088,8 @@ Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds = 100, 
   else{
     algIds <- df$algId
   }
-  p <- IOH_plot_ly_default(title = "Glicko2-rating", 
-                           x.title = "Algorithm", 
+  p <- IOH_plot_ly_default(title = "Glicko2-rating",
+                           x.title = "Algorithm",
                            y.title = "Rating")
   df$Rating %<>% as.numeric
   df$Deviation %<>% as.numeric
@@ -2083,20 +2097,20 @@ Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds = 100, 
   low <- df$Rating - 3*df$Deviation
   open <- df$Rating + df$Deviation
   close <- df$Rating - df$Deviation
-  
+
   N <- length(df$Rating)
   colors <- get_color_scheme(algIds)
   if (length(colors != N)) {
     colors <- get_color_scheme(get_algId(dsList))
   }
-  
+
   for (i in seq(N)) {
     # rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.52)')
     color <- list(line = list(color = colors[[i]]))
-    p %<>% add_trace(type = "candlestick", x = algIds[[i]], open = open[[i]], close = close[[i]], 
-                     high = high[[i]], low = low[[i]], legendgroup = algIds[[i]], 
+    p %<>% add_trace(type = "candlestick", x = algIds[[i]], open = open[[i]], close = close[[i]],
+                     high = high[[i]], low = low[[i]], legendgroup = algIds[[i]],
                      name = algIds[[i]], increasing = color, decreasing = color,
-                     hovertext = paste0(format(df$Rating[[i]], digits = 3), '+-', 
+                     hovertext = paste0(format(df$Rating[[i]], digits = 3), '+-',
                                         format(df$Deviation[[i]], digits = 3)),
                      hoverinfo = "text")
   }

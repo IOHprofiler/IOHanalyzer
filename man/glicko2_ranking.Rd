@@ -8,7 +8,7 @@ glicko2_ranking(dsl, nr_rounds = 100, which = "by_FV",
   target_dt = NULL)
 }
 \arguments{
-\item{dsl}{The DataSetList, can contain multiple functions and dimensions, but should have the 
+\item{dsl}{The DataSetList, can contain multiple functions and dimensions, but should have the
 same algorithms for all of them}
 
 \item{nr_rounds}{The number of rounds to run. More rounds leads to a more accurate ranking.}
@@ -21,9 +21,9 @@ same algorithms for all of them}
 A dataframe containing the glicko2-ratings and some additional info
 }
 \description{
-This procedure ranks algorithms based on a glicko2-procedure. 
-Every round (total nr_rounds), for every function and dimension of the datasetlist, 
-each pair of algorithms competes. This competition samples a random runtime for the 
+This procedure ranks algorithms based on a glicko2-procedure.
+Every round (total nr_rounds), for every function and dimension of the datasetlist,
+each pair of algorithms competes. This competition samples a random runtime for the
 provided target (defaults to best achieved target). Whichever algorithm has the lower
 runtime wins the game. Then, from these games, the glicko2-rating is determined.
 }

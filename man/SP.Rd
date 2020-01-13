@@ -7,7 +7,7 @@
 SP(data, max_runtime)
 }
 \arguments{
-\item{data}{A dataframe or matrix. Each row stores the runtime sample points from 
+\item{data}{A dataframe or matrix. Each row stores the runtime sample points from
 several runs}
 
 \item{max_runtime}{A Numerical vector. Should have the same size as columns of data}

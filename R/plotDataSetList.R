@@ -2292,7 +2292,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                        ...
              )
            if (is_new_plot) {
-             p %<>% layout(yaxis = list(type = yscale, tickfont = f1, ticklen = 3))
+             p %<>% layout(yaxis = list(type = yscale, tickfont = f3, ticklen = 3))
            }
          },
          'line' = {
@@ -2310,9 +2310,9 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                  add_trace(
                    data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l,
                    type = 'scatter', mode = 'lines+markers', 
-                   linetype = ~l, marker = list(size = 4), linetypes = dashes,
+                   linetype = ~l, marker = list(size = getOption('IOHanalyzer.markersize', 4)), linetypes = dashes,
                    colors = colors, showlegend = show.legend,
-                   text = y_attr, line = list(width = 2),
+                   text = y_attr, line = list(width = getOption('IOHanalyzer.linewidth', 2)),
                    ...
                  ) )
            }
@@ -2331,9 +2331,9 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                    add_trace(
                      data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l,
                      type = 'scatter', mode = 'lines+markers', 
-                     marker = list(size = 4), linetype = dashstyle,
+                     marker = list(size = getOption('IOHanalyzer.markersize', 4)), linetype = dashstyle,
                      colors = colors, showlegend = show.legend, name = ~l,
-                     text = y_atr, line = list(width = 2),
+                     text = y_atr, line = list(width = getOption('IOHanalyzer.linewidth', 2)),
                      ...
                    )         
                )
@@ -2342,9 +2342,9 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              }
            }
            if (is_new_plot) {
-             p %<>% layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 3,
+             p %<>% layout(xaxis = list(type = xscale, tickfont = f3, ticklen = 3,
                                         autorange = ifelse(scale.reverse, "reversed", T)),
-                           yaxis = list(type = yscale, tickfont = f1, ticklen = 3))
+                           yaxis = list(type = yscale, tickfont = f3, ticklen = 3))
            }
          },
          'ribbon' = {
@@ -2371,9 +2371,9 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
            
            
            if (is_new_plot) {
-             p %<>% layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 3,
+             p %<>% layout(xaxis = list(type = xscale, tickfont = f3, ticklen = 3,
                                         autorange = ifelse(scale.reverse, "reversed", T)),
-                           yaxis = list(type = yscale, tickfont = f1, ticklen = 3))
+                           yaxis = list(type = yscale, tickfont = f3, ticklen = 3))
            }
          },
          'radar' = {
@@ -2414,9 +2414,9 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                        ...)
            
            if (is_new_plot) {
-             p %<>% layout(xaxis = list(type = xscale, tickfont = f1, ticklen = 3,
+             p %<>% layout(xaxis = list(type = xscale, tickfont = f3, ticklen = 3,
                                         autorange = ifelse(scale.reverse, "reversed", T)),
-                           yaxis = list(type = yscale, tickfont = f1, ticklen = 3))
+                           yaxis = list(type = yscale, tickfont = f3, ticklen = 3))
            }
          }
   )

@@ -46,6 +46,8 @@ options(shiny.port = 4242)
     IOHanalyzer.label_fontsize = 16,
     IOHanalyzer.title_fontsize = 16,
     IOHanalyzer.tick_fontsize = 12,
+    IOHanalyzer.linewidth = 2,
+    IOHanalyzer.markersize = 4,
     IOHanalyzer.max_colors = 2 #Set to 2 since colorbrewer only works with >= 3 colors
   )
   toset <- !(names(op.IOHanalyzer) %in% names(op))

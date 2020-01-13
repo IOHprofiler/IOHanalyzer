@@ -28,7 +28,10 @@ plot_color_example <- function(ds){
                      input$Settings.Font.Title,
                      input$Settings.Font.Legend,
                      input$Settings.Font.Label,
-                     input$Settings.Font.Tick)
+                     input$Settings.Font.Tick,
+                     input$Settings.Color.Linewidth,
+                     input$Settings.Color.Markersize
+                     )
   if (any(is.null(curr_settings))) return(NULL)
   if (length(ds) > 0) {
     algnames <- get_algId(ds)
@@ -39,14 +42,14 @@ plot_color_example <- function(ds){
   if (schemename == "Custom" && !is.null(input$Settings.Color.Upload)) {
     schemename <- paste0(schemename, ": ", input$Settings.Color.Upload$datapath)
   }
-  p <- IOH_plot_ly_default(schemename, "X-axis label", "Y-axis label")
-
-  for (i in seq_along(algnames)) {
-    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-    
-    p %<>% add_segments(y = i, yend = i, x = 0, xend = 10, name = sprintf('%s', algnames[[i]]),
-                        line = list(color = rgb_str, width = 6))    
-  }
+  
+  x <- c(rep(1, length(algnames)),rep(2, length(algnames)))
+  y <- seq_len(length(algnames))
+  dt <- data.table(algId = rep(algnames, 2), x, y)
+  
+  p <- plot_general_data(dt, 'x', 'y', 'line', show.legend = T,
+                         x_title = 'X-title', y_title = 'Y-title', plot_title = 'Plot Title')
+  
   p
 }
 
@@ -93,6 +96,14 @@ observe({
 })
 
 observe({
+  options("IOHanalyzer.linewidth" = input$Settings.Color.Linewidth)
+})
+
+observe({
+  options("IOHanalyzer.markersize" = input$Settings.Color.Markersize)
+})
+
+observe({
   options("IOHanalyzer.figure_width" = input$Settings.Download.Width)
 })
 
@@ -128,6 +139,8 @@ observe({
 observe({
   options("IOHanalyzer.precision" = input$Settings.General.Precision)
 })
+
+
 
 output$Settings.Download <- downloadHandler(
   filename = "IOHanalyzer_settings.rds",

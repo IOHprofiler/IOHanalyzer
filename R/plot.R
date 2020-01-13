@@ -15,7 +15,7 @@ f2 <- list(
 # font No. 3...
 f3 <- list(
     family = 'Old Standard TT, serif',
-    size = getOption("IOHanalyzer.tick_fontsize", default = 16), 
+    size = getOption("IOHanalyzer.tick_fontsize", default = 12), 
     color = 'black'
 )
 

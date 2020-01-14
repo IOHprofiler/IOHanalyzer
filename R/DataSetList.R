@@ -973,7 +973,7 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT') 
     algId <- attr(df, 'algId')
     if (by_rt) {
       temp <- targets[DIM == attr(df, 'DIM'), c('target', 'funcId')]
-      targets_ <- temp[funcId == attr(df, 'funcId'), 'target']
+      targets_ <- temp[funcId == attr(df, 'funcId')][['target']]
     }
     else 
       targets_ <- targets

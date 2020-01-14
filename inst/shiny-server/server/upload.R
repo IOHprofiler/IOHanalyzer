@@ -118,14 +118,17 @@ selected_folders <- reactive({
   if (!is.null(input$upload.add_zip)) {
     tryCatch({
     datapath <- input$upload.add_zip$datapath
-    folders <- rep('', length(datapath))
 
-    for (i in seq(datapath)) {
+    # we start with an empty folders lister
+    folders <- c();
+
+    for (i in seq_along(datapath)) {
       filetype <- sub('[^\\.]*\\.', '', basename(datapath[i]), perl = T)
       print_html(paste0('<p style="color:blue;">Handling ', filetype, '-data.<br>'))
 
       if (filetype == 'csv') {
-        folders[i] <- datapath[[i]]
+        # add the data path to the folders list direct
+        folders <- c(folders, datapath[[i]]);
         next
       }
 
@@ -142,30 +145,37 @@ selected_folders <- reactive({
         return(NULL)
       }
       if (filetype == 'zip')
-        files <- unzip_fct(datapath[i], list = T)$Name
+        files <- unzip_fct(datapath[[i]], list = T)$Name
       else
-        files <- unzip_fct(datapath[i], list = T)
+        files <- unzip_fct(datapath[[i]], list = T)
 
-      idx <- grep('*.info', files)[1]
-      info <- files[idx]
-
-      if (is.null(info)) {
-        idx <- grep('*.csv', files)[1]
-        info <- files[idx]
-        if (is.null(info))
-          return(NULL)
+      # get _ALL_ the info or csv files
+      idx <- grep('.info', files, fixed=TRUE)
+      if(is.null(idx) || (length(idx) <= 0L)) {
+        idx <- grep('.csv', files, fixed=TRUE);
+        if(is.null(idx) || (length(idx) <= 0L)) {
+          return(NULL);
+        }
       }
 
-      if (basename(info) == info) {
+      # get the common base folder for of these files
+      info <- files[idx];
+      info <- unique(dirname(files[idx]));
+
+      # before we had basename(info)==info
+      # this is equivalent to any(info==".") now
+      if (any(info == ".")) {
         folder <- basename(tempfile("dir-"))  # generate a folder name here
         .exdir <- file.path(exdir, folder)
         dir.create(.exdir, recursive = T)
-        unzip_fct(datapath[i], list = FALSE, exdir = .exdir)
+        unzip_fct(datapath[[i]], list = FALSE, exdir = .exdir)
         print_html(paste0('<p style="color:blue;">Succesfully unzipped ', basename(datapath[i]), '.<br>'))
-        folders[i] <- .exdir
+        folders <- c(folders, .exdir);
       } else {
-        folder <- dirname(info)
-        res <- unzip_fct(datapath[i], list = FALSE, exdir = exdir)
+       # before we had: folder <- dirname(info)
+       # but this is equivalent to folder <- info now
+        folder <- info;
+        res <- unzip_fct(datapath[[i]], list = FALSE, exdir = exdir)
         if (length(res) == 0) {
           shinyjs::alert("An error occured while unzipping the provided files.\n
                Please ensure no archives are corrupted and the filenames are
@@ -173,9 +183,10 @@ selected_folders <- reactive({
           return(NULL)
         }
         print_html(paste0('<p style="color:blue;">Succesfully unzipped ', basename(datapath[i]), '.<br>'))
-        folders[i] <- file.path(exdir, folder)
+        folders <- c(folders, file.path(exdir, folder));
       }
     }
+
     folders
     }, error = function(e) {shinyjs::alert(paste0("The following error occured when processing the uploaded data: ", e))
       })
@@ -186,6 +197,7 @@ selected_folders <- reactive({
 # load, process the data folders and update DataSetList
 observeEvent(selected_folders(), {
   folders <- selected_folders()
+
   format_selected <- input$upload.data_format
   maximization <- input$upload.maximization
 

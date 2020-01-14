@@ -115,7 +115,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
           # TODO: double-check the following treatment on `instance`!!!
           instance <- attr(data, 'instance') #Was instance without index?
           suites[i] <- attr(data, 'suite')
-          maximizations[i] <- attr(data, 'maximization')
+          maximizations[i] <- isTRUE(attr(data, 'maximization')) # ensure TRUE or FALSE
 
           # check for duplicated instances
           if (length(object) != 0) {
@@ -154,12 +154,26 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
 
     suite <- unique(suites)
     maximization <- unique(maximizations)
-    if (length(suite) != 1 || length(maximization) != 1) {
-      warning("Multipe different suites detected!")
+    if (length(suite) != 1L) {
+      if(length(suite) > 1L) {
+        warning(paste0("Multipe different suites detected: ", paste(suite, sep=",", collapse=",")), ", using ", suite[[1L]]);
+        suite <- suite[[1L]];
+      } else {
+        warning(paste0("No suite detected, using ", TWO_COL));
+        suite <- TWO_COL;
+      }
+    }
+    if (length(maximization) != 1L) {
+      if(length(maximization) > 1L) {
+        warning("both maximization and minimization detected? - using minimization")
+      } else {
+        warning("neither maximization nor minimization detected! - using minimization");
+      }
+      maximization <- FALSE;
     }
 
     attr(object, 'suite') <- suite
-    attr(object, 'maximization') <- maximization
+    attr(object, 'maximization') <- isTRUE(maximization) # ensure TRUE or FALSE
     object
   }
 

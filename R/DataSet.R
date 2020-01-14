@@ -42,17 +42,22 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
                       TWO_COL = NULL)
     }
 
-    if (is.null(maximization)) {
+    if (is.null(maximization) || (!(isTRUE(maximization) || isFALSE(maximization)))) {
       maximization <- info$maximization
       if (is.null(maximization) && !is.null(suite)) {
         if (verbose)
           warning("maximization or minimization not specified in .info-file,
                   taking best guess based on the suite-name.")
         if (grepl("\\w*bbob\\w*", suite, ignore.case = T) != 0)
-          maximization <- F
+          maximization <- FALSE
         else
-          maximization <- T
+          maximization <- TRUE
+      } else {
+        maximization <- FALSE # default to minimization
       }
+    }
+    if(!(isTRUE(maximization) || isFALSE(maximization))) {
+      warning("unclear whether we should maximize or minimize.");
     }
 
     datBaseName <- strsplit(basename(info$datafile), '\\.')[[1]][1]

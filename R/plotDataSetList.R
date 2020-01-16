@@ -2274,11 +2274,22 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
            if (legend_attr != x_attr) {
              warning("Inconsistent attribute selected for x-axis and legend. Using x_attr as name")
            }
+           #Update names to aviod numerical legend
+           if (stri_detect_regex(x_attr, "(?i)fun"))
+             df <- df[, x := paste0('F', sprintf("%02d", x))]
+           else if (stri_detect_regex(x_attr, "(?i)dim"))
+             df <- df[, x := paste0('D', as.character(x))]
+           else
+             df <- df[, x := paste0('*', as.character(x))]
+           
+           #Update color names as well, since the value changed
+           names(colors) <- unique(df[['x']])
+           
            p %<>%
              add_trace(data = df,
                        x = ~x, y = ~y, type = 'violin',
                        hoveron = "points+kde",
-                       points = 'all',
+                       points = F,
                        pointpos = 1.5,
                        jitter = 0,
                        scalemode = 'count',
@@ -2289,6 +2300,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                        split = ~x,
                        line = list(color = 'black', width = 1.1),
                        box = list(visible = T),
+                       spanmode = 'hard',
                        ...
              )
            if (is_new_plot) {
@@ -2299,6 +2311,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
            if (legend_attr == x_attr) {
              stop("Duplicated attribute selected for x-axis and legend.")
            }
+           
            #Use linestyles to differentiate traces if only one attribute is selected to be plotted
            #TODO: Combine these two options more elegantly
            if (length(y_attr) == 1) {
@@ -2382,7 +2395,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
            }
            #TODO: better way to force to string
            if (stri_detect_regex(x_attr, "(?i)fun"))
-             df <- df[, x := paste0('F', as.character(x))]
+             df <- df[, x := paste0('F', sprintf("%02d", x))]
            else if (stri_detect_regex(x_attr, "(?i)dim"))
              df <- df[, x := paste0('D', as.character(x))]
            else

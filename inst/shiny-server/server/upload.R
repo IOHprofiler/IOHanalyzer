@@ -117,6 +117,7 @@ observeEvent(input$repository.dataset, {
 # add the data from repository
 observeEvent(input$repository.load_button, {
   data <- DataSetList()
+  repo_dir <- get_repo_location()
   for (f in input$repository.dataset) {
     rds_file <- file.path(repo_dir, input$repository.type, paste0(f, ".rds"))
     data <- c(data, readRDS(rds_file))

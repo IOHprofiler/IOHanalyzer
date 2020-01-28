@@ -2138,6 +2138,7 @@ add_transparancy <- function(colors, percentage){
 #' @param plot_title Title of x-axis. Defaults to no title
 #' @param p A previously existing plot on which to add traces. If NULL, a new canvas is created
 #' @param show.legend Whether or not to include a legend
+#' @param inf.action How to deal with infinite values
 #' @param ... Additional parameters for the add_trace function
 #' 
 #' @export
@@ -2145,7 +2146,8 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                               legend_attr = 'algId', scale.xlog = F, scale.ylog = F,
                               scale.reverse = F, p = NULL, x_title = NULL,
                               y_title = NULL, plot_title = NULL, upper_attr = NULL,
-                              lower_attr = NULL, subplot_attr = NULL, show.legend = F, ...){
+                              lower_attr = NULL, subplot_attr = NULL, show.legend = F,
+                              inf.action = 'none', ...){
   
   l <- x <- NULL #Set local binding to remove warnings
   
@@ -2318,16 +2320,48 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              dashes <- get_line_style(xs)
              names(dashes) <- xs
              colnames(df)[colnames(df) == y_attr] <- "y"
+             
+             df[, isinf := is.infinite(y)]
+             
+             if (inf.action == 'overlap') {
+               maxval <- max(df[isinf == F, 'y'])
+               df[['y']][df[['isinf']]] <- 10**(ceiling(log10(maxval)) + 1)
+             }
+             else if (inf.action == 'jitter') {
+               #TODO: Faster way to compute this
+               maxval <- max(df[isinf == F, 'y'])
+               for (xval in unique(df[['x']])) {
+                 tempval <- 10**(ceiling(log10(maxval)) + 1)
+                 for (lval in unique(df[['l']])) {
+                   temp <- df[l == lval][x == xval]
+                   if (nrow(temp) > 0 && df[l == lval][x == xval][['isinf']]) {
+                     df[l == lval][x == xval][['y']] <- tempval
+                     tempval <- 1.2 * tempval
+                   }
+                 }
+               }
+             }
+             
              suppressWarnings(
                p %<>%
                  add_trace(
                    data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l,
-                   type = 'scatter', mode = 'lines+markers', 
+                   type = 'scatter', mode = 'lines+markers', color = ~l,
                    linetype = ~l, marker = list(size = getOption('IOHanalyzer.markersize', 4)), linetypes = dashes,
                    colors = colors, showlegend = show.legend,
                    text = y_attr, line = list(width = getOption('IOHanalyzer.linewidth', 2)),
                    ...
                  ) )
+             if (inf.action != 'none') {
+               p %<>% add_trace(data = df[isinf == T], x = ~x, y = ~y, legendgroup = ~l,
+                    type = 'scatter', mode = 'markers',  color = ~l,
+                    marker = list(symbol = 'circle-open', size = 8 + getOption('IOHanalyzer.markersize', 4)),
+                    colors = colors, showlegend = F,
+                    text = y_attr,
+                    ...
+               )
+             }
+             
            }
            else {
              dashes_full <- rep(c("solid", "dot", "dash", "longdash", "dashdot", "longdashdot"), 
@@ -2435,3 +2469,61 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
   )
   return(p)
 }
+
+
+### TODO: inf-action for lineplots
+
+
+
+
+# 
+# #TODO: figure out how to better incorporate this into the dataframe
+# res = switch(inf_action, 
+#              'jitter' = {
+#                stop("This mode is not yet supported")
+#                data_inf <- values
+#                idx <- apply(data_inf, 2, is.infinite)
+#                data_inf[idx] <- NA
+#                
+#                for (i in seq(nrow(data_inf))) {
+#                  idx_ <- idx[i, ]
+#                  x <- data_inf[i, ]
+#                  max_ <- max(x[!is.infinite(x)], na.rm = T)
+#                  n_inf <- sum(idx_)
+#                  data_inf[i, idx_] <- 10 ^ (log10(max_ * 2) + seq(0, log10(10), length.out = n_inf))
+#                }
+#                
+#                values[idx] <- data_inf[idx]
+#                data_inf <- lapply(seq(N),
+#                                   function(i) {
+#                                     idx_ <- idx[, i]
+#                                     v <- data_inf[idx_, i]
+#                                     names(v) <- which(idx_)
+#                                     v
+#                                   })
+#              },
+#              'overlap' = {
+#                if (!by_rt) {
+#                  stop("This mode is only supported for value `by_RT` of parameter `which`")
+#                }
+#                data_inf <- values
+#                idx <- apply(data_inf, 2, is.infinite)
+#                x <- as.vector(data_inf)
+#                data_inf[idx] <- max(x[!is.infinite(x)], na.rm = T) * 2.5
+#                values[idx] <- data_inf[idx]
+#                
+#                data_inf <- lapply(seq(N),
+#                                   function(i) {
+#                                     idx_ <- idx[, i]
+#                                     v <- data_inf[idx_, i]
+#                                     names(v) <- aggr_attr[idx_]
+#                                     v
+#                                   })
+#              },
+#              'none' = {
+#                data_inf <- values
+#              }
+# )
+# if (is.null(res)) {
+#   stop("Invalid agrument for parameter `inf_action`.")
+# }

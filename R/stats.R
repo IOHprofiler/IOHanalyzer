@@ -474,16 +474,16 @@ get_default_ECDF_targets <- function(data, format_func = as.integer) {
 #' @export
 #' @examples 
 #' get_target_dt(dsl)
-get_target_dt <- function(dsList, which = 'by_FV') {
+get_target_dt <- function(dsList, which = 'by_RT') {
   vals <- c()
   funcs <- get_funcId(dsList)
   dims <- get_dim(dsList)
   dt <- as.data.table(expand.grid(funcs, dims))
   colnames(dt) <- c("funcId", "DIM")
-  if (which == 'by_FV') {
+  if (which == 'by_RT') {
     target_func <- get_target_FV
   }
-  else if (which == 'by_RT') {
+  else if (which == 'by_FV') {
     target_func <- get_target_RT
   }
   else stop("Invalid argument for `which`; can only be `by_FV` or `by_RT`.")

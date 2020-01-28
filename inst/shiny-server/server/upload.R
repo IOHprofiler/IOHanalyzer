@@ -127,7 +127,7 @@ unzip_fct_recursive <- function(zipfile, exdir, alert_fun, print_fun, depth = 0)
     unzip_fct <- untar
   
   files <- unzip_fct(zipfile, list = FALSE, exdir = exdir)
-  if (length(res) == 0) {
+  if (length(files) == 0) {
     alert_fun("An error occured while unzipping the provided files.\n
                Please ensure no archives are corrupted and the filenames are
                in base-64.")
@@ -141,7 +141,8 @@ unzip_fct_recursive <- function(zipfile, exdir, alert_fun, print_fun, depth = 0)
     grep('__MACOSX', ., value = T, invert = T) %>%  # to get rid of __MACOSX folder on MAC..
     c(folders)
   
-  zip_files <- grep('.*zip|bz2|bz|gz|tar|tgz|tar\\.gz|xz', files, value = T, perl = T)
+  zip_files <- grep('.*zip|bz2|bz|gz|tar|tgz|tar\\.gz|xz', files, value = T, perl = T) %>% 
+    grep('__MACOSX', ., value = T, invert = T)
   
   if (depth <= 3) { # only allow for 4 levels of recursions
     for (zipfile in zip_files) {
@@ -162,7 +163,7 @@ selected_folders <- reactive({
     folders <- c()
 
     for (i in seq(datapath)) {
-      filetype <- basename(zipfile) %>% 
+      filetype <- basename(datapath[i]) %>% 
         strsplit('\\.') %>% `[[`(1) %>%  
         rev %>% 
         `[`(1)

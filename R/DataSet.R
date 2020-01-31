@@ -112,6 +112,12 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
 
     RT <- RT$RT
     FV <- FV$FV
+    
+    # try to save some memory here...
+    mode(RT) <- 'integer' 
+    .FV <- FV
+    mode(.FV) <- 'integer'
+    if (all(FV == .FV)) FV <- .FV
 
     # TODO: add more data sanity checks
     maxRT <- set_names(sapply(RT_raw, function(d) d[nrow(d), idxEvals]), NULL)

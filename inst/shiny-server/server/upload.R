@@ -114,7 +114,7 @@ observeEvent(input$repository.load_button, {
 })
 
 # decompress zip files recursively and return the root directory of extracted files 
-unzip_fct_recursive <- function(zipfile, exdir, alert_fun, print_fun, depth = 0) {
+unzip_fct_recursive <- function(zipfile, exdir, print_fun = print, alert_fun = print, depth = 0) {
   filetype <- basename(zipfile) %>% 
     strsplit('\\.') %>% `[[`(1) %>%  
     rev %>% 
@@ -174,8 +174,7 @@ selected_folders <- reactive({
         next
       }
       
-      .folders <- unzip_fct_recursive(datapath[i], exdir, alert_fun = shinyjs::alert, 
-                                      print_fun = print_html) %>% unique
+      .folders <- unzip_fct_recursive(datapath[i], exdir, print_html, shinyjs::alert) %>% unique
       folders %<>% c(.folders)
     }
     folders

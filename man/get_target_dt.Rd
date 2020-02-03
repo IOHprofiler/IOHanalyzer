@@ -4,7 +4,7 @@
 \alias{get_target_dt}
 \title{Generate datatables of runtime or function value targets for a DataSetList}
 \usage{
-get_target_dt(dsList, which = "by_FV")
+get_target_dt(dsList, which = "by_RT")
 }
 \arguments{
 \item{dsList}{A DataSetList}

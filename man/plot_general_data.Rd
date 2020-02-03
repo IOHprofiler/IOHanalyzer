@@ -8,7 +8,8 @@ plot_general_data(df, x_attr = "algId", y_attr = "vals",
   type = "violin", legend_attr = "algId", scale.xlog = F,
   scale.ylog = F, scale.reverse = F, p = NULL, x_title = NULL,
   y_title = NULL, plot_title = NULL, upper_attr = NULL,
-  lower_attr = NULL, subplot_attr = NULL, show.legend = F, ...)
+  lower_attr = NULL, subplot_attr = NULL, show.legend = F,
+  inf.action = "none", ...)
 }
 \arguments{
 \item{df}{The dataframe containing the data to plot. It should contain at least two columns:
@@ -45,6 +46,8 @@ Only works in combination with`upper_attr` and `type` == 'ribbon'}
 \item{subplot_attr}{Which attribute of the dataframe to use for creating subplots}
 
 \item{show.legend}{Whether or not to include a legend}
+
+\item{inf.action}{How to deal with infinite values}
 
 \item{...}{Additional parameters for the add_trace function}
 }

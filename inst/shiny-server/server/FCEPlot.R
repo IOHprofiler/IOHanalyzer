@@ -57,16 +57,34 @@ output$FCEPlot.Multi.Plot <- renderPlotly(
   render_FCEPlot_multi_plot()
 )
 
+get_data_FCE_multi_func_bulk <- reactive({
+  data <- subset(DATA_RAW(),
+                 DIM == input$Overall.Dim)
+  if (length(get_algId(data)) < 20) { #Arbitrary limit for the time being
+    rbindlist(lapply(get_funcId(data), function(fid) {
+      generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$FCEPlot.Multi.Logx, 
+                                    which = 'by_FV')
+    }))
+  }
+  else
+    NULL
+})
+
 get_data_FCEPlot_multi <- reactive({
   req(isolate(input$FCEPlot.Multi.Algs))
   input$FCEPlot.Multi.PlotButton
-  data <- subset(DATA_RAW(),
-                 algId %in% isolate(input$FCEPlot.Multi.Algs),
-                 DIM == input$Overall.Dim)
-  rbindlist(lapply(get_funcId(data), function(fid) {
-    generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$FCEPlot.Multi.Logx, 
-                                  which = 'by_FV')
-  }))
+  if (length(get_algId(data)) < 20) {
+    get_data_FCE_multi_func_bulk()[algId %in% isolate(input$ERTPlot.Multi.Algs), ]
+  }
+  else {
+    data <- subset(DATA_RAW(),
+                   algId %in% isolate(input$FCEPlot.Multi.Algs),
+                   DIM == input$Overall.Dim)
+    rbindlist(lapply(get_funcId(data), function(fid) {
+      generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$FCEPlot.Multi.Logx, 
+                                    which = 'by_FV')
+    }))
+  }
 })
 
 render_FCEPlot_multi_plot <- reactive({

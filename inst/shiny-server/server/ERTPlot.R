@@ -89,17 +89,35 @@ output$ERTPlot.Multi.Plot <- renderPlotly(
   render_ERTPlot_multi_plot()
 )
 
+get_data_ERT_multi_func_bulk <- reactive({
+  data <- subset(DATA_RAW(),
+                 DIM == input$Overall.Dim)
+  if (length(get_algId(data)) < 20) { #Arbitrary limit for the time being
+    rbindlist(lapply(get_funcId(data), function(fid) {
+      generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$ERTPlot.Multi.Logx, 
+                                    which = 'by_RT')
+    }))
+  }
+  else
+    NULL
+})
+
 get_data_ERT_multi_func <- reactive({
   req(isolate(input$ERTPlot.Multi.Algs))
   input$ERTPlot.Multi.PlotButton
-  selected_algs <- isolate(input$ERTPlot.Multi.Algs)
-  data <- subset(DATA_RAW(),
-                 algId %in% selected_algs,
-                 DIM == input$Overall.Dim)
-  rbindlist(lapply(get_funcId(data), function(fid) {
-  generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$ERTPlot.Multi.Logx, 
-                                which = 'by_RT')
-  }))
+  if (length(get_algId(data)) < 20) {
+    get_data_ERT_multi_func_bulk()[algId %in% isolate(input$ERTPlot.Multi.Algs), ]
+  }
+  else {
+    selected_algs <- isolate(input$ERTPlot.Multi.Algs)
+    data <- subset(DATA_RAW(),
+                   algId %in% selected_algs,
+                   DIM == input$Overall.Dim)
+    rbindlist(lapply(get_funcId(data), function(fid) {
+    generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$ERTPlot.Multi.Logx, 
+                                  which = 'by_RT')
+    }))
+  }
 })
 
 render_ERTPlot_multi_plot <- reactive({

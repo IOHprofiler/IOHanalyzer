@@ -304,21 +304,21 @@ Plot.FV.Parameters <- function(dsList, rt_min = NULL, rt_max = NULL,
                                scale.xlog = F, scale.ylog = F,
                                show.mean = T, show.median = F,
                                show.CI = F) UseMethod("Plot.FV.Parameters", dsList)
-#' Plot the aggregated empirical cumulative distriburtion as a function of the running times of
-#' a DataSetList. Aggregated over multiple functions or dimensions.
-#'
-#' @param dsList A DataSetList.
-#' @param targets The target function values. Specified in a data.frame, as can be generated
-#' @param scale.xlog Whether or not to scale the x-axis logaritmically
-#' by the function 'get_default_ECDF_targets'
-#'
-#' @return A plot of the empirical cumulative distriburtion as a function of
-#' the running times of the DataSetList
-#' @export
-#' @examples 
-#' Plot.RT.ECDF_Multi_Func(dsl)
-Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = F) 
-  UseMethod("Plot.RT.ECDF_Multi_Func", dsList)
+#' #' Plot the aggregated empirical cumulative distriburtion as a function of the running times of
+#' #' a DataSetList. Aggregated over multiple functions or dimensions.
+#' #'
+#' #' @param dsList A DataSetList.
+#' #' @param targets The target function values. Specified in a data.frame, as can be generated
+#' #' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' #' by the function 'get_default_ECDF_targets'
+#' #'
+#' #' @return A plot of the empirical cumulative distriburtion as a function of
+#' #' the running times of the DataSetList
+#' #' @export
+#' #' @examples 
+#' #' Plot.RT.ECDF_Multi_Func(dsl)
+#' Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = F) 
+#'   UseMethod("Plot.RT.ECDF_Multi_Func", dsList)
 #' Plot ERT-plots for multiple functions or dimensions
 #'
 #' @param dsList A DataSetList (should consist of only one function OR dimension).
@@ -334,48 +334,48 @@ Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = F)
 Plot.RT.Multi_Func <- function(dsList, scale.xlog = F, scale.ylog = F, scale.reverse = F, 
                                backend = NULL) 
   UseMethod("Plot.RT.Multi_Func", dsList)
-#' Plot ERT-based comparison over multiple functions or dimensions
-#'
-#' @param dsList A DataSetList (should consist of only one function OR dimension).
-#' @param plot_mode How the plots should be created. Can be 'line' or 'radar'
-#' @param aggr_on Whether to compare on functions ('funcId') or dimensions ('DIM')
-#' @param scale.ylog Whether or not to scale the y-axis logaritmically
-#' @param maximize Wheter or not to the data is of a maximization problem
-#' @param targets Custom list of function-value targets, one for each function or dimension.
-#' @param use_rank Wheter to use a ranking system. If False, the actual ERT-values will be used.
-#' @param erts Pre-calculated ERT-values for the provided targets. Created by the max_ERTs function
-#' of DataSetList. Can be provided to prevent needless computation in recalculating ERTs when recreating
-#' this plot.
-#' @param inf.action How to handle infinite ERTs ('overlap' or 'jitter')
-#' @return A plot of ERT-based comparison on the provided functions or dimensions of the DataSetList
-#' @export
-#' @examples 
-#' Plot.RT.Aggregated(dsl)
-Plot.RT.Aggregated <- function(dsList, aggr_on = 'funcId', targets = NULL, 
-                               plot_mode = 'radar', use_rank = F, scale.ylog = T, maximize = T,
-                               erts = NULL, inf.action = 'overlap') 
-  UseMethod("Plot.RT.Aggregated", dsList)
-#' Plot expected function value-based comparison over multiple functions or dimensions
-#'
-#' @param dsList A DataSetList (should consist of only one function OR dimension).
-#' @param plot_mode How the plots should be created. Can be 'line' or 'radar'
-#' @param aggr_on Whether to compare on functions ('funcId') or dimensions ('DIM')
-#' @param scale.ylog Whether or not to scale the y-axis logaritmically
-#' @param runtimes Custom list of function-value targets, one for each function or dimension.
-#' @param use_rank Wheter to use a ranking system. If False, the actual expected function-
-#' values will be used.
-#' @param fvs Pre-calculated expected function-values for the provided runtimes Created by the
-#' max_ERTs function of DataSetList. Can be provided to prevent needless computation
-#' in recalculating ERTs when recreating this plot.
-#'
-#' @return A plot of expected function value-based comparison on the provided functions
-#'  or dimensions of the DataSetList
-#' @export
-#' @examples 
-#' Plot.FV.Aggregated(dsl)
-Plot.FV.Aggregated <- function(dsList, aggr_on = 'funcId', runtimes = NULL, plot_mode = 'radar', 
-                               use_rank = F, scale.ylog = T, fvs = NULL) 
-  UseMethod("Plot.FV.Aggregated", dsList)
+#' #' Plot ERT-based comparison over multiple functions or dimensions
+#' #'
+#' #' @param dsList A DataSetList (should consist of only one function OR dimension).
+#' #' @param plot_mode How the plots should be created. Can be 'line' or 'radar'
+#' #' @param aggr_on Whether to compare on functions ('funcId') or dimensions ('DIM')
+#' #' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' #' @param maximize Wheter or not to the data is of a maximization problem
+#' #' @param targets Custom list of function-value targets, one for each function or dimension.
+#' #' @param use_rank Wheter to use a ranking system. If False, the actual ERT-values will be used.
+#' #' @param erts Pre-calculated ERT-values for the provided targets. Created by the max_ERTs function
+#' #' of DataSetList. Can be provided to prevent needless computation in recalculating ERTs when recreating
+#' #' this plot.
+#' #' @param inf.action How to handle infinite ERTs ('overlap' or 'jitter')
+#' #' @return A plot of ERT-based comparison on the provided functions or dimensions of the DataSetList
+#' #' @export
+#' #' @examples 
+#' #' Plot.RT.Aggregated(dsl)
+#' Plot.RT.Aggregated <- function(dsList, aggr_on = 'funcId', targets = NULL, 
+#'                                plot_mode = 'radar', use_rank = F, scale.ylog = T, maximize = T,
+#'                                erts = NULL, inf.action = 'overlap') 
+#'   UseMethod("Plot.RT.Aggregated", dsList)
+#' #' Plot expected function value-based comparison over multiple functions or dimensions
+#' #'
+#' #' @param dsList A DataSetList (should consist of only one function OR dimension).
+#' #' @param plot_mode How the plots should be created. Can be 'line' or 'radar'
+#' #' @param aggr_on Whether to compare on functions ('funcId') or dimensions ('DIM')
+#' #' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' #' @param runtimes Custom list of function-value targets, one for each function or dimension.
+#' #' @param use_rank Wheter to use a ranking system. If False, the actual expected function-
+#' #' values will be used.
+#' #' @param fvs Pre-calculated expected function-values for the provided runtimes Created by the
+#' #' max_ERTs function of DataSetList. Can be provided to prevent needless computation
+#' #' in recalculating ERTs when recreating this plot.
+#' #'
+#' #' @return A plot of expected function value-based comparison on the provided functions
+#' #'  or dimensions of the DataSetList
+#' #' @export
+#' #' @examples 
+#' #' Plot.FV.Aggregated(dsl)
+#' Plot.FV.Aggregated <- function(dsList, aggr_on = 'funcId', runtimes = NULL, plot_mode = 'radar', 
+#'                                use_rank = F, scale.ylog = T, fvs = NULL) 
+#'   UseMethod("Plot.FV.Aggregated", dsList)
 
 #' Plot FV-plots for multiple functions or dimensions
 #'
@@ -1484,40 +1484,40 @@ Plot.FV.Parameters.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
   #                   font = list(size = 22, family = 'sans-serif'))
 }
 
-#' @rdname Plot.RT.ECDF_Multi_Func
-#' @export
-Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
-                                                scale.xlog = F) {
-  if (is.null(targets))
-    targets <- get_default_ECDF_targets(dsList, as.numeric)
-
-  algId <- unique(attr(dsList, 'algId'))
-  p <- IOH_plot_ly_default(x.title = "Function evaluations",
-                       y.title = "Proportion of (run, target, ...) pairs")
-
-  rts <- get_runtimes(dsList)
-  x <- seq_RT(rts, length.out = 50, scale = ifelse(scale.xlog, "log", "linear"))
-
-  for (i in seq_along(algId)) {
-    Id <- algId[i]
-    data <- subset(dsList, algId == Id)
-    rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(Id)), collapse = ','), ')')
-
-    fun <- ECDF(data, ftarget = targets)
-    if (is.null(fun)) next
-
-    df_plot <- data.frame(x = x, ecdf = fun(x))
-    p %<>% add_trace(data = df_plot, x = ~x, y = ~ecdf, type = 'scatter',
-                     mode = 'lines+markers', name = sprintf('%s', Id),
-                     showlegend = T,
-                     line = list(color = rgb_str, dash = get_line_style(Id)),
-                     marker = list(color = rgb_str))
-  }
-  
-  p %<>%
-    layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')))
-  p
-}
+#' #' @rdname Plot.RT.ECDF_Multi_Func
+#' #' @export
+#' Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
+#'                                                 scale.xlog = F) {
+#'   if (is.null(targets))
+#'     targets <- get_default_ECDF_targets(dsList, as.numeric)
+#' 
+#'   algId <- unique(attr(dsList, 'algId'))
+#'   p <- IOH_plot_ly_default(x.title = "Function evaluations",
+#'                        y.title = "Proportion of (run, target, ...) pairs")
+#' 
+#'   rts <- get_runtimes(dsList)
+#'   x <- seq_RT(rts, length.out = 50, scale = ifelse(scale.xlog, "log", "linear"))
+#' 
+#'   for (i in seq_along(algId)) {
+#'     Id <- algId[i]
+#'     data <- subset(dsList, algId == Id)
+#'     rgb_str <- paste0('rgb(', paste0(col2rgb(get_color_scheme(Id)), collapse = ','), ')')
+#' 
+#'     fun <- ECDF(data, ftarget = targets)
+#'     if (is.null(fun)) next
+#' 
+#'     df_plot <- data.frame(x = x, ecdf = fun(x))
+#'     p %<>% add_trace(data = df_plot, x = ~x, y = ~ecdf, type = 'scatter',
+#'                      mode = 'lines+markers', name = sprintf('%s', Id),
+#'                      showlegend = T,
+#'                      line = list(color = rgb_str, dash = get_line_style(Id)),
+#'                      marker = list(color = rgb_str))
+#'   }
+#'   
+#'   p %<>%
+#'     layout(xaxis = list(type = ifelse(scale.xlog, 'log', 'linear')))
+#'   p
+#' }
 
 #' @rdname Plot.RT.Multi_Func
 #' @export
@@ -1724,289 +1724,289 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
   p %>% layout(margin = 2)
 }
 
-#' @rdname Plot.RT.Aggregated
-#' @export
-Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, 
-                                           plot_mode = 'radar', use_rank = F,
-                                           scale.ylog = T, maximize = T, erts = NULL,
-                                           inf.action = 'overlap') {
-  if (is.null(erts))
-    erts <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, maximize = maximize)
-  
-  if (is.null(erts))
-    return(NULL)
-
-  N <- length(get_algId(dsList))
-
-  fid <- get_funcId(dsList)
-  range <- c(min(fid) - .5, max(fid) + .5)
-  
-  in_legend <- integer(N)
-  names(in_legend) <- get_algId(dsList)
-
-  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
-  if (!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
-
-  second_aggr <- if (aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
-  if (length(second_aggr) > 1) return(NULL)
-
-  plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
-
-  p <- if (plot_mode == "radar") {
-    IOH_plot_ly_default(title = plot_title, 
-                        x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), 
-                        y.title = "ERT")
-  } else 
-    IOH_plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), 
-                        y.title = ifelse(use_rank, "Rank", "ERT"))
-    
-  if (use_rank) {
-    ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))
-    
-    for (i in seq_along(aggr_attr)) {
-      ertranks <- rbind(ertranks, rank(erts[i, ]))
-    }
-    dataert <- ertranks[-1, ]
-    
-  } else {
-    dataert <- erts
-  }
-  
-  if (inf.action == 'jitter') {
-    data_inf <- dataert
-    idx <- apply(data_inf, 2, is.infinite)
-    data_inf[idx] <- NA
-    
-    for (i in seq(nrow(data_inf))) {
-      idx_ <- idx[i, ]
-      x <- data_inf[i, ]
-      max_ <- max(x[!is.infinite(x)], na.rm = T)
-      n_inf <- sum(idx_)
-      data_inf[i, idx_] <- 10 ^ (log10(max_ * 2) + seq(0, log10(10), length.out = n_inf))
-    }
-    
-    dataert[idx] <- data_inf[idx]
-    data_inf <- lapply(seq(N),
-                       function(i) {
-                         idx_ <- idx[, i]
-                         v <- data_inf[idx_, i]
-                         names(v) <- which(idx_)
-                         v
-                       })
-    
-    # data_na <- dataert
-    # idx <- apply(data_na, 2, is.na)
-    # data_na[idx] <- NA
-    # for (i in seq(nrow(data_na))) {
-    #   idx_ <- idx[i, ]
-    #   x <- data_na[i, ]
-    #   max_ <- max(x[!is.infinite(x)], na.rm = T)
-    #   n_na <- sum(idx_)
-    #   data_na[i, idx_] <- 10 ^ (log10(max_) + seq(0, log10(10), length.out = n_na))
-    # }
-    # data_na[!idx] <- NA
-    # dataert[idx] <- data_na[idx]
-    
-  } else if (inf.action == 'overlap') {
-    data_inf <- dataert
-    idx <- apply(data_inf, 2, is.infinite)
-    x <- as.vector(data_inf)
-    data_inf[idx] <- max(x[!is.infinite(x)], na.rm = T) * 2.5
-    dataert[idx] <- data_inf[idx]
-    
-    data_inf <- lapply(seq(N),
-                      function(i) {
-                        idx_ <- idx[, i]
-                        v <- data_inf[idx_, i]
-                        names(v) <- aggr_attr[idx_]
-                        v
-                      })
-    
-    # TODO: ask diederick when NA will be generated...
-    # data_na <- dataert
-    # idx <- apply(data_na, 2, is.na)
-    # x <- as.vector(data_na)
-    # data_na[idx] <- max(x[!is.infinite(x)], na.rm = T) * 2
-    # data_na[!idx] <- NA
-    # dataert[idx] <- data_na[idx]
-  }
-  
-  for (i in seq_along(get_algId(dsList))) {
-    algId <- get_algId(dsList)[[i]]
-    dash <- get_line_style(algId)
-    color <- get_color_scheme(algId)
-    data <- dataert[, i]
-    rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
-    
-    data_inf_ <- data_inf[[i]]
-    # data_na_ <- data_na[, i]
-    
-    if (plot_mode == "radar") {
-      p %<>%
-        add_trace(type = 'scatterpolar', r = data,
-                  theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
-                  fill = 'toself', connectgaps = T, fillcolor = rgba_str,
-                  marker = list(color = rgb_str), hoverinfo = 'text',
-                  text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
-                  name = algId, legendgroup = algId)
-      #TODO: Fix dealing with infinite ERT when radarplot is selected
-      # p %<>%
-      #   add_trace(type = 'scatterpolar', mode = 'markers', r = data_inf_ ,
-      #             theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
-      #             marker = list(color = rgb_str, symbol = 'diamond', size = '10'), 
-      #             text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
-      #             hoverinfo = 'text', showlegend = F, legendgroup = algId)
-    } else {
-      p %<>% add_trace(x = aggr_attr, y = data, type = 'scatter',
-                       mode = 'lines+markers',
-                       marker = list(color = rgb_str, size = 7), hoverinfo = 'text',
-                       text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
-                       line = list(color = rgb_str, dash = dash), 
-                       name = algId, legendgroup = algId)
-      p %<>%
-        add_trace(type = 'scatter', mode = 'markers', x = as.numeric(names(data_inf_)), 
-                  y = data_inf_, marker = list(color = rgb_str, symbol = 'circle-open', size = 13), 
-                  # text = paste0('ERT: ', format(rep(Inf, length(data_inf_)), digits = 3, nsmall = 3)),
-                  hoverinfo = 'none', showlegend = F, legendgroup = algId)
-      
-      # p %<>%
-      #   add_trace(type='scatter', mode='markers', x = aggr_attr, y = data_na_,
-      #             marker = list(color = rgb_str, symbol = 'x', size = '10'),
-      #             text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
-      #             hoverinfo = 'text', showlegend = F, legendgroup = algId)
-    }
-  }
-  
-  if (plot_mode == "radar") {
-    if (use_rank)
-      p %<>% layout(p, polar = list(radialaxis = list(type = 'linear', visible = F, 
-                                                      autorange = 'reversed')))
-    else
-      p %<>% layout(polar = list(radialaxis = list(type = 'log', visible = F, 
-                                                   autorange = 'reverse')))
-    
-  } else {
-    if (aggr_on == 'funcId' && class(aggr_attr) == class(1))
-      p %<>% layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
-                    xaxis = list(tick0 = 1, dtick = 1, range = range,
-                                 type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
-    else
-      p %<>% layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
-                    xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
-  }
-  p
-}
-
-#' @rdname Plot.FV.Aggregated
-#' @export
-Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NULL,
-                                      plot_mode = 'radar', use_rank = F,
-                                      scale.ylog = T, fvs = NULL){
-  if (is.null(fvs))
-    fvs <- mean_FVs(dsList, aggr_on = aggr_on, runtimes = runtimes)
-  if (is.null(fvs))
-    return(NULL)
-
-  N <- length(get_algId(dsList))
-
-  in_legend <- integer(N)
-  names(in_legend) <- get_algId(dsList)
-
-  aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
-  if (!is.null(runtimes) && length(runtimes) != length(aggr_attr)) runtimes <- NULL
-
-  second_aggr <- if (aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
-  if (length(second_aggr) > 1 ) return(NULL)
-
-  plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
-
-  p <- if (plot_mode == "radar") 
-    IOH_plot_ly_default(title = plot_title)
-  else 
-    IOH_plot_ly_default(title = plot_title, 
-                        x.title = ifelse(aggr_on == "funcId", "Function", "Dimension"), 
-                        y.title = ifelse(use_rank, "Rank", "Mean Runtime"))
-
-  if (use_rank) {
-    ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))
-    fvs2 <- -fvs
-    fvs2[is.na(fvs2)] <- Inf
-    for (i in seq_along(aggr_attr)) {
-      ertranks <- rbind(ertranks, rank(fvs2[i, ]))
-    }
-    dataert <- ertranks[-1, ]
-  }
-  else {
-    dataert <- fvs
-  }
-
-  for (i in seq_along(get_algId(dsList))) {
-    algId <- get_algId(dsList)[[i]]
-    color <- get_color_scheme(algId)
-    dash <- get_line_style(algId)
-    data <- dataert[,i]
-    rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
-    rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
-
-    if (plot_mode == "radar") {
-      p %<>%
-        add_trace(type = 'scatterpolar', r = data,
-                  theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
-                  fill = 'toself', connectgaps = T, fillcolor = rgba_str,
-                  marker = list(color = rgb_str), hoverinfo = 'text',
-                  text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
-                  name = algId, legendgroup = algId)
-                  
-      #TODO: cleaner solution!!!!!
-      data2 <- data
-      data2[is.na(data2)] <- 0
-      data2[!is.na(data)] <- NA
-      p %<>%
-        add_trace(type='scatterpolar', mode='markers', r = data2,
-                  theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
-                  marker = list(color = rgb_str, symbol = 'x', size = '10'), hoverinfo = 'text',
-                  text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
-                  showlegend = F, legendgroup = algId, fill = 'nofill')
-    }
-    else{
-      p %<>% add_trace(x = aggr_attr, y = data, type = 'scatter',
-                       mode = 'lines+markers',
-                       marker = list(color = rgb_str), hoverinfo = 'text',
-                       text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
-                       line = list(color = rgb_str, dash = dash), name = algId, legendgroup = algId)
-      data2 <- data
-      data2[is.na(data2)] <- 0
-      data2[!is.na(data)] <- NA
-      p %<>%
-        add_trace(type='scatter', mode='markers', x = aggr_attr, y = data2,
-                  marker = list(color = rgb_str, symbol = 'x', size = '10'), hoverinfo = 'text',
-                  text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
-                  showlegend = F, legendgroup = algId )
-
-    }
-  }
-
-  if (plot_mode == "radar") {
-    if (use_rank)
-      p %<>%
-      layout(polar = list(radialaxis = list(type = 'linear', visible=F, autorange='reversed')))
-    else
-      p %<>%
-      layout(polar = list(radialaxis = list(type = 'log', visible=F)))
-  }
-  else{
-    if (use_rank)
-      p %<>%
-      layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
-             xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
-    else
-      p %<>%
-      layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
-             xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
-  }
-  p
-}
+#' #' @rdname Plot.RT.Aggregated
+#' #' @export
+#' Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets = NULL, 
+#'                                            plot_mode = 'radar', use_rank = F,
+#'                                            scale.ylog = T, maximize = T, erts = NULL,
+#'                                            inf.action = 'overlap') {
+#'   if (is.null(erts))
+#'     erts <- max_ERTs(dsList, aggr_on = aggr_on, targets = targets, maximize = maximize)
+#'   
+#'   if (is.null(erts))
+#'     return(NULL)
+#' 
+#'   N <- length(get_algId(dsList))
+#' 
+#'   fid <- get_funcId(dsList)
+#'   range <- c(min(fid) - .5, max(fid) + .5)
+#'   
+#'   in_legend <- integer(N)
+#'   names(in_legend) <- get_algId(dsList)
+#' 
+#'   aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
+#'   if (!is.null(targets) && length(targets) != length(aggr_attr)) targets <- NULL
+#' 
+#'   second_aggr <- if (aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
+#'   if (length(second_aggr) > 1) return(NULL)
+#' 
+#'   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
+#' 
+#'   p <- if (plot_mode == "radar") {
+#'     IOH_plot_ly_default(title = plot_title, 
+#'                         x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), 
+#'                         y.title = "ERT")
+#'   } else 
+#'     IOH_plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"), 
+#'                         y.title = ifelse(use_rank, "Rank", "ERT"))
+#'     
+#'   if (use_rank) {
+#'     ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))
+#'     
+#'     for (i in seq_along(aggr_attr)) {
+#'       ertranks <- rbind(ertranks, rank(erts[i, ]))
+#'     }
+#'     dataert <- ertranks[-1, ]
+#'     
+#'   } else {
+#'     dataert <- erts
+#'   }
+#'   
+#'   if (inf.action == 'jitter') {
+#'     data_inf <- dataert
+#'     idx <- apply(data_inf, 2, is.infinite)
+#'     data_inf[idx] <- NA
+#'     
+#'     for (i in seq(nrow(data_inf))) {
+#'       idx_ <- idx[i, ]
+#'       x <- data_inf[i, ]
+#'       max_ <- max(x[!is.infinite(x)], na.rm = T)
+#'       n_inf <- sum(idx_)
+#'       data_inf[i, idx_] <- 10 ^ (log10(max_ * 2) + seq(0, log10(10), length.out = n_inf))
+#'     }
+#'     
+#'     dataert[idx] <- data_inf[idx]
+#'     data_inf <- lapply(seq(N),
+#'                        function(i) {
+#'                          idx_ <- idx[, i]
+#'                          v <- data_inf[idx_, i]
+#'                          names(v) <- which(idx_)
+#'                          v
+#'                        })
+#'     
+#'     # data_na <- dataert
+#'     # idx <- apply(data_na, 2, is.na)
+#'     # data_na[idx] <- NA
+#'     # for (i in seq(nrow(data_na))) {
+#'     #   idx_ <- idx[i, ]
+#'     #   x <- data_na[i, ]
+#'     #   max_ <- max(x[!is.infinite(x)], na.rm = T)
+#'     #   n_na <- sum(idx_)
+#'     #   data_na[i, idx_] <- 10 ^ (log10(max_) + seq(0, log10(10), length.out = n_na))
+#'     # }
+#'     # data_na[!idx] <- NA
+#'     # dataert[idx] <- data_na[idx]
+#'     
+#'   } else if (inf.action == 'overlap') {
+#'     data_inf <- dataert
+#'     idx <- apply(data_inf, 2, is.infinite)
+#'     x <- as.vector(data_inf)
+#'     data_inf[idx] <- max(x[!is.infinite(x)], na.rm = T) * 2.5
+#'     dataert[idx] <- data_inf[idx]
+#'     
+#'     data_inf <- lapply(seq(N),
+#'                       function(i) {
+#'                         idx_ <- idx[, i]
+#'                         v <- data_inf[idx_, i]
+#'                         names(v) <- aggr_attr[idx_]
+#'                         v
+#'                       })
+#'     
+#'     # TODO: ask diederick when NA will be generated...
+#'     # data_na <- dataert
+#'     # idx <- apply(data_na, 2, is.na)
+#'     # x <- as.vector(data_na)
+#'     # data_na[idx] <- max(x[!is.infinite(x)], na.rm = T) * 2
+#'     # data_na[!idx] <- NA
+#'     # dataert[idx] <- data_na[idx]
+#'   }
+#'   
+#'   for (i in seq_along(get_algId(dsList))) {
+#'     algId <- get_algId(dsList)[[i]]
+#'     dash <- get_line_style(algId)
+#'     color <- get_color_scheme(algId)
+#'     data <- dataert[, i]
+#'     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
+#'     rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
+#'     
+#'     data_inf_ <- data_inf[[i]]
+#'     # data_na_ <- data_na[, i]
+#'     
+#'     if (plot_mode == "radar") {
+#'       p %<>%
+#'         add_trace(type = 'scatterpolar', r = data,
+#'                   theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
+#'                   fill = 'toself', connectgaps = T, fillcolor = rgba_str,
+#'                   marker = list(color = rgb_str), hoverinfo = 'text',
+#'                   text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
+#'                   name = algId, legendgroup = algId)
+#'       #TODO: Fix dealing with infinite ERT when radarplot is selected
+#'       # p %<>%
+#'       #   add_trace(type = 'scatterpolar', mode = 'markers', r = data_inf_ ,
+#'       #             theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
+#'       #             marker = list(color = rgb_str, symbol = 'diamond', size = '10'), 
+#'       #             text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
+#'       #             hoverinfo = 'text', showlegend = F, legendgroup = algId)
+#'     } else {
+#'       p %<>% add_trace(x = aggr_attr, y = data, type = 'scatter',
+#'                        mode = 'lines+markers',
+#'                        marker = list(color = rgb_str, size = 7), hoverinfo = 'text',
+#'                        text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
+#'                        line = list(color = rgb_str, dash = dash), 
+#'                        name = algId, legendgroup = algId)
+#'       p %<>%
+#'         add_trace(type = 'scatter', mode = 'markers', x = as.numeric(names(data_inf_)), 
+#'                   y = data_inf_, marker = list(color = rgb_str, symbol = 'circle-open', size = 13), 
+#'                   # text = paste0('ERT: ', format(rep(Inf, length(data_inf_)), digits = 3, nsmall = 3)),
+#'                   hoverinfo = 'none', showlegend = F, legendgroup = algId)
+#'       
+#'       # p %<>%
+#'       #   add_trace(type='scatter', mode='markers', x = aggr_attr, y = data_na_,
+#'       #             marker = list(color = rgb_str, symbol = 'x', size = '10'),
+#'       #             text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
+#'       #             hoverinfo = 'text', showlegend = F, legendgroup = algId)
+#'     }
+#'   }
+#'   
+#'   if (plot_mode == "radar") {
+#'     if (use_rank)
+#'       p %<>% layout(p, polar = list(radialaxis = list(type = 'linear', visible = F, 
+#'                                                       autorange = 'reversed')))
+#'     else
+#'       p %<>% layout(polar = list(radialaxis = list(type = 'log', visible = F, 
+#'                                                    autorange = 'reverse')))
+#'     
+#'   } else {
+#'     if (aggr_on == 'funcId' && class(aggr_attr) == class(1))
+#'       p %<>% layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
+#'                     xaxis = list(tick0 = 1, dtick = 1, range = range,
+#'                                  type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+#'     else
+#'       p %<>% layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
+#'                     xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+#'   }
+#'   p
+#' }
+#' 
+#' #' @rdname Plot.FV.Aggregated
+#' #' @export
+#' Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes = NULL,
+#'                                       plot_mode = 'radar', use_rank = F,
+#'                                       scale.ylog = T, fvs = NULL){
+#'   if (is.null(fvs))
+#'     fvs <- mean_FVs(dsList, aggr_on = aggr_on, runtimes = runtimes)
+#'   if (is.null(fvs))
+#'     return(NULL)
+#' 
+#'   N <- length(get_algId(dsList))
+#' 
+#'   in_legend <- integer(N)
+#'   names(in_legend) <- get_algId(dsList)
+#' 
+#'   aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
+#'   if (!is.null(runtimes) && length(runtimes) != length(aggr_attr)) runtimes <- NULL
+#' 
+#'   second_aggr <- if (aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
+#'   if (length(second_aggr) > 1 ) return(NULL)
+#' 
+#'   plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
+#' 
+#'   p <- if (plot_mode == "radar") 
+#'     IOH_plot_ly_default(title = plot_title)
+#'   else 
+#'     IOH_plot_ly_default(title = plot_title, 
+#'                         x.title = ifelse(aggr_on == "funcId", "Function", "Dimension"), 
+#'                         y.title = ifelse(use_rank, "Rank", "Mean Runtime"))
+#' 
+#'   if (use_rank) {
+#'     ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))
+#'     fvs2 <- -fvs
+#'     fvs2[is.na(fvs2)] <- Inf
+#'     for (i in seq_along(aggr_attr)) {
+#'       ertranks <- rbind(ertranks, rank(fvs2[i, ]))
+#'     }
+#'     dataert <- ertranks[-1, ]
+#'   }
+#'   else {
+#'     dataert <- fvs
+#'   }
+#' 
+#'   for (i in seq_along(get_algId(dsList))) {
+#'     algId <- get_algId(dsList)[[i]]
+#'     color <- get_color_scheme(algId)
+#'     dash <- get_line_style(algId)
+#'     data <- dataert[,i]
+#'     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
+#'     rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
+#' 
+#'     if (plot_mode == "radar") {
+#'       p %<>%
+#'         add_trace(type = 'scatterpolar', r = data,
+#'                   theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
+#'                   fill = 'toself', connectgaps = T, fillcolor = rgba_str,
+#'                   marker = list(color = rgb_str), hoverinfo = 'text',
+#'                   text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
+#'                   name = algId, legendgroup = algId)
+#'                   
+#'       #TODO: cleaner solution!!!!!
+#'       data2 <- data
+#'       data2[is.na(data2)] <- 0
+#'       data2[!is.na(data)] <- NA
+#'       p %<>%
+#'         add_trace(type='scatterpolar', mode='markers', r = data2,
+#'                   theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
+#'                   marker = list(color = rgb_str, symbol = 'x', size = '10'), hoverinfo = 'text',
+#'                   text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
+#'                   showlegend = F, legendgroup = algId, fill = 'nofill')
+#'     }
+#'     else{
+#'       p %<>% add_trace(x = aggr_attr, y = data, type = 'scatter',
+#'                        mode = 'lines+markers',
+#'                        marker = list(color = rgb_str), hoverinfo = 'text',
+#'                        text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
+#'                        line = list(color = rgb_str, dash = dash), name = algId, legendgroup = algId)
+#'       data2 <- data
+#'       data2[is.na(data2)] <- 0
+#'       data2[!is.na(data)] <- NA
+#'       p %<>%
+#'         add_trace(type='scatter', mode='markers', x = aggr_attr, y = data2,
+#'                   marker = list(color = rgb_str, symbol = 'x', size = '10'), hoverinfo = 'text',
+#'                   text = paste0('FVal: ', format(fvs[,i], digits = 3, nsmall = 3)),
+#'                   showlegend = F, legendgroup = algId )
+#' 
+#'     }
+#'   }
+#' 
+#'   if (plot_mode == "radar") {
+#'     if (use_rank)
+#'       p %<>%
+#'       layout(polar = list(radialaxis = list(type = 'linear', visible=F, autorange='reversed')))
+#'     else
+#'       p %<>%
+#'       layout(polar = list(radialaxis = list(type = 'log', visible=F)))
+#'   }
+#'   else{
+#'     if (use_rank)
+#'       p %<>%
+#'       layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
+#'              xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+#'     else
+#'       p %<>%
+#'       layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
+#'              xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
+#'   }
+#'   p
+#' }
 
 #' @rdname Plot.Stats.Significance_Heatmap
 #' @export 
@@ -2149,7 +2149,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                               lower_attr = NULL, subplot_attr = NULL, show.legend = F,
                               inf.action = 'none', ...){
   
-  l <- x <- NULL #Set local binding to remove warnings
+  l <- x <- isinf <- y <- NULL #Set local binding to remove warnings
   
   #Only allow valid plot types
   if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon'))) {

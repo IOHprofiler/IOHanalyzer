@@ -3,7 +3,49 @@
 \name{Plot.FV.Multi_Func}
 \alias{Plot.FV.Multi_Func}
 \alias{Plot.FV.Multi_Func.DataSetList}
-\title{Plot FV-plots for multiple functions or dimensions}
+\title{#' Plot ERT-based comparison over multiple functions or dimensions
+#'
+#' @param dsList A DataSetList (should consist of only one function OR dimension).
+#' @param plot_mode How the plots should be created. Can be 'line' or 'radar'
+#' @param aggr_on Whether to compare on functions ('funcId') or dimensions ('DIM')
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param maximize Wheter or not to the data is of a maximization problem
+#' @param targets Custom list of function-value targets, one for each function or dimension.
+#' @param use_rank Wheter to use a ranking system. If False, the actual ERT-values will be used.
+#' @param erts Pre-calculated ERT-values for the provided targets. Created by the max_ERTs function
+#' of DataSetList. Can be provided to prevent needless computation in recalculating ERTs when recreating
+#' this plot.
+#' @param inf.action How to handle infinite ERTs ('overlap' or 'jitter')
+#' @return A plot of ERT-based comparison on the provided functions or dimensions of the DataSetList
+#' @export
+#' @examples 
+#' Plot.RT.Aggregated(dsl)
+Plot.RT.Aggregated <- function(dsList, aggr_on = 'funcId', targets = NULL, 
+                               plot_mode = 'radar', use_rank = F, scale.ylog = T, maximize = T,
+                               erts = NULL, inf.action = 'overlap') 
+  UseMethod("Plot.RT.Aggregated", dsList)
+#' Plot expected function value-based comparison over multiple functions or dimensions
+#'
+#' @param dsList A DataSetList (should consist of only one function OR dimension).
+#' @param plot_mode How the plots should be created. Can be 'line' or 'radar'
+#' @param aggr_on Whether to compare on functions ('funcId') or dimensions ('DIM')
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param runtimes Custom list of function-value targets, one for each function or dimension.
+#' @param use_rank Wheter to use a ranking system. If False, the actual expected function-
+#' values will be used.
+#' @param fvs Pre-calculated expected function-values for the provided runtimes Created by the
+#' max_ERTs function of DataSetList. Can be provided to prevent needless computation
+#' in recalculating ERTs when recreating this plot.
+#'
+#' @return A plot of expected function value-based comparison on the provided functions
+#'  or dimensions of the DataSetList
+#' @export
+#' @examples 
+#' Plot.FV.Aggregated(dsl)
+Plot.FV.Aggregated <- function(dsList, aggr_on = 'funcId', runtimes = NULL, plot_mode = 'radar', 
+                               use_rank = F, scale.ylog = T, fvs = NULL) 
+  UseMethod("Plot.FV.Aggregated", dsList)
+Plot FV-plots for multiple functions or dimensions}
 \usage{
 Plot.FV.Multi_Func(dsList, scale.xlog = F, scale.ylog = F,
   backend = NULL)
@@ -24,6 +66,48 @@ Plot.FV.Multi_Func(dsList, scale.xlog = F, scale.ylog = F,
 A plot of Function-values of the DataSetList
 }
 \description{
+#' Plot ERT-based comparison over multiple functions or dimensions
+#'
+#' @param dsList A DataSetList (should consist of only one function OR dimension).
+#' @param plot_mode How the plots should be created. Can be 'line' or 'radar'
+#' @param aggr_on Whether to compare on functions ('funcId') or dimensions ('DIM')
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param maximize Wheter or not to the data is of a maximization problem
+#' @param targets Custom list of function-value targets, one for each function or dimension.
+#' @param use_rank Wheter to use a ranking system. If False, the actual ERT-values will be used.
+#' @param erts Pre-calculated ERT-values for the provided targets. Created by the max_ERTs function
+#' of DataSetList. Can be provided to prevent needless computation in recalculating ERTs when recreating
+#' this plot.
+#' @param inf.action How to handle infinite ERTs ('overlap' or 'jitter')
+#' @return A plot of ERT-based comparison on the provided functions or dimensions of the DataSetList
+#' @export
+#' @examples 
+#' Plot.RT.Aggregated(dsl)
+Plot.RT.Aggregated <- function(dsList, aggr_on = 'funcId', targets = NULL, 
+                               plot_mode = 'radar', use_rank = F, scale.ylog = T, maximize = T,
+                               erts = NULL, inf.action = 'overlap') 
+  UseMethod("Plot.RT.Aggregated", dsList)
+#' Plot expected function value-based comparison over multiple functions or dimensions
+#'
+#' @param dsList A DataSetList (should consist of only one function OR dimension).
+#' @param plot_mode How the plots should be created. Can be 'line' or 'radar'
+#' @param aggr_on Whether to compare on functions ('funcId') or dimensions ('DIM')
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param runtimes Custom list of function-value targets, one for each function or dimension.
+#' @param use_rank Wheter to use a ranking system. If False, the actual expected function-
+#' values will be used.
+#' @param fvs Pre-calculated expected function-values for the provided runtimes Created by the
+#' max_ERTs function of DataSetList. Can be provided to prevent needless computation
+#' in recalculating ERTs when recreating this plot.
+#'
+#' @return A plot of expected function value-based comparison on the provided functions
+#'  or dimensions of the DataSetList
+#' @export
+#' @examples 
+#' Plot.FV.Aggregated(dsl)
+Plot.FV.Aggregated <- function(dsList, aggr_on = 'funcId', runtimes = NULL, plot_mode = 'radar', 
+                               use_rank = F, scale.ylog = T, fvs = NULL) 
+  UseMethod("Plot.FV.Aggregated", dsList)
 Plot FV-plots for multiple functions or dimensions
 }
 \examples{

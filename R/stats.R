@@ -415,52 +415,6 @@ AUC.ECDF <- function(fun, from = NULL, to = NULL) {
     integrate(fun, lower = from, upper = to, subdivisions = 1e3L)$value / (to - from)
 }
 
-# TODO: review / re-write this function 
-#TODO: inconsistent use of format_func gives slightly different results between
-#generated and uploaded targets
-#' Generate ECDF targets for a DataSetList
-#'
-#' @param data A DataSetList
-#' @param format_func function to format the targets
-#'
-#' @return a vector of targets
-#' @export
-#' @examples 
-#' get_default_ECDF_targets(dsl)
-get_default_ECDF_targets <- function(data, format_func = as.integer) {
-  funcIds <- get_funcId(data)
-  dims <- get_dim(data)
-
-  targets <- list()
-  names <- list()
-  for (i in seq_along(funcIds)) {
-    Id <- funcIds[[i]]
-    data_sub <- subset(data, funcId == Id)
-
-    for (j in seq_along(dims)) {
-      dim <- dims[[j]]
-      data_subsub <- subset(data_sub, DIM == dim)
-      if (length(data_subsub) == 0) break
-      fall <- get_funvals(data_subsub)
-      if (length(fall) < 2) break #TODO: double check why this can happen in nevergrad?
-      #TODO: Account for minimization / maximization
-      fmin <- min(fall)
-      fmax <- max(fall)
-
-      fseq <- seq_FV(fall, fmin, fmax, length.out = 10) %>% 
-        sapply(format_func)
-      targets <- append(targets, list(fseq))
-      
-      if (length(funcIds) == 1) {
-        names <- append(names, dim)
-      } else if (length(dims) == 1) {
-        names <- append(names, Id)
-      } else
-        names <- append(names, paste0(Id, ";", dim))
-    }
-  }
-  targets %>% set_names(names)
-}
 
 #' Generate datatables of runtime or function value targets for a DataSetList
 #' 

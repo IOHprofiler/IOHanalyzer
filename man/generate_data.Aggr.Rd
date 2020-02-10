@@ -15,8 +15,6 @@ generate_data.Aggr(dsList, aggr_on = "funcId", targets = NULL,
 \item{targets}{Optional list of target values (Runtime or target value)}
 
 \item{which}{Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'}
-
-\item{inf_action}{How to deal with infinite values. Either 'none', 'overlap' or 'jitter'}
 }
 \description{
 This function generates a dataframe which can be easily plotted using the `plot_general_data`-function

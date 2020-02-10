@@ -74,7 +74,7 @@ get_data_FCEPlot_multi <- reactive({
   req(isolate(input$FCEPlot.Multi.Algs))
   input$FCEPlot.Multi.PlotButton
   if (length(get_algId(data)) < 20) {
-    get_data_FCE_multi_func_bulk()[algId %in% isolate(input$ERTPlot.Multi.Algs), ]
+    get_data_FCE_multi_func_bulk()[algId %in% isolate(input$FCEPlot.Multi.Algs), ]
   }
   else {
     data <- subset(DATA_RAW(),

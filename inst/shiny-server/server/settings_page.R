@@ -10,9 +10,7 @@ output$Settings.Color.Example <- downloadHandler(
     "Example_Colorfile"
   },
   content = function(file) {
-    n <- length(DATA())
-    if (n == 0) n <- 5
-    writeLines(get_color_scheme(get_algId(DATA())), file)
+    write.csv2(get_color_scheme_dt(), file, row.names = F)
   }
 )
 

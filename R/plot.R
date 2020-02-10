@@ -189,27 +189,42 @@ IOHanalyzer_env$alg_colors <- NULL
 #' @examples
 #' set_color_scheme("Default", get_algId(dsl))
 set_color_scheme <- function(schemename, algnames, path = NULL){
-  if (schemename == "Default") {
-    options(IOHanalyzer.max_colors = 2)
-  }
-  else if (schemename == "Custom" && !is.null(path)) {
-    colors <- fread(path, header = F)[[1]]
-    N <- length(colors)
-    options(IOHanalyzer.max_colors = N)
-    custom_set <- function(n) {
-      return(colors[mod(seq(n), N) + 1])
+  if (schemename == "Custom" && !is.null(path)) {
+    dt <- fread(path, header = T)
+    if (any(colnames(dt) != c("algnames", "colors", "linestyles"))) {
+      warning("Incorrect file-format has been uploaded.")
     }
-    IOHanalyzer_env$used_colorscheme <- custom_set
+    else
+      IOHanalyzer_env$alg_colors <- dt
+    return()
   } 
   else {
-    if (schemename == "Variant 1") IOHanalyzer_env$used_colorscheme <- Set1
-    else if (schemename == "Variant 2") IOHanalyzer_env$used_colorscheme <- Set2
-    else if (schemename == "Variant 3") IOHanalyzer_env$used_colorscheme <- Set3
-    options(IOHanalyzer.max_colors = length(algnames))
+    if (schemename == "Default") {
+      options(IOHanalyzer.max_colors = 2)
+    }
+    else {
+      if (schemename == "Variant 1") IOHanalyzer_env$used_colorscheme <- Set1
+      else if (schemename == "Variant 2") IOHanalyzer_env$used_colorscheme <- Set2
+      else if (schemename == "Variant 3") IOHanalyzer_env$used_colorscheme <- Set3
+      options(IOHanalyzer.max_colors = length(algnames))
+    }
+    create_color_scheme(algnames)
   }
-  create_color_scheme(algnames)
 }
 
+#' Get datatable of current color (and linestyle) scheme to file
+#' 
+#' @return data.table object with 3 columns: algnames, colors, linestyles
+#' @export
+#' @examples 
+#' get_color_scheme_dt()
+get_color_scheme_dt <- function(){
+  return(IOHanalyzer_env$alg_colors)
+}
+
+#' Helper function to create default color scheme
+#' 
+#' @noRd
 create_color_scheme <- function(algnames) {
   if (length(algnames) == 0) {
     return(NULL)

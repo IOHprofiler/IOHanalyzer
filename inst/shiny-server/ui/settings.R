@@ -54,7 +54,7 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
           numericInput("Settings.General.Precision", label = "Function value precision (digits)",
                        value = 2),
           hr(),
-          downloadButton("Settings.Download", "Download current settings file"),
+          downloadButton("Settings.Download", "Download current general settings file"),
           fileInput("Settings.Upload", "Upload a settings file", accept = "rds")
         ),
         column(

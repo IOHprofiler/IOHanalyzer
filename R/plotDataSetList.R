@@ -2364,6 +2364,10 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              
            }
            else {
+             if (inf.action != 'none') {
+               warning("inf.action is not yet supported for multiple y-attributes")
+             }
+             
              dashes_full <- rep(c("solid", "dot", "dash", "longdash", "dashdot", "longdashdot"), 
                                 ceiling(length(y_attr)/3))[1:length(y_attr)]
              names(dashes_full) <- y_attr
@@ -2469,61 +2473,3 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
   )
   return(p)
 }
-
-
-### TODO: inf-action for lineplots
-
-
-
-
-# 
-# #TODO: figure out how to better incorporate this into the dataframe
-# res = switch(inf_action, 
-#              'jitter' = {
-#                stop("This mode is not yet supported")
-#                data_inf <- values
-#                idx <- apply(data_inf, 2, is.infinite)
-#                data_inf[idx] <- NA
-#                
-#                for (i in seq(nrow(data_inf))) {
-#                  idx_ <- idx[i, ]
-#                  x <- data_inf[i, ]
-#                  max_ <- max(x[!is.infinite(x)], na.rm = T)
-#                  n_inf <- sum(idx_)
-#                  data_inf[i, idx_] <- 10 ^ (log10(max_ * 2) + seq(0, log10(10), length.out = n_inf))
-#                }
-#                
-#                values[idx] <- data_inf[idx]
-#                data_inf <- lapply(seq(N),
-#                                   function(i) {
-#                                     idx_ <- idx[, i]
-#                                     v <- data_inf[idx_, i]
-#                                     names(v) <- which(idx_)
-#                                     v
-#                                   })
-#              },
-#              'overlap' = {
-#                if (!by_rt) {
-#                  stop("This mode is only supported for value `by_RT` of parameter `which`")
-#                }
-#                data_inf <- values
-#                idx <- apply(data_inf, 2, is.infinite)
-#                x <- as.vector(data_inf)
-#                data_inf[idx] <- max(x[!is.infinite(x)], na.rm = T) * 2.5
-#                values[idx] <- data_inf[idx]
-#                
-#                data_inf <- lapply(seq(N),
-#                                   function(i) {
-#                                     idx_ <- idx[, i]
-#                                     v <- data_inf[idx_, i]
-#                                     names(v) <- aggr_attr[idx_]
-#                                     v
-#                                   })
-#              },
-#              'none' = {
-#                data_inf <- values
-#              }
-# )
-# if (is.null(res)) {
-#   stop("Invalid agrument for parameter `inf_action`.")
-# }

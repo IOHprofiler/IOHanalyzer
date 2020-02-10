@@ -89,7 +89,6 @@ pairwise.test.list <- function(x, max_eval, bootstrap.size = 30, ...) {
     class(x) <- rev(class(x))
     pairwise.test.DataSetList(x)
   }
-  
   N <- length(x)
   p.value <- matrix(NA, N, N)
   
@@ -102,10 +101,25 @@ pairwise.test.list <- function(x, max_eval, bootstrap.size = 30, ...) {
         x1 <- bootstrap_RT(x[[i]], max_eval[[i]], bootstrap.size)
         x2 <- bootstrap_RT(x[[j]], max_eval[[j]], bootstrap.size)
       }
-      options(warn = -1)
-      p.value[i, j] <- ks.test(x1, x2, alternative = 'greater', exact = F)$p.value
-      p.value[j, i] <- ks.test(x1, x2, alternative = 'less', exact = F)$p.value
-      options(warn = 0)
+      if (all(is.na(x1))) {
+        if (all(is.na(x2))) {
+          next
+        }
+        else {
+          p.value[i, j] <- 1
+          p.value[j, i] <- 0
+        }
+      }
+      else if (all(is.na(x2))) {
+        p.value[i, j] <- 0
+        p.value[j, i] <- 1
+      }
+      else {
+        options(warn = -1)
+        p.value[i, j] <- ks.test(x1, x2, alternative = 'greater', exact = F)$p.value
+        p.value[j, i] <- ks.test(x1, x2, alternative = 'less', exact = F)$p.value
+        options(warn = 0)
+      }
     }
   }
   
@@ -136,6 +150,7 @@ pairwise.test.DataSetList <- function(x, ftarget, bootstrap.size = 0, which = 'b
     s <- split(dt$`f(x)`, dt$algId)
   }
   else stop("Unsupported argument 'which'. Available options are 'by_FV' and 'by_RT'")
+  
   return(pairwise.test.list(s, maxRT, bootstrap.size))
 }
 

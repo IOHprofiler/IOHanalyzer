@@ -125,7 +125,23 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
       ),
       
       hr(),
-      HTML_P('You can download the table below the figure, containing the target values for each 
+      selectInput("RTECDF.Aggr.Target_type", label = "Select the spacing for the
+                  automatically generated ECDF-targets:", 
+                  choices = c('linear', 'log-linear', 'bbob'), 
+                  selected = 'linear') %>% 
+        shinyInput_label_embed(
+          custom_icon() %>%
+            bs_embed_popover(
+              title = "Default targets", content = "The log-linear spacing only works correctly
+              when no negative target values are present in the data. The BBOB-spacing is pre-defined
+              to 51 log-linear targets between 10^2 and 10^-8.", 
+              placement = "auto"
+            )
+        ),
+      numericInput("RTECDF.Aggr.Target_number", label = "Select the number of ECDF-targets to 
+                   generate for each function/dimension", value = 10, min = 1, max = 100),
+      
+      HTML_P('Alternatively, you can download the table containing the target values for each 
               (function, dimension)-pair and edit the table as you want. Please keep 
              the file format when modifying it.'),
       downloadButton('RTECDF.Aggr.Table.Download', label = 'Download the table of targets'),

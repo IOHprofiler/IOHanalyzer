@@ -664,139 +664,39 @@ subset.DataSetList <- function(x, ...) {
   x[idx]
 }
 
-#' #' Get the ERT-values for all DataSets in a DataSetList at certain targets
-#' #'
-#' #' @param dsList The DataSetLsit
-#' #' @param aggr_on Whether to aggregate on 'funcId' or 'DIM'.
-#' #' @param targets Predifined target function-values. Should be one for each function/dimension
-#' #' @param maximize Whether the DataSetList is from a maximization or minimization problem
-#' #'
-#' #' @return A data.table containing ERT-values
-#' #' @export
-#' #' @examples
-#' #' max_ERTs(dsl)
-#' max_ERTs <-
-#'   function(dsList,
-#'            aggr_on = 'funcId',
-#'            targets = NULL,
-#'            maximize = T)
-#'     UseMethod("max_ERTs", dsList)
+#' Generation of default ECDF-targets
 #' 
-#' #TODO: rename this function! this function needs to be rewritten
-#' #' @rdname max_ERTs
-#' #' @export
-#' max_ERTs.DataSetList <-
-#'   function(dsList,
-#'            aggr_on = 'funcId',
-#'            targets = NULL,
-#'            maximize = T) {
-#'     N <- length(get_algId(dsList))
-#'     
-#'     aggr_attr <-
-#'       if (aggr_on == 'funcId')
-#'         get_funcId(dsList)
-#'     else
-#'       get_dim(dsList)
-#'     if (!is.null(targets) &&
-#'         length(targets) != length(aggr_attr))
-#'       targets <- NULL
-#'     
-#'     second_aggr <-
-#'       if (aggr_on == 'funcId')
-#'         get_dim(dsList)
-#'     else
-#'       get_funcId(dsList)
-#'     if (length(second_aggr) > 1)
-#'       return(NULL)
-#'     
-#'     erts <- seq(0, 0, length.out = length(get_algId(dsList)))
-#'     names(erts) <- get_algId(dsList)
-#'     
-#'     for (j in seq_along(aggr_attr)) {
-#'       dsList_filetered <-
-#'         if (aggr_on == 'funcId')
-#'           subset(dsList, funcId == aggr_attr[[j]])
-#'       else
-#'         subset(dsList, DIM == aggr_attr[[j]])
-#'       
-#'       if (is.null(targets)) {
-#'         Fall <- get_funvals(dsList_filetered)
-#'         Fval <- ifelse(maximize, max(Fall), min(Fall))
-#'       }
-#'       else
-#'         Fval <- targets[[j]]
-#'       summary <- get_RT_summary(dsList_filetered, ftarget = Fval)
-#'       ert <- summary$ERT
-#'       names(ert) <- summary$algId
-#'       erts <- rbind(erts, ert[get_algId(dsList)])
-#'     }
-#'     return(erts[-1, ])
-#' }
+#' @param dsList The DataSetList object for which to generate the targets
+#' @param type The way to generate the targets. Either 'log-linear', 'linear' or 'bbob' (51 fixed targets,
+#' equal for all functions / dimensions)
+#' @param number_targets The amount of targets to generate
 #' 
-#' #' Get the expected function-values for all DataSets in a DataSetList at certain runtimes
-#' #'
-#' #' @param dsList The DataSetLsit
-#' #' @param aggr_on Whether to aggregate on 'funcId' or 'DIM'.
-#' #' @param runtimes Predifined target runtimes-values. Should be one for each function/dimension
-#' #'
-#' #' @return A data.table containing expected fucntion-values
-#' #' @export
-#' #' @examples
-#' #' mean_FVs(dsl)
-#' mean_FVs <-
-#'   function(dsList,
-#'            aggr_on = 'funcId',
-#'            runtimes = NULL)
-#'     UseMethod("mean_FVs", dsList)
-#' 
-#' #' @rdname mean_FVs
-#' #' @export
-#' mean_FVs.DataSetList <-
-#'   function(dsList,
-#'            aggr_on = 'funcId',
-#'            runtimes = NULL) {
-#'     N <- length(get_algId(dsList))
-#'     
-#'     aggr_attr <-
-#'       if (aggr_on == 'funcId')
-#'         get_funcId(dsList)
-#'     else
-#'       get_dim(dsList)
-#'     if (!is.null(runtimes) &&
-#'         length(runtimes) != length(aggr_attr))
-#'       targets <- NULL
-#'     
-#'     second_aggr <-
-#'       if (aggr_on == 'funcId')
-#'         get_dim(dsList)
-#'     else
-#'       get_funcId(dsList)
-#'     if (length(second_aggr) > 1)
-#'       return(NULL)
-#'     
-#'     erts <- seq(0, 0, length.out = length(get_algId(dsList)))
-#'     names(erts) <- get_algId(dsList)
-#'     
-#'     for (j in seq_along(aggr_attr)) {
-#'       dsList_filetered <-
-#'         if (aggr_on == 'funcId')
-#'           subset(dsList, funcId == aggr_attr[[j]])
-#'       else
-#'         subset(dsList, DIM == aggr_attr[[j]])
-#'       
-#'       if (is.null(runtimes)) {
-#'         RTall <- get_runtimes(dsList_filetered)
-#'         RTval <- max(RTall)
-#'       }
-#'       else
-#'         RTval <- runtimes[[j]]
-#'       summary <- get_FV_summary(dsList_filetered, runtime = RTval)
-#'       ert <- summary$mean
-#'       names(ert) <- summary$algId
-#'       erts <- rbind(erts, ert[get_algId(dsList)])
-#'     }
-#'     return(erts[-1, ])
-#'   }
+#' @return A data.table with 3 columns: funcId, DIM and target
+#' @export
+#' @examples 
+#' get_ECDF_targets(dsl, 'linear', 10)
+get_ECDF_targets <- function(dsList, type = "log-linear", number_targets = 10) {
+  funcIds <- get_funcId(dsList)
+  dims <- get_dim(dsList)
+  
+  dt <- rbindlist(apply(expand.grid(funcIds, dims), 1, function(x) {
+    if (type == 'bbob') {
+      fseq <- rev(seq_FV(c(100,1e-8), length.out = 51, scale = 'log'))
+    }
+    else {
+      dsl <- subset(dsList, funcId == x[[1]] && DIM == x[[2]])
+      if (length(dsl) == 0) 
+        NULL
+      fall <- get_funvals(dsl)
+      if (length(fall) < 2) 
+        NULL 
+      
+      fseq <- seq_FV(fall, length.out = number_targets, scale = ifelse(type == "log-linear", 'log', 'linear'))
+    }
+    data.table(funcId = x[[1]], DIM = x[[2]], target = fseq)
+  }))
+  dt
+}
 
 ### __________________________ Rewritten data generation functions _______________________ ###
 #' Generate dataframe of a single function/dimension pair
@@ -1091,7 +991,6 @@ generate_data.Parameters <- function(dsList, which = 'by_RT', scale_log = F) {
 #' @param dsList The DataSetList object
 #' @param aggr_on Which attribute to use for aggregation. Either 'funcId' or 'DIM'
 #' @param targets Optional list of target values (Runtime or target value)
-#' @param inf_action How to deal with infinite values. Either 'none', 'overlap' or 'jitter'
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
 #' 
 #' @export

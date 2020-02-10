@@ -25,26 +25,26 @@ get_data_RT_ECDF_MULT <- reactive({
     targets <- RT_ECDF_MULTI_TABLE()
   })
   
-  if (input$RTECDF.Aggr.Func && input$RTECDF.Aggr.Dim) {
-    extract_funcId <- function(x) {
-      substr(x, 0, stringi::stri_locate_all(x, fixed = ';')[[1]][[1]] - 1) 
-    }
-    extract_dim <- function(x) {
-      substr(x, stringi::stri_locate_all(x, fixed = ';')[[1]][[1]] + 1, nchar(x)) 
-    }
-    targets <- melt(targets, id.vars = "funcId; DIM")
-    targets[, funcId := extract_funcId(`funcId; DIM`), DIM := extract_dim(`funcId; DIM`)]
-  }
-  else if (input$RTECDF.Aggr.Func) {
-    targets <- melt(targets, id.vars = "funcId")
-    targets[, DIM := get_dim(dsList)]
-  }
-  else if (input$RTECDF.Aggr.Dim) {
-    targets <- melt(targets, id.vars = "DIM")
-    targets[, funcId := get_funcId(dsList)]
-  }
-  
-  colnames(targets)[colnames(targets) == "value"] <- "target"
+  # if (input$RTECDF.Aggr.Func && input$RTECDF.Aggr.Dim) {
+  #   extract_funcId <- function(x) {
+  #     substr(x, 0, stringi::stri_locate_all(x, fixed = ';')[[1]][[1]] - 1) 
+  #   }
+  #   extract_dim <- function(x) {
+  #     substr(x, stringi::stri_locate_all(x, fixed = ';')[[1]][[1]] + 1, nchar(x)) 
+  #   }
+  #   targets <- melt(targets, id.vars = "funcId; DIM")
+  #   targets[, funcId := extract_funcId(`funcId; DIM`), DIM := extract_dim(`funcId; DIM`)]
+  # }
+  # else if (input$RTECDF.Aggr.Func) {
+  #   targets <- melt(targets, id.vars = "funcId")
+  #   targets[, DIM := get_dim(dsList)]
+  # }
+  # else if (input$RTECDF.Aggr.Dim) {
+  #   targets <- melt(targets, id.vars = "DIM")
+  #   targets[, funcId := get_funcId(dsList)]
+  # }
+  # 
+  # colnames(targets)[colnames(targets) == "value"] <- "target"
   generate_data.ECDF(dsList, targets, input$RTECDF.Aggr.Logx)
 })
 
@@ -102,21 +102,9 @@ observe({
   
   if (length(dsList) == 0) return(NULL)
   
-  targets <- get_default_ECDF_targets(dsList, format_FV)
+  targets <- get_ECDF_targets(dsList, input$RTECDF.Aggr.Target_type, input$RTECDF.Aggr.Target_number)
   
-  df <- t(data.frame(targets))
-  rownames(df) <- names(targets)
-  colnames(df) <- paste0("target.", seq(10))
-  dt <- as.data.table(df, keep.rownames = T)
-  
-  if (!input$RTECDF.Aggr.Func)
-    colnames(dt)[[1]] <- "Dim"
-  else if (!input$RTECDF.Aggr.Dim)
-    colnames(dt)[[1]] <- "funcId"
-  else
-    colnames(dt)[[1]] <- "funcId; Dim"
-  
-  RT_ECDF_MULTI_TABLE(dt) # add values to `RT_ECDF_MULTI_TABLE`
+  RT_ECDF_MULTI_TABLE(targets) # add values to `RT_ECDF_MULTI_TABLE`
   trigger_renderDT(rnorm(1))
 })
 
@@ -128,7 +116,7 @@ output$RT_GRID_GENERATED <- DT::renderDataTable({
   editable = TRUE, 
   rownames = FALSE,
   options = list(
-    pageLength = 5, 
+    pageLength = 10, 
     lengthMenu = c(5, 10, 25, -1), 
     scrollX = T, 
     server = T,
@@ -137,7 +125,8 @@ output$RT_GRID_GENERATED <- DT::renderDataTable({
         className = 'dt-right', targets = "_all"
       )
     )
-  )
+  ),
+  filter = 'top'
 )
 
 observeEvent(input$RT_GRID_GENERATED_cell_edit, {
@@ -157,9 +146,7 @@ observeEvent(input$RT_GRID_GENERATED_cell_edit, {
 
 observeEvent(input$RTECDF.Aggr.Table.Upload, {
   if (!is.null(input$RTECDF.Aggr.Table.Upload)) {
-    df <- read.csv(input$RTECDF.Aggr.Table.Upload$datapath, 
-                   sep = ',', header = F) %>%
-      set_colnames(c('Func', paste0('target.', seq(ncol(.) - 1)))) %>% 
+    df <- read.csv2(input$RTECDF.Aggr.Table.Upload$datapath, header = T, row.names = F) %>% 
       as.data.table
     
     if (ncol(df) == ncol(RT_ECDF_MULTI_TABLE())) {
@@ -178,8 +165,7 @@ observeEvent(input$RTECDF.Aggr.Table.Upload, {
 output$RTECDF.Aggr.Table.Download <- downloadHandler(
   filename = 'Example_ECDF_TARGETS.csv',
   content = function(file) {
-    write.table(RT_ECDF_MULTI_TABLE(), file, 
-                sep = ',', col.names = F, row.names = F)
+    write.csv2(RT_ECDF_MULTI_TABLE(), file, row.names = F)
   },
   contentType = "text/csv"
 )

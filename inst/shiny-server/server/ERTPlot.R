@@ -22,19 +22,45 @@ render_ert_per_fct <- reactive({
     if (input$ERTPlot.show.ERT) y_attrs <- c(y_attrs, 'ERT')
     if (input$ERTPlot.show.mean) y_attrs <- c(y_attrs, 'mean')
     if (input$ERTPlot.show.median) y_attrs <- c(y_attrs, 'median')
-    if (length(y_attrs) > 0)
+    show_legend <- T
+    if (length(y_attrs) > 0){
       p <- plot_general_data(get_data_ERT_PER_FUN(), x_attr = 'target', y_attr = y_attrs, 
-                             type = 'line', legend_attr = 'algId', show.legend = T, 
+                             type = 'line', legend_attr = 'algId', show.legend = show_legend, 
                              scale.ylog = input$ERTPlot.semilogy,
                              scale.xlog = input$ERTPlot.semilogx, x_title = "Best-so-far f(x)-value",
                              y_title = "Function Evaluations",
                              scale.reverse = !attr(DATA(), 'maximization'))
+      show_legend <- F
+    }
     else
       p <- NULL
-    if (input$ERTPlot.show.CI)
+    if (input$ERTPlot.show.CI) {
       p <- plot_general_data(get_data_ERT_PER_FUN(), x_attr = 'target', y_attr = 'mean', 
                              type = 'ribbon', legend_attr = 'algId', lower_attr = 'lower', 
-                             upper_attr = 'upper', p = p)
+                             upper_attr = 'upper', p = p, show.legend = show_legend, 
+                             scale.ylog = input$ERTPlot.semilogy,
+                             scale.xlog = input$ERTPlot.semilogx, x_title = "Best-so-far f(x)-value",
+                             y_title = "Function Evaluations",
+                             scale.reverse = !attr(DATA(), 'maximization'))
+      show_legend <- F
+    }
+    if (input$ERTPlot.show.runs) {
+      fstart <- isolate(input$ERTPlot.Min %>% as.numeric)
+      fstop <- isolate(input$ERTPlot.Max %>% as.numeric)
+      data <- isolate(subset(DATA(), algId %in% input$ERTPlot.Algs))
+      dt <- get_RT_sample(data, seq_FV(get_funvals(data), from = fstart, to = fstop,
+                                       scale = ifelse(isolate(input$ERTPlot.semilogx), 'log', 'linear')))
+      nr_runs <- ncol(dt) - 4
+      for (i in seq_len(nr_runs)) {
+        p <- plot_general_data(dt, x_attr = 'target', y_attr = paste0('run.', i), type = 'line',
+                               legend_attr = 'algId', p = p, show.legend = show_legend, 
+                               scale.ylog = input$ERTPlot.semilogy,
+                               scale.xlog = input$ERTPlot.semilogx, x_title = "Best-so-far f(x)-value",
+                               y_title = "Function Evaluations",
+                               scale.reverse = !attr(DATA(), 'maximization'))
+        show_legend <- F
+      }
+    }
     p
   },
   message = "Creating plot"
@@ -172,12 +198,14 @@ get_data_ERT_aggr_dim <- reactive({
 })
 
 render_ERTPlot_aggr_plot_dim <- reactive({
+  data <- get_data_ERT_aggr_dim()
+  req(length(get_dim(data)) > 0)
   withProgress({
     y_attr <- if (input$ERTPlot.Aggr_Dim.Ranking) 'rank' else 'value'
     y_title <- if (input$ERTPlot.Aggr_Dim.Ranking) 'Rank' else 'ERT'
     reverse_scale <- input$ERTPlot.Aggr_Dim.Mode == 'radar'
     
-    plot_general_data(get_data_ERT_aggr_dim(), type = input$ERTPlot.Aggr_Dim.Mode, x_attr = 'DIM',
+    plot_general_data(data, type = input$ERTPlot.Aggr_Dim.Mode, x_attr = 'DIM',
                       y_attr = y_attr, x_title = "DIM", y_title = y_title, show.legend = T,
                       scale.ylog = input$ERTPlot.Aggr_Dim.Logy, scale.xlog = T, 
                       scale.reverse = reverse_scale)

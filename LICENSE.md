@@ -1,10 +1,10 @@
-## License
+# License
 
-This application is governed by the __BSD 3-Clause license__. 
+This application is governed by the __BSD 3-Clause license__.
 
 BSD 3-Clause License
 
-Copyright (c) 2018, 
+Copyright (c) 2018,
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

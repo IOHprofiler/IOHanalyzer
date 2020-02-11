@@ -84,7 +84,8 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
       IOHprofiler = read_dat,
       COCO = read_dat__COCO,
       BIOBJ_COCO = read_dat__BIOBJ_COCO,
-      TWO_COL = read_dat
+      TWO_COL = read_dat  # TODO: perhaps rename `TWO_COL` or to use a better naming
+                          # scheme for all format names
     )
 
     RT_raw <- read_raw(rtFile, subsampling)
@@ -111,8 +112,20 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     )
 
     RT <- RT$RT
+    mode(RT) <- 'integer'
     FV <- FV$FV
-
+    
+    if (format %in% c(IOHprofiler, TWO_COL)) {
+      # try to save some memory here...
+      FV <- tryCatch({
+        .FV <- FV
+        mode(.FV) <- 'integer'
+        if (all(FV == .FV)) .FV
+        else FV
+      },
+      warning = function(w) FV) # in case the type coercion gives a warning 
+    }
+   
     # TODO: add more data sanity checks
     maxRT <- set_names(sapply(RT_raw, function(d) d[nrow(d), idxEvals]), NULL)
     # Fix for old-format files which do not store used runtime in .dat-files

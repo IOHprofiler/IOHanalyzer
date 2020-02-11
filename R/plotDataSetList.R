@@ -460,7 +460,7 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
   
   if (includeOpts) {
     for (algid in get_algId(dsList)) {
-      #TODO: Work for minimization
+      # TODO: Work for minimization
       Fseq <- c(Fseq, max(get_funvals(subset(dsList, algId == algid))))
     }
     Fseq <- unique(sort(Fseq))

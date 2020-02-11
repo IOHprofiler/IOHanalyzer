@@ -77,44 +77,6 @@ output$ERTPlot.Download <- downloadHandler(
   contentType = paste0('image/', input$ERTPlot.Format)
 )
 
-update_ert_per_fct_axis <- observe({
-  plotlyProxy("ERT_PER_FUN", session) %>%
-    plotlyProxyInvoke(
-      "restyle", 
-      list(
-        xaxis = list(title = 'best-so-far-f(x)-value', 
-                     type = ifelse(input$ERTPlot.semilogx, 'log', 'linear')),
-        yaxis = list(title = 'function evaluations', 
-                     type = ifelse(input$ERTPlot.semilogy, 'log', 'linear'))
-      )
-    )
-})
-
-render_ert_per_fct <- reactive({
-  withProgress({
-    req(input$ERTPlot.Min, input$ERTPlot.Max, length(DATA()) > 0)
-    selected_algs <- input$ERTPlot.Algs
-    
-    data <- subset(DATA(), algId %in% input$ERTPlot.Algs)
-    req(length(data) > 0)
-    
-    fstart <- input$ERTPlot.Min %>% as.numeric
-    fstop <- input$ERTPlot.Max %>% as.numeric
-    
-    Plot.RT.Single_Func(data, Fstart = fstart, Fstop = fstop,
-                       show.CI = input$ERTPlot.show.CI,
-                       show.ERT = input$ERTPlot.show.ERT,
-                       show.mean = input$ERTPlot.show.mean,
-                       show.median = input$ERTPlot.show.median,
-                       scale.xlog = input$ERTPlot.semilogx,
-                       scale.ylog = isolate(input$ERTPlot.semilogy),
-                       includeOpts = input$ERTPlot.inclueOpts,
-                       scale.reverse = !attr(data, 'maximization'))
-  },
-  message = "Creating plot"
-  )
-})
-
 output$ERTPlot.Multi.Plot <- renderPlotly(
   render_ERTPlot_multi_plot()
 )

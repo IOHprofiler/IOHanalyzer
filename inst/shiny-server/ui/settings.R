@@ -14,6 +14,8 @@ color_settings_box <- function(width = 12, collapsible = T, collapsed = F) {
           colourInput("Settings.Color.Bg", "Plot background colour", value = "#E6E6E6"),
           colourInput("Settings.Color.Grid", "Plot gridline colour", value = "#FFFFFF"),
           colourInput("Settings.Color.Tick", "Plot ticks colour", value = "#333333"),
+          numericInput("Settings.Color.Linewidth", "Line Width", value = 2),
+          numericInput("Settings.Color.Markersize", "Marker Size", value = 4),
           selectInput("Settings.Legend.Location", "Legend location", 
                       c("Outside, right", "Inside, right", "Inside, left", "Below"), "Below")
         ),
@@ -52,7 +54,7 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
           numericInput("Settings.General.Precision", label = "Function value precision (digits)",
                        value = 2),
           hr(),
-          downloadButton("Settings.Download", "Download current settings file"),
+          downloadButton("Settings.Download", "Download current general settings file"),
           fileInput("Settings.Upload", "Upload a settings file", accept = "rds")
         ),
         column(

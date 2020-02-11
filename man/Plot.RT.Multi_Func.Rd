@@ -3,7 +3,22 @@
 \name{Plot.RT.Multi_Func}
 \alias{Plot.RT.Multi_Func}
 \alias{Plot.RT.Multi_Func.DataSetList}
-\title{Plot ERT-plots for multiple functions or dimensions}
+\title{#' Plot the aggregated empirical cumulative distriburtion as a function of the running times of
+#' a DataSetList. Aggregated over multiple functions or dimensions.
+#'
+#' @param dsList A DataSetList.
+#' @param targets The target function values. Specified in a data.frame, as can be generated
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' by the function 'get_default_ECDF_targets'
+#'
+#' @return A plot of the empirical cumulative distriburtion as a function of
+#' the running times of the DataSetList
+#' @export
+#' @examples 
+#' Plot.RT.ECDF_Multi_Func(dsl)
+Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = F) 
+  UseMethod("Plot.RT.ECDF_Multi_Func", dsList)
+Plot ERT-plots for multiple functions or dimensions}
 \usage{
 Plot.RT.Multi_Func(dsList, scale.xlog = F, scale.ylog = F,
   scale.reverse = F, backend = NULL)
@@ -26,7 +41,9 @@ Plot.RT.Multi_Func(dsList, scale.xlog = F, scale.ylog = F,
 A plot of ERT-values of the DataSetList
 }
 \description{
-Plot ERT-plots for multiple functions or dimensions
+algId <- unique(attr(dsList, 'algId'))
+  p <- IOH_plot_ly_default(x.title = "Function evaluations",
+                       y.title = "Proportion of (run, target, ...) pairs")
 }
 \examples{
 Plot.RT.Multi_Func(dsl)

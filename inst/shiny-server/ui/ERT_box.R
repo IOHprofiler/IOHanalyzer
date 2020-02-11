@@ -51,6 +51,17 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
           checkboxInput('ERTPlot.inclueOpts',
                         label = "Include optimal points found by each algorithm",
                         value = F),
+          checkboxInput('ERTPlot.show.runs',
+                        label = 'Show individual runs',
+                        value = F) %>% 
+            shinyInput_label_embed(
+                          custom_icon("exclamation-triangle") %>%
+                            bs_embed_popover(
+                              title = "Individual runs", content = "This procedure can be slow when many
+                              runs are present in the data. Please use with caution.", 
+                              placement = "auto"
+                            )
+                        ), 
           hr(),
           
           selectInput('ERTPlot.Format', label = 'Select the figure format',

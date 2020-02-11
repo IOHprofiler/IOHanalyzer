@@ -13,6 +13,10 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
                               placement = "auto"
                             )
                         ),
+            
+            selectInput('ERTPlot.Aggr.Funcs', label = 'Select which functions to aggregate over:',
+                        multiple = T, selected = NULL, choices = NULL),
+            
             selectInput('ERTPlot.Aggr.Mode', label = 'Select the plotting mode',
                         choices = c('radar', 'line'), selected = 'radar'),
             

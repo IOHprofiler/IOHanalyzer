@@ -26,7 +26,7 @@ Plot.Stats.Significance_Heatmap(dsList, ftarget, alpha = 0.01,
 A heatmap showing the statistical significance between algorithms
 }
 \description{
-Plot a heatmap showing the statistically different algorithms
+N <- length(get_algId(dsList))
 }
 \examples{
 Plot.Stats.Significance_Heatmap(subset(dsl, funcId == 2), 16)

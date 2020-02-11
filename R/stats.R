@@ -89,7 +89,6 @@ pairwise.test.list <- function(x, max_eval, bootstrap.size = 30, ...) {
     class(x) <- rev(class(x))
     pairwise.test.DataSetList(x)
   }
-  
   N <- length(x)
   p.value <- matrix(NA, N, N)
   
@@ -102,10 +101,25 @@ pairwise.test.list <- function(x, max_eval, bootstrap.size = 30, ...) {
         x1 <- bootstrap_RT(x[[i]], max_eval[[i]], bootstrap.size)
         x2 <- bootstrap_RT(x[[j]], max_eval[[j]], bootstrap.size)
       }
-      options(warn = -1)
-      p.value[i, j] <- ks.test(x1, x2, alternative = 'greater', exact = F)$p.value
-      p.value[j, i] <- ks.test(x1, x2, alternative = 'less', exact = F)$p.value
-      options(warn = 0)
+      if (all(is.na(x1))) {
+        if (all(is.na(x2))) {
+          next
+        }
+        else {
+          p.value[i, j] <- 1
+          p.value[j, i] <- 0
+        }
+      }
+      else if (all(is.na(x2))) {
+        p.value[i, j] <- 0
+        p.value[j, i] <- 1
+      }
+      else {
+        options(warn = -1)
+        p.value[i, j] <- ks.test(x1, x2, alternative = 'greater', exact = F)$p.value
+        p.value[j, i] <- ks.test(x1, x2, alternative = 'less', exact = F)$p.value
+        options(warn = 0)
+      }
     }
   }
   
@@ -136,6 +150,7 @@ pairwise.test.DataSetList <- function(x, ftarget, bootstrap.size = 0, which = 'b
     s <- split(dt$`f(x)`, dt$algId)
   }
   else stop("Unsupported argument 'which'. Available options are 'by_FV' and 'by_RT'")
+  
   return(pairwise.test.list(s, maxRT, bootstrap.size))
 }
 
@@ -415,52 +430,6 @@ AUC.ECDF <- function(fun, from = NULL, to = NULL) {
     integrate(fun, lower = from, upper = to, subdivisions = 1e3L)$value / (to - from)
 }
 
-# TODO: review / re-write this function 
-#TODO: inconsistent use of format_func gives slightly different results between
-#generated and uploaded targets
-#' Generate ECDF targets for a DataSetList
-#'
-#' @param data A DataSetList
-#' @param format_func function to format the targets
-#'
-#' @return a vector of targets
-#' @export
-#' @examples 
-#' get_default_ECDF_targets(dsl)
-get_default_ECDF_targets <- function(data, format_func = as.integer) {
-  funcIds <- get_funcId(data)
-  dims <- get_dim(data)
-
-  targets <- list()
-  names <- list()
-  for (i in seq_along(funcIds)) {
-    Id <- funcIds[[i]]
-    data_sub <- subset(data, funcId == Id)
-
-    for (j in seq_along(dims)) {
-      dim <- dims[[j]]
-      data_subsub <- subset(data_sub, DIM == dim)
-      if (length(data_subsub) == 0) break
-      fall <- get_funvals(data_subsub)
-      if (length(fall) < 2) break #TODO: double check why this can happen in nevergrad?
-      #TODO: Account for minimization / maximization
-      fmin <- min(fall)
-      fmax <- max(fall)
-
-      fseq <- seq_FV(fall, fmin, fmax, length.out = 10) %>% 
-        sapply(format_func)
-      targets <- append(targets, list(fseq))
-      
-      if (length(funcIds) == 1) {
-        names <- append(names, dim)
-      } else if (length(dims) == 1) {
-        names <- append(names, Id)
-      } else
-        names <- append(names, paste0(Id, ";", dim))
-    }
-  }
-  targets %>% set_names(names)
-}
 
 #' Generate datatables of runtime or function value targets for a DataSetList
 #' 
@@ -474,16 +443,16 @@ get_default_ECDF_targets <- function(data, format_func = as.integer) {
 #' @export
 #' @examples 
 #' get_target_dt(dsl)
-get_target_dt <- function(dsList, which = 'by_FV') {
+get_target_dt <- function(dsList, which = 'by_RT') {
   vals <- c()
   funcs <- get_funcId(dsList)
   dims <- get_dim(dsList)
   dt <- as.data.table(expand.grid(funcs, dims))
   colnames(dt) <- c("funcId", "DIM")
-  if (which == 'by_FV') {
+  if (which == 'by_RT') {
     target_func <- get_target_FV
   }
-  else if (which == 'by_RT') {
+  else if (which == 'by_FV') {
     target_func <- get_target_RT
   }
   else stop("Invalid argument for `which`; can only be `by_FV` or `by_RT`.")

@@ -52,116 +52,150 @@ read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
 #' DataSetList(path)
 DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization = NULL,
                         format = IOHprofiler, subsampling = FALSE) {
-    if (is.null(path))
-      return(structure(list(), class = c('DataSetList', 'list')))
-    
-    path <- trimws(path)
-    if (format == NEVERGRAD) {
-      if (sub('[^\\.]*\\.', '', basename(path), perl = T) == "csv")
-        return(read_nevergrad(path))
-      else
-        indexFiles <-
-          file.path(path, list.files(path, pattern = '.csv', recursive = T))
-    }
+  if (is.null(path))
+    return(structure(list(), class = c('DataSetList', 'list')))
+  
+  path <- trimws(path)
+  if (format == NEVERGRAD) {
+    if (sub('[^\\.]*\\.', '', basename(path), perl = T) == "csv")
+      return(read_nevergrad(path))
     else
-      indexFiles <- scan_index_file(path)
+      indexFiles <-
+        file.path(path, list.files(path, pattern = '.csv', recursive = T))
+  }
+  else
+    indexFiles <- scan_index_file(path)
+  
+  if (is.null(print_fun))
+    print_fun <- cat
+  
+  object <- list()
+  class(object) <- c('DataSetList', class(object))
+  DIM <- c()
+  algId <- c()
+  funcId <- c()
+  suites <- c()
+  maximizations <- c()
+  i <- 1
+  
+  for (file in indexFiles) {
+    if (verbose) {
+      print_fun(paste('Processing', file, '...\n'))
+    }
     
-    if (is.null(print_fun))
-      print_fun <- cat
-    
-    object <- list()
-    class(object) <- c('DataSetList', class(object))
-    DIM <- c()
-    algId <- c()
-    funcId <- c()
-    suites <- c()
-    maximizations <- c()
-    i <- 1
-    
-    for (file in indexFiles) {
-      if (verbose) {
-        print_fun(paste('Processing', file, '...\n'))
-      }
+    if (format == NEVERGRAD) {
+      dsl <- read_nevergrad(file)
+      object %<>% c(., dsl)
+      suites[i] <- NEVERGRAD
+    }
+    else {
+      indexInfo <- read_index_file(file)
+      if (verbose) 
+        print_fun(sprintf('   algorithm %s...\n', indexInfo[[1]]$algId))
       
-      if (format == NEVERGRAD) {
-        dsl <- read_nevergrad(file)
-        object %<>% c(., dsl)
-        suites[i] <- NEVERGRAD
-      }
-      else {
-        indexInfo <- read_index_file(file)
-        if (verbose) 
-          print_fun(sprintf('   algorithm %s...\n', indexInfo[[1]]$algId))
-        
-        for (info in indexInfo) {
-          if (verbose) {
-            print_fun(
-              sprintf(
-                '      %d instances on f%d %dD...\n',
-                length(info$instance),
-                info$funcId,
-                info$DIM
-              )
+      for (info in indexInfo) {
+        if (verbose) {
+          print_fun(
+            sprintf(
+              '      %d instances on f%d %dD...\n',
+              length(info$instance),
+              info$funcId,
+              info$DIM
             )
-          }
-          
-          copy_flag <- TRUE
-          data <- DataSet(info, maximization = maximization,
-                          format = format, subsampling = subsampling)
-          
-          DIM[i] <- attr(data, 'DIM')
-          funcId[i] <- attr(data, 'funcId')
-          algId[i] <- attr(data, 'algId')
-          # TODO: double-check the following treatment on `instance`!!!
-          instance <- attr(data, 'instance') #Was instance without index?
-          suites[i] <- attr(data, 'suite')
-          maximizations[i] <- attr(data, 'maximization')
-          
-          # check for duplicated instances
-          if (length(object) != 0) {
-            idx <- which(sapply(object, function(obj) obj == data))
-            for (k in idx) {
-              instance_ <- attr(object[[k]], 'instance')
-              if (all(instance == instance_)) {
-                copy_flag <- FALSE
-                warning('duplicated instances!')
-                break
-              }
-              
-              if (length(intersect(instance, instance_)) != 0) {
-                warning('duplicated instances!')
-              }
+          )
+        }
+        
+        copy_flag <- TRUE
+        data <- DataSet(info, maximization = maximization,
+                        format = format, subsampling = subsampling)
+        
+        DIM[i] <- attr(data, 'DIM')
+        funcId[i] <- attr(data, 'funcId')
+        algId[i] <- attr(data, 'algId')
+        # TODO: double-check the following treatment on `instance`!!!
+        instance <- attr(data, 'instance') #Was instance without index?
+        suites[i] <- attr(data, 'suite')
+        maximizations[i] <- attr(data, 'maximization')
+        
+        # check for duplicated instances
+        
+        
+        if (length(object) != 0) {
+          idx <- which(sapply(object, function(obj) obj == data))
+          for (k in idx) {
+            instance_ <- attr(object[[k]], 'instance')
+            if (all(instance == instance_)) {
+              copy_flag <- FALSE
+              warning('duplicated instances!')
+              break
+            }
+            
+            if (length(intersect(instance, instance_)) != 0) {
+              warning('duplicated instances!')
             }
           }
-          
-          if (copy_flag) {
-            object[[i]] <- data
-            i <- i + 1
-          }
+        }
+        
+        if (copy_flag) {
+          object[[i]] <- data
+          i <- i + 1
         }
       }
-      
-      if (verbose) 
-        print_fun("\n")
     }
     
-    # TODO: sort all DataSet by multiple attributes: algId, funcId and DIM
-    if (format != NEVERGRAD) {
-      attr(object, 'DIM') <- DIM
-      attr(object, 'funcId') <- funcId
-      attr(object, 'algId') <- algId
-    }
-    
-    suite <- unique(suites)
-    maximization <- unique(maximizations)
-    if (length(suite) != 1 || length(maximization) != 1) {
-      warning("Multipe different suites detected!")
-    }
-    
-    attr(object, 'suite') <- suite
-    attr(object, 'maximization') <- maximization
-    object
+    if (verbose) 
+      print_fun("\n")
   }
+    
+  # TODO: sort all DataSet by multiple attributes: algId, funcId and DIM
+  if (format != NEVERGRAD) {
+    attr(object, 'DIM') <- DIM
+    attr(object, 'funcId') <- funcId
+    attr(object, 'algId') <- algId
+  }
+  
+  suite <- unique(suites)
+  maximization <- unique(maximizations)
+  if (length(suite) != 1 || length(maximization) != 1) {
+    warning("Multipe different suites detected!")
+  }
+  
+  attr(object, 'suite') <- suite
+  attr(object, 'maximization') <- maximization
+  clean_DataSetList(object)
+}
+
+
+#' Clean DataSetList object by concatenating DataSets
+#' 
+#' Concatenates all DataSets with the same algorith name, function id and dimension
+#'  
+#' @param dsList The DataSetList object to clean
+#' @export
+#' @examples 
+#' clean_DataSetList(dsl)
+clean_DataSetList <- function(dsList) {
+  dsl <- apply(expand.grid(get_funcId(dsList), 
+                                  get_dim(dsList), 
+                                  get_algId(dsList)), 
+                      1, function(x) {
+    if (!is.na(as.numeric(x[[1]]))) {
+      x[[1]] <- as.numeric(x[[1]])
+    }
+    if (!is.na(as.numeric(x[[2]]))) {
+      x[[2]] <- as.numeric(x[[2]])
+    }
+    dsl_temp <- subset(dsList, funcId == x[[1]] && DIM == x[[2]] && algId == x[[3]])
+    c.DataSet(dsl_temp)
+  })
+  class(dsl) <- c('DataSetList', 'list')
+  attr(dsl, 'DIM') <- attr(dsList, 'DIM')
+  attr(dsl, 'funcId') <- attr(dsList, 'funcId')
+  attr(dsl, 'algId') <- attr(dsList, 'algId')
+  attr(dsl, 'suite') <- attr(dsList, 'suite')
+  attr(dsl, 'maximization') <- attr(dsList, 'maximization')
+  dsl
+}
 
 #' S3 concatenation function for DataSetList
 #'

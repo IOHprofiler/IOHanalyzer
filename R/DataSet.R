@@ -171,13 +171,13 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
 #' @export
 c.DataSet <- function(...) {
   dsl <- list(...)
+  if (length(dsl) == 1) dsl <- dsl[[1]]
   dsl <- dsl[sapply(dsl, length) != 0]
-  
   if (length(dsl) == 0)
     return()
   
   for (ds in dsl) {
-    if (!any((class(dsl[[1]])) == 'DataSet'))
+    if (!any((class(ds)) == 'DataSet'))
       stop("Operation only possible when all arguments are DataSets")
   }
   
@@ -202,29 +202,30 @@ c.DataSet <- function(...) {
     finalFV <- min(unlist(lapply(dsl, function(x) attr(x, "finalFV"))))
   
   format <- attr(dsl[[1]], "format")
+
+  RT_raw <- unlist(lapply(dsl, function(ds) {
+    lapply(seq_len(ncol(ds$RT)), function(cnr) {
+      rt_temp <- as.matrix(ds$RT[, cnr])
+      cbind(rt_temp, as.numeric(rownames(ds$RT)))
+    })
+  }), recursive = F)
   
-  RT_raw <- c()
-  #Note: Currently only works for data split in a way that there is one run per DataSet
-  #TODO: Generalize to more runs -> detection + dealing with it
-  for (i in seq(length(dsl))) {
-    rt_temp <- as.matrix(dsl[[i]]$RT)
-    rt_temp <- cbind(rt_temp, as.numeric(rownames(dsl[[i]]$RT)))
-    RT_raw[[i]] <- rt_temp
-  }
   
-  RT <- align_running_time(RT_raw, format = "TWO_COL", maximization = info$maximization)
-  FV <- align_function_value(RT_raw, format = "TWO_COL")
-  
-  #TODO: Deal with cases where parameters are present in original DataSets
+  RT <- align_running_time(RT_raw, format = "TWO_COL", maximization = info$maximization)$RT
+  FV <- align_function_value(RT_raw, format = "TWO_COL")$FV
+
+    #TODO: Deal with cases where parameters are present in original DataSets
   PAR <- list(
     'by_FV' = RT[names(RT) != 'RT'],
     'by_RT' = FV[names(FV) != 'FV']
   )
   
+  instances <- unlist(lapply(dsl, function(ds) {attr(ds, 'instance')}))
+  
   do.call(
     function(...)
       structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
-    c(info, list(maxRT = maxRT, finalFV = finalFV, format = format))
+    c(info, list(maxRT = maxRT, finalFV = finalFV, format = format, instance = instances))
   )
 }
 

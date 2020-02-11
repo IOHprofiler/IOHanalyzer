@@ -1,4 +1,4 @@
-### Generate FCE table -- DONE
+### Generate FCE table
 FCEPlot.Aggr.FCEs_obj <- reactive({
   input$FCEPlot.Aggr.Refresh
   dsList <- isolate(FCEPlot.Aggr.data())
@@ -10,7 +10,7 @@ FCEPlot.Aggr.FCEs_obj <- reactive({
   dt
 })
 
-### Plot the data -- DONE
+### Plot the data 
 render_FCEPlot_aggr_plot <- reactive({
   withProgress({
     y_attr <- if (input$FCEPlot.Aggr.Ranking) 'rank' else 'value'
@@ -25,7 +25,7 @@ render_FCEPlot_aggr_plot <- reactive({
 })
 
 
-### Gather relevant datasetlist -- DONE
+### Gather relevant datasetlist 
 FCEPlot.Aggr.data <- function() {
   data <- subset(DATA_RAW(), algId %in% isolate(input$FCEPlot.Aggr.Algs))
   if (length(data) == 0) return(NULL)
@@ -51,7 +51,7 @@ FCEPlot.Aggr.data <- function() {
 }
 
 
-### format table for display -- DONE
+### format table for display 
 FCE_multi_function <- function() {
   dt <- FCEPlot.Aggr.FCEs_obj()
   if (input$FCEPlot.Aggr.Aggregator == 'Functions')
@@ -61,7 +61,7 @@ FCE_multi_function <- function() {
   dt 
 }
 
-### Table with default targets -- DONE?
+### Table with default targets 
 default_runtimes_table <- reactive({
   data <- FCEPlot.Aggr.data()
   if (is.null(data)) return(NULL)
@@ -70,20 +70,15 @@ default_runtimes_table <- reactive({
     targets <- targets[, c('funcId', 'target')] 
   else   
     targets <- targets[, c('DIM', 'target')] 
-
-  # %>% melt(id.vars = 'funcId') %>% dcast(variable ~ funcId)
-  # targets <- targets[, 'variable' = NULL]
-  # rownames(targets) <- 'funcId'
-  # targets
 })
 
-### Target table object -- DONE
+### Target table object 
 FCEPlot.Aggr.Targets_obj <- NULL
 
-### Target table proxy -- DONE
+### Target table proxy
 proxy_FCEPlot.Aggr.Targets <- dataTableProxy('FCEPlot.Aggr.Targets')
 
-### Target table print -- DONE
+### Target table print
 output$FCEPlot.Aggr.Targets <- DT::renderDataTable({
   req(length(DATA_RAW()) > 0)
   FCEPlot.Aggr.Targets_obj <<- default_runtimes_table()
@@ -94,7 +89,7 @@ options = list(pageLength = 5, lengthMenu = c(5, 10, 25, -1), scrollX = T, serve
 
 
 
-### Target table edit -- DONE?
+### Target table edit
 observeEvent(input$FCEPlot.Aggr.Targets_cell_edit, {
   info <- input$FCEPlot.Aggr.Targets_cell_edit
   i <- info$row
@@ -106,7 +101,7 @@ observeEvent(input$FCEPlot.Aggr.Targets_cell_edit, {
   replaceData(proxy, FCEPlot.Aggr.Targets_obj, resetPaging = FALSE, rownames = FALSE)
 })
 
-### Table output -- DONE
+### Table output
 output$FCEPlot.Aggr.FCETable <- DT::renderDataTable({
   input$FCEPlot.Aggr.Refresh
   req(length(DATA_RAW()) > 0)
@@ -119,14 +114,14 @@ output$FCEPlot.Aggr.FCETable <- DT::renderDataTable({
 }, editable = FALSE, rownames = TRUE,
 options = list(pageLength = 5, lengthMenu = c(5, 10, 25, -1), scrollX = T, server = T))
 
-### plot output -- DONE
+### plot output
 output$FCEPlot.Aggr.Plot <- renderPlotly(
   render_FCEPlot_aggr_plot()
 )
 
 
 
-### Download table -- DONE
+### Download table
 output$FCEPlot.Aggr.DownloadTable <- downloadHandler(
   filename = function() {
     eval(FCE_multi_func_name)
@@ -141,7 +136,7 @@ output$FCEPlot.Aggr.DownloadTable <- downloadHandler(
   }
 )
 
-### Download plot -- DONE
+### Download plot
 output$FCEPlot.Aggr.Download <- downloadHandler(
   filename = function() {
     eval(FIG_NAME_FV_AGGR)
@@ -151,66 +146,6 @@ output$FCEPlot.Aggr.Download <- downloadHandler(
   },
   contentType = paste0('image/', input$FCEPlot.Aggr.Format)
 )
-
-#############################################################################################
-
-
-# get_max_runtimes <- function(data, aggr_on){
-#   runtimes <- c()
-#   aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_dim(data)
-#   
-#   for (j in seq_along(aggr_attr)) {
-#     dsList_filetered <- if (aggr_on == 'funcId') subset(data,funcId == aggr_attr[[j]])
-#     else subset(data, DIM == aggr_attr[[j]])
-#     
-#     RTall <- get_runtimes(dsList_filetered)
-#     RTval <- max(RTall)
-#     runtimes <- c(runtimes,RTval)
-#   }
-#   names(runtimes) <- aggr_attr
-#   runtimes
-# }
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# default_runtimes_table <- reactive({
-#   data <- FCEPlot.Aggr.data()
-#   if (is.null(data)) return(NULL)
-#   aggr_on <- ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
-#   get_max_runtimes(data, aggr_on) %>% t %>% as.data.table(keep.rownames = F)
-# })
-# 
-# 
-# 
-# observeEvent(input$FCEPlot.Aggr.Targets_cell_edit, {
-#   info <- input$FCEPlot.Aggr.Targets_cell_edit
-#   i <- info$row
-#   j <- info$col + 1
-#   v <- info$value
-#   data <- FCEPlot.Aggr.data()
-#   if (is.null(data)) return(NULL)
-#   aggr_on <- ifelse(input$FCEPlot.Aggr.Aggregator == 'Functions', 'funcId', 'DIM')
-#   aggr_attr <- if (aggr_on == 'funcId') get_funcId(data) else get_dim(data)
-#   suppressWarnings(FCEPlot.Aggr.Targets_obj[i, paste0(aggr_attr[[j]])] <<- DT::coerceValue(v, FCEPlot.Aggr.Targets_obj[i, paste0(aggr_attr[[j]])]))
-#   replaceData(proxy, FCEPlot.Aggr.Targets_obj, resetPaging = FALSE, rownames = FALSE)
-# })
-# 
-# fce_multi_function <- function(){
-#   dsList <- FCEPlot.Aggr.data()
-#   if (is.null(dsList)) return(NULL)
-#   aggr_on <- 'funcId'
-#   aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
-#   
-#   runtimes <- FCEPlot.Aggr.Targets_obj
-#   FCEs <- mean_FVs(dsList, aggr_on = aggr_on, runtimes = runtimes)
-#   rownames(FCEs) <- aggr_attr
-#   formatC(FCEs, digits = 4)
-# }
 
 
 

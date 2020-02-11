@@ -15,10 +15,11 @@ render_ERTPlot_aggr_plot <- reactive({
     y_attr <- if (input$ERTPlot.Aggr.Ranking) 'rank' else 'value'
     y_title <- if (input$ERTPlot.Aggr.Ranking) 'Rank' else 'ERT'
     reverse_scale <- input$ERTPlot.Aggr.Mode == 'radar'
-    dt <- ERTPlot.Aggr.ERTs_obj()
+    dt <- ERTPlot.Aggr.ERTs_obj()[funcId %in% isolate(input$ERTPlot.Aggr.Funcs), ]
     plot_general_data(dt, type = input$ERTPlot.Aggr.Mode, x_attr = 'funcId',
                       y_attr = y_attr, x_title = "FuncId", y_title = y_title, show.legend = T,
-                      scale.ylog = input$ERTPlot.Aggr.Logy, scale.reverse = reverse_scale)
+                      scale.ylog = input$ERTPlot.Aggr.Logy, scale.reverse = reverse_scale, 
+                      inf.action = 'jitter')
   },
   message = "Creating plot")
 })

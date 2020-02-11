@@ -47,7 +47,7 @@ Only works in combination with`upper_attr` and `type` == 'ribbon'}
 
 \item{show.legend}{Whether or not to include a legend}
 
-\item{inf.action}{How to deal with infinite values}
+\item{inf.action}{How to deal with infinite values. Can be 'none', 'overlap' or 'jitter'}
 
 \item{...}{Additional parameters for the add_trace function}
 }

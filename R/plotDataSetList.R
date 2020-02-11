@@ -2138,7 +2138,7 @@ add_transparancy <- function(colors, percentage){
 #' @param plot_title Title of x-axis. Defaults to no title
 #' @param p A previously existing plot on which to add traces. If NULL, a new canvas is created
 #' @param show.legend Whether or not to include a legend
-#' @param inf.action How to deal with infinite values
+#' @param inf.action How to deal with infinite values. Can be 'none', 'overlap' or 'jitter'
 #' @param ... Additional parameters for the add_trace function
 #' 
 #' @export

@@ -311,11 +311,10 @@ color_palettes <- function(ncolor) {
 
 #' Save plotly figure in multiple format
 #'
-#' NOTE: This function requires orca to be installed, and for pdf and eps formats
-#' inkscape is also needed.
+#' NOTE: This function requires orca to be installed
 #'
 #' @param p plotly object. The plot to be saved
-#' @param file String. The name of the figure file
+#' @param file String. The name of the figure file, with the extension of the required file-format
 #' @param width Optional. Width of the figure
 #' @param height Optional. Height of the figure
 #' @param ... Additional arguments for orca

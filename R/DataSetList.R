@@ -752,6 +752,8 @@ get_ECDF_targets <- function(dsList, type = "log-linear", number_targets = 10) {
 #' the generated datapoints
 #' 
 #' @export
+#' @examples 
+#' generate_data.Single_Function(subset(dsl, funcId == 1), which = 'by_RT')
 generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL, 
                                           scale_log = F, which = 'by_RT', include_opts = F) {
   
@@ -814,6 +816,8 @@ generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL,
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
 #' 
 #' @export
+#' @examples 
+#' generate_data.PMF(subset(dsl, funcId == 1), target = 15, which = 'by_RT')
 generate_data.PMF <- function(dsList, target, which = 'by_RT') {
   if (which == 'by_RT')
     return(get_RT_sample(dsList, target, output = 'long'))
@@ -830,12 +834,12 @@ generate_data.PMF <- function(dsList, target, which = 'by_RT') {
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
 #' 
 #' @export
+#' @examples 
+#' generate_data.hist(subset(dsl, funcId == 1), target = 15, which = 'by_RT')
 generate_data.hist <- function(dsList, target, use.equal.bins = F, which = 'by_RT') {
   width <- NULL #Set local binding to remove warnings
-  if (length(get_funcId(dsList)) != 1 || length(get_dim(dsList)) != 1) {
-    warning("Invalid dataset uploaded. Please ensure the datasetlist contains data
-            from only one function and only one dimension.")
-    return(NULL)
+  if (length(get_funcId(dsList)) > 1 || length(get_dim(dsList)) > 1) {
+    stop("This function is only available a single function/dimension pair at a time.")
   }
   
   if (use.equal.bins) {
@@ -884,6 +888,8 @@ generate_data.hist <- function(dsList, target, use.equal.bins = F, which = 'by_R
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
 #' 
 #' @export
+#' @examples 
+#' generate_data.ECDF(subset(dsl, funcId == 1), c(10, 15, 16))
 generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT') {
   V1 <- NULL #Set local binding to remove warnings
   by_rt <- which == 'by_RT'
@@ -947,8 +953,12 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT') 
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
 #' 
 #' @export
+#' @examples 
+#' generate_data.AUC(subset(dsl, funcId == 1), c(12, 16))
 generate_data.AUC <- function(dsList, targets, which = 'by_RT') {
-  
+  if (length(get_funcId(dsList)) > 1 || length(get_dim(dsList)) > 1) {
+    stop("This function is only available a single function/dimension pair at a time.")
+  }
   by_rt <- which == 'by_RT'
   
   if (by_rt)
@@ -1003,7 +1013,12 @@ generate_data.AUC <- function(dsList, targets, which = 'by_RT') {
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
 #' 
 #' @export
+#' @examples 
+#' generate_data.Parameters(subset(dsl, funcId == 1))
 generate_data.Parameters <- function(dsList, which = 'by_RT', scale_log = F) {
+  if (length(get_funcId(dsList)) > 1 || length(get_dim(dsList)) > 1) {
+    stop("This function is only available a single function/dimension pair at a time.")
+  }
   if (which == 'by_RT') {
     rtall <- get_runtimes(dsList)
     
@@ -1034,6 +1049,8 @@ generate_data.Parameters <- function(dsList, which = 'by_RT', scale_log = F) {
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
 #' 
 #' @export
+#' @examples 
+#' generate_data.Aggr(dsl)
 generate_data.Aggr <- function(dsList, aggr_on = 'funcId', targets = NULL, which = 'by_RT') {
   maximize <- attr(dsList, 'maximization')
   variable <- fid <- value <- NULL #Set local binding to remove warnings

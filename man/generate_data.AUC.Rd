@@ -16,3 +16,6 @@ generate_data.AUC(dsList, targets, which = "by_RT")
 \description{
 This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
 }
+\examples{
+generate_data.AUC(subset(dsl, funcId == 1), c(12, 16))
+}

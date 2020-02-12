@@ -4,7 +4,6 @@ observe({
   }
 })
 
-#TODO: change number of colors to match number of algorithms when applicable + Add example of colors
 output$Settings.Color.Example <- downloadHandler(
   filename = function() {
     "Example_Colorfile"

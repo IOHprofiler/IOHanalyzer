@@ -19,3 +19,6 @@ a data.table, it needs columns 'target', 'DIM' and 'funcId'}
 \description{
 This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
 }
+\examples{
+generate_data.ECDF(subset(dsl, funcId == 1), c(10, 15, 16))
+}

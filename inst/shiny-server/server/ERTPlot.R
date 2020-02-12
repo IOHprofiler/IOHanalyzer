@@ -33,9 +33,13 @@ render_ert_per_fct <- reactive({
   withProgress({
     req(input$ERTPlot.Min, input$ERTPlot.Max, length(DATA()) > 0)
     selected_algs <- input$ERTPlot.Algs
+    
     data <- subset(DATA(), algId %in% input$ERTPlot.Algs)
+    req(length(data) > 0)
+    
     fstart <- input$ERTPlot.Min %>% as.numeric
     fstop <- input$ERTPlot.Max %>% as.numeric
+    
     Plot.RT.Single_Func(data, Fstart = fstart, Fstop = fstop,
                        show.CI = input$ERTPlot.show.CI,
                        show.ERT = input$ERTPlot.show.ERT,

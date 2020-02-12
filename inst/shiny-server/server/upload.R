@@ -2,13 +2,11 @@
 folderList <- reactiveValues(data = list())
 DataList <- reactiveValues(data = DataSetList())
 
-
 observe({
   repo_dir <- get_repo_location()
   dirs <- list.dirs(repo_dir, full.names = F)
   updateSelectInput(session, 'repository.type', choices = dirs, selected = dirs[[1]])
 })
-
 # set up list of datasets (scan the repository, looking for .rds files)
 observe({
   req(input$repository.type)
@@ -26,7 +24,6 @@ observe({
     updateSelectInput(session, 'repository.dataset', choices = NULL, selected = NULL)
   }
 })
-
 
 # observeEvent(input$repository.type, {
 #   req(input$repository.type)
@@ -125,86 +122,89 @@ observeEvent(input$repository.load_button, {
   data <- subset(data, funcId %in% input$repository.funcId)
   data <- subset(data, DIM %in% input$repository.dim)
   data <- subset(data, algId %in% input$repository.algId)
+  
   if (length(DataList$data) > 0 && attr(data, 'suite') != attr(DataList$data, 'suite')) {
     shinyjs::alert(paste0("Attempting to add data from a different suite to the currently",
                    " loaded data.\nPlease either remove the currently loaded data or", 
                    " choose a different dataset to load."))
     return(NULL)
   }
+  
   DataList$data <- c(DataList$data, data)
   update_menu_visibility(attr(DataList$data, 'suite'))
   set_format_func(attr(DataList$data, 'suite'))
   set_color_scheme("Default", get_algId(DataList$data))
 })
 
+# decompress zip files recursively and return the root directory of extracted files 
+unzip_fct_recursive <- function(zipfile, exdir, print_fun = print, alert_fun = print, depth = 0) {
+  filetype <- basename(zipfile) %>% 
+    strsplit('\\.') %>% `[[`(1) %>%  
+    rev %>% 
+    `[`(1)
+  folders <- list()
+  
+  if (filetype == 'zip')
+    unzip_fct <- unzip
+  else if (filetype %in% c('bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz'))
+    unzip_fct <- untar
+  
+  files <- unzip_fct(zipfile, list = FALSE, exdir = exdir)
+  if (length(files) == 0) {
+    alert_fun("An error occured while unzipping the provided files.\n
+               Please ensure no archives are corrupted and the filenames are
+               in base-64.")
+    return(NULL)
+  }
+  print_fun(paste0('<p style="color:blue;">Succesfully unzipped ', basename(zipfile), '.<br>'))
+  
+  folders <- grep('*.info|csv', files, value = T) %>% 
+    dirname %>% 
+    unique %>% 
+    grep('__MACOSX', ., value = T, invert = T) %>%  # to get rid of __MACOSX folder on MAC..
+    c(folders)
+  
+  zip_files <- grep('.*zip|bz2|bz|gz|tar|tgz|tar\\.gz|xz', files, value = T, perl = T) %>% 
+    grep('__MACOSX', ., value = T, invert = T)
+  
+  if (depth <= 3) { # only allow for 4 levels of recursions
+    for (zipfile in zip_files) {
+      .folders <- unzip_fct_recursive(zipfile, dirname(zipfile), alert_fun, print_fun, depth + 1)
+      folders <- c(folders, .folders)
+    }
+  }
+  
+  folders
+}
+
 # upload the compressed the data file and uncompress them
 selected_folders <- reactive({
-  if (!is.null(input$upload.add_zip)) {
-    tryCatch({
+  if (is.null(input$upload.add_zip)) return(NULL)
+  
+  tryCatch({
     datapath <- input$upload.add_zip$datapath
-    folders <- rep('', length(datapath))
+    folders <- c()
 
     for (i in seq(datapath)) {
-      filetype <- sub('[^\\.]*\\.', '', basename(datapath[i]), perl = T)
-      print_html(paste0('<p style="color:blue;">Handling ', filetype, '-data.<br>'))
+      filetype <- basename(datapath[i]) %>% 
+        strsplit('\\.') %>% `[[`(1) %>%  
+        rev %>% 
+        `[`(1)
       
+      print_html(paste0('<p style="color:blue;">Handling ', filetype, '-data.<br>'))
       if (filetype == 'csv') {
         folders[i] <- datapath[[i]]
         next
       }
       
-      if (filetype == 'zip')
-        unzip_fct <- unzip
-      else if (filetype %in% c('bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz'))
-        unzip_fct <- untar
-      else{
-        shinyjs::alert("This filetype is not (yet) supported.\n 
-                        Please use a different format. \n
-                        We support the following compression formats: \n 
-                       'zip', 'bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz' and 'xz'.\n
-                       We also have limited support for csv-files (in Nevergrad format).")
-        return(NULL)
-      }
-      if (filetype == 'zip')
-        files <- unzip_fct(datapath[i], list = T)$Name
-      else
-        files <- unzip_fct(datapath[i], list = T)
-
-      idx <- grep('*.info', files)[1]
-      info <- files[idx]
-
-      if (is.null(info)) {
-        idx <- grep('*.csv', files)[1]
-        info <- files[idx]
-        if (is.null(info))
-          return(NULL)
-      }
-      
-      if (basename(info) == info) {
-        folder <- basename(tempfile("dir-"))  # generate a folder name here
-        .exdir <- file.path(exdir, folder)
-        dir.create(.exdir, recursive = T)
-        unzip_fct(datapath[i], list = FALSE, exdir = .exdir)
-        print_html(paste0('<p style="color:blue;">Succesfully unzipped ', basename(datapath[i]), '.<br>'))
-        folders[i] <- .exdir
-      } else {
-        folder <- dirname(info)
-        res <- unzip_fct(datapath[i], list = FALSE, exdir = exdir)
-        if (length(res) == 0) {
-          shinyjs::alert("An error occured while unzipping the provided files.\n
-               Please ensure no archives are corrupted and the filenames are
-               in base-64.")
-          return(NULL)
-        }
-        print_html(paste0('<p style="color:blue;">Succesfully unzipped ', basename(datapath[i]), '.<br>'))
-        folders[i] <- file.path(exdir, folder)
-      }
+      .folders <- unzip_fct_recursive(datapath[i], exdir, print_html, shinyjs::alert) %>% unique
+      folders %<>% c(.folders)
     }
     folders
-    }, error = function(e) {shinyjs::alert(paste0("The following error occured when processing the uploaded data: ", e))
-      })
-  } else
-    NULL
+    }, 
+    error = function(e) 
+      shinyjs::alert(paste0("The following error occured when processing the uploaded data: ", e))
+  )
 })
 
 # load, process the data folders and update DataSetList

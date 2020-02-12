@@ -17,7 +17,8 @@ color_settings_box <- function(width = 12, collapsible = T, collapsed = F) {
           numericInput("Settings.Color.Linewidth", "Line Width", value = 2),
           numericInput("Settings.Color.Markersize", "Marker Size", value = 4),
           selectInput("Settings.Legend.Location", "Legend location", 
-                      c("Outside, right", "Inside, right", "Inside, left", "Below"), "Below")
+                      c("Outside, right", "Inside, right", "Inside, left", "Below"), "Below"),
+          downloadButton("Settings.Plot.Download", "Label = Download sample plot")
         ),
 
         mainPanel(
@@ -61,6 +62,9 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
           width = 3,
           align = "Left",
           HTML_P('Set the figure download properties'),
+          selectInput("Settings.Download.Preset", label = "Choose preset for download and font sizes", 
+                      choices = c("Default", "Paper-1col", "Paper-2col"), selected = "Default"),
+          hr(),
           numericInput("Settings.Download.Width", label = "Image width (px)", value = 1000, min = 100, max = 4096),
           numericInput("Settings.Download.Height", label = "Image height (px)", value = 1000, min = 100, max = 4096)
         ),

@@ -33,7 +33,8 @@ max_ERTs.DataSetList <-
            aggr_on = 'funcId',
            targets = NULL,
            maximize = T) {
-    .Deprecated("generate_data.Aggr")
+    .Deprecated("generate_data.Aggr", msg = "This function will be deprecated in the next release of IOHanalyzer.
+              Please use the suggested function instead.")
     N <- length(get_algId(dsList))
     
     aggr_attr <-
@@ -100,7 +101,8 @@ mean_FVs.DataSetList <-
            aggr_on = 'funcId',
            runtimes = NULL) {
     N <- length(get_algId(dsList))
-    .Deprecated("generate_data.Aggr")
+    .Deprecated("generate_data.Aggr", msg = "This function will be deprecated in the next release of IOHanalyzer.
+              Please use the suggested function instead.")
     
     aggr_attr <-
       if (aggr_on == 'funcId')
@@ -156,7 +158,8 @@ mean_FVs.DataSetList <-
 #' @examples 
 #' get_default_ECDF_targets(dsl)
 get_default_ECDF_targets <- function(data, format_func = as.integer) {
-  .Deprecated("get_ECDF_targets")
+  .Deprecated("get_ECDF_targets", msg = "This function will be deprecated in the next release of IOHanalyzer.
+              Please use the suggested function instead.")
   
   funcIds <- get_funcId(data)
   dims <- get_dim(data)

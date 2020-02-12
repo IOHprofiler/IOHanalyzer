@@ -138,7 +138,33 @@ observe({
   options("IOHanalyzer.precision" = input$Settings.General.Precision)
 })
 
-
+observe({
+  setting_preset <- input$Settings.Download.Preset
+  if (setting_preset == "Default") {
+    updateNumericInput(session, 'Settings.Download.Width', value = 1000)
+    updateNumericInput(session, 'Settings.Download.Height', value = 1000)
+    updateNumericInput(session, 'Settings.Font.Tick', value = 12)
+    updateNumericInput(session, 'Settings.Font.Legend', value = 13)
+    updateNumericInput(session, 'Settings.Font.Title', value = 16)
+    updateNumericInput(session, 'Settings.Font.Label', value = 16)
+  }
+  else if (setting_preset == "Paper-1col") {
+    updateNumericInput(session, 'Settings.Download.Width', value = 700)
+    updateNumericInput(session, 'Settings.Download.Height', value = 400)
+    updateNumericInput(session, 'Settings.Font.Tick', value = 9)
+    updateNumericInput(session, 'Settings.Font.Legend', value = 10)
+    updateNumericInput(session, 'Settings.Font.Title', value = 13)
+    updateNumericInput(session, 'Settings.Font.Label', value = 13)    
+  }
+  else if (setting_preset == "Paper-2col") {
+    updateNumericInput(session, 'Settings.Download.Width', value = 900)
+    updateNumericInput(session, 'Settings.Download.Height', value = 600)
+    updateNumericInput(session, 'Settings.Font.Tick', value = 11)
+    updateNumericInput(session, 'Settings.Font.Legend', value = 12)
+    updateNumericInput(session, 'Settings.Font.Title', value = 16)
+    updateNumericInput(session, 'Settings.Font.Label', value = 15)    
+  }
+})
 
 output$Settings.Download <- downloadHandler(
   filename = "IOHanalyzer_settings.rds",
@@ -157,3 +183,11 @@ observe({
     options(IOH_opts[grep(names(IOH_opts), pattern = "IOH")]) #Ensure no other options get changed by the user
   }
 })
+
+output$Settings.Plot.Download <- downloadHandler(
+  filename = "Sample_plot.pdf",
+  content = function(file) {
+    save_plotly(plot_color_example(DATA()), file)
+  },
+  contentType = 'image/pdf'
+)

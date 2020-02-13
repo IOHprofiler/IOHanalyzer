@@ -47,9 +47,9 @@ grad_functions <- c(
     scale <- (intensity + 1) / 2
     color_center <- floor(scale * amount) + 1
     if (count <= color_center)
-      1 / (2*color_center)
+      1 / (2 * color_center)
     else
-      1 / (2*(amount - color_center))
+      1 / (2 * (amount - color_center))
   }
 )
 
@@ -1737,14 +1737,17 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
     return(NULL)
 
   N <- length(get_algId(dsList))
-
   fid <- get_funcId(dsList)
+  
   if(is.numeric(fid)) {
-    range <- range(fid);
+    range <- range(fid)
     range <- range(c(range[[1]] - .5, range[[2]] + .5))
   } else {
-    range <- NULL; # <- if the function IDs are strings, we cannot use the traditional range
+    range <- NULL # <- if the function IDs are strings, we cannot use the traditional range
   }
+
+  xaxis.type <- ifelse(is.null(range), 'category', ifelse(aggr_on != 'funcId', 'log', 'linear'))
+  yaxis.type <- ifelse(aggr_on == 'funcId', 'log', 'linear')
 
   in_legend <- integer(N)
   names(in_legend) <- get_algId(dsList)
@@ -1755,15 +1758,16 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
   second_aggr <- if (aggr_on == 'funcId') get_dim(dsList) else get_funcId(dsList)
   if (length(second_aggr) > 1) return(NULL)
 
-  plot_title <- paste0(ifelse(aggr_on == 'funcId', "Dimension ", "Function "), second_aggr[[1]])
+  plot_title <- paste0(ifelse(aggr_on == 'funcId', 'Dimension ', 'Function '), second_aggr[[1]])
 
-  p <- if (plot_mode == "radar") {
-    IOH_plot_ly_default(title = plot_title,
-                        x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"),
-                        y.title = "ERT")
-  } else
-    IOH_plot_ly_default(title = plot_title, x.title = ifelse(aggr_on == "funcid", "Function", "Dimension"),
-                        y.title = ifelse(use_rank, "Rank", "ERT"))
+  if (plot_mode == 'radar')
+    p <- IOH_plot_ly_default(title = plot_title,
+                        x.title = ifelse(aggr_on == 'funcid', 'Function', 'Dimension'),
+                        y.title = 'ERT')
+  else
+    p <-IOH_plot_ly_default(title = plot_title, 
+                        x.title = ifelse(aggr_on == 'funcid', 'Function', 'Dimension'),
+                        y.title = ifelse(use_rank, 'Rank', 'ERT'))
 
   if (use_rank) {
     ertranks <- seq(0, 0, length.out = length(get_algId(dsList)))
@@ -1789,80 +1793,45 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
       n_inf <- sum(idx_)
       data_inf[i, idx_] <- 10 ^ (log10(max_ * 2) + seq(0, log10(10), length.out = n_inf))
     }
-
     dataert[idx] <- data_inf[idx]
-    data_inf <- lapply(seq(N),
-                       function(i) {
-                         idx_ <- idx[, i]
-                         v <- data_inf[idx_, i]
-                         names(v) <- which(idx_)
-                         v
-                       })
-
-    # data_na <- dataert
-    # idx <- apply(data_na, 2, is.na)
-    # data_na[idx] <- NA
-    # for (i in seq(nrow(data_na))) {
-    #   idx_ <- idx[i, ]
-    #   x <- data_na[i, ]
-    #   max_ <- max(x[!is.infinite(x)], na.rm = T)
-    #   n_na <- sum(idx_)
-    #   data_na[i, idx_] <- 10 ^ (log10(max_) + seq(0, log10(10), length.out = n_na))
-    # }
-    # data_na[!idx] <- NA
-    # dataert[idx] <- data_na[idx]
 
   } else if (inf.action == 'overlap') {
     data_inf <- dataert
     idx <- apply(data_inf, 2, is.infinite)
     x <- as.vector(data_inf)
-    data_inf[idx] <- max(x[!is.infinite(x)], na.rm = T) * 2.5
-    dataert[idx] <- data_inf[idx]
-
-    data_inf <- lapply(seq(N),
-                      function(i) {
-                        idx_ <- idx[, i]
-                        v <- data_inf[idx_, i]
-                        names(v) <- aggr_attr[idx_]
-                        v
-                      })
-
-    # TODO: ask diederick when NA will be generated...
-    # data_na <- dataert
-    # idx <- apply(data_na, 2, is.na)
-    # x <- as.vector(data_na)
-    # data_na[idx] <- max(x[!is.infinite(x)], na.rm = T) * 2
-    # data_na[!idx] <- NA
-    # dataert[idx] <- data_na[idx]
+    dataert[idx] <- data_inf[idx] <- max(x[!is.infinite(x)], na.rm = T) * 2.5
   }
+
+  data_inf <- lapply(
+    seq(N),
+    function(i) {
+      idx_ <- idx[, i]
+      list(x = aggr_attr[idx_], 
+           y = data_inf[idx_, i])
+    }
+  )
 
   for (i in seq_along(get_algId(dsList))) {
     algId <- get_algId(dsList)[[i]]
     dash <- get_line_style(algId)
     color <- get_color_scheme(algId)
+    
     data <- dataert[, i]
     rgb_str <- paste0('rgb(', paste0(col2rgb(color), collapse = ','), ')')
     rgba_str <- paste0('rgba(', paste0(col2rgb(color), collapse = ','), ',0.35)')
 
     data_inf_ <- data_inf[[i]]
-    # data_na_ <- data_na[, i]
 
     if (plot_mode == "radar") {
       p %<>%
         add_trace(type = 'scatterpolar', r = data,
-                  theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
+                  theta = paste0(ifelse(aggr_on == "funcId", "F", "D"), aggr_attr),
                   fill = 'toself', connectgaps = T, fillcolor = rgba_str,
                   marker = list(color = rgb_str), hoverinfo = 'text',
                   text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
                   name = algId, legendgroup = algId)
-      #TODO: Fix dealing with infinite ERT when radarplot is selected
-      # p %<>%
-      #   add_trace(type = 'scatterpolar', mode = 'markers', r = data_inf_ ,
-      #             theta = paste0(ifelse(aggr_on == "funcId", "F", "D"),aggr_attr),
-      #             marker = list(color = rgb_str, symbol = 'diamond', size = '10'),
-      #             text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
-      #             hoverinfo = 'text', showlegend = F, legendgroup = algId)
-    } else {
+    } 
+    else {
       p %<>% add_trace(x = aggr_attr, y = data, type = 'scatter',
                        mode = 'lines+markers',
                        marker = list(color = rgb_str, size = 7), hoverinfo = 'text',
@@ -1870,16 +1839,9 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
                        line = list(color = rgb_str, dash = dash),
                        name = algId, legendgroup = algId)
       p %<>%
-        add_trace(type = 'scatter', mode = 'markers', x = as.numeric(names(data_inf_)),
-                  y = data_inf_, marker = list(color = rgb_str, symbol = 'circle-open', size = 13),
-                  # text = paste0('ERT: ', format(rep(Inf, length(data_inf_)), digits = 3, nsmall = 3)),
+        add_trace(x = data_inf_$x, y = data_inf_$y, type = 'scatter', mode = 'markers', 
+                  marker = list(color = rgb_str, symbol = 'circle-open', size = 13),
                   hoverinfo = 'none', showlegend = F, legendgroup = algId)
-
-      # p %<>%
-      #   add_trace(type='scatter', mode='markers', x = aggr_attr, y = data_na_,
-      #             marker = list(color = rgb_str, symbol = 'x', size = '10'),
-      #             text = paste0('ERT: ', format(erts[, i], digits = 3, nsmall = 3)),
-      #             hoverinfo = 'text', showlegend = F, legendgroup = algId)
     }
   }
 
@@ -1891,24 +1853,12 @@ Plot.RT.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', targets =
       p %<>% layout(polar = list(radialaxis = list(type = 'log', visible = F,
                                                    autorange = 'reverse')))
 
-  } else {
-    if (aggr_on == 'funcId' && class(aggr_attr) == class(1)) {
-      if(!is.null(range)) {
-        p %<>% layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
-                      xaxis = list(tick0 = 1, dtick = 1, range = range,
-                                   type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
-      } else {
-       # range is null if we have string-based function names
-       # cannot test this, because example data not available
-        p %<>% layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
-                      xaxis = list(tick0 = 1, dtick = 1, # range = range,
-                                   type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
-      }
-    }
-    else
-      p %<>% layout(yaxis = list(type = ifelse(scale.ylog, 'log', 'linear')),
-                    xaxis = list(type = ifelse(aggr_on != 'funcId', 'log', 'linear')))
-  }
+  } 
+  else
+      p %<>% layout(yaxis = list(type = yaxis.type),
+                    xaxis = list(type = xaxis.type,
+                                 tickvals = fid, 
+                                 range = range))
   p
 }
 

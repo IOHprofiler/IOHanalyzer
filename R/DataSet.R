@@ -56,9 +56,9 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
         maximization <- FALSE # default to minimization
       }
     }
-    if(!(isTRUE(maximization) || isFALSE(maximization))) {
-      warning("unclear whether we should maximize or minimize.");
-    }
+
+    if(!(isTRUE(maximization) || isFALSE(maximization))) 
+      warning("unclear whether we should maximize or minimize.")
 
     datBaseName <- strsplit(basename(info$datafile), '\\.')[[1]][1]
     datFile <- file.path(path, paste0(datBaseName, '.dat'))

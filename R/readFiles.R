@@ -179,10 +179,10 @@ read_index_file__BIOBJ_COCO <- function(fname) {
       datafile <- file.path(path, record[3])
 
     funcId <- trimws(strsplit(record[1], '=')[[1]][2])
-    funcId.int <- suppressWarnings(as.integer(funcId.int));
+    funcId.int <- suppressWarnings(as.integer(funcId.int))
     if(!any(is.na(funcId.int))) {
       if(all((funcId.int >= 0L) & (funcId.int <= 1000000000L))) {
-        funcId <- funcId.int;
+        funcId <- funcId.int
       }
     }
 

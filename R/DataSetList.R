@@ -156,20 +156,21 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
     maximization <- unique(maximizations)
     if (length(suite) != 1L) {
       if(length(suite) > 1L) {
-        warning(paste0("Multipe different suites detected: ", paste(suite, sep=",", collapse=",")), ", using ", suite[[1L]]);
-        suite <- suite[[1L]];
+        warning(paste0("Multipe different suites detected: ", 
+                       paste(suite, sep=",", collapse=",")), ", using ", suite[[1L]])
+        suite <- suite[[1L]]
       } else {
-        warning(paste0("No suite detected, using ", TWO_COL));
-        suite <- TWO_COL;
+        warning(paste0("No suite detected, using ", TWO_COL))
+        suite <- TWO_COL
       }
     }
     if (length(maximization) != 1L) {
-      if(length(maximization) > 1L) {
+      if(length(maximization) > 1L) 
         warning("both maximization and minimization detected? - using minimization")
-      } else {
-        warning("neither maximization nor minimization detected! - using minimization");
-      }
-      maximization <- FALSE;
+      else 
+        warning("neither maximization nor minimization detected! - using minimization")
+
+      maximization <- FALSE
     }
 
     attr(object, 'suite') <- suite
@@ -558,18 +559,19 @@ get_dim <- function(dsList) {
 #' @examples
 #' get_funcId(dsl)
 get_funcId <- function(dsList) {
-  ll <- unique(unname(unlist(sapply(dsList, function(d) attr(d, 'funcId')))));
-  if(is.integer(ll)) {
-    return(sort(ll));
-  }
-  lli <- suppressWarnings(as.integer(ll));
-  if(any(is.na(lli))) {
-    return(sort(ll));
-  }
-  if(all((lli >= 0L) & (lli <= 1000000000L))) {
-    return(ll[order(lli)]);
-  }
-  return(sort(lli));
+  ll <- unique(unname(unlist(sapply(dsList, function(d) attr(d, 'funcId')))))
+
+  # TODO: what if the function ID is a double value?
+  # those are coerced to integers now
+  if (is.integer(ll)) return(sort(ll))
+  
+  lli <- suppressWarnings(as.integer(ll))
+  if (any(is.na(lli))) return(sort(ll))
+  
+  if (all((lli >= 0L) & (lli <= 1000000000L))) return(ll[order(lli)])
+  
+  # TODO: should this be even allowed?
+  sort(lli)
 }
 
 #' Get all algorithm ids present in a DataSetList
@@ -740,9 +742,9 @@ max_ERTs.DataSetList <-
     if (length(second_aggr) > 1)
       return(NULL)
 
-    aid <- get_algId(dsList);
-    erts <- seq(0, 0, length.out = length(aid));
-    names(erts) <- aid;
+    aid <- get_algId(dsList)
+    erts <- seq(0, 0, length.out = length(aid))
+    names(erts) <- aid
 
     for (j in seq_along(aggr_attr)) {
       dsList_filetered <-
@@ -806,7 +808,7 @@ mean_FVs.DataSetList <-
     if (length(second_aggr) > 1)
       return(NULL)
 
-    aid <- get_algId(dsList);
+    aid <- get_algId(dsList)
     erts <- seq(0, 0, length.out = length(aid))
     names(erts) <- aid
 

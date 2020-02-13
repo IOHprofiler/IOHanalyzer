@@ -1,5 +1,5 @@
-library(testthat);
-library(IOHanalyzer);
+library(testthat)
+library(IOHanalyzer)
 
 context("Test the Diagram Examples with String Names")
 

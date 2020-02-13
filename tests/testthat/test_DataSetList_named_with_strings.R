@@ -1,5 +1,5 @@
-library(testthat);
-library(IOHanalyzer);
+library(testthat)
+library(IOHanalyzer)
 
 context("Basic DataSetList functionality, but with String-Named Functions")
 

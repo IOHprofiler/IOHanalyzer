@@ -194,7 +194,7 @@ selected_folders <- reactive({
       print_html(paste0('<p style="color:blue;">Handling ', filetype, '-data.<br>'))
       if (filetype == 'csv') {
         # add the data path to the folders list direct
-        folders <- c(folders, datapath[[i]]);
+        folders <- c(folders, datapath[[i]])
         next
       }
       

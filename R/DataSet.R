@@ -42,17 +42,22 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
                       TWO_COL = NULL)
     }
 
-    if (is.null(maximization)) {
+    if (is.null(maximization) || (!(isTRUE(maximization) || isFALSE(maximization)))) {
       maximization <- info$maximization
       if (is.null(maximization) && !is.null(suite)) {
         if (verbose)
           warning("maximization or minimization not specified in .info-file,
                   taking best guess based on the suite-name.")
         if (grepl("\\w*bbob\\w*", suite, ignore.case = T) != 0)
-          maximization <- F
+          maximization <- FALSE
         else
-          maximization <- T
+          maximization <- TRUE
+      } else {
+        maximization <- FALSE # default to minimization
       }
+    }
+    if(!(isTRUE(maximization) || isFALSE(maximization))) {
+      warning("unclear whether we should maximize or minimize.");
     }
 
     datBaseName <- strsplit(basename(info$datafile), '\\.')[[1]][1]
@@ -165,22 +170,22 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
 #' @description Concatenation for DataSets. Combines multiple runs from separate DataSets
 #' into a single DataSet object if all provided arguments have the same dimension, function ID and
 #' algorithm ID, and each contains only a single run. Currently does not support parameter tracking
-#' 
+#'
 #' @param ... The DataSets to concatenate
 #' @return A new DataSet
 #' @export
 c.DataSet <- function(...) {
   dsl <- list(...)
   dsl <- dsl[sapply(dsl, length) != 0]
-  
+
   if (length(dsl) == 0)
     return()
-  
+
   for (ds in dsl) {
     if (!any((class(dsl[[1]])) == 'DataSet'))
       stop("Operation only possible when all arguments are DataSets")
   }
-  
+
   info <- list()
   for (attr_str in c('suite', 'maximization', 'DIM', 'funcId', 'algId')) {
     temp  <-
@@ -188,21 +193,21 @@ c.DataSet <- function(...) {
         unlist(lapply(dsl, function(x)
           attr(x, attr_str))))
     if (length(temp) > 1) {
-      stop(paste0("Attempted to add datasets with different ", attr_str, 
+      stop(paste0("Attempted to add datasets with different ", attr_str,
                   "-attributes! Tis is not allowed, please keep them as separate DataSets!"))
     }
     info <- c(info,temp)
   }
   names(info) <- c('suite', 'maximization', 'DIM', 'funcId', 'algId')
-  
+
   maxRT <- max(unlist(lapply(dsl, function(x) attr(x, "maxRT"))))
   if (info$maximization)
     finalFV <- max(unlist(lapply(dsl, function(x) attr(x, "finalFV"))))
   else
     finalFV <- min(unlist(lapply(dsl, function(x) attr(x, "finalFV"))))
-  
+
   format <- attr(dsl[[1]], "format")
-  
+
   RT_raw <- c()
   #Note: Currently only works for data split in a way that there is one run per DataSet
   #TODO: Generalize to more runs -> detection + dealing with it
@@ -211,16 +216,16 @@ c.DataSet <- function(...) {
     rt_temp <- cbind(rt_temp, as.numeric(rownames(dsl[[i]]$RT)))
     RT_raw[[i]] <- rt_temp
   }
-  
+
   RT <- align_running_time(RT_raw, format = "TWO_COL", maximization = info$maximization)
   FV <- align_function_value(RT_raw, format = "TWO_COL")
-  
+
   #TODO: Deal with cases where parameters are present in original DataSets
   PAR <- list(
     'by_FV' = RT[names(RT) != 'RT'],
     'by_RT' = FV[names(FV) != 'FV']
   )
-  
+
   do.call(
     function(...)
       structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
@@ -281,7 +286,7 @@ summary.DataSet <- function(object, ...) {
   cat('DataSet Object:\n')
   cat(sprintf('Source: %s\n', ds_attr$src))
   cat(sprintf('Algorithm: %s\n', ds_attr$algId))
-  cat(sprintf('Function ID: %d\n', ds_attr$funcId))
+  cat(sprintf('Function ID: %s\n', ds_attr$funcId))
   cat(sprintf('Dimension: %dD\n', ds_attr$DIM))
 
   n_instance <- length(ds_attr$instance)

@@ -125,7 +125,7 @@ observeEvent(input$repository.load_button, {
   
   if (length(DataList$data) > 0 && attr(data, 'suite') != attr(DataList$data, 'suite')) {
     shinyjs::alert(paste0("Attempting to add data from a different suite to the currently",
-                   " loaded data.\nPlease either remove the currently loaded data or", 
+                   " loaded data.\nPlease either remove the currently loaded data or",
                    " choose a different dataset to load."))
     return(NULL)
   }
@@ -193,7 +193,8 @@ selected_folders <- reactive({
       
       print_html(paste0('<p style="color:blue;">Handling ', filetype, '-data.<br>'))
       if (filetype == 'csv') {
-        folders[i] <- datapath[[i]]
+        # add the data path to the folders list direct
+        folders <- c(folders, datapath[[i]]);
         next
       }
       
@@ -201,15 +202,14 @@ selected_folders <- reactive({
       folders %<>% c(.folders)
     }
     folders
-    }, 
-    error = function(e) 
-      shinyjs::alert(paste0("The following error occured when processing the uploaded data: ", e))
+  }, error = function(e) shinyjs::alert(paste0("The following error occured when processing the uploaded data: ", e))
   )
 })
 
 # load, process the data folders and update DataSetList
 observeEvent(selected_folders(), {
   folders <- selected_folders()
+
   format_selected <- input$upload.data_format
   maximization <- input$upload.maximization
 
@@ -230,8 +230,8 @@ observeEvent(selected_folders(), {
   else
     format_detected <- format_detected[[1]]
   print_html(paste0('<p style="color:blue;">Data processing of source type:', format_detected, ' <br>'))
-  
-  
+
+
   for (folder in folder_new) {
     indexFiles <- scan_index_file(folder)
 
@@ -244,7 +244,7 @@ observeEvent(selected_folders(), {
       # read the data set and handle potential errors
       new_data <- tryCatch(
         DataSetList(folder, print_fun = print_html,
-                    maximization = NULL,
+                    maximization = maximization,#NULL,
                     format = format_detected,
                     subsampling = input$upload.subsampling),
         error = function(e) {
@@ -254,14 +254,14 @@ observeEvent(selected_folders(), {
           DataSetList()
         }
       )
-      
+
       tryCatch(
         DataList$data <- c(DataList$data, new_data),
         error = function(e) {
-          print_html(paste('<p style="color:red;">The following error happened', 
+          print_html(paste('<p style="color:red;">The following error happened',
                            'when adding the uploaded data set:</p>'))
-          print_html(paste('<p style="color:red;">', e, 
-                           '\nRemoving the old data.</p>'))        
+          print_html(paste('<p style="color:red;">', e,
+                           '\nRemoving the old data.</p>'))
           DataList$data <- new_data
         }
       )
@@ -271,7 +271,7 @@ observeEvent(selected_folders(), {
     }
   }
   if (is.null(DataList$data)) {
-    shinyjs::alert("An error occurred when processing the uploaded data. 
+    shinyjs::alert("An error occurred when processing the uploaded data.
                    Please ensure the data is not corrupted.")
     return(NULL)
   }
@@ -304,7 +304,7 @@ observeEvent(input$upload.remove_data, {
     folderList$data <- list()
     print_html('<p style="color:red;">all data are removed!</p>')
     print_html('', 'upload_data_promt')
-    
+
   }
 })
 
@@ -336,110 +336,110 @@ observe({
   selected_f <- attr(selected_ds,'funcId')
   selected_dim <- attr(selected_ds, 'DIM')
   selected_alg <- attr(selected_ds, 'algId')
-  
+
   updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = selected_f)
-  
+
   updateSelectInput(session, 'Overview.Single.Algid', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.RT.Overview-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.RT.Overview-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.RT.Overview-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.RT.Statistics-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.RT.Statistics-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.RT.Statistics-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.RT.Single_ERT-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.RT.Single_ERT-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.RT.Single_ERT-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.RT.Multi_ERT-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.RT.Multi_ERT-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.RT.Rank-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.RT.Rank-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.RT.Histogram-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.RT.Histogram-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.RT.Histogram-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.RT.PMF-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.RT.PMF-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.RT.PMF-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.RT.ECDF_Single_Target-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.RT.ECDF_Single_Target-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.RT.ECDF_Single_Target-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.RT.ECDF_Single_Function-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.RT.ECDF_Single_Function-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.RT.ECDF_Single_Function-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.RT.ECDF_Aggregated-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.RT.ECDF_AUC-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.RT.ECDF_AUC-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.RT.ECDF_AUC-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.FV.Overview-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.FV.Overview-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.FV.Overview-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.FV.Statistics-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.FV.Statistics-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.FV.Statistics-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.FV.Single_FCE-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.FV.Single_FCE-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.FV.Single_FCE-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.FV.Multi_FCE-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.FV.Multi_FCE-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.FV.Rank-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.FV.Rank-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.FV.Histogram-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.FV.Histogram-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.FV.Histogram-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.FV.PMF-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.FV.PMF-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.FV.PMF-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.FV.ECDF_Single_Target-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.FV.ECDF_Single_Target-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.FV.ECDF_Single_Target-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.FV.ECDF_Single_Function-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.FV.ECDF_Single_Function-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.FV.ECDF_Single_Function-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.FV.ECDF_Aggregated-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.FV.ECDF_AUC-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.FV.ECDF_AUC-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.FV.ECDF_AUC-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.Param.Plot-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.Param.Plot-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.Param.Plot-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'Report.Param.Statistics-FuncId', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'Report.Param.Statistics-DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Report.Param.Statistics-Alg', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'RT_Stats.Glicko.Algid', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RT_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'RT_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
-  
+
   updateSelectInput(session, 'RT_Stats.Overview.Algid', choices = algIds_, selected = algIds_)
-  
+
   updateSelectInput(session, 'FV_Stats.Glicko.Algid', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FV_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'FV_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
-  
+
   updateSelectInput(session, 'FV_Stats.Overview.Algid', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algIds, selected = 'all')
   updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algIds, selected = 'all')
@@ -483,7 +483,7 @@ observe({
 DATA <- reactive({
   dim <- input$Overall.Dim
   id <- input$Overall.Funcid
-  
+
   if (length(DataList$data) == 0) return(NULL)
 
   d <- subset(DataList$data, DIM == dim, funcId == id)

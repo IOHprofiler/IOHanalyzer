@@ -1,21 +1,21 @@
 #' Estimator 'SP' for the Expected Running Time (ERT)
 #'
-#' @param data A dataframe or matrix. Each row stores the runtime sample points from 
+#' @param data A dataframe or matrix. Each row stores the runtime sample points from
 #' several runs
 #' @param max_runtime A Numerical vector. Should have the same size as columns of data
 #'
 #' @return A list containing ERTs, number of succesfull runs and the succes rate
 #' @export
-#' @examples 
+#' @examples
 #' SP(dsl[[1]]$RT, max(dsl[[1]]$RT))
 SP <- function(data, max_runtime) {
   N <- ncol(data)
   M <- nrow(data)
-  
+
   succ <- apply(data, 1, function(x) sum(!is.na(x)))
   succ_rate <- succ / N
   idx <- is.na(data)
-  
+
   for (i in seq(M)) {
     data[i, idx[i, ]] <- max_runtime[idx[i, ]]
   }
@@ -26,13 +26,13 @@ SP <- function(data, max_runtime) {
 #' Bootstrapping for running time samples
 #'
 #' @param x A numeric vector. A sample of the running time.
-#' @param max_eval A numeric vector, containing the maximal running time in 
+#' @param max_eval A numeric vector, containing the maximal running time in
 #' each run. It should have the same size as x
 #' @param bootstrap.size integer, the size of the bootstrapped sample
 #'
 #' @return A numeric vector of the bootstrapped running time sample
 #' @export
-#' @examples 
+#' @examples
 #' ds <- dsl[[1]]
 #' x <- get_RT_sample(ds, ftarget = 16, output = 'long')
 #' max_eval <- get_maxRT(dsl, output = 'long')
@@ -42,17 +42,17 @@ bootstrap_RT <- function(x, max_eval, bootstrap.size) {
   x_unsucc <- max_eval[is.na(x)]
   n_succ <- length(x_succ)
   n_unsucc <- length(x_unsucc)
-  
+
   p <- n_succ / length(x)
-  N <- rgeom(bootstrap.size, p) 
-  
+  N <- rgeom(bootstrap.size, p)
+
   if (n_succ == 0){
     return (rep(Inf, bootstrap.size))
   }
-  
+
   sapply(N,
          function(size) {
-           if (size > 0) 
+           if (size > 0)
              x <- sum(sample(x_unsucc, size, replace = T))
            else
              x <- 0
@@ -61,26 +61,26 @@ bootstrap_RT <- function(x, max_eval, bootstrap.size) {
 }
 
 # TODO: remove the bootstrapping part as it does not make much sense here...
-#' Performs a pairwise Kolmogorov-Smirnov test on the bootstrapped running times 
+#' Performs a pairwise Kolmogorov-Smirnov test on the bootstrapped running times
 #' among a data set
-#' 
-#' @description This function performs a Kolmogorov-Smirnov test on each pair of 
-#' algorithms in the input x to determine which algorithm gives a significantly 
-#' smaller running time. The resulting p-values are arranged in a matrix, where 
-#' each cell (i, j) contains a p-value from the test with alternative hypothesis:
-#' the running time of algorithm i is smaller (thus better) than that of j. 
 #'
-#' @param x either a list that contains running time sample for each algorithm as 
+#' @description This function performs a Kolmogorov-Smirnov test on each pair of
+#' algorithms in the input x to determine which algorithm gives a significantly
+#' smaller running time. The resulting p-values are arranged in a matrix, where
+#' each cell (i, j) contains a p-value from the test with alternative hypothesis:
+#' the running time of algorithm i is smaller (thus better) than that of j.
+#'
+#' @param x either a list that contains running time sample for each algorithm as
 #' sub-lists, or a DataSetList object
 #' @param bootstrap.size integer, the size of the bootstrapped sample. Set to 0 to disable bootstrapping
 #' @param ... all other options
 #' @return A matrix containing p-values of the test
 #' @export
-#' @examples 
+#' @examples
 #' pairwise.test(subset(dsl, funcId == 1), 16)
 pairwise.test <- function(x, ...) UseMethod('pairwise.test', x)
 
-#' @param max_eval list that contains the maximal running time for each algorithm 
+#' @param max_eval list that contains the maximal running time for each algorithm
 #' as sub-lists
 #' @export
 #' @rdname pairwise.test
@@ -89,10 +89,10 @@ pairwise.test.list <- function(x, max_eval, bootstrap.size = 30, ...) {
     class(x) <- rev(class(x))
     pairwise.test.DataSetList(x)
   }
-  
+
   N <- length(x)
   p.value <- matrix(NA, N, N)
-  
+
   for (i in seq(1, N - 1)) {
     for (j in seq(i + 1, N)) {
       if (bootstrap.size == 0) {
@@ -108,14 +108,14 @@ pairwise.test.list <- function(x, max_eval, bootstrap.size = 30, ...) {
       options(warn = 0)
     }
   }
-  
+
   p.value.adjust <- p.adjust(as.vector(p.value), method = 'holm')
   p.value <- matrix(p.value.adjust, N, N)
   colnames(p.value) <- rownames(p.value) <- names(x)
   p.value
 }
 
-#' @param ftarget float, the target value used to determine the running / hitting 
+#' @param ftarget float, the target value used to determine the running / hitting
 #' @param which wheter to do fixed-target ('by_FV') or fixed-budget ('by_RT') comparison
 #' time
 #' @export
@@ -130,7 +130,7 @@ pairwise.test.DataSetList <- function(x, ftarget, bootstrap.size = 0, which = 'b
   else if (which == 'by_RT') {
     dt <- get_FV_sample(x, ftarget, output = 'long')
     maxRT <- NULL
-    if (bootstrap.size > 0) warning("Bootstrapping is currently not supported for 
+    if (bootstrap.size > 0) warning("Bootstrapping is currently not supported for
                                     fixed-budget statistics.")
     bootstrap.size = 0
     s <- split(dt$`f(x)`, dt$algId)
@@ -140,7 +140,7 @@ pairwise.test.DataSetList <- function(x, ftarget, bootstrap.size = 0, which = 'b
 }
 
 # TODO: move those two functions to a separate file
-# TODO: review / re-write this function 
+# TODO: review / re-write this function
 #' Function for generating sequences of function values
 #'
 #' @param FV A list of function values
@@ -155,7 +155,7 @@ pairwise.test.DataSetList <- function(x, ftarget, bootstrap.size = 0, which = 'b
 #'
 #' @return A sequence of function values
 #' @export
-#' @examples 
+#' @examples
 #' FVall <- get_runtimes(dsl)
 #' seq_FV(FVall, 10, 16, 1, scale='linear')
 seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, scale = NULL) {
@@ -215,7 +215,7 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
   # })
 }
 
-# TODO: review / re-write this function 
+# TODO: review / re-write this function
 #' Function for generating sequences of runtime values
 #'
 #' @param RT A list of runtime values
@@ -229,7 +229,7 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
 #'
 #' @return A sequence of runtime values
 #' @export
-#' @examples 
+#' @examples
 #' RTall <- get_runtimes(dsl)
 #' seq_RT(RTall, 0, 500, length.out=10, scale='log')
 seq_RT <- function(RT, from = NULL, to = NULL, by = NULL, length.out = NULL,
@@ -291,7 +291,7 @@ EPMF <- function() {
 #'
 #' @return a object of type 'ECDF'
 #' @export
-#' @examples 
+#' @examples
 #' ECDF(dsl,c(12,14))
 #' ECDF(dsl[[1]],c(12,14))
 ECDF <- function(ds, ftarget, ...) UseMethod("ECDF", ds)
@@ -314,7 +314,7 @@ ECDF.DataSet <- function(ds, ftarget, ...) {
   fun
 }
 
-# TODO: review / re-write this function 
+# TODO: review / re-write this function
 #' @rdname ECDF
 #' @export
 ECDF.DataSetList <- function(ds, ftarget, ...) {
@@ -326,7 +326,7 @@ ECDF.DataSetList <- function(ds, ftarget, ...) {
   if (is.data.table(ftarget)) {
     runtime <- sapply(seq(nrow(ftarget)), function(i) {
       if (length(dims) > 1 && length(funcs) > 1) {
-        names_temp <- ftarget[i][[1]] %>% 
+        names_temp <- ftarget[i][[1]] %>%
           strsplit(., ';')
         FuncId <- names_temp[[1]][[1]]
         Dim <- names_temp[[1]][[2]]
@@ -341,7 +341,7 @@ ECDF.DataSetList <- function(ds, ftarget, ...) {
       }
       data <- subset(ds, funcId == FuncId, DIM == Dim)
       if (length(data) == 0) return(NA)
-      temp_targets <- ftarget[i] %>% 
+      temp_targets <- ftarget[i] %>%
         unlist %>%
         as.numeric
       names(temp_targets) <- NULL
@@ -353,7 +353,7 @@ ECDF.DataSetList <- function(ds, ftarget, ...) {
   } else if (is.list(ftarget)) {
     runtime <- sapply(seq_along(ftarget), function(i) {
       if(length(dims) > 1 && length(funcs) >1){
-        names_temp <- names(ftarget[i])[[1]] %>% 
+        names_temp <- names(ftarget[i])[[1]] %>%
           strsplit(., ';')
         FuncId <- names_temp[[1]][[1]]
         Dim <- names_temp[[1]][[2]]
@@ -364,6 +364,9 @@ ECDF.DataSetList <- function(ds, ftarget, ...) {
       }
       else if(length(funcs) > 1){
         FuncId <- names(ftarget[i])[[1]]
+        Dim <- dims[[1]]
+      } else {
+        FuncId <- funcs[[1]]
         Dim <- dims[[1]]
       }
       data <- subset(ds, funcId == FuncId, DIM == Dim)
@@ -396,7 +399,7 @@ ECDF.DataSetList <- function(ds, ftarget, ...) {
 #'
 #' @return a object of type 'ECDF'
 #' @export
-#' @examples 
+#' @examples
 #' ecdf <- ECDF(dsl,c(12,14))
 #' AUC(ecdf, 0, 100)
 AUC <- function(fun, from = NULL, to = NULL) UseMethod('AUC', fun)
@@ -415,7 +418,7 @@ AUC.ECDF <- function(fun, from = NULL, to = NULL) {
     integrate(fun, lower = from, upper = to, subdivisions = 1e3L)$value / (to - from)
 }
 
-# TODO: review / re-write this function 
+# TODO: review / re-write this function
 #TODO: inconsistent use of format_func gives slightly different results between
 #generated and uploaded targets
 #' Generate ECDF targets for a DataSetList
@@ -425,7 +428,7 @@ AUC.ECDF <- function(fun, from = NULL, to = NULL) {
 #'
 #' @return a vector of targets
 #' @export
-#' @examples 
+#' @examples
 #' get_default_ECDF_targets(dsl)
 get_default_ECDF_targets <- function(data, format_func = as.integer) {
   funcIds <- get_funcId(data)
@@ -447,10 +450,10 @@ get_default_ECDF_targets <- function(data, format_func = as.integer) {
       fmin <- min(fall)
       fmax <- max(fall)
 
-      fseq <- seq_FV(fall, fmin, fmax, length.out = 10) %>% 
+      fseq <- seq_FV(fall, fmin, fmax, length.out = 10) %>%
         sapply(format_func)
       targets <- append(targets, list(fseq))
-      
+
       if (length(funcIds) == 1) {
         names <- append(names, dim)
       } else if (length(dims) == 1) {
@@ -463,8 +466,8 @@ get_default_ECDF_targets <- function(data, format_func = as.integer) {
 }
 
 #' Generate datatables of runtime or function value targets for a DataSetList
-#' 
-#' Only one target is generated per (function, dimension)-pair, as opposed to the 
+#'
+#' Only one target is generated per (function, dimension)-pair, as opposed to the
 #' function `get_default_ECDF_targets`, which generates multiple targets.
 #'
 #' @param dsList A DataSetList
@@ -472,7 +475,7 @@ get_default_ECDF_targets <- function(data, format_func = as.integer) {
 #'
 #' @return a data.table of targets
 #' @export
-#' @examples 
+#' @examples
 #' get_target_dt(dsl)
 get_target_dt <- function(dsList, which = 'by_FV') {
   vals <- c()
@@ -487,10 +490,10 @@ get_target_dt <- function(dsList, which = 'by_FV') {
     target_func <- get_target_RT
   }
   else stop("Invalid argument for `which`; can only be `by_FV` or `by_RT`.")
-  targets <- apply(dt, 1, 
+  targets <- apply(dt, 1,
                    function(x) {target_func(subset(dsList, funcId == x[[1]], DIM == x[[2]]))})
   dt[, target := targets]
-  
+
   return(dt)
 }
 
@@ -513,35 +516,35 @@ get_target_RT <- function(dsList){
 }
 
 #' Glicko2 raning of algorithms
-#' 
-#' This procedure ranks algorithms based on a glicko2-procedure. 
-#' Every round (total nr_rounds), for every function and dimension of the datasetlist, 
-#' each pair of algorithms competes. This competition samples a random runtime for the 
+#'
+#' This procedure ranks algorithms based on a glicko2-procedure.
+#' Every round (total nr_rounds), for every function and dimension of the datasetlist,
+#' each pair of algorithms competes. This competition samples a random runtime for the
 #' provided target (defaults to best achieved target). Whichever algorithm has the lower
 #' runtime wins the game. Then, from these games, the glicko2-rating is determined.
-#' 
-#' @param dsl The DataSetList, can contain multiple functions and dimensions, but should have the 
+#'
+#' @param dsl The DataSetList, can contain multiple functions and dimensions, but should have the
 #' same algorithms for all of them
 #' @param nr_rounds The number of rounds to run. More rounds leads to a more accurate ranking.
 #' @param which Whether to use fixed-target ('by_FV') or fixed-budget ('by_RT') perspective
 #' @param target_dt Custom data.table target value to use. When NULL, this is selected automatically.
 #' @return A dataframe containing the glicko2-ratings and some additional info
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' glicko2_ranking(dsl, nr_round = 25)
 #' glicko2_ranking(dsl, nr_round = 25, which = 'by_RT')
 glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = NULL){
   req(length(get_algId(dsl)) > 1)
-  
+
   if (!is.null(target_dt) && !('data.table' %in% class(target_dt))) {
     warning("Provided `target_dt` argument is not a data.table")
     target_dt <- NULL
   }
-  
+
   if (is.null(target_dt))
     target_dt <- get_target_dt(dsl, which)
-  
+
   if (!(which %in% c('by_FV', 'by_RT')))
     stop("Invalid argument: 'which' can only be 'by_FV' or 'by_RT'")
   p1 <- NULL
@@ -580,18 +583,18 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = N
           win_operator <- ifelse(attr(dsl, 'maximization'), `>`, `<`)
         }
         vals = array(dim = c(n_algs,ncol(x_arr) - 4))
-        for (i in seq(1,n_algs)) { 
+        for (i in seq(1,n_algs)) {
           z <- x_arr[i]
           y <- as.numeric(z[,5:ncol(x_arr)])
           vals[i,] = y
         }
         if (is.null(alg_names)) alg_names <- x_arr[,3]
-        
+
         for (i in seq(1,n_algs)) {
           for (j in seq(i,n_algs)) {
             if (i == j) next
             weeks <- c(weeks, k)
-            s1 <- sample(vals[i,], 1) 
+            s1 <- sample(vals[i,], 1)
             s2 <- sample(vals[j,], 1)
             if (is.na(s1)) {
               if (is.na(s2)) {
@@ -615,7 +618,7 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = N
             p1 <- c(p1, i)
             p2 <- c(p2, j)
             scores <- c(scores, won)
-            
+
           }
         }
       }

@@ -22,7 +22,7 @@ Plot.RT.Parameters(dsList, f_min = NULL, f_max = NULL,
 
 \item{algids}{Which algorithms from dsList to use}
 
-\item{par_name}{Which parameters to create plots for; set to NULL to use all 
+\item{par_name}{Which parameters to create plots for; set to NULL to use all
 parameters found in dsList.}
 
 \item{scale.xlog}{Whether or not to scale the x-axis logaritmically}

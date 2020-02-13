@@ -259,9 +259,17 @@ print.DataSetList <- function(x, ...) {
   if (N <= 15) 
     idx <- seq_along(x)
   else 
-    idx <- c(1:5, (N-4):N)
+    idx <- c(1:5, '---', (N-4):N)
+  idx <- format(idx, digits = 0, justify = 'right')
     
-  for (i in idx) cat(sprintf('%d: %s\n', i, as.character(x[[i]])))
+  for (i in idx) {
+    if (trimws(i) == '---')
+      cat(paste0(i), '\n')
+    else {
+      .i <- as.integer(trimws(i))
+      cat(sprintf('%s: %s\n', i, as.character(x[[.i]])))
+    }
+  }
 }
 
 # TODO: consistent use of ds, data, dsList etc.

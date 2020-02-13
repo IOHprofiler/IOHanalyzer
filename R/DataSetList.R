@@ -252,9 +252,15 @@ c.DataSetList <- function(...) {
 print.DataSetList <- function(x, ...) {
   cat('DataSetList:\n')
   cat(paste0('Suite: ', attr(x, 'suite'), '\n'))
-  for (i in seq_along(x)) {
-    cat(sprintf('%d: %s\n', i, as.character(x[[i]])))
-  }
+  N <- length(x)
+  
+  # TODO: add an option for the following numbers: 15 and 5
+  if (N <= 15) 
+    idx <- seq_along(x)
+  else 
+    idx <- c(1:5, (N-4):N)
+    
+  for (i in idx) cat(sprintf('%d: %s\n', i, as.character(x[[i]])))
 }
 
 # TODO: consistent use of ds, data, dsList etc.

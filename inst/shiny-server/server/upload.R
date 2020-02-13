@@ -2,22 +2,20 @@
 folderList <- reactiveValues(data = list())
 DataList <- reactiveValues(data = DataSetList())
 
-
+observe({
+  repo_dir <- get_repo_location()
+  dirs <- list.dirs(repo_dir, full.names = F)
+  updateSelectInput(session, 'repository.type', choices = dirs, selected = dirs[[1]])
+})
 # set up list of datasets (scan the repository, looking for .rds files)
 observe({
-  repo_dir <<- get_repo_location()
-  if (input$repository.type == 'PBO') {
-    rds_files <- list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
-    rds_files <- c(rds_files, "Example_small", "Example_large")
-  }
-  else if (input$repository.type == 'NEVERGRAD') {
-    rds_files <- list.files(paste0(repo_dir, "/nevergrad"), pattern = '.rds') %>% sub('\\.rds$', '', .)
-  }
-  else if (input$repository.type == 'BBOB') {
-    rds_files <- list.files(paste0(repo_dir, "/bbob"), pattern = '.rds') %>% sub('\\.rds$', '', .)
-  }
+  req(input$repository.type)
+  repo_dir <- get_repo_location()
+  dir <- file.path(repo_dir, input$repository.type)
+  
+  rds_files <- list.files(dir, pattern = '.rds$') %>% sub('\\.rds$', '', .)
   if (length(rds_files) != 0) {
-    updateSelectInput(session, 'repository.dataset', choices = rds_files, selected = NULL)
+    updateSelectInput(session, 'repository.dataset', choices = rds_files, selected = rds_files[[1]])
   } else {# TODO: the alert msg should be updated
     shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository,
                    please create a folder called 'repository' in your home directory
@@ -27,171 +25,185 @@ observe({
   }
 })
 
-
-observeEvent(input$repository.type, {
-  req(input$repository.type)
-  if (input$repository.type == 'PBO') {
-    names <- list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
-    names <- c(names, "Example_small", "Example_large")
-  }
-  else if (input$repository.type == 'NEVERGRAD') {
-    names <- list.files(paste0(repo_dir, "/nevergrad"), pattern = '.rds') %>% sub('\\.rds$', '', .)
-  }
-  else if (input$repository.type == 'BBOB') {
-    names <- list.files(paste0(repo_dir, "/bbob"), pattern = '.rds') %>% sub('\\.rds$', '', .)
-  }
-  updateSelectInput(session, 'repository.dataset', choices = names, selected = NULL)
-})
+# observeEvent(input$repository.type, {
+#   req(input$repository.type)
+#   if (input$repository.type == 'PBO') {
+#     names <- list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
+#     names <- c(names, "Example_small", "Example_large")
+#   }
+#   else if (input$repository.type == 'NEVERGRAD') {
+#     names <- list.files(paste0(repo_dir, "/nevergrad"), pattern = '.rds') %>% sub('\\.rds$', '', .)
+#   }
+#   else if (input$repository.type == 'BBOB') {
+#     names <- list.files(paste0(repo_dir, "/bbob"), pattern = '.rds') %>% sub('\\.rds$', '', .)
+#   }
+#   updateSelectInput(session, 'repository.dataset', choices = names, selected = NULL)
+# })
 
 # load repository that is selected
 observeEvent(input$repository.dataset, {
   req(input$repository.dataset)
-  if (input$repository.type == 'PBO') {
-    if (input$repository.dataset  == "Example_small") {
-      repo_data <<- IOHanalyzer::dsl
+  # if (input$repository.type == 'PBO') {
+  #   if (input$repository.dataset  == "Example_small") {
+  #     repo_data <<- IOHanalyzer::dsl
+  #   }
+  #   else if (input$repository.dataset == "Example_large") {
+  #     repo_data <<- IOHanalyzer::dsl_large
+  #   }
+  #   else{
+  #     rds_file <- file.path(repo_dir, paste0(input$repository.dataset, ".rds"))
+  #   
+  #     repo_data <<- readRDS(rds_file)
+  #   }
+  #   if ( is.null(attr(repo_data, 'maximization'))) {
+  #     attr(repo_data, 'maximization') <<- T
+  #   } 
+  #   if ( is.null(attr(repo_data, 'suite'))) {
+  #     attr(repo_data, 'suite') <<- 'PBO'
+  #   } 
+  # }
+  # else if (input$repository.type == 'NEVERGRAD') {
+  #   if (!dir.exists(paste0(repo_dir, "/nevergrad"))) {
+  #     updateSelectInput(session, 'repository.type', choices = 'PBO', selected = 'PBO')
+  #     shinyjs::alert("No nevergrad data available in repository. Please make sure a folder named
+  #                    'nevergrad' exists in the repository-folder.")
+  #     return(NULL)
+  #   }
+  #   rds_file <- file.path(paste0(repo_dir, "/nevergrad"), paste0(input$repository.dataset, ".rds"))
+  #   repo_data <<- readRDS(rds_file)
+  # }
+  # else if (input$repository.type == 'BBOB') {
+  #   if (!dir.exists(paste0(repo_dir, "/bbob"))) {
+  #     updateSelectInput(session, 'repository.type', choices = 'PBO', selected = 'PBO')
+  #     shinyjs::alert("No bbob data available in repository. Please make sure a folder named
+  #                    'bbob' exists in the repository-folder.")
+  #     return(NULL)
+  #   }
+  #   rds_file <- file.path(paste0(repo_dir, "/bbob"), paste0(input$repository.dataset, ".rds"))
+  #   repo_data <<- readRDS(rds_file)
+  # }
+  repo_dir <- get_repo_location()
+  algs <- c()
+  dims <- c()
+  funcs <- c()
+  
+  for (f in input$repository.dataset) {
+    rds_file <- file.path(repo_dir, input$repository.type, paste0(f, ".rds"))
+    if (file.exists(paste0(rds_file, '_info'))) {
+      info <- readRDS(paste0(rds_file, '_info'))
     }
-    else if (input$repository.dataset == "Example_large") {
-      repo_data <<- IOHanalyzer::dsl_large
+    else {
+      dsl <- readRDS(rds_file)
+      info = list(algId = get_algId(dsl), funcId = get_funcId(dsl), DIM = get_dim(dsl))
     }
-    else{
-      rds_file <- file.path(repo_dir, paste0(input$repository.dataset, ".rds"))
+    algs <- c(algs, info$algId)
+    dims <- c(dims, info$DIM)
+    funcs <- c(funcs, info$funcId)
+  }
+  
+  algs <- unique(algs)
+  dims <- unique(dims)
+  funcs <- unique(funcs)
 
-      repo_data <<- readRDS(rds_file)
-    }
-    if ( is.null(attr(repo_data, 'maximization'))) {
-      attr(repo_data, 'maximization') <<- T
-    }
-    if ( is.null(attr(repo_data, 'suite'))) {
-      attr(repo_data, 'suite') <<- 'PBO'
-    }
-  }
-  else if (input$repository.type == 'NEVERGRAD') {
-    if (!dir.exists(paste0(repo_dir, "/nevergrad"))) {
-      updateSelectInput(session, 'repository.type', choices = 'PBO', selected = 'PBO')
-      shinyjs::alert("No nevergrad data available in repository. Please make sure a folder named
-                     'nevergrad' exists in the repository-folder.")
-      return(NULL)
-    }
-    rds_file <- file.path(paste0(repo_dir, "/nevergrad"), paste0(input$repository.dataset, ".rds"))
-    repo_data <<- readRDS(rds_file)
-  }
-  else if (input$repository.type == 'BBOB') {
-    if (!dir.exists(paste0(repo_dir, "/bbob"))) {
-      updateSelectInput(session, 'repository.type', choices = 'PBO', selected = 'PBO')
-      shinyjs::alert("No bbob data available in repository. Please make sure a folder named
-                     'bbob' exists in the repository-folder.")
-      return(NULL)
-    }
-    rds_file <- file.path(paste0(repo_dir, "/bbob"), paste0(input$repository.dataset, ".rds"))
-    repo_data <<- readRDS(rds_file)
-  }
-  algIds <- c(get_algId(repo_data))
-  dims <- c(get_dim(repo_data))
-  funcIds <- c(get_funcId(repo_data))
-
-  updateSelectInput(session, 'repository.algId', choices = algIds, selected = algIds)
+  updateSelectInput(session, 'repository.algId', choices = algs, selected = algs)
   updateSelectInput(session, 'repository.dim', choices = dims, selected = dims)
-  updateSelectInput(session, 'repository.funcId', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'repository.funcId', choices = funcs, selected = funcs)
   shinyjs::enable('repository.load_button')
 })
 
 # add the data from repository
 observeEvent(input$repository.load_button, {
-  data <- repo_data
+  data <- DataSetList()
+  repo_dir <- get_repo_location()
+  for (f in input$repository.dataset) {
+    rds_file <- file.path(repo_dir, input$repository.type, paste0(f, ".rds"))
+    data <- c(data, readRDS(rds_file))
+  }
   data <- subset(data, funcId %in% input$repository.funcId)
   data <- subset(data, DIM %in% input$repository.dim)
   data <- subset(data, algId %in% input$repository.algId)
+  
   if (length(DataList$data) > 0 && attr(data, 'suite') != attr(DataList$data, 'suite')) {
     shinyjs::alert(paste0("Attempting to add data from a different suite to the currently",
                    " loaded data.\nPlease either remove the currently loaded data or",
                    " choose a different dataset to load."))
     return(NULL)
   }
+  
   DataList$data <- c(DataList$data, data)
   update_menu_visibility(attr(DataList$data, 'suite'))
   set_format_func(attr(DataList$data, 'suite'))
   set_color_scheme("Default", get_algId(DataList$data))
 })
 
+# decompress zip files recursively and return the root directory of extracted files 
+unzip_fct_recursive <- function(zipfile, exdir, print_fun = print, alert_fun = print, depth = 0) {
+  filetype <- basename(zipfile) %>% 
+    strsplit('\\.') %>% `[[`(1) %>%  
+    rev %>% 
+    `[`(1)
+  folders <- list()
+  
+  if (filetype == 'zip')
+    unzip_fct <- unzip
+  else if (filetype %in% c('bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz'))
+    unzip_fct <- untar
+  
+  files <- unzip_fct(zipfile, list = FALSE, exdir = exdir)
+  if (length(files) == 0) {
+    alert_fun("An error occured while unzipping the provided files.\n
+               Please ensure no archives are corrupted and the filenames are
+               in base-64.")
+    return(NULL)
+  }
+  print_fun(paste0('<p style="color:blue;">Succesfully unzipped ', basename(zipfile), '.<br>'))
+  
+  folders <- grep('*.info|csv', files, value = T) %>% 
+    dirname %>% 
+    unique %>% 
+    grep('__MACOSX', ., value = T, invert = T) %>%  # to get rid of __MACOSX folder on MAC..
+    c(folders)
+  
+  zip_files <- grep('.*zip|bz2|bz|gz|tar|tgz|tar\\.gz|xz', files, value = T, perl = T) %>% 
+    grep('__MACOSX', ., value = T, invert = T)
+  
+  if (depth <= 3) { # only allow for 4 levels of recursions
+    for (zipfile in zip_files) {
+      .folders <- unzip_fct_recursive(zipfile, dirname(zipfile), alert_fun, print_fun, depth + 1)
+      folders <- c(folders, .folders)
+    }
+  }
+  
+  folders
+}
+
 # upload the compressed the data file and uncompress them
 selected_folders <- reactive({
-  if (!is.null(input$upload.add_zip)) {
-    tryCatch({
+  if (is.null(input$upload.add_zip)) return(NULL)
+  
+  tryCatch({
     datapath <- input$upload.add_zip$datapath
+    folders <- c()
 
-    # we start with an empty folders lister
-    folders <- c();
-
-    for (i in seq_along(datapath)) {
-      filetype <- sub('[^\\.]*\\.', '', basename(datapath[i]), perl = T)
+    for (i in seq(datapath)) {
+      filetype <- basename(datapath[i]) %>% 
+        strsplit('\\.') %>% `[[`(1) %>%  
+        rev %>% 
+        `[`(1)
+      
       print_html(paste0('<p style="color:blue;">Handling ', filetype, '-data.<br>'))
-
       if (filetype == 'csv') {
         # add the data path to the folders list direct
         folders <- c(folders, datapath[[i]]);
         next
       }
-
-      if (filetype == 'zip')
-        unzip_fct <- unzip
-      else if (filetype %in% c('bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz'))
-        unzip_fct <- untar
-      else{
-        shinyjs::alert("This filetype is not (yet) supported.\n
-                        Please use a different format. \n
-                        We support the following compression formats: \n
-                       'zip', 'bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz' and 'xz'.\n
-                       We also have limited support for csv-files (in Nevergrad format).")
-        return(NULL)
-      }
-      if (filetype == 'zip')
-        files <- unzip_fct(datapath[[i]], list = T)$Name
-      else
-        files <- unzip_fct(datapath[[i]], list = T)
-
-      # get _ALL_ the info or csv files
-      idx <- grep('.info', files, fixed=TRUE)
-      if(is.null(idx) || (length(idx) <= 0L)) {
-        idx <- grep('.csv', files, fixed=TRUE);
-        if(is.null(idx) || (length(idx) <= 0L)) {
-          return(NULL);
-        }
-      }
-
-      # get the common base folder for of these files
-      info <- files[idx];
-      info <- unique(dirname(files[idx]));
-
-      # before we had basename(info)==info
-      # this is equivalent to any(info==".") now
-      if (any(info == ".")) {
-        folder <- basename(tempfile("dir-"))  # generate a folder name here
-        .exdir <- file.path(exdir, folder)
-        dir.create(.exdir, recursive = T)
-        unzip_fct(datapath[[i]], list = FALSE, exdir = .exdir)
-        print_html(paste0('<p style="color:blue;">Succesfully unzipped ', basename(datapath[i]), '.<br>'))
-        folders <- c(folders, .exdir);
-      } else {
-       # before we had: folder <- dirname(info)
-       # but this is equivalent to folder <- info now
-        folder <- info;
-        res <- unzip_fct(datapath[[i]], list = FALSE, exdir = exdir)
-        if (length(res) == 0) {
-          shinyjs::alert("An error occured while unzipping the provided files.\n
-               Please ensure no archives are corrupted and the filenames are
-               in base-64.")
-          return(NULL)
-        }
-        print_html(paste0('<p style="color:blue;">Succesfully unzipped ', basename(datapath[i]), '.<br>'))
-        folders <- c(folders, file.path(exdir, folder));
-      }
+      
+      .folders <- unzip_fct_recursive(datapath[i], exdir, print_html, shinyjs::alert) %>% unique
+      folders %<>% c(.folders)
     }
-
     folders
-    }, error = function(e) {shinyjs::alert(paste0("The following error occured when processing the uploaded data: ", e))
-      })
-  } else
-    NULL
+  }, error = function(e) shinyjs::alert(paste0("The following error occured when processing the uploaded data: ", e))
+  )
 })
 
 # load, process the data folders and update DataSetList

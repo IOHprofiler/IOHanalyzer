@@ -25,7 +25,7 @@ Rcpp::NumericMatrix make_mat(Rcpp::List input_list){
   for(unsigned int i = 0; i < n; i++) {
     Rcpp::NumericVector row_val = input_list[i];
 
-    if(elems != row_val.length()) {
+    if(elems != (unsigned int)row_val.length()) {
       Rcpp::stop("Length of row does not match matrix requirements");
     }
 

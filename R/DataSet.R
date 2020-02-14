@@ -115,7 +115,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     mode(RT) <- 'integer'
     FV <- FV$FV
     
-    if (format %in% c(IOHprofiler, TWO_COL)) {
+    if (format %in% c(IOHprofiler)) {
       # try to save some memory here...
       FV <- tryCatch({
         .FV <- FV
@@ -194,13 +194,10 @@ c.DataSet <- function(...) {
     info <- c(info,temp)
   }
   names(info) <- c('suite', 'maximization', 'DIM', 'funcId', 'algId')
-  
-  maxRT <- max(unlist(lapply(dsl, function(x) attr(x, "maxRT"))))
-  if (info$maximization)
-    finalFV <- max(unlist(lapply(dsl, function(x) attr(x, "finalFV"))))
-  else
-    finalFV <- min(unlist(lapply(dsl, function(x) attr(x, "finalFV"))))
-  
+
+  maxRT <- unlist(lapply(dsl, function(x) attr(x, "maxRT")))
+  finalFV <- unlist(lapply(dsl, function(x) attr(x, "finalFV")))
+
   format <- attr(dsl[[1]], "format")
 
   RT_raw <- unlist(lapply(dsl, function(ds) {
@@ -214,12 +211,18 @@ c.DataSet <- function(...) {
   RT <- align_running_time(RT_raw, format = "TWO_COL", maximization = info$maximization)$RT
   FV <- align_function_value(RT_raw, format = "TWO_COL")$FV
 
-    #TODO: Deal with cases where parameters are present in original DataSets
+  #TODO: Deal with cases where aligned parameters are present in original DataSets
   PAR <- list(
     'by_FV' = RT[names(RT) != 'RT'],
     'by_RT' = FV[names(FV) != 'FV']
   )
   
+  #Unaligned parameters
+  for (par_name in names(dsl[[1]]$PAR)) {
+    if (!par_name %in% c('by_FV', 'by_RT'))
+      PAR[[par_name]] <- unlist(lapply(dsl, function(x) {x$PAR[[par_name]]}), recursive = F)
+  }
+
   instances <- unlist(lapply(dsl, function(ds) {attr(ds, 'instance')}))
   
   do.call(

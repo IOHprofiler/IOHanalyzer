@@ -22,7 +22,7 @@ test_that("Validate reading of files",{
   expect_equal(attr(ds1,'algId'), "ONE_PLUS_LAMDA_EA")
   expect_equal(attr(ds1,'suite'), "PBO")
   expect_equal(attr(ds1,'funcId'), 1)
-  expect_equal(attr(ds1,'instance'), c(1,1,1,1,1,1,1,1,1,1))
+  expect_true(all(attr(ds1,'instance') == 1))
   expect_equal(attr(ds1,'format'), "IOHprofiler")
   expect_equal(attr(ds1,'maximization'), TRUE)
 })

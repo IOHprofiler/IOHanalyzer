@@ -181,8 +181,10 @@ c.DataSet <- function(...) {
       stop("Operation only possible when all arguments are DataSets")
   }
   
+  fixed_attrs <- c('suite', 'maximization', 'DIM', 'funcId', 'algId', 'format')
+  
   info <- list()
-  for (attr_str in c('suite', 'maximization', 'DIM', 'funcId', 'algId')) {
+  for (attr_str in fixed_attrs) {
     temp  <-
       unique(
         unlist(lapply(dsl, function(x)
@@ -193,12 +195,17 @@ c.DataSet <- function(...) {
     }
     info <- c(info,temp)
   }
-  names(info) <- c('suite', 'maximization', 'DIM', 'funcId', 'algId')
+  names(info) <- fixed_attrs
 
-  maxRT <- unlist(lapply(dsl, function(x) attr(x, "maxRT")))
-  finalFV <- unlist(lapply(dsl, function(x) attr(x, "finalFV")))
+  for (attr_str in names(attributes(dsl[[1]]))) {
+    if (attr_str %in% fixed_attrs || attr_str %in% c("names", "class")) next
+    temp  <- unlist(lapply(dsl, function(x) attr(x, attr_str)))
+    if (length(unique(temp)) == 1) temp <- unique(temp)
+    names(temp) <- attr_str
+    info <- c(info,temp)
+  }
 
-  format <- attr(dsl[[1]], "format")
+  format <- info[['format']] #attr(dsl[[1]], "format")
 
   RT_raw <- unlist(lapply(dsl, function(ds) {
     lapply(seq_len(ncol(ds$RT)), function(cnr) {
@@ -223,12 +230,12 @@ c.DataSet <- function(...) {
       PAR[[par_name]] <- unlist(lapply(dsl, function(x) {x$PAR[[par_name]]}), recursive = F)
   }
 
-  instances <- unlist(lapply(dsl, function(ds) {attr(ds, 'instance')}))
+  # instances <- unlist(lapply(dsl, function(ds) {attr(ds, 'instance')}))
   
   do.call(
     function(...)
       structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
-    c(info, list(maxRT = maxRT, finalFV = finalFV, format = format, instance = instances))
+    c(info)
   )
 }
 

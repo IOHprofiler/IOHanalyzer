@@ -49,8 +49,6 @@ get_data_RT_ECDF_MULT <- reactive({
 })
 
 render_RT_ECDF_MULT <- reactive({
-  req(input$RTECDF.Aggr.Func || input$RTECDF.Aggr.Dim)
-
   withProgress({
     plot_general_data(get_data_RT_ECDF_MULT(), 'x', 'mean', 'line', 
                       scale.xlog = input$RTECDF.Aggr.Logx, 

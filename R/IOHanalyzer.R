@@ -1,7 +1,7 @@
 #' @importFrom stats dt ecdf integrate median quantile sd rgeom ks.test p.adjust
 #' @importFrom grDevices col2rgb colors nclass.FD
 #' @importFrom graphics hist
-#' @importFrom utils data head read.csv tail
+#' @importFrom utils data head read.csv tail type.convert
 #' @importFrom dplyr %>% mutate
 #' @importFrom magrittr set_names set_rownames set_colnames %<>% mod
 #' @importFrom colorspace sequential_hcl
@@ -90,6 +90,7 @@ BIBOJ_COCO <- 'BIBOJ_COCO'
 TWO_COL <- 'TWO_COL'
 AUTOMATIC <- 'AUTOMATIC'
 NEVERGRAD <- 'NEVERGRAD'
+SOS <- 'SOS'
 
 #' IOHanalyzer: Data Analysis Part of IOHprofiler
 #'

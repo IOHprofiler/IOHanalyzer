@@ -200,7 +200,10 @@ c.DataSet <- function(...) {
   for (attr_str in names(attributes(dsl[[1]]))) {
     if (attr_str %in% fixed_attrs || attr_str %in% c("names", "class")) next
     temp  <- unlist(lapply(dsl, function(x) attr(x, attr_str)))
-    if (length(unique(temp)) == 1) temp <- unique(temp)
+    if (length(unique(temp)) == 1) 
+      temp <- unique(temp)
+    else 
+      temp <- list(temp_name = temp)
     names(temp) <- attr_str
     info <- c(info,temp)
   }

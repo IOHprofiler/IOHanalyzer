@@ -205,7 +205,8 @@ read_index_file__BIOBJ_COCO <- function(fname) {
 #' Throws a warning when multiple formats are found in the same folder.
 #'
 #' @param path The path to the folder to check
-#' @return The format of the data in the given folder. Either 'COCO' or 'IOHprofiler'.
+#' @return The format of the data in the given folder. Either 'COCO', 'IOHprofiler',
+#' 'NEVERGRAD' or 'SOS'.
 #' @export
 #' @examples 
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package = "IOHanalyzer")
@@ -215,9 +216,11 @@ check_format <- function(path) {
     return(NEVERGRAD)
   
   index_files <- scan_index_file(path)
+  if (length(index_files) == 0) 
+    return(SOS)
+  
   info <- unlist(lapply(index_files, read_index_file), recursive = F)
   datafile <- sapply(info, function(item) item$datafile)
-  
   format <- lapply(datafile, function(file) {
     tryCatch({
       first_line <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
@@ -249,6 +252,10 @@ check_format <- function(path) {
   csv_files <- file.path(path, list.files(path, pattern = '.csv', recursive = T))
   if (length(csv_files) > 0)
     format <- c(format, NEVERGRAD)
+  
+  txt_files <- file.path(path, list.files(path, pattern = '.txt', recursive = T))
+  if (length(txt_files) > 0)
+    format <- c(format, SOS)
   
   if (length(format) > 1) {
     stop(
@@ -358,89 +365,6 @@ read_dat__BIOBJ_COCO <- function(fname, subsampling = FALSE) {
     as.matrix(df[i1:i2, ])
   })
 }
-
-# #' Read Nevergrad data file
-# #' 
-# #' Read .csv files in nevergrad format and extract information as a DataSetList
-# #'
-# #' @param fname The path to the .csv file
-# #' @return The DataSetList extracted from the .csv file provided
-# #' @noRd
-# read_nevergrad <- function(path) {
-#   dt <- fread(path)
-  
-#   triplets <- unique(dt[, .(optimizer_name, dimension, name)])
-#   algIds <- unique(triplets$optimizer_name)
-#   DIMs <- unique(triplets$dimension)
-#   funcIds <- unique(triplets$name)
-  
-#   res <- list()
-#   idx <- 1
-  
-#   for (i in seq(nrow(triplets))) {
-#     algId <- triplets$optimizer_name[i]
-#     DIM <- triplets$dimension[i]
-#     funcId <- triplets$name[i]
-    
-#     if (!('rescale' %in% colnames(dt))) {
-#       if ('transform' %in% colnames(dt))
-#         colnames(dt)[colnames(dt) == 'transform'] <- 'rescale'
-#       else
-#         dt$rescale <- NA
-#     }
-    
-#     data <- dt[optimizer_name == algId & 
-#                  dimension == DIM & 
-#                  name == funcId,
-#                .(budget, loss, rescale)]
-    
-#     for (scaled in unique(data$rescale)) {
-#       if (!is.na(scaled)) {
-#         data_reduced <- data[rescale == scaled, .(budget, loss)]
-#       }
-#       else {
-#         data_reduced <- data[is.na(rescale), .(budget, loss)]
-#       }
-      
-#       if (!is.na(scaled) && scaled) {
-#         funcId_name <- paste0(funcId, '_rescaled')
-#       }
-#       else {
-#         funcId_name <- funcId
-#       }
-      
-#       rows <- unique(data_reduced$budget) %>% sort
-#       FV <- lapply(rows,
-#                    function(b) {
-#                      data_reduced[budget == b, loss]
-#                    }
-#       ) %>%
-#         do.call(rbind, .) %>%
-#         set_rownames(rows)
-      
-#       RT <- list()
-#       ds <- structure(
-#         list(RT = RT, FV = FV),
-#         class = c('DataSet', 'list'),
-#         maxRT = max(rows),
-#         finalFV = min(FV),
-#         format = 'NEVERGRAD',
-#         maximization = FALSE,
-#         algId = algId,
-#         funcId = funcId_name,
-#         DIM = DIM
-#       )
-#       res[[idx]] <- ds
-#       idx <- idx + 1
-#     }
-#   }
-  
-#   class(res) <- c(class(res), 'DataSetList')
-#   attr(res, 'DIM') <- DIMs
-#   attr(res, 'funcId') <- funcIds
-#   attr(res, 'algId') <- algIds
-#   res
-# }
 
 # global variables for the alignment functions
 idxEvals <- 1
@@ -683,4 +607,175 @@ read_nevergrad <- function(path){
   attr(res, 'maximization') <- F
   res
   
+}
+
+#' Read single DataSet of SOS-based data
+#' 
+#' Read single .txt files in SOS format and extract information as a DataSet
+#'
+#' @param file The path to the .txt file
+#' @return The DataSet extracted from the .txt file provided
+#' @noRd
+read_single_file_SOS <- function(file) {
+  V1 <- NULL #Local binding to remove CRAN warnings
+  
+  algId <- substr(basename(file), 1,  stringi::stri_locate_last(basename(file), fixed = 'D')[[1]] - 1)
+  
+  dt <- fread(file, header = F)
+  header <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
+  splitted <- header %>% trimws %>% strsplit("\\s+") %>% .[[1]] %>% .[2:length(.)]
+  info <- list(algId = algId)
+  for (i in seq_len(length(splitted) / 2)) {
+    temp <- splitted[[2*i]]
+    name <- splitted[[2*i - 1]]
+    if (name == 'function') name <- 'funcId'
+    if (name == 'dim') name <- 'DIM'
+    names(temp) <- name
+    info <- c(info, temp)
+  }
+  
+  dim <- as.numeric(info$DIM)
+  
+  
+  RT_raw <- dt[[colnames(dt)[[ncol(dt) - dim - 1]]]]
+  names(RT_raw) <- dt[[colnames(dt)[[ncol(dt) - dim - 2]]]]
+  RT <- as.matrix(RT_raw)
+  mode(RT) <- 'integer'
+  
+  FV_raw <- dt[[colnames(dt)[[ncol(dt) - dim - 2]]]]
+  names(FV_raw) <- dt[[colnames(dt)[[ncol(dt) - dim - 1]]]]
+  FV <- as.matrix(FV_raw)
+  
+  
+  pos <- dt[, (ncol(dt) - dim + 1):ncol(dt)]
+  colnames(pos) <- as.character(seq_len(dim))
+  
+  maxRT <- max(RT)
+  finalFV <- min(FV)
+  
+  if (sum(FV == finalFV) > 1) {
+    #Reconstruct population to determine which best solution is final position
+    ids_min <- dt[FV_raw == finalFV, V1]
+    replaced_idxs <- dt[[colnames(dt)[[ncol(dt) - dim]]]]
+    #If none, take the last one added
+    pos_idx <- max(ids_min)
+    for (i in ids_min) {
+      if (all(replaced_idxs != i)) {
+        #If multiple, take the first one added
+        pos_idx <- i
+        break
+      }
+    }
+    final_pos <- as.numeric(pos[pos_idx, ])
+  }
+  else {
+    final_pos <- as.numeric(pos[which.min(FV), ])
+  }
+  
+  PAR <- list(
+    # 'position' = list(pos),
+    'final_position' = list(final_pos),
+    'by_FV' = NULL,
+    'by_RT' = NULL
+  )
+  
+  
+  
+  object <- list()
+  class(object) <- c('DataSet', class(object))
+  object$RT <- RT
+  object$FV <- FV
+  object$PAR <- PAR
+  attr(object, 'maxRT') <- maxRT
+  attr(object, 'finalFV') <- finalFV
+  attr(object, 'format') <- "SOS"
+  attr(object, 'maximization') <- F
+  attr(object, 'suite') <- "SOS"
+  for (i in seq_along(info)) {
+    attr(object, names(info)[[i]]) <- type.convert(info[[i]], as.is = T)
+  }
+  object
+}
+
+
+#' Read DataSetList of SOS-based data
+#' 
+#' Read directory containing .txt files in SOS format and extract information as a DataSetList
+#'
+#' @param dir The path to the directory file
+#' @param corrections_file A file containing boundary-correction ratios for the files in `dir`
+#' @return The DataSetList extracted from the directory provided
+#' @noRd
+read_datasetlist_SOS <- function(dir, corrections_files = NULL) {
+  V1 <- V3 <- V4 <- NULL #Local binding to remove CRAN warnings
+  res <- list()
+  dims <- list()
+  funcIds <- list()
+  algIds <- list()
+  suites <- list()
+  maximizations <- list()
+  
+  idx <- 1
+  
+  corrs <- as.data.table(rbindlist(lapply(corrections_files, fread)))
+  
+  for (f in list.files(dir, recursive = T, pattern = "*.txt", full.names = T)) {
+    if (f %in% corrections_files) next
+    ds <- read_single_file_SOS(f)
+    
+    dims[[idx]] <- attr(ds, 'DIM')
+    funcIds[[idx]] <- attr(ds, 'funcId')
+    algIds[[idx]] <- attr(ds, 'algId')
+    suites[[idx]] <- attr(ds, 'suite')
+    maximizations[[idx]] <- attr(ds, 'maximization')
+    
+    if (nrow(corrs) > 0) {
+      fn <- substr(basename(f), 1, nchar(basename(f)) - 4)
+      corr_opts <- corrs[V1 == fn, ]
+      if (stri_detect_fixed(fn, "DE")) {
+        corr <- corr_opts[V3 == attr(ds, 'F'), ][V4 == attr(ds, 'CR'), 'V2'][['V2']]
+      }
+      else if (stri_detect_fixed(fn, "RIS")) {
+        corr <- corr_opts[['V2']]
+      }
+      else {
+        warning("Unknown algorithm, so skipping lookup of boundary corrections ratio")
+        corr <- NULL
+      }
+      if (length(corr) == 1)
+        ds$PAR$'corrections' <- corr[[1]]
+      else
+        warning(paste0("No boundary corrections ratio found for ", fn))
+    }
+    
+    res[[idx]] <- ds
+    idx <- idx + 1
+  }
+  class(res) %<>% c('DataSetList')
+  attr(res, 'DIM') <- dims
+  attr(res, 'funcId') <- funcIds
+  attr(res, 'algId') <- algIds
+  
+  suite <- unique(suites)
+  maximization <- unique(maximizations)
+  if (length(suite) != 1 || length(maximization) != 1) {
+    warning("Multipe different suites detected!")
+  }
+  
+  attr(res, 'suite') <- suite
+  attr(res, 'maximization') <- maximization
+  res
+  clean_DataSetList(res)
+}
+
+#' Find corrections-files in SOS-based folder
+#' 
+#' Read directory containing .txt files in SOS format and extract the corrections-files
+#'
+#' @param path The path to the directory file
+#' @return The relative paths to the corection files
+#' @noRd
+locate_corrections_files <- function(path) {
+  files <- list.files(path, recursive = T, pattern = "*.txt", full.names = T)
+  files[stri_detect_fixed(files, 'corrections')]
 }

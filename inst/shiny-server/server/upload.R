@@ -135,7 +135,7 @@ unzip_fct_recursive <- function(zipfile, exdir, print_fun = print, alert_fun = p
   }
   print_fun(paste0('<p style="color:blue;">Succesfully unzipped ', basename(zipfile), '.<br>'))
   
-  folders <- grep('*.info|csv', files, value = T) %>% 
+  folders <- grep('*.info|csv|txt', files, value = T) %>% 
     dirname %>% 
     unique %>% 
     grep('__MACOSX', ., value = T, invert = T) %>%  # to get rid of __MACOSX folder on MAC..
@@ -186,6 +186,7 @@ selected_folders <- reactive({
 
 # load, process the data folders and update DataSetList
 observeEvent(selected_folders(), {
+  withProgress({
   folders <- selected_folders()
   format_selected <- input$upload.data_format
   maximization <- input$upload.maximization
@@ -212,9 +213,9 @@ observeEvent(selected_folders(), {
   for (folder in folder_new) {
     indexFiles <- scan_index_file(folder)
 
-    if (length(indexFiles) == 0 && format_detected != NEVERGRAD)
+    if (length(indexFiles) == 0 && format_detected != NEVERGRAD && format_detected != "SOS")
       print_html(paste('<p style="color:red;">No .info-files detected in the
-                       uploaded folder:</p>', folder))
+                       uploaded folder, while they were expected:</p>', folder))
     else {
       folderList$data <- c(folderList$data, folder)
 
@@ -255,6 +256,7 @@ observeEvent(selected_folders(), {
   update_menu_visibility(attr(DataList$data, 'suite'))
   set_format_func(attr(DataList$data, 'suite'))
   set_color_scheme("Default", get_algId(DataList$data))
+  }, message = "Processing data, this might take some time")
 })
 
 update_menu_visibility <- function(suite){
@@ -270,6 +272,12 @@ update_menu_visibility <- function(suite){
   }
   else {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "FCE_ECDF"))
+  }
+  if (suite == "SOS") {
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "Positions"))
+  }
+  else {
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "Positions"))
   }
 }
 
@@ -453,6 +461,7 @@ observe({
   updateSelectInput(session, 'FCEECDF.Single.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCEECDF.Mult.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCEECDF.AUC.Algs', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'ParCoordPlot.Algs', choices = algIds_, selected = algIds_[[1]])
   updateSelectInput(session, 'FV_PAR.Plot.Params', choices = parIds_, selected = parIds_)
   updateSelectInput(session, 'RT_PAR.Plot.Params', choices = parIds_, selected = parIds_)
 })

@@ -40,6 +40,7 @@ read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
 #'  \item'TWO_COL'
 #'  \item'COCO_BIOBJ'
 #'  \item'NEVERGRAD'
+#'  \item 'SOS'
 #'  }
 #'  These formats are specified in more detail in our github wiki.
 #' @param subsampling Logical. Whether *.cdat files are subsampled?
@@ -62,6 +63,9 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
     else
       indexFiles <-
         file.path(path, list.files(path, pattern = '.csv', recursive = T))
+  }
+  else if (format == SOS) {
+    return(read_datasetlist_SOS(path, locate_corrections_files(path)))
   }
   else
     indexFiles <- scan_index_file(path)

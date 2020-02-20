@@ -315,6 +315,16 @@ body <- dashboardBody(
               )
             )
     ),
+    
+    tabItem(tabName = 'Positions',
+            fluidRow(
+              column(
+                width = 12,
+                Par_coord_box()
+              )
+            )
+    ),
+    
     tabItem(tabName = 'Settings',
             fluidRow(
               column(

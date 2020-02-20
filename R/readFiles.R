@@ -39,8 +39,8 @@ scan_index_file <- function(folder) {
 read_index_file <- function(fname) {
   tryCatch(
     read_index_file__IOH(fname),
-    warning = function(e) read_index_file__BIOBJ_COCO(fname),
-    error = function(e) read_index_file__BIOBJ_COCO(fname),
+    warning = function(e) read_index_file__COCO(fname),
+    error = function(e) read_index_file__COCO(fname),
     finally = function(e) stop(paste0('Error in reading .info files ', e))
   )
 }
@@ -112,6 +112,80 @@ read_index_file__IOH <- function(fname) {
         instance = as.numeric(res[1, ]),
         maxRT = as.numeric(info[1, ]),
         finalFV = as.numeric(info[2, ])
+      )
+    )
+    i <- i + 1
+  }
+  close(f)
+  data
+}
+
+#' Read single-objective COCO-based .info files and extract information
+#'
+#' @param fname The path to the .info file
+#' @return The data contained in the .info file
+#' @noRd
+read_index_file__COCO <- function(fname) {
+  f <- file(fname, 'r')
+  path <- dirname(fname)
+  data <- list()
+  i <- 1
+  while (TRUE) {
+    
+    lines <- suppressWarnings(readLines(f, n = 3))  # read header and comments
+    if (length(lines) < 3) {
+      break
+    }
+    comment <- lines[2]
+    name_value <- as.vector(unlist(as.list(read.csv(text = lines[1], header = F, quote = "'"))))
+    
+    header <- trimws(name_value) %>% {
+      regmatches(., regexpr("=", .), invert = T)  # match the first appearance of '='
+    } %>%
+      unlist %>%
+      trimws %>%
+      matrix(nrow = 2) %>% {
+        ans <- as.list(.[2, ])
+        names(ans) <- .[1, ]
+        for (name in .[1, ]) {
+          value <- ans[[name]]
+          ans[[name]] <- gsub("'", '', value)
+          value <- suppressWarnings(as.numeric(value)) # convert quoted numeric values to numeric
+          if (!is.na(value))
+            ans[[name]] <- value
+        }
+        ans
+      }
+    
+    names(header) <- gsub('algorithm', 'algId', names(header))
+    
+    record <- strsplit(lines[3], ',')[[1]] %>% trimws
+    
+    if (length(record) < 2) {
+      warning(sprintf('File %s is incomplete!', fname))
+      res <- NULL
+      info <- NULL
+    } else {
+      res <- matrix(unlist(strsplit(record[-c(1)], ':')), nrow = 2)
+      info <- matrix(as.numeric(unlist(strsplit(res[2, ], '\\|'))), nrow = 2)
+    }
+    
+    record[1] <-  gsub("\\\\", "/", record[1])
+    if ('folder' %in% names(header))
+      datafile <- file.path(path, header$folder, record[1])
+    else
+      datafile <- file.path(path, record[1])
+    
+    
+    # TODO: check the name of the attributes and fix them!
+    data[[i]] <- c(
+      header,
+      list(
+        comment = comment,
+        datafile = datafile,
+        instance = as.numeric(res[1, ]),
+        maxRT = info[1, ],
+        finalFV = info[2, ]
       )
     )
     i <- i + 1

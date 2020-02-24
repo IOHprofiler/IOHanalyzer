@@ -44,6 +44,18 @@ render_ert_per_fct <- reactive({
                              scale.reverse = !attr(DATA(), 'maximization'))
       show_legend <- F
     }
+    if (input$ERTPlot.show.Quantiles) {
+      quantiles <- paste0(getOption("IOHanalyzer.quantiles", c(0.2, 0.98)) * 100, '%')
+      p <- plot_general_data(get_data_ERT_PER_FUN(), x_attr = 'target', y_attr = 'median', 
+                             type = 'ribbon', legend_attr = 'algId', lower_attr = quantiles[[1]], 
+                             upper_attr = quantiles[[length(quantiles)]], p = p, 
+                             show.legend = show_legend, 
+                             scale.ylog = input$ERTPlot.semilogy,
+                             scale.xlog = input$ERTPlot.semilogx, x_title = "Best-so-far f(x)-value",
+                             y_title = "Function Evaluations",
+                             scale.reverse = !attr(DATA(), 'maximization'))
+      show_legend <- F
+    }
     if (input$ERTPlot.show.runs) {
       fstart <- isolate(input$ERTPlot.Min %>% as.numeric)
       fstop <- isolate(input$ERTPlot.Max %>% as.numeric)

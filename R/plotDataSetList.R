@@ -1243,10 +1243,10 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              p %<>%
                add_trace(data = df_small, x = ~x, y = ~upper, type = 'scatter', mode = 'lines',
                          line = list(color = rgba_str, width = 0), legendgroup = legend_name,
-                         showlegend = F, name = 'mean +/- sd', ...) %>%
+                         showlegend = F, name = 'upper', ...) %>%
                add_trace(x = ~x, y = ~lower, type = 'scatter', mode = 'lines',
                          fill = 'tonexty',  line = list(color = 'transparent'), legendgroup = legend_name,
-                         fillcolor = rgba_str, showlegend = F, name = 'mean +/- sd', ...)
+                         fillcolor = rgba_str, showlegend = F, name = 'lower', ...)
            }
            
            

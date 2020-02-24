@@ -1111,7 +1111,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
            else if (stri_detect_regex(x_attr, "(?i)dim"))
              df <- df[, x := paste0('D', as.character(x))]
            else
-             df <- df[, x := paste0('*', as.character(x))]
+             df <- df[, x := as.character(x)]
            
            #Update color names as well, since the value changed
            names(colors) <- unique(df[['x']])
@@ -1132,6 +1132,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                        line = list(color = 'black', width = 1.1),
                        box = list(visible = T),
                        spanmode = 'hard',
+                       showlegend = show.legend,
                        ...
              )
            if (is_new_plot) {
@@ -1266,7 +1267,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
            else if (stri_detect_regex(x_attr, "(?i)dim"))
              df <- df[, x := paste0('D', as.character(x))]
            else
-             df <- df[, x := paste0('*', as.character(x))]
+             df <- df[, x := as.character(x)]
            
            df <- df[, col := add_transparancy(colors, 0.4)[l]]
            p %<>%

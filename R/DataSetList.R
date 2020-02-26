@@ -40,7 +40,7 @@ read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
 #'  \item'TWO_COL'
 #'  \item'COCO_BIOBJ'
 #'  \item'NEVERGRAD'
-#'  \item 'SOS'
+#'  \item'SOS'
 #'  }
 #'  These formats are specified in more detail in our github wiki.
 #' @param subsampling Logical. Whether *.cdat files are subsampled?
@@ -120,10 +120,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
         instance <- attr(data, 'instance') #Was instance without index?
         suites[i] <- attr(data, 'suite')
         maximizations[i] <- attr(data, 'maximization')
-        
-        # check for duplicated instances
-        
-        
+
         if (length(object) != 0) {
           idx <- which(sapply(object, function(obj) obj == data))
           for (k in idx) {

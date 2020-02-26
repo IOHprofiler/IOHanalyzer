@@ -4,12 +4,12 @@
 #'  * funId
 #'  * DIM
 #'  * algId
-#'  * Precision
 #'  * datafile
 #'  * instance
 #'  * maxEvals
 #'  * finalFunEvals
 #'  * comment
+#'  * Additional attributes based on the original format
 #'
 #' @param info A List. Contains a set of in a *.info file.
 #' @param verbose Logical.
@@ -169,6 +169,8 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
 #' @param ... The DataSets to concatenate
 #' @return A new DataSet
 #' @export
+#' @examples 
+#' c(dsl[[1]], dsl[[1]])
 c.DataSet <- function(...) {
   dsl <- list(...)
   if (length(dsl) == 1) dsl <- dsl[[1]]
@@ -185,10 +187,7 @@ c.DataSet <- function(...) {
   
   info <- list()
   for (attr_str in fixed_attrs) {
-    temp  <-
-      unique(
-        unlist(lapply(dsl, function(x)
-          attr(x, attr_str))))
+    temp  <-  unique(unlist(lapply(dsl, function(x) attr(x, attr_str))))
     if (length(temp) > 1) {
       stop(paste0("Attempted to add datasets with different ", attr_str, 
                   "-attributes! Tis is not allowed, please keep them as separate DataSets!"))
@@ -205,7 +204,7 @@ c.DataSet <- function(...) {
     else 
       temp <- list(temp_name = temp)
     names(temp) <- attr_str
-    info <- c(info,temp)
+    info <- c(info, temp)
   }
 
   format <- info[['format']] #attr(dsl[[1]], "format")
@@ -233,8 +232,6 @@ c.DataSet <- function(...) {
       PAR[[par_name]] <- unlist(lapply(dsl, function(x) {x$PAR[[par_name]]}), recursive = F)
   }
 
-  # instances <- unlist(lapply(dsl, function(ds) {attr(ds, 'instance')}))
-  
   do.call(
     function(...)
       structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
@@ -334,19 +331,18 @@ summary.DataSet <- function(object, ...) {
 #'
 #'
 #' @return True if the DataSets contain the same function, dimension and algorithm,
-#' and have equal precision and comments; False otherwise
+#' and have the exact same attributes
 #' @examples
 #' dsl[[1]] == dsl[[2]]
 #' @export
 `==.DataSet` <- function(dsL, dsR) {
   if (length(dsL) == 0 || length(dsR) == 0)
     return(FALSE)
-
-  attr(dsL, 'funcId') == attr(dsR, 'funcId') &&
-    attr(dsL, 'DIM') == attr(dsR, 'DIM') &&
-    attr(dsL, 'Precision') == attr(dsR, 'Precision') &&
-    attr(dsL, 'algId') == attr(dsR, 'algId') &&
-    attr(dsL, 'comment') == attr(dsR, 'comment')
+  
+  for (attr_str in names(attributes(dsL))) {
+    if (attr(dsL, attr_str) != attr(dsR, attr_str)) return(FALSE)
+  }
+  return(TRUE)
 }
 
 #' Get Expected RunTime

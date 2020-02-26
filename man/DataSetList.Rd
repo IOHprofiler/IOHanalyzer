@@ -24,7 +24,7 @@ the corresponding datafiles to create the DataSetList}
 \item'TWO_COL'
 \item'COCO_BIOBJ'
 \item'NEVERGRAD'
-\item 'SOS'
+\item'SOS'
 }
 These formats are specified in more detail in our github wiki.}
 

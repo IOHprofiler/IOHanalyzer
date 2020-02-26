@@ -135,22 +135,3 @@ output$ERTPlot.Aggr_Dim.Download <- downloadHandler(
   },
   contentType = paste0('image/', input$ERTPlot.Aggr_Dim.Format)
 )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -13,7 +13,7 @@
 }
 \value{
 True if the DataSets contain the same function, dimension and algorithm,
-and have equal precision and comments; False otherwise
+and have the exact same attributes
 }
 \description{
 S3 generic == operator for DataSets

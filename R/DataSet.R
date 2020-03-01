@@ -177,7 +177,8 @@ c.DataSet <- function(...) {
   dsl <- dsl[sapply(dsl, length) != 0]
   if (length(dsl) == 0)
     return()
-  
+  if (length(dsl) == 1)
+    return(dsl[[1]])
   for (ds in dsl) {
     if (!any((class(ds)) == 'DataSet'))
       stop("Operation only possible when all arguments are DataSets")
@@ -340,7 +341,7 @@ summary.DataSet <- function(object, ...) {
     return(FALSE)
   
   for (attr_str in names(attributes(dsL))) {
-    if (attr(dsL, attr_str) != attr(dsR, attr_str)) return(FALSE)
+    if (any(attr(dsL, attr_str) != attr(dsR, attr_str))) return(FALSE)
   }
   return(TRUE)
 }

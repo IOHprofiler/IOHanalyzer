@@ -1106,13 +1106,14 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              warning("Inconsistent attribute selected for x-axis and legend. Using x_attr as name")
            }
            #Update names to aviod numerical legend
-           if (stri_detect_regex(x_attr, "(?i)fun"))
-             df <- df[, x := paste0('F', sprintf("%02d", x))]
-           else if (stri_detect_regex(x_attr, "(?i)dim"))
-             df <- df[, x := paste0('D', as.character(x))]
-           else
-             df <- df[, x := as.character(x)]
-           
+           if (is.numeric(df[['x']])) {
+             if (stri_detect_regex(x_attr, "(?i)fun"))
+               df <- df[, x := paste0('F', sprintf("%02d", x))]
+             else if (stri_detect_regex(x_attr, "(?i)dim"))
+               df <- df[, x := paste0('D', as.character(x))]
+             else
+               df <- df[, x := as.character(x)]
+           }
            #Update color names as well, since the value changed
            names(colors) <- unique(df[['x']])
            
@@ -1261,14 +1262,14 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
            if (legend_attr == x_attr) {
              stop("Duplicated attribute selected for x-axis and legend.")
            }
-           #TODO: better way to force to string
-           if (stri_detect_regex(x_attr, "(?i)fun"))
-             df <- df[, x := paste0('F', sprintf("%02d", x))]
-           else if (stri_detect_regex(x_attr, "(?i)dim"))
-             df <- df[, x := paste0('D', as.character(x))]
-           else
-             df <- df[, x := as.character(x)]
-           
+           if (is.numeric(df[['x']])) {
+             if (stri_detect_regex(x_attr, "(?i)fun"))
+               df <- df[, x := paste0('F', sprintf("%02d", x))]
+             else if (stri_detect_regex(x_attr, "(?i)dim"))
+               df <- df[, x := paste0('D', as.character(x))]
+             else
+               df <- df[, x := as.character(x)]
+           }
            df <- df[, col := add_transparancy(colors, 0.4)[l]]
            p %<>%
              add_trace(data = df, type = 'scatterpolar', r = ~y,

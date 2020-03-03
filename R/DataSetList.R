@@ -101,7 +101,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
         if (verbose) {
           print_fun(
             sprintf(
-              '      %d instances on f%d %dD...\n',
+              '      %d instances on f%s %dD...\n',
               length(info$instance),
               info$funcId,
               info$DIM

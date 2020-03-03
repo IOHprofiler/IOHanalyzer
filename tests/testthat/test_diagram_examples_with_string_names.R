@@ -26,10 +26,11 @@ test_that("Test the diagram examples with string names",{
   Plot.FV.Parameters(subset(dsl1, funcId == 'bla'))
   Plot.RT.ECDF_Multi_Func(dsl1)
   Plot.RT.Multi_Func(dsl1)
-#  Plot.RT.Aggregated(dsl1) this will fail also with the original data
-#  Plot.FV.Aggregated(dsl1) this will fail also with the original data
+  Plot.RT.Aggregated(dsl1)
+  Plot.FV.Aggregated(dsl1) 
   Plot.FV.Multi_Func(dsl1)
   Plot.Stats.Significance_Heatmap(subset(dsl1, funcId == 'bla'), 16)
   Plot.Stats.Significance_Graph(subset(dsl1, funcId == 'bla'), 16)
-#  Plot.Stats.Glicko2_Candlestick(dsl1, nr_rounds=2)  this will fail also with the original data
+  #this will fail also with the original data, since only one alg present
+  #Plot.Stats.Glicko2_Candlestick(dsl1, nr_rounds=2)  
 })

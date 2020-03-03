@@ -19,3 +19,6 @@ generate_data.Aggr(dsList, aggr_on = "funcId", targets = NULL,
 \description{
 This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
 }
+\examples{
+generate_data.Aggr(dsl)
+}

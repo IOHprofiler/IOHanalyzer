@@ -10,7 +10,8 @@ check_format(path)
 \item{path}{The path to the folder to check}
 }
 \value{
-The format of the data in the given folder. Either 'COCO' or 'IOHprofiler'.
+The format of the data in the given folder. Either 'COCO', 'IOHprofiler',
+'NEVERGRAD' or 'SOS'.
 }
 \description{
 Throws a warning when multiple formats are found in the same folder.

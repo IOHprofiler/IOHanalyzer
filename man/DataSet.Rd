@@ -27,12 +27,12 @@ DataSet contains the following attributes
  * funId
  * DIM
  * algId
- * Precision
  * datafile
  * instance
  * maxEvals
  * finalFunEvals
  * comment
+ * Additional attributes based on the original format
 }
 \examples{
 path <- system.file('extdata', 'ONE_PLUS_LAMDA_EA', package = 'IOHanalyzer')

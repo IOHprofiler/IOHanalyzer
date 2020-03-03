@@ -17,3 +17,6 @@ Concatenation for DataSets. Combines multiple runs from separate DataSets
 into a single DataSet object if all provided arguments have the same dimension, function ID and
 algorithm ID, and each contains only a single run. Currently does not support parameter tracking
 }
+\examples{
+c(dsl[[1]], dsl[[1]])
+}

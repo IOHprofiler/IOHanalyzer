@@ -14,8 +14,11 @@ color_settings_box <- function(width = 12, collapsible = T, collapsed = F) {
           colourInput("Settings.Color.Bg", "Plot background colour", value = "#E6E6E6"),
           colourInput("Settings.Color.Grid", "Plot gridline colour", value = "#FFFFFF"),
           colourInput("Settings.Color.Tick", "Plot ticks colour", value = "#333333"),
+          numericInput("Settings.Color.Linewidth", "Line Width", value = 2),
+          numericInput("Settings.Color.Markersize", "Marker Size", value = 4),
           selectInput("Settings.Legend.Location", "Legend location", 
-                      c("Outside, right", "Inside, right", "Inside, left", "Below"), "Below")
+                      c("Outside, right", "Inside, right", "Inside, left", "Below"), "Below"),
+          downloadButton("Settings.Plot.Download", "Label = Download sample plot")
         ),
 
         mainPanel(
@@ -52,13 +55,16 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
           numericInput("Settings.General.Precision", label = "Function value precision (digits)",
                        value = 2),
           hr(),
-          downloadButton("Settings.Download", "Download current settings file"),
+          downloadButton("Settings.Download", "Download current general settings file"),
           fileInput("Settings.Upload", "Upload a settings file", accept = "rds")
         ),
         column(
           width = 3,
           align = "Left",
           HTML_P('Set the figure download properties'),
+          selectInput("Settings.Download.Preset", label = "Choose preset for download and font sizes", 
+                      choices = c("Default", "Paper-1col", "Paper-2col"), selected = "Default"),
+          hr(),
           numericInput("Settings.Download.Width", label = "Image width (px)", value = 1000, min = 100, max = 4096),
           numericInput("Settings.Download.Height", label = "Image height (px)", value = 1000, min = 100, max = 4096)
         ),

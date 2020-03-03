@@ -1,5 +1,9 @@
 # IOHanalyzer
 
+[![metacran downloads](https://cranlogs.r-pkg.org/badges/IOHanalyzer)](https://cran.r-project.org/package=IOHanalyzer)
+[![CRAN_Status_Badge_version_last_release](https://www.r-pkg.org/badges/version-last-release/IOHanalyzer)](https://cran.r-project.org/package=IOHanalyzer)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+
 The __performance analyzer__ for **I**terative **O**ptimization **H**euristics (IOHs).
 
 * __Documentation__: [https://arxiv.org/abs/1810.05281](https://arxiv.org/abs/1810.05281)

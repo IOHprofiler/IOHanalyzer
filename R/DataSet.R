@@ -4,12 +4,12 @@
 #'  * funId
 #'  * DIM
 #'  * algId
-#'  * Precision
 #'  * datafile
 #'  * instance
 #'  * maxEvals
 #'  * finalFunEvals
 #'  * comment
+#'  * Additional attributes based on the original format
 #'
 #' @param info A List. Contains a set of in a *.info file.
 #' @param verbose Logical.
@@ -120,7 +120,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     mode(RT) <- 'integer'
     FV <- FV$FV
     
-    if (format %in% c(IOHprofiler, TWO_COL)) {
+    if (format %in% c(IOHprofiler)) {
       # try to save some memory here...
       FV <- tryCatch({
         .FV <- FV
@@ -174,62 +174,73 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
 #' @param ... The DataSets to concatenate
 #' @return A new DataSet
 #' @export
+#' @examples 
+#' c(dsl[[1]], dsl[[1]])
 c.DataSet <- function(...) {
   dsl <- list(...)
+  if (length(dsl) == 1) dsl <- dsl[[1]]
   dsl <- dsl[sapply(dsl, length) != 0]
-
   if (length(dsl) == 0)
     return()
-
+  if (length(dsl) == 1)
+    return(dsl[[1]])
   for (ds in dsl) {
-    if (!any((class(dsl[[1]])) == 'DataSet'))
+    if (!any((class(ds)) == 'DataSet'))
       stop("Operation only possible when all arguments are DataSets")
   }
 
+  fixed_attrs <- c('suite', 'maximization', 'DIM', 'funcId', 'algId', 'format')
   info <- list()
-  for (attr_str in c('suite', 'maximization', 'DIM', 'funcId', 'algId')) {
-    temp  <-
-      unique(
-        unlist(lapply(dsl, function(x)
-          attr(x, attr_str))))
+  for (attr_str in fixed_attrs) {
+    temp  <-  unique(unlist(lapply(dsl, function(x) attr(x, attr_str))))
     if (length(temp) > 1) {
       stop(paste0("Attempted to add datasets with different ", attr_str,
                   "-attributes! Tis is not allowed, please keep them as separate DataSets!"))
     }
     info <- c(info,temp)
   }
-  names(info) <- c('suite', 'maximization', 'DIM', 'funcId', 'algId')
+  names(info) <- fixed_attrs
 
-  maxRT <- max(unlist(lapply(dsl, function(x) attr(x, "maxRT"))))
-  if (info$maximization)
-    finalFV <- max(unlist(lapply(dsl, function(x) attr(x, "finalFV"))))
-  else
-    finalFV <- min(unlist(lapply(dsl, function(x) attr(x, "finalFV"))))
-
-  format <- attr(dsl[[1]], "format")
-
-  RT_raw <- c()
-  #Note: Currently only works for data split in a way that there is one run per DataSet
-  #TODO: Generalize to more runs -> detection + dealing with it
-  for (i in seq(length(dsl))) {
-    rt_temp <- as.matrix(dsl[[i]]$RT)
-    rt_temp <- cbind(rt_temp, as.numeric(rownames(dsl[[i]]$RT)))
-    RT_raw[[i]] <- rt_temp
+  for (attr_str in names(attributes(dsl[[1]]))) {
+    if (attr_str %in% fixed_attrs || attr_str %in% c("names", "class")) next
+    temp  <- unlist(lapply(dsl, function(x) attr(x, attr_str)))
+    if (length(unique(temp)) == 1) 
+      temp <- unique(temp)
+    else 
+      temp <- list(temp_name = temp)
+    names(temp) <- attr_str
+    info <- c(info, temp)
   }
 
-  RT <- align_running_time(RT_raw, format = "TWO_COL", maximization = info$maximization)
-  FV <- align_function_value(RT_raw, format = "TWO_COL")
+  format <- info[['format']] #attr(dsl[[1]], "format")
 
-  #TODO: Deal with cases where parameters are present in original DataSets
+  RT_raw <- unlist(lapply(dsl, function(ds) {
+    lapply(seq_len(ncol(ds$RT)), function(cnr) {
+      rt_temp <- as.matrix(ds$RT[, cnr])
+      cbind(rt_temp, as.numeric(rownames(ds$RT)))
+    })
+  }), recursive = F)
+  
+  
+  RT <- align_running_time(RT_raw, format = "TWO_COL", maximization = info$maximization)$RT
+  FV <- align_function_value(RT_raw, format = "TWO_COL")$FV
+
+  #TODO: Deal with cases where aligned parameters are present in original DataSets
   PAR <- list(
     'by_FV' = RT[names(RT) != 'RT'],
     'by_RT' = FV[names(FV) != 'FV']
   )
+  
+  #Unaligned parameters
+  for (par_name in names(dsl[[1]]$PAR)) {
+    if (!par_name %in% c('by_FV', 'by_RT'))
+      PAR[[par_name]] <- unlist(lapply(dsl, function(x) {x$PAR[[par_name]]}), recursive = F)
+  }
 
   do.call(
     function(...)
       structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
-    c(info, list(maxRT = maxRT, finalFV = finalFV, format = format))
+    c(info)
   )
 }
 
@@ -325,19 +336,18 @@ summary.DataSet <- function(object, ...) {
 #'
 #'
 #' @return True if the DataSets contain the same function, dimension and algorithm,
-#' and have equal precision and comments; False otherwise
+#' and have the exact same attributes
 #' @examples
 #' dsl[[1]] == dsl[[2]]
 #' @export
 `==.DataSet` <- function(dsL, dsR) {
   if (length(dsL) == 0 || length(dsR) == 0)
     return(FALSE)
-
-  attr(dsL, 'funcId') == attr(dsR, 'funcId') &&
-    attr(dsL, 'DIM') == attr(dsR, 'DIM') &&
-    attr(dsL, 'Precision') == attr(dsR, 'Precision') &&
-    attr(dsL, 'algId') == attr(dsR, 'algId') &&
-    attr(dsL, 'comment') == attr(dsR, 'comment')
+  
+  for (attr_str in names(attributes(dsL))) {
+    if (any(attr(dsL, attr_str) != attr(dsR, attr_str))) return(FALSE)
+  }
+  return(TRUE)
 }
 
 #' Get Expected RunTime

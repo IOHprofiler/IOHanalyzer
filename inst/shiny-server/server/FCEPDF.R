@@ -1,11 +1,18 @@
 # empirical p.d.f. of the target value
-render_FV_PDF <- reactive({
-  req(input$FCEPDF.Bar.Runtime, length(DATA()) > 0)
-  withProgress({
-  runtime <- input$FCEPDF.Bar.Runtime %>% as.numeric
+get_data_FV_PMF <- reactive({
+  ftarget <- input$FCEPDF.Bar.Runtime %>% as.numeric
   data <- subset(DATA(), algId %in% input$FCEPDF.Bar.Algs)
-  Plot.FV.PDF(data, runtime, show.sample = input$FCEPDF.Bar.Samples,
-              scale.ylog = input$FCEPDF.Bar.Logy )
+  generate_data.PMF(data, ftarget, 'by_FV')
+})
+
+render_FV_PDF <- reactive({
+  withProgress({
+    plot_general_data(get_data_FV_PMF(), 'algId', 'f(x)', scale.ylog = input$FCEPDF.Bar.Logy,
+                      x_title = "Algorithm", y_title = "Target Value")
+    # ftarget <- input$RTPMF.Bar.Target %>% as.numeric
+    # data <- subset(DATA(), algId %in% input$RTPMF.Bar.Algs)
+    # Plot.RT.PMF(data, ftarget, show.sample = input$RTPMF.Bar.Sample,
+    #             scale.ylog = input$RTPMF.Bar.Logy)
   },
   message = "Creating plot")
 })
@@ -25,12 +32,25 @@ output$FCE_PDF <- renderPlotly({
 })
 
 # historgram of the target values -----------
+
+
+get_data_FV_HIST <- reactive({
+  ftarget <- input$FCEPDF.Hist.Runtime %>% as.numeric
+  data <- subset(DATA(), algId %in% input$FCEPDF.Hist.Algs)
+  generate_data.hist(data, ftarget, input$FCEPDF.Hist.Equal, 'by_FV')
+})
+
+
 render_FV_HIST <- reactive({
   req(input$FCEPDF.Hist.Runtime != "", length(DATA()) > 0)   # require non-empty input
   withProgress({
-  runtime <- input$FCEPDF.Hist.Runtime %>% as.numeric
-  data <- subset(DATA(), algId %in% input$FCEPDF.Hist.Algs)
-  Plot.FV.Histogram(data, runtime, plot_mode = input$FCEPDF.Hist.Mode, use.equal.bins = input$FCEPDF.Hist.Equal)
+    subplot_attr <- if (input$FCEPDF.Hist.Mode == 'subplot') 'algId' else NULL
+    plot_general_data(get_data_FV_HIST(), 'x', 'y', width = 'width', type = 'hist', 
+                      subplot_attr = subplot_attr, x_title = "Target Values",
+                      y_title = "Runs")
+  # runtime <- input$FCEPDF.Hist.Runtime %>% as.numeric
+  # data <- subset(DATA(), algId %in% input$FCEPDF.Hist.Algs)
+  # Plot.FV.Histogram(data, runtime, plot_mode = input$FCEPDF.Hist.Mode, use.equal.bins = input$FCEPDF.Hist.Equal)
   },
   message = "Creating plot")
 })

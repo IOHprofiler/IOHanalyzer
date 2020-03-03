@@ -9,7 +9,7 @@ save_plotly(p, file, width = NULL, height = NULL, ...)
 \arguments{
 \item{p}{plotly object. The plot to be saved}
 
-\item{file}{String. The name of the figure file}
+\item{file}{String. The name of the figure file, with the extension of the required file-format}
 
 \item{width}{Optional. Width of the figure}
 
@@ -18,8 +18,7 @@ save_plotly(p, file, width = NULL, height = NULL, ...)
 \item{...}{Additional arguments for orca}
 }
 \description{
-NOTE: This function requires orca to be installed, and for pdf and eps formats
-inkscape is also needed.
+NOTE: This function requires orca to be installed
 }
 \examples{
 \donttest{

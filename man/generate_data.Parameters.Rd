@@ -16,3 +16,6 @@ generate_data.Parameters(dsList, which = "by_RT", scale_log = F)
 \description{
 This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
 }
+\examples{
+generate_data.Parameters(subset(dsl, funcId == 1))
+}

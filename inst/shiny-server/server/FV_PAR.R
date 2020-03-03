@@ -1,26 +1,23 @@
 # Expected Evolution of parameters in the algorithm
+get_data_FV_PAR_PER_FUN <- reactive({
+  data <- subset(DATA(), algId %in% input$FV_PAR.Plot.Algs)
+  generate_data.Parameters(data, scale_log = input$FV_PAR.Plot.Logx, which = 'by_RT')
+})
+
 render_FV_PAR_PER_FUN <- reactive({
   req(input$FV_PAR.Plot.Min, input$FV_PAR.Plot.Max)
   withProgress({
+    #TODO: use these parameters
     rt_min <- as.numeric(input$FV_PAR.Plot.Min)
     rt_max <- as.numeric(input$FV_PAR.Plot.Max)
     
-    tryCatch({
-      data <- subset(DATA(), algId %in% input$FV_PAR.Plot.Algs)
-      Plot.FV.Parameters(data, rt_min, rt_max,
-                         show.mean = (input$FV_PAR.Plot.show.mean == 'mean'),
-                         show.median = (input$FV_PAR.Plot.show.mean == 'median'),
-                         scale.xlog = input$FV_PAR.Plot.Logx,
-                         scale.ylog = input$FV_PAR.Plot.Logy, 
-                         show.CI = input$FV_PAR.Plot.CI,
-                         par_name = input$FV_PAR.Plot.Params)
-    },
-    error = function(e) {
-      # TODO: more robust error handling; don't assume this causes the error
-      shinyjs::alert("Not all algorithms contain the same parameters. 
-                      Please select a single algorithm to plot instead.")
-    }
-    )
+    dt <- get_data_FV_PAR_PER_FUN()
+    dt <- dt[parId %in% input$FV_PAR.Plot.Params]
+    type <- if (input$FV_PAR.Plot.CI) 'line+ribbon' else 'line'
+    plot_general_data(dt, 'runtime', input$FV_PAR.Plot.show.mean, type,
+                      subplot_attr = 'parId', scale.xlog = input$FV_PAR.Plot.Logx,
+                      scale.ylog = input$FV_PAR.Plot.Logy, 
+                      lower_attr = 'lower', upper_attr = 'upper')
   },
   message = "Creating plot")
 })

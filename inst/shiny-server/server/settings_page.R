@@ -4,15 +4,12 @@ observe({
   }
 })
 
-#TODO: change number of colors to match number of algorithms when applicable + Add example of colors
 output$Settings.Color.Example <- downloadHandler(
   filename = function() {
     "Example_Colorfile"
   },
   content = function(file) {
-    n <- length(DATA())
-    if (n == 0) n <- 5
-    writeLines(get_color_scheme(get_algId(DATA())), file)
+    write.csv2(get_color_scheme_dt(), file, row.names = F)
   }
 )
 
@@ -28,7 +25,10 @@ plot_color_example <- function(ds){
                      input$Settings.Font.Title,
                      input$Settings.Font.Legend,
                      input$Settings.Font.Label,
-                     input$Settings.Font.Tick)
+                     input$Settings.Font.Tick,
+                     input$Settings.Color.Linewidth,
+                     input$Settings.Color.Markersize
+                     )
   if (any(is.null(curr_settings))) return(NULL)
   if (length(ds) > 0) {
     algnames <- get_algId(ds)
@@ -39,14 +39,14 @@ plot_color_example <- function(ds){
   if (schemename == "Custom" && !is.null(input$Settings.Color.Upload)) {
     schemename <- paste0(schemename, ": ", input$Settings.Color.Upload$datapath)
   }
-  p <- IOH_plot_ly_default(schemename, "X-axis label", "Y-axis label")
-
-  for (i in seq_along(algnames)) {
-    rgb_str <- paste0('rgb(', paste0(col2rgb(colors[i]), collapse = ','), ')')
-    
-    p %<>% add_segments(y = i, yend = i, x = 0, xend = 10, name = sprintf('%s', algnames[[i]]),
-                        line = list(color = rgb_str, width = 6))    
-  }
+  
+  x <- c(rep(1, length(algnames)),rep(2, length(algnames)))
+  y <- seq_len(length(algnames))
+  dt <- data.table(algId = rep(algnames, 2), x, y)
+  
+  p <- plot_general_data(dt, 'x', 'y', 'line', show.legend = T,
+                         x_title = 'X-title', y_title = 'Y-title', plot_title = 'Plot Title')
+  
   p
 }
 
@@ -93,6 +93,14 @@ observe({
 })
 
 observe({
+  options("IOHanalyzer.linewidth" = input$Settings.Color.Linewidth)
+})
+
+observe({
+  options("IOHanalyzer.markersize" = input$Settings.Color.Markersize)
+})
+
+observe({
   options("IOHanalyzer.figure_width" = input$Settings.Download.Width)
 })
 
@@ -129,6 +137,34 @@ observe({
   options("IOHanalyzer.precision" = input$Settings.General.Precision)
 })
 
+observe({
+  setting_preset <- input$Settings.Download.Preset
+  if (setting_preset == "Default") {
+    updateNumericInput(session, 'Settings.Download.Width', value = 1000)
+    updateNumericInput(session, 'Settings.Download.Height', value = 1000)
+    updateNumericInput(session, 'Settings.Font.Tick', value = 12)
+    updateNumericInput(session, 'Settings.Font.Legend', value = 13)
+    updateNumericInput(session, 'Settings.Font.Title', value = 16)
+    updateNumericInput(session, 'Settings.Font.Label', value = 16)
+  }
+  else if (setting_preset == "Paper-1col") {
+    updateNumericInput(session, 'Settings.Download.Width', value = 700)
+    updateNumericInput(session, 'Settings.Download.Height', value = 400)
+    updateNumericInput(session, 'Settings.Font.Tick', value = 9)
+    updateNumericInput(session, 'Settings.Font.Legend', value = 10)
+    updateNumericInput(session, 'Settings.Font.Title', value = 13)
+    updateNumericInput(session, 'Settings.Font.Label', value = 13)    
+  }
+  else if (setting_preset == "Paper-2col") {
+    updateNumericInput(session, 'Settings.Download.Width', value = 900)
+    updateNumericInput(session, 'Settings.Download.Height', value = 600)
+    updateNumericInput(session, 'Settings.Font.Tick', value = 11)
+    updateNumericInput(session, 'Settings.Font.Legend', value = 12)
+    updateNumericInput(session, 'Settings.Font.Title', value = 16)
+    updateNumericInput(session, 'Settings.Font.Label', value = 15)    
+  }
+})
+
 output$Settings.Download <- downloadHandler(
   filename = "IOHanalyzer_settings.rds",
   content = function(file){
@@ -146,3 +182,11 @@ observe({
     options(IOH_opts[grep(names(IOH_opts), pattern = "IOH")]) #Ensure no other options get changed by the user
   }
 })
+
+output$Settings.Plot.Download <- downloadHandler(
+  filename = "Sample_plot.pdf",
+  content = function(file) {
+    save_plotly(plot_color_example(DATA()), file)
+  },
+  contentType = 'image/pdf'
+)

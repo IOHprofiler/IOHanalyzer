@@ -24,3 +24,6 @@ the generated datapoints}
 \description{
 This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
 }
+\examples{
+generate_data.Single_Function(subset(dsl, funcId == 1), which = 'by_RT')
+}

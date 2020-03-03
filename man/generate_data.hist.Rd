@@ -18,3 +18,6 @@ generate_data.hist(dsList, target, use.equal.bins = F, which = "by_RT")
 \description{
 This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
 }
+\examples{
+generate_data.hist(subset(dsl, funcId == 1), target = 15, which = 'by_RT')
+}

@@ -9,9 +9,8 @@ test_that("Can DataSetLists be loaded?",{
 })
 
 test_that("Validate reading of files",{
-  path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
+  path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package = "IOHanalyzer")
   expect_equal(check_format(path), "IOHprofiler")
-  #TODO: remove warnings occuring when loading datasetlist before enabling these tests
   dsl1 <- DataSetList(path)
 
   expect_true(any(match(class(dsl1), "DataSetList")))
@@ -25,7 +24,7 @@ test_that("Validate reading of files",{
   expect_equal(attr(ds1,'algId'), "ONE_PLUS_LAMDA_EA")
   expect_equal(attr(ds1,'suite'), "PBO")
   expect_equal(attr(ds1,'funcId'), 1)
-  expect_equal(attr(ds1,'instance'), c(1,1,1,1,1,1,1,1,1,1))
+  expect_true(all(attr(ds1,'instance') == 1))
   expect_equal(attr(ds1,'format'), "IOHprofiler")
   expect_equal(attr(ds1,'maximization'), TRUE)
 })

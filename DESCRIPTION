@@ -42,7 +42,8 @@ Imports:
   igraph,
   scales,
   kableExtra,
-  PlayerRatings
+  PlayerRatings,
+  stringi
 LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 7.0.0

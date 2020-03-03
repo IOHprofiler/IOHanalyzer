@@ -97,11 +97,11 @@ repository_box <- function(width = 12, collapsible = F, collapsed = T,
                 </li>"),
       
       selectInput('repository.type', label = "Select the dataset source",
-                  choices = c("PBO", "NEVERGRAD", "BBOB"), selected = "PBO", width = '50%'),
+                  choices = NULL, selected = NULL, width = '50%'),
       
       selectInput('repository.dataset', 
                   label = "Select the dataset",
-                  choices = NULL, selected = NULL, width = '50%', multiple = F),
+                  choices = NULL, selected = NULL, width = '50%', multiple = T),
 
       selectInput('repository.funcId', 
                   label = "Please choose the function",

@@ -42,18 +42,23 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
                       TWO_COL = NULL)
     }
 
-    if (is.null(maximization)) {
+    if (is.null(maximization) || (!(isTRUE(maximization) || isFALSE(maximization)))) {
       maximization <- info$maximization
       if (is.null(maximization) && !is.null(suite)) {
         if (verbose)
           warning("maximization or minimization not specified in .info-file,
                   taking best guess based on the suite-name.")
         if (grepl("\\w*bbob\\w*", suite, ignore.case = T) != 0)
-          maximization <- F
+          maximization <- FALSE
         else
-          maximization <- T
+          maximization <- TRUE
+      } else {
+        maximization <- FALSE # default to minimization
       }
     }
+
+    if(!(isTRUE(maximization) || isFALSE(maximization))) 
+      warning("unclear whether we should maximize or minimize.")
 
     datBaseName <- strsplit(basename(info$datafile), '\\.')[[1]][1]
     datFile <- file.path(path, paste0(datBaseName, '.dat'))
@@ -165,7 +170,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
 #' @description Concatenation for DataSets. Combines multiple runs from separate DataSets
 #' into a single DataSet object if all provided arguments have the same dimension, function ID and
 #' algorithm ID, and each contains only a single run. Currently does not support parameter tracking
-#' 
+#'
 #' @param ... The DataSets to concatenate
 #' @return A new DataSet
 #' @export
@@ -183,14 +188,13 @@ c.DataSet <- function(...) {
     if (!any((class(ds)) == 'DataSet'))
       stop("Operation only possible when all arguments are DataSets")
   }
-  
+
   fixed_attrs <- c('suite', 'maximization', 'DIM', 'funcId', 'algId', 'format')
-  
   info <- list()
   for (attr_str in fixed_attrs) {
     temp  <-  unique(unlist(lapply(dsl, function(x) attr(x, attr_str))))
     if (length(temp) > 1) {
-      stop(paste0("Attempted to add datasets with different ", attr_str, 
+      stop(paste0("Attempted to add datasets with different ", attr_str,
                   "-attributes! Tis is not allowed, please keep them as separate DataSets!"))
     }
     info <- c(info,temp)
@@ -293,7 +297,7 @@ summary.DataSet <- function(object, ...) {
   cat('DataSet Object:\n')
   cat(sprintf('Source: %s\n', ds_attr$src))
   cat(sprintf('Algorithm: %s\n', ds_attr$algId))
-  cat(sprintf('Function ID: %d\n', ds_attr$funcId))
+  cat(sprintf('Function ID: %s\n', ds_attr$funcId))
   cat(sprintf('Dimension: %dD\n', ds_attr$DIM))
 
   n_instance <- length(ds_attr$instance)

@@ -20,7 +20,7 @@ limit.data <- function(df, n) {
 #' @param folder The folder containing the .info files
 #' @return The paths to all found .info-files
 #' @export
-#' @examples 
+#' @examples
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
 #' scan_index_file(path)
 scan_index_file <- function(folder) {
@@ -33,7 +33,7 @@ scan_index_file <- function(folder) {
 #' @param fname The path to the .info file
 #' @return The data contained in the .info file
 #' @export
-#' @examples 
+#' @examples
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
 #' info <- read_index_file(file.path(path,"IOHprofiler_f1_i1.info"))
 read_index_file <- function(fname) {
@@ -252,7 +252,14 @@ read_index_file__BIOBJ_COCO <- function(fname) {
     else
       datafile <- file.path(path, record[3])
 
-    funcId <- as.numeric(trimws(strsplit(record[1], '=')[[1]][2]))
+    funcId <- trimws(strsplit(record[1], '=')[[1]][2])
+    funcId.int <- suppressWarnings(as.integer(funcId.int))
+    if(!any(is.na(funcId.int))) {
+      if(all((funcId.int >= 0L) & (funcId.int <= 1000000000L))) {
+        funcId <- funcId.int
+      }
+    }
+
     DIM <- as.numeric(trimws(strsplit(record[2], '=')[[1]][2]))
 
     # TODO: check the name of the attributes and fix them!
@@ -282,31 +289,32 @@ read_index_file__BIOBJ_COCO <- function(fname) {
 #' @return The format of the data in the given folder. Either 'COCO', 'IOHprofiler',
 #' 'NEVERGRAD' or 'SOS'.
 #' @export
-#' @examples 
+#' @examples
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package = "IOHanalyzer")
 #' check_format(path)
 check_format <- function(path) {
   if (sub('[^\\.]*\\.', '', basename(path), perl = T) == "csv")
     return(NEVERGRAD)
-  
+
   index_files <- scan_index_file(path)
   if (length(index_files) == 0) 
     return(SOS)
   
   info <- unlist(lapply(index_files, read_index_file), recursive = F)
   datafile <- sapply(info, function(item) item$datafile)
+
   format <- lapply(datafile, function(file) {
     tryCatch({
       first_line <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
     }, error = function(e) {
-      stop("Error detecting data files specified in .info, please verify the 
+      stop("Error detecting data files specified in .info, please verify the
              integrity of the provided files.")
     })
-    
+
     if (startsWith(first_line, '% function') || startsWith(first_line, '% f evaluations'))
       COCO
     else if (startsWith(first_line, '\"function')) {
-      n_col <- ncol(fread(file, header = FALSE, sep = ' ', 
+      n_col <- ncol(fread(file, header = FALSE, sep = ' ',
                          colClasses = 'character', fill = T, nrows = 1))
       if (n_col == 2)
         TWO_COL
@@ -322,7 +330,7 @@ check_format <- function(path) {
   }) %>%
     unlist %>%
     unique
-  
+
   csv_files <- file.path(path, list.files(path, pattern = '.csv', recursive = T))
   if (length(csv_files) > 0)
     format <- c(format, NEVERGRAD)
@@ -330,7 +338,7 @@ check_format <- function(path) {
   txt_files <- file.path(path, list.files(path, pattern = '.txt', recursive = T))
   if (length(txt_files) > 0)
     format <- c(format, SOS)
-  
+
   if (length(format) > 1) {
     stop(
       paste(
@@ -410,7 +418,7 @@ read_dat__COCO <- function(fname, subsampling = FALSE) {
   df <- fread(text = X[-idx], header = F, sep = ' ', select = select, fill = T)
   idx <- c((idx + 1) - seq_along(idx), nrow(df))
 
-  lapply(seq(length(idx) - 1), 
+  lapply(seq(length(idx) - 1),
          function(i) {
            i1 <- idx[i]
            i2 <- idx[i + 1] - 1
@@ -500,7 +508,7 @@ align_running_time <- function(data, format = IOHprofiler, include_param = TRUE,
   else if (format == BIBOJ_COCO) {
     n_data_column <- 3
     idxTarget <- 2
-  } 
+  }
   else if (format == TWO_COL) {
     n_data_column <- 2
     idxTarget <- 2
@@ -514,23 +522,23 @@ align_running_time <- function(data, format = IOHprofiler, include_param = TRUE,
     n_param <- 0
     idxValue <- idxEvals
     param_names <- NULL
-  } 
+  }
   else if (format == IOHprofiler) {
     n_param <- n_column - n_data_column
     if (include_param && n_param > 0) {
       param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
       idxValue <- c(idxEvals, (n_data_column + 1):n_column)
-    } 
+    }
     else {
       param_names <- NULL
       idxValue <- idxEvals
     }
-  } 
+  }
   else {
     param_names <- NULL
     idxValue <- idxEvals
   }
-  
+
   res <- c_align_running_time(data, FV, idxValue - 1, maximization, idxTarget - 1)
   names(res) <- c('RT', param_names)
   res
@@ -550,18 +558,18 @@ align_function_value <- function(data, include_param = TRUE, format = IOHprofile
     maximization <- FALSE
     idxTarget <- 3
     n_param <- 0
-  } 
+  }
   else if (format == IOHprofiler) {
     maximization <- TRUE
     idxTarget <- 3
     n_param <- n_column - n_data_column
-  } 
+  }
   else if (format == BIBOJ_COCO) {  # bi-objective COCO format
     maximization <- FALSE
     idxTarget <- 2
     n_data_column <- 2
     n_param <- 0                   # no parameter is allowed in this case
-  } 
+  }
   else if (format == TWO_COL) {
     maximization <- TRUE
     idxTarget <- 2
@@ -580,7 +588,7 @@ align_function_value <- function(data, include_param = TRUE, format = IOHprofile
 
   FV <- align_func(data, idxTarget, runtime)
   include_param <- include_param && (n_param > 0)
-  
+
   if (include_param) {
     param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
     param <- list()
@@ -599,7 +607,7 @@ align_function_value <- function(data, include_param = TRUE, format = IOHprofile
 
 
 #' Read Nevergrad data
-#' 
+#'
 #' Read .csv files in nevergrad format and extract information as a DataSetList
 #'
 #' @param fname The path to the .csv file
@@ -630,7 +638,7 @@ read_nevergrad <- function(path){
         dt$rescale <- NA
       }
     }
-    
+
     data <- dt[optimizer_name == algId & dimension == DIM & name == funcId,
                .(budget, loss, rescale)]
 
@@ -680,7 +688,7 @@ read_nevergrad <- function(path){
   attr(res, 'suite') <- 'NEVERGRAD'
   attr(res, 'maximization') <- F
   res
-  
+
 }
 
 #' Read single DataSet of SOS-based data

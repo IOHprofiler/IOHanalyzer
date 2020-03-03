@@ -4,13 +4,13 @@ symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
 get_legends <- function(dsList) {
   N <- length(dsList)
   legends <- sapply(dsList, function(d) attr(d, 'algId'))
-  
+
   if (length(unique(legends)) < N) {
     funcId <- sapply(dsList, function(d) attr(d, 'funcId'))
     if (length(unique(funcId)) > 1)
       legends <- paste0(legends, '-F', funcId)
   }
-  
+
   if (length(unique(legends)) < N) {
     DIM <- sapply(dsList, function(d) attr(d, 'DIM'))
     if (length(unique(DIM)) > 1)
@@ -47,9 +47,9 @@ grad_functions <- c(
     scale <- (intensity + 1) / 2
     color_center <- floor(scale * amount) + 1
     if (count <= color_center)
-      1 / (2*color_center)
+      1 / (2 * color_center)
     else
-      1 / (2*(amount - color_center))
+      1 / (2 * (amount - color_center))
   }
 )
 
@@ -73,13 +73,13 @@ grad_functions <- c(
 #' @param p Existing plot to which to add the current data
 #' @return A plot of ERT-values of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.Single_Func(subset(dsl, funcId == 1))
 Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
                                 show.ERT = T, show.CI = F, show.mean = F,
                                 show.median = F, backend = NULL,
                                 scale.xlog = F, scale.ylog = F, scale.reverse = F,
-                                includeOpts = F, p = NULL) 
+                                includeOpts = F, p = NULL)
   UseMethod("Plot.RT.Single_Func", dsList)
 #' Plot lineplot of the expected function values of a DataSetList
 #'
@@ -96,9 +96,9 @@ Plot.RT.Single_Func <- function(dsList, Fstart = NULL, Fstop = NULL,
 #'
 #' @return A plot of ERT-values of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.Single_Func(subset(dsl, funcId == 1))
-Plot.FV.Single_Func <- function(dsList, RTstart = NULL, RTstop = NULL, show.CI = F, show.mean = T, 
+Plot.FV.Single_Func <- function(dsList, RTstart = NULL, RTstop = NULL, show.CI = F, show.mean = T,
                                 show.median = F, backend = NULL, scale.xlog = F, scale.ylog = F,
                          scale.reverse = F) UseMethod("Plot.FV.Single_Func", dsList)
 #' Plot probablity mass function of the runtimes of a DataSetList at a certain target function value
@@ -112,9 +112,9 @@ Plot.FV.Single_Func <- function(dsList, RTstart = NULL, RTstop = NULL, show.CI =
 #' @return A plot of the probablity mass function of the runtimes at a the
 #'         target function value of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.PMF(subset(dsl, funcId == 1), 14)
-Plot.RT.PMF <- function(dsList, ftarget, show.sample = F, scale.ylog = F, backend = NULL) 
+Plot.RT.PMF <- function(dsList, ftarget, show.sample = F, scale.ylog = F, backend = NULL)
   UseMethod("Plot.RT.PMF", dsList)
 #' Plot histograms of the runtimes of a DataSetList at a certain target function value
 #'
@@ -122,15 +122,15 @@ Plot.RT.PMF <- function(dsList, ftarget, show.sample = F, scale.ylog = F, backen
 #' @param ftarget The target function value.
 #' @param plot_mode How to plot the different hisograms for each algorithm. Can be either
 #'  'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.
-#' @param use.equal.bins Whether to determine one bin size for all plots or have individual 
+#' @param use.equal.bins Whether to determine one bin size for all plots or have individual
 #' bin sizes for each algorithm
 #'
 #' @return A plot of the histograms of the runtimes at a the
 #'         target function value of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.Histogram(subset(dsl, funcId == 1), 14)
-Plot.RT.Histogram <- function(dsList, ftarget, plot_mode = 'overlay', use.equal.bins = F) 
+Plot.RT.Histogram <- function(dsList, ftarget, plot_mode = 'overlay', use.equal.bins = F)
   UseMethod("Plot.RT.Histogram", dsList)
 #' Plot the empirical cumulative distriburtion as a function of the running times of
 #' a DataSetList at certain target function values
@@ -142,9 +142,9 @@ Plot.RT.Histogram <- function(dsList, ftarget, plot_mode = 'overlay', use.equal.
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the running times of the DataSetList at the target function values
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.ECDF_Per_Target(subset(dsl, funcId == 1), 14)
-Plot.RT.ECDF_Per_Target <- function(dsList, ftargets, scale.xlog = F) 
+Plot.RT.ECDF_Per_Target <- function(dsList, ftargets, scale.xlog = F)
   UseMethod("Plot.RT.ECDF_Per_Target", dsList)
 #' Plot the aggregated empirical cumulative distriburtion as a function of the running times of
 #' a DataSetList.
@@ -159,7 +159,7 @@ Plot.RT.ECDF_Per_Target <- function(dsList, ftargets, scale.xlog = F)
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the running times of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.ECDF_Single_Func(subset(dsl, funcId == 1))
 Plot.RT.ECDF_Single_Func <- function(dsList, fstart = NULL, fstop = NULL,
                               fstep = NULL, show.per_target = F,
@@ -174,7 +174,7 @@ Plot.RT.ECDF_Single_Func <- function(dsList, fstart = NULL, fstop = NULL,
 #'
 #' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.ECDF_AUC(subset(dsl, funcId == 1))
 Plot.RT.ECDF_AUC <- function(dsList, fstart = NULL,
                         fstop = NULL, fstep = NULL,
@@ -190,9 +190,9 @@ Plot.RT.ECDF_AUC <- function(dsList, fstart = NULL,
 #' @return A plot of the probablity density function of the runtimes at a the
 #'         target function value of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.PDF(subset(dsl, funcId == 1), 100)
-Plot.FV.PDF <- function(dsList, runtime, show.sample = F, scale.ylog = F) 
+Plot.FV.PDF <- function(dsList, runtime, show.sample = F, scale.ylog = F)
   UseMethod("Plot.FV.PDF", dsList)
 #' Plot histograms of the function values of a DataSetList at a certain target runtime
 #'
@@ -200,15 +200,15 @@ Plot.FV.PDF <- function(dsList, runtime, show.sample = F, scale.ylog = F)
 #' @param runtime The target runtime
 #' @param plot_mode How to plot the different hisograms for each algorithm. Can be either
 #'  'overlay' to show all algorithms on one plot, or 'subplot' to have one plot per algorithm.
-#' @param use.equal.bins Whether to determine one bin size for all plots or have individual 
+#' @param use.equal.bins Whether to determine one bin size for all plots or have individual
 #' bin sizes for each algorithm
-#' 
+#'
 #' @return A plot of the histograms of the function values at a the
 #'         target runtime of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.Histogram(subset(dsl, funcId == 1), 100)
-Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay', use.equal.bins = F) 
+Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay', use.equal.bins = F)
   UseMethod("Plot.FV.Histogram", dsList)
 #' Plot the empirical cumulative distriburtion as a function of the target values of
 #' a DataSetList at certain target runtimes
@@ -221,9 +221,9 @@ Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay', use.equal.bi
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the fucntion values of the DataSetList at the target runtimes
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.ECDF_Per_Target(subset(dsl, funcId == 1), 10)
-Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F, scale.reverse = F) 
+Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F, scale.reverse = F)
   UseMethod("Plot.FV.ECDF_Per_Target", dsList)
 #' Plot the aggregated empirical cumulative distriburtion as a function of the function values of
 #' a DataSetList.
@@ -235,15 +235,15 @@ Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F, scale.reve
 #' @param show.per_target Whether or not to show the individual ECDF-curves for each runtime
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
 #' @param scale.reverse Whether or not to reverse the x-axis (when using minimization)
-#' 
+#'
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the function values of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.ECDF_Single_Func(subset(dsl, funcId == 1))
 Plot.FV.ECDF_Single_Func <- function(dsList, rt_min = NULL, rt_max = NULL,
                               rt_step = NULL, scale.xlog = F,
-                              show.per_target = F, scale.reverse = F) 
+                              show.per_target = F, scale.reverse = F)
   UseMethod("Plot.FV.ECDF_Single_Func", dsList)
 #' Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
 #'
@@ -254,7 +254,7 @@ Plot.FV.ECDF_Single_Func <- function(dsList, rt_min = NULL, rt_max = NULL,
 #'
 #' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.ECDF_AUC(subset(dsl, funcId == 1))
 Plot.FV.ECDF_AUC <- function(dsList, rt_min = NULL, rt_max = NULL,
                         rt_step = NULL) UseMethod("Plot.FV.ECDF_AUC", dsList)
@@ -268,13 +268,13 @@ Plot.FV.ECDF_AUC <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
 #' @param scale.ylog Whether or not to scale the y-axis logaritmically
 #' @param algids Which algorithms from dsList to use
-#' @param par_name Which parameters to create plots for; set to NULL to use all 
+#' @param par_name Which parameters to create plots for; set to NULL to use all
 #' parameters found in dsList.
 #' @param show.CI Whether or not to show the standard deviation
 #'
 #' @return A plot of for every recorded parameter in the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.Parameters(subset(dsl, funcId == 1))
 Plot.RT.Parameters <- function(dsList, f_min = NULL, f_max = NULL,
                             algids = 'all', par_name = NULL,
@@ -291,13 +291,13 @@ Plot.RT.Parameters <- function(dsList, f_min = NULL, f_max = NULL,
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
 #' @param scale.ylog Whether or not to scale the y-axis logaritmically
 #' @param algids Which algorithms from dsList to use
-#' @param par_name Which parameters to create plots for; set to NULL to use all 
+#' @param par_name Which parameters to create plots for; set to NULL to use all
 #' parameters found in dsList.
 #' @param show.CI Whether or not to show the standard deviation
 #'
 #' @return A plot of for every recorded parameter in the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.Parameters(subset(dsl, funcId == 1))
 Plot.FV.Parameters <- function(dsList, rt_min = NULL, rt_max = NULL,
                                algids = 'all', par_name = NULL,
@@ -326,13 +326,13 @@ Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = F)
 #' @param scale.ylog Whether or not to scale the y-axis logaritmically
 #' @param scale.reverse Wheter or not to reverse the x-axis (when using minimization)
 #' @param backend Which plotting library to use. Either 'plotly' or 'ggplot2'.
-#' 
+#'
 #' @return A plot of ERT-values of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.RT.Multi_Func(dsl)
-Plot.RT.Multi_Func <- function(dsList, scale.xlog = F, scale.ylog = F, scale.reverse = F, 
-                               backend = NULL) 
+Plot.RT.Multi_Func <- function(dsList, scale.xlog = F, scale.ylog = F, scale.reverse = F,
+                               backend = NULL)
   UseMethod("Plot.RT.Multi_Func", dsList)
 #' Plot ERT-based comparison over multiple functions or dimensions
 #'
@@ -386,13 +386,13 @@ Plot.FV.Aggregated <- function(dsList, aggr_on = 'funcId', runtimes = NULL, plot
 #'
 #' @return A plot of Function-values of the DataSetList
 #' @export
-#' @examples 
+#' @examples
 #' Plot.FV.Multi_Func(dsl)
-Plot.FV.Multi_Func <- function(dsList, scale.xlog = F, scale.ylog = F, backend = NULL) 
+Plot.FV.Multi_Func <- function(dsList, scale.xlog = F, scale.ylog = F, backend = NULL)
   UseMethod("Plot.FV.Multi_Func", dsList)
 
 #' Plot a heatmap showing the statistically different algorithms
-#' 
+#'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
 #' @param ftarget The target function value to use
 #' @param alpha The cutoff for statistical significance
@@ -401,14 +401,14 @@ Plot.FV.Multi_Func <- function(dsList, scale.xlog = F, scale.ylog = F, backend =
 #'
 #' @return A heatmap showing the statistical significance between algorithms
 #' @export
-#' @examples 
+#' @examples
 #' Plot.Stats.Significance_Heatmap(subset(dsl, funcId == 2), 16)
-Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01, bootstrap.size = 30, 
-                                            which = 'by_FV') 
+Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01, bootstrap.size = 30,
+                                            which = 'by_FV')
   UseMethod("Plot.Stats.Significance_Heatmap", dsList)
-  
+
 #' Plot a network graph showing the statistically different algorithms
-#' 
+#'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
 #' @param ftarget The target function value to use
 #' @param alpha The cutoff for statistical significance
@@ -417,25 +417,25 @@ Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01, boots
 #'
 #' @return A graph showing the statistical significance between algorithms
 #' @export
-#' @examples 
+#' @examples
 #' Plot.Stats.Significance_Graph(subset(dsl, funcId == 2), 16)
-Plot.Stats.Significance_Graph <- function(dsList, ftarget, alpha = 0.01, bootstrap.size = 30, 
-                                          which = 'by_FV') 
+Plot.Stats.Significance_Graph <- function(dsList, ftarget, alpha = 0.01, bootstrap.size = 30,
+                                          which = 'by_FV')
   UseMethod("Plot.Stats.Significance_Graph", dsList)
 
 #' Create a candlestick plot of Glicko2-rankings
-#' 
+#'
 #' @param dsList A DataSetList
 #' @param nr_rounds The number of rounds in the tournament
 #' @param glicko2_rank_df Optional. Dataframe containing the glicko2 rating to avoid needless recalculation.
 #' @param which Whether to use fixed-target ('by_FV') or fixed-budget ('by_RT') perspective
 #' @param target_dt Optional: data table containing the targets for each function and dimension
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' Plot.Stats.Glicko2_Candlestick(dsl, nr_rounds=2)
-Plot.Stats.Glicko2_Candlestick <- function(dsList, nr_rounds = 100, glicko2_rank_df = NULL, 
-                                           which = 'by_FV', target_dt = NULL) 
+Plot.Stats.Glicko2_Candlestick <- function(dsList, nr_rounds = 100, glicko2_rank_df = NULL,
+                                           which = 'by_FV', target_dt = NULL)
   UseMethod("Plot.Stats.Glicko2_Candlestick", dsList)
 
 
@@ -531,6 +531,7 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
                              y_title = "Function Evaluations",
                              scale.reverse = scale.reverse)
     }
+
   }
   # } else if (backend == 'ggplot2') {
   #   fce[, 'group' := paste(algId, funcId, DIM, sep = '-')]
@@ -564,7 +565,7 @@ Plot.RT.PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
 #' @export
 Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay', use.equal.bins = F){
   if (length(get_funcId(dsList)) != 1 || length(get_dim(dsList)) != 1) {
-    warning("Invalid dataset uploaded. Please ensure the datasetlist contains data 
+    warning("Invalid dataset uploaded. Please ensure the datasetlist contains data
             from only one function and only one dimension.")
     return(NULL)
   }
@@ -631,11 +632,10 @@ Plot.FV.PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
 #' @export
 Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', use.equal.bins = F){
   if (length(get_funcId(dsList)) != 1 || length(get_dim(dsList)) != 1) {
-    warning("Invalid dataset uploaded. Please ensure the datasetlist contains data 
+    warning("Invalid dataset uploaded. Please ensure the datasetlist contains data
             from only one function and only one dimension.")
     return(NULL)
-  }
-  
+  }  
   data <- generate_data.hist(dsList, runtime, use.equal.bins, 'by_FV')
   
   subplot_attr <- if (plot_mode == 'subplot') 'algId' else NULL
@@ -838,35 +838,35 @@ Plot.FV.Aggregated.DataSetList <- function(dsList, aggr_on = 'funcId', runtimes 
 }
 
 #' @rdname Plot.Stats.Significance_Heatmap
-#' @export 
+#' @export
 Plot.Stats.Significance_Heatmap.DataSetList <- function(dsList, ftarget, alpha = 0.01,
                                             bootstrap.size = 30, which = 'by_FV'){
-  if (length(get_dim(dsList)) != 1 || 
-      length(get_funcId(dsList)) != 1 || 
+  if (length(get_dim(dsList)) != 1 ||
+      length(get_funcId(dsList)) != 1 ||
       length(get_algId(dsList)) < 2)
     return(NULL)
-  
+
   p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size, which)
   y <- p_matrix <= alpha
   colorScale <- data.frame(x = c(-1, -0.33, -0.33, 0.33, 0.33, 1),
                            col = c('blue', 'blue', 'white', 'white', 'red', 'red')
                            )
   heatmap <-  y - t(y)
-  
+
   p <- plot_ly(x = colnames(y), y = rownames(y), z = heatmap, type = 'heatmap',
-               xgap = 0.2, ygap = 0.2, colorscale = colorScale, showscale = F) 
+               xgap = 0.2, ygap = 0.2, colorscale = colorScale, showscale = F)
   p %<>% layout(yaxis = list(autorange = 'reversed', scaleratio = 1),
                 xaxis = list(tickangle = 45))
   p
 }
 
 #' Helper function for Plot.Stats.Significance_Graph
-#' 
+#'
 #' @param x x
 #' @param start default is 0
 #' @param direction default is 1
-#' 
-#' @noRd 
+#'
+#' @noRd
 radian.rescale <- function(x, start=0, direction=1) {
   c.rotate <- function(x) (x + start) %% (2 * pi) * direction
   c.rotate(rescale(x, c(0, 2 * pi), range(x)))
@@ -882,7 +882,7 @@ Plot.Stats.Significance_Graph.DataSetList <- function(dsList, ftarget, alpha = 0
   p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size, which)
   g <- graph_from_adjacency_matrix(p_matrix <= alpha, mode = 'directed', diag = F)
   lab.locs <- radian.rescale(x = 1:nrow(p_matrix), direction = -1, start = 0)
-  
+
   plot.igraph(g, layout = layout.circle(g), vertex.size = 10, edge.arrow.size = 1,
               vertex.label.color = 'black',
               vertex.label.dist = 2,
@@ -895,7 +895,7 @@ Plot.Stats.Significance_Graph.DataSetList <- function(dsList, ftarget, alpha = 0
 Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds = 100, glicko2_rank_df = NULL,
                                                        which = 'by_FV', target_dt = NULL) {
   df <- glicko2_rank_df
-  
+
   if (is.null(df)) {
     df <- glicko2_ranking(dsList, nr_rounds, which, target_dt = target_dt)$ratings
     algIds <- df$Player$algId
@@ -903,8 +903,8 @@ Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds = 100, 
   else{
     algIds <- df$algId
   }
-  p <- IOH_plot_ly_default(title = "Glicko2-rating", 
-                           x.title = "Algorithm", 
+  p <- IOH_plot_ly_default(title = "Glicko2-rating",
+                           x.title = "Algorithm",
                            y.title = "Rating")
   df$Rating %<>% as.numeric
   df$Deviation %<>% as.numeric
@@ -912,20 +912,20 @@ Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds = 100, 
   low <- df$Rating - 3*df$Deviation
   open <- df$Rating + df$Deviation
   close <- df$Rating - df$Deviation
-  
+
   N <- length(df$Rating)
   colors <- get_color_scheme(algIds)
   if (length(colors != N)) {
     colors <- get_color_scheme(get_algId(dsList))
   }
-  
+
   for (i in seq(N)) {
     # rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.52)')
     color <- list(line = list(color = colors[[i]]))
-    p %<>% add_trace(type = "candlestick", x = algIds[[i]], open = open[[i]], close = close[[i]], 
-                     high = high[[i]], low = low[[i]], legendgroup = algIds[[i]], 
+    p %<>% add_trace(type = "candlestick", x = algIds[[i]], open = open[[i]], close = close[[i]],
+                     high = high[[i]], low = low[[i]], legendgroup = algIds[[i]],
                      name = algIds[[i]], increasing = color, decreasing = color,
-                     hovertext = paste0(format(df$Rating[[i]], digits = 3), '+-', 
+                     hovertext = paste0(format(df$Rating[[i]], digits = 3), '+-',
                                         format(df$Deviation[[i]], digits = 3)),
                      hoverinfo = "text")
   }

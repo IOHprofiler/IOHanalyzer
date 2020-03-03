@@ -4,7 +4,7 @@
 \alias{pairwise.test}
 \alias{pairwise.test.list}
 \alias{pairwise.test.DataSetList}
-\title{Performs a pairwise Kolmogorov-Smirnov test on the bootstrapped running times 
+\title{Performs a pairwise Kolmogorov-Smirnov test on the bootstrapped running times
 among a data set}
 \usage{
 pairwise.test(x, ...)
@@ -15,12 +15,12 @@ pairwise.test(x, ...)
   which = "by_FV", ...)
 }
 \arguments{
-\item{x}{either a list that contains running time sample for each algorithm as 
+\item{x}{either a list that contains running time sample for each algorithm as
 sub-lists, or a DataSetList object}
 
 \item{...}{all other options}
 
-\item{max_eval}{list that contains the maximal running time for each algorithm 
+\item{max_eval}{list that contains the maximal running time for each algorithm
 as sub-lists}
 
 \item{bootstrap.size}{integer, the size of the bootstrapped sample. Set to 0 to disable bootstrapping}
@@ -34,9 +34,9 @@ time}
 A matrix containing p-values of the test
 }
 \description{
-This function performs a Kolmogorov-Smirnov test on each pair of 
-algorithms in the input x to determine which algorithm gives a significantly 
-smaller running time. The resulting p-values are arranged in a matrix, where 
+This function performs a Kolmogorov-Smirnov test on each pair of
+algorithms in the input x to determine which algorithm gives a significantly
+smaller running time. The resulting p-values are arranged in a matrix, where
 each cell (i, j) contains a p-value from the test with alternative hypothesis:
 the running time of algorithm i is smaller (thus better) than that of j.
 }

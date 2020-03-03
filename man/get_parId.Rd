@@ -9,8 +9,8 @@ get_parId(dsList, which = "by_FV")
 \arguments{
 \item{dsList}{The DataSetList}
 
-\item{which}{A string takes values in `c('by_FV', 'by_RT')`. To choose the parameters aligned 
-by the running time (RT) or the function value (FV). Note that parameters in each case are 
+\item{which}{A string takes values in `c('by_FV', 'by_RT')`. To choose the parameters aligned
+by the running time (RT) or the function value (FV). Note that parameters in each case are
 not necessary the same.}
 }
 \value{

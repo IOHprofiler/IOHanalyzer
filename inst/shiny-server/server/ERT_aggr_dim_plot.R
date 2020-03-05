@@ -58,7 +58,7 @@ ert_multi_dim <- function(){
 default_targets_table_dim <- reactive({
   data <- ERTPlot.Aggr_Dim.data()
   if (is.null(data)) return(NULL)
-  get_target_dt(data)
+  targets <- get_target_dt(data)
   targets <- targets[, c('DIM','target')] 
 })
 

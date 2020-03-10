@@ -1179,7 +1179,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                p %<>%
                  add_trace(
                    data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l,
-                   type = 'scatter', mode = 'lines+markers'
+                   type = 'scatter', mode = 'lines+markers',
                    linetype = ~l, marker = list(size = getOption('IOHanalyzer.markersize', 4)), linetypes = dashes,
                    colors = colors, showlegend = show.legend,
                    text = ~text, line = list(width = getOption('IOHanalyzer.linewidth', 2)),

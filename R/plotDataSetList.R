@@ -978,7 +978,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                               lower_attr = NULL, subplot_attr = NULL, show.legend = F,
                               inf.action = 'none', ...){
   
-  l <- x <- isinf <- y <- NULL #Set local binding to remove warnings
+  l <- x <- isinf <- y <- text <- NULL #Set local binding to remove warnings
   
   #Only allow valid plot types
   if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon'))) {
@@ -1153,6 +1153,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              colnames(df)[colnames(df) == y_attr] <- "y"
              
              df[, isinf := is.infinite(y)]
+             df[, text := as.character(round(y, getOption("IOHanalyzer.precision", 2)))]
              
              if (inf.action == 'overlap') {
                maxval <- max(df[isinf == F, 'y'])
@@ -1173,25 +1174,26 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                }
              }
              
+          
              suppressWarnings(
                p %<>%
                  add_trace(
                    data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l,
-                   type = 'scatter', mode = 'lines+markers', color = ~l,
+                   type = 'scatter', mode = 'lines+markers'
                    linetype = ~l, marker = list(size = getOption('IOHanalyzer.markersize', 4)), linetypes = dashes,
                    colors = colors, showlegend = show.legend,
-                   text = y_attr, line = list(width = getOption('IOHanalyzer.linewidth', 2)),
+                   text = ~text, line = list(width = getOption('IOHanalyzer.linewidth', 2)),
+                   hovertemplate = '%{text}',
                    ...
                  ) )
              if (inf.action != 'none') {
                p %<>% add_trace(data = df[isinf == T], x = ~x, y = ~y, legendgroup = ~l,
                     type = 'scatter', mode = 'markers',  color = ~l,
                     marker = list(symbol = 'circle-open', size = 8 + getOption('IOHanalyzer.markersize', 4)),
-                    colors = colors, showlegend = F,
-                    text = y_attr,
+                    colors = colors, showlegend = F, text = 'Inf', hoverinfo = 'none',
                     ...
                )
-             }
+             }   
              
            }
            else {

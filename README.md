@@ -61,14 +61,25 @@ install.packages('devtools')
 devtools::install_github('IOHprofiler/IOHanalyzer')
 ```
 
+### Development version
+
+If you want to run the version on which you develop:
+
+```r
+install.packages('devtools')
+devtools::install_git("/path/to/your/IOHanalyzer/git/repo")
+```
+
 ## <a name="run"></a>Runinng the Web Interface locally
 
-The IOHanalyzer package can be installed and loaded using the following commands:
+The IOHanalyzer package can be loaded using the following commands:
 
 ```r
 library('IOHanalyzer')
 runServer()
 ```
+
+It should open the following URL in your browser: [http://localhost:6582](http://localhost:6582).
 
 Have fun! For the complete reference on usage, please check out our [Wiki page](https://iohprofiler.github.io/).
 

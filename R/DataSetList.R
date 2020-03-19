@@ -189,6 +189,8 @@ clean_DataSetList <- function(dsList) {
     dsl_temp <- subset(dsList, funcId == x[[1]] && DIM == x[[2]] && algId == x[[3]])
     c.DataSet(dsl_temp)
   })
+  #Remove emply DataSets from the DataSetList
+  dsl <- dsl[!sapply(dsl, is.null)]
   class(dsl) <- c('DataSetList', 'list')
   attr(dsl, 'DIM') <- attr(dsList, 'DIM')
   attr(dsl, 'funcId') <- attr(dsList, 'funcId')

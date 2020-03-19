@@ -5,7 +5,14 @@ DataList <- reactiveValues(data = DataSetList())
 observe({
   repo_dir <- get_repo_location()
   dirs <- list.dirs(repo_dir, full.names = F)
-  updateSelectInput(session, 'repository.type', choices = dirs, selected = dirs[[1]])
+  if (length(dirs) == 0) {
+    shinyjs::alert("No repository directory found. To make use of the IOHProfiler-repository,
+                   please create a folder called 'repository' in your home directory
+                   and make sure it contains at least one '.rds'-file of a DataSetList-object,
+                   such as the ones provided on the IOHProfiler github-page.")
+  }
+  else
+    updateSelectInput(session, 'repository.type', choices = dirs, selected = dirs[[1]])
 })
 # set up list of datasets (scan the repository, looking for .rds files)
 observe({
@@ -19,8 +26,8 @@ observe({
   } else {# TODO: the alert msg should be updated
     shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository,
                    please create a folder called 'repository' in your home directory
-                   and make sure it contains at least one '.rds'-file, such as the ones
-                   provided on the IOHProfiler github-page.")
+                   and make sure it contains at least one '.rds'-file of a DataSetList-object,
+                   such as the ones provided on the IOHProfiler github-page.")
     updateSelectInput(session, 'repository.dataset', choices = NULL, selected = NULL)
   }
 })

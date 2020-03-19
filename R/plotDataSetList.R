@@ -997,9 +997,11 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
     }
     colnames(df)[colnames(df) == subplot_attr] <- "subplot_attr"
     attrs <- unique(df[, subplot_attr])
-    if (length(attrs) <= 1) stop("Attempting to create subplots with fewer than 2 unique values of 
+    if (length(attrs) == 0) stop("Attempting to create subplots with fewer than 2 unique values of
                                  `subplot_attrs`-column")
-    
+    if (length(attrs) == 1) return(plot_general_data(df, x_attr, y_attr, type, legend_attr, scale.xlog, scale.ylog,
+                                                     scale.reverse, p, x_title, y_title, attrs, upper_attr, lower_attr,
+                                                     show.legend = show.legend, subplot_attr = NULL, ...))
     if (subplot_attr == legend_attr) {
       df[, l := subplot_attr]
     }

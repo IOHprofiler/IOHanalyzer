@@ -15,7 +15,7 @@ rt_stats_box <- function(width = 12, collapsible = T, collapsed = T) {
                                                            used to generate the table on the right.</p>'), value = FALSE),
         selectInput('RTSummary.Statistics.Algid', 'Algorithms', choices = NULL, selected = NULL),
         hr(),
-        selectInput('RTSummary.Statistics.Format', 'Format', choices = c('csv','tex'), selected = 'csv'),
+        selectInput('RTSummary.Statistics.Format', 'Format', choices = table_formats, selected = table_format_default),
         downloadButton("RTSummary.Statistics.Download", "Save this table")
       ),
 
@@ -53,7 +53,7 @@ rt_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
         hr(),
         selectInput('RTSummary.Sample.DownloadFormat', 'Format of the table',
                     choices = c('long', 'wide'), selected = 'wide'),
-        selectInput('RTSummary.Sample.Format', 'File-format', choices = c('csv','tex'), selected = 'csv'),
+        selectInput('RTSummary.Sample.Format', 'File-format', choices = table_formats, selected = table_format_default),
         
         downloadButton("RTSummary.Sample.Download", "Save the aligned runtime samples as csv")
                       ),
@@ -80,7 +80,7 @@ rt_overview_box <- function(width = 12, collapsible = T, collapsed = T) {
 
         selectInput('RTSummary.Overview.Algid', 'Algorithms', choices = NULL, selected = NULL),
         hr(),
-        selectInput('RTSummary.Overview.Format', 'File-format', choices = c('csv','tex'), selected = 'csv'),
+        selectInput('RTSummary.Overview.Format', 'File-format', choices = table_formats, selected = table_format_default),
         downloadButton("RTSummary.Overview.Download", "Save this table")
       ),
 

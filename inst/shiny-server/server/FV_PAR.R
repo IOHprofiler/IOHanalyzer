@@ -141,10 +141,7 @@ output$FV_PAR.Sample.Download <- downloadHandler(
   content = function(file) {
     df <- parameter_sample()
     df <- df[input[["table_FV_PAR_SAMPLE_rows_all"]]]
-    if (input$FV_PAR.Sample.FileFormat == 'csv')
-      write.csv(df, file, row.names = F)
-    else
-      print(xtable(df), file = file)
+    table_format_save(df, input$FV_PAR.Sample.FileFormat, file)
   },
   contentType = "text/csv"
 )
@@ -156,10 +153,7 @@ output$FV_PAR.Summary.Download <- downloadHandler(
   content = function(file) {
     df <- parameter_summary()
     df <- df[input[["table_FV_PAR_summary_rows_all"]]]
-    if (input$FV_PAR.Summary.Format == 'csv')
-      write.csv(df, file, row.names = F)
-    else
-      print(xtable(df), file = file)
+    table_format_save(df, input$FV_PAR.Summary.Format, file)
   },
   contentType = "text/csv"
 )

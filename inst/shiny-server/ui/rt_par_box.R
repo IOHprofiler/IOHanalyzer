@@ -75,7 +75,7 @@ rt_par_summary_box <- function(width = 12, collapsible = T, collapsed = T) {
       selectInput('RT_PAR.Summary.Algid', 'Algorithms', choices = NULL, selected = NULL),
       selectInput('RT_PAR.Summary.Param', 'Parameters', choices = NULL, selected = NULL),
       hr(),
-      selectInput('RT_PAR.Summary.Format', 'Format', choices = c('csv','tex'), selected = 'csv'),
+      selectInput('RT_PAR.Summary.Format', 'Format', choices = table_formats, selected = table_format_default),
       downloadButton("RT_PAR.Summary.Download", "Save this table as csv")
     ),
     
@@ -109,7 +109,7 @@ rt_par_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
       hr(),
       selectInput('RT_PAR.Sample.Format', 'Format of the table',
                   choices = c('long', 'wide'), selected = 'wide'),
-      selectInput('RT_PAR.Sample.FileFormat', 'File-Format', choices = c('csv','tex'), selected = 'csv'),
+      selectInput('RT_PAR.Sample.FileFormat', 'File-Format', choices = table_formats, selected = table_format_default),
       downloadButton("RT_PAR.Sample.Download", "Save this table")
     ),
     

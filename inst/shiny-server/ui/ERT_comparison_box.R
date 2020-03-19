@@ -36,7 +36,7 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
             downloadButton('ERTPlot.Aggr.Download', label = 'Download the figure'),
             hr(),
             selectInput('ERTPlot.Aggr.TableFormat', label = 'Select the table format',
-                        choices = c('csv','tex'), selected = 'csv'),
+                        choices = table_formats, selected = table_format_default),
             downloadButton('ERTPlot.Aggr.DownloadTable', label = 'Download the table')
             
           ),
@@ -99,7 +99,7 @@ ERT_comparison_box_dim <- function(width = 12, collapsible = T, collapsed = T) {
           downloadButton('ERTPlot.Aggr_Dim.Download', label = 'Download the figure'),
           hr(),
           selectInput('ERTPlot.Aggr_Dim.TableFormat', label = 'Select the table format',
-                      choices = c('csv','tex'), selected = 'csv'),
+                      choices = table_formats, selected = table_format_default),
           downloadButton('ERTPlot.Aggr_Dim.DownloadTable', label = 'Download the table')
           
         ),

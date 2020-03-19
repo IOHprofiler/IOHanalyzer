@@ -22,7 +22,7 @@ rt_heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
           ),
         hr(),
         selectInput('RT_Stats.Overview.TableFormat', label = 'Select the table format',
-                    choices = c('csv','tex'), selected = 'csv'),
+                    choices = table_formats, selected = table_format_default),
         downloadButton('RT_Stats.Overview.DownloadTable', label = 'Download the table'),
         hr(),
         selectInput('RT_Stats.Overview.Format', label = 'Select the figure format',
@@ -102,7 +102,7 @@ rt_glicko2_box <- function(width = 12, collapsible = T, collapsed = T) {
         downloadButton('RT_Stats.Glicko.Download', label = 'Download the figure'),
         hr(),
         selectInput('RT_Stats.Glicko.TableFormat', label = 'Select the table format',
-                    choices = c('csv','tex'), selected = 'csv'),
+                    choices = table_formats, selected = table_format_default),
         downloadButton('RT_Stats.Glicko.DownloadTable', label = 'Download the table')
       ),
       

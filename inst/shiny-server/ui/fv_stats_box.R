@@ -15,7 +15,7 @@ fv_heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
         #              min = 1, max = 1000, step = 1, value = 0),
         hr(),
         selectInput('FV_Stats.Overview.TableFormat', label = 'Select the table format',
-                    choices = c('csv','tex'), selected = 'csv'),
+                    choices = table_formats, selected = table_format_default),
         downloadButton('FV_Stats.Overview.DownloadTable', label = 'Download the table'),
         hr(),
         selectInput('FV_Stats.Overview.Format', label = 'Select the figure format',
@@ -95,7 +95,7 @@ fv_glicko2_box <- function(width = 12, collapsible = T, collapsed = T) {
         downloadButton('FV_Stats.Glicko.Download', label = 'Download the figure'),
         hr(),
         selectInput('FV_Stats.Glicko.TableFormat', label = 'Select the table format',
-                    choices = c('csv','tex'), selected = 'csv'),
+                    choices = table_formats, selected = table_format_default),
         downloadButton('FV_Stats.Glicko.DownloadTable', label = 'Download the table')
       ),
       

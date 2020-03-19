@@ -233,8 +233,16 @@ sanity_check_id <- function(input) {
   }
 }
 
-
-
-
-
+table_formats <- c('CSV','TeX','Markdown')
+table_format_default <- table_formats[0]
+table_format_save <- function(df, table_format, file) {
+    if (table_format == 'TeX') {
+      print(xtable(df), file = file)
+    } else if (table_format == 'Markdown') {
+      # from knitr
+      write(kable(df, format = 'markdown'), file)
+    } else { # csv
+      write.csv(df, file, row.names = F)
+    }
+}
 

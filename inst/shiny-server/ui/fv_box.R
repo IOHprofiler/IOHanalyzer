@@ -137,7 +137,7 @@ fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
           downloadButton('FCEPlot.Aggr.Download', label = 'Download the figure'),
           hr(),
           selectInput('FCEPlot.Aggr.TableFormat', label = 'Select the table format',
-                      choices = c('csv','tex'), selected = 'csv'),
+                      choices = table_formats, selected = table_format_default),
           downloadButton('FCEPlot.Aggr.DownloadTable', label = 'Download the table')
         ),
 

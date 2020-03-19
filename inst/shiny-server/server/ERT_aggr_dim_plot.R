@@ -117,11 +117,7 @@ output$ERTPlot.Aggr_Dim.DownloadTable <- downloadHandler(
   },
   content = function(file) {
     df <- ert_multi_dim()
-    if (input$ERTPlot.Aggr_Dim.TableFormat == 'csv')
-      write.csv(df, file, row.names = F)
-    else{
-      print(xtable(df), file = file)
-    }
+    table_format_save(df, input$ERTPlot.Aggr_Dim.TableFormat, file)
   }
 )
 

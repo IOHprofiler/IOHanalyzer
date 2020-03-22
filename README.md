@@ -67,7 +67,12 @@ If you want to run the version on which you develop:
 
 ```r
 install.packages('devtools')
-devtools::install_git("/path/to/your/IOHanalyzer/git/repo")
+devtools::install_git("/path/to/your/git/repo")
+```
+
+Then, each time you make a modification on the code and want to try it:
+```r
+devtools::install_local("/path/to/your/git/repo", force=TRUE, upgrade="never");library('IOHanalyzer');runServer(port=1234,launch.browser=FALSE)
 ```
 
 ## <a name="run"></a>Runinng the Web Interface locally

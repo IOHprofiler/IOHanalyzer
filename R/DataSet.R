@@ -43,7 +43,9 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     }
 
     if (is.null(maximization) || (!(isTRUE(maximization) || isFALSE(maximization)))) {
-      maximization <- info$maximization
+      #TODO: Better way to deal with capitalization of attributes
+      if (!is.null(info$maximization)) maximization <- info$maximization
+      else maximization <- info$Maximization
       if (is.null(maximization) && !is.null(suite)) {
         if (verbose)
           warning("maximization or minimization not specified in .info-file,

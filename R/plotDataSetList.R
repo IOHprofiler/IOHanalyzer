@@ -1139,7 +1139,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                        ...
              )
            if (is_new_plot) {
-             p %<>% layout(yaxis = list(type = yscale, tickfont = f3, ticklen = 3))
+             p %<>% layout(yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
            }
          },
          'line' = {
@@ -1235,9 +1235,9 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              }
            }
            if (is_new_plot) {
-             p %<>% layout(xaxis = list(type = xscale, tickfont = f3, ticklen = 3,
+             p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3,
                                         autorange = ifelse(scale.reverse, "reversed", T)),
-                           yaxis = list(type = yscale, tickfont = f3, ticklen = 3))
+                           yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
            }
          },
          'ribbon' = {
@@ -1264,9 +1264,9 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
            
            
            if (is_new_plot) {
-             p %<>% layout(xaxis = list(type = xscale, tickfont = f3, ticklen = 3,
+             p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3,
                                         autorange = ifelse(scale.reverse, "reversed", T)),
-                           yaxis = list(type = yscale, tickfont = f3, ticklen = 3))
+                           yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
            }
          },
          'radar' = {
@@ -1288,7 +1288,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                        fill = 'toself', connectgaps = T, fillcolor = ~col, color = ~l, colors = colors,
                        name =  ~l, legendgroup = ~l, ...)
            if (is_new_plot) {
-             p %<>% layout(polar = list(radialaxis = list(type = yscale, tickfont = f1, ticklen = 3,
+             p %<>% layout(polar = list(radialaxis = list(type = yscale, tickfont = f3(), ticklen = 3,
                                                           autorange = ifelse(scale.reverse, "reversed", T))))
            }
          },
@@ -1307,9 +1307,9 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                        ...)
            
            if (is_new_plot) {
-             p %<>% layout(xaxis = list(type = xscale, tickfont = f3, ticklen = 3,
+             p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3,
                                         autorange = ifelse(scale.reverse, "reversed", T)),
-                           yaxis = list(type = yscale, tickfont = f3, ticklen = 3))
+                           yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
            }
          }
   )

@@ -13,12 +13,13 @@ f2 <- list(
 )
 
 # font No. 3...
-f3 <- list(
+f3 <- function() {
+  list(
     family = 'Old Standard TT, serif',
     size = getOption("IOHanalyzer.tick_fontsize", default = 12), 
     color = 'black'
-)
-
+  )
+}
 
 legend_right <- function() {
   list(x = 1.01, y = 1, orientation = 'v',
@@ -92,7 +93,7 @@ IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickcolor = getOption('IOHanalyzer.tickcolor'),
                         ticks = 'outside',
                         ticklen = 9,
-                        tickfont = f3,
+                        tickfont = f3(),
                         exponentformat = 'e',
                         zeroline = F),
            yaxis = list(
@@ -105,7 +106,7 @@ IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
                         tickcolor = getOption('IOHanalyzer.tickcolor'),
                         ticks = 'outside',
                         ticklen = 9,
-                        tickfont = f3,
+                        tickfont = f3(),
                         exponentformat = 'e',
                         zeroline = F))
 }

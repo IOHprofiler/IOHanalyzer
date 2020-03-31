@@ -157,7 +157,7 @@ output$RT_PAR.Sample.Download <- downloadHandler(
 
 output$RT_PAR.Summary.Download <- downloadHandler(
   filename = function() {
-    eval(PAR_csv_name)
+    eval(RT_PAR_csv_name)
   },
   content = function(file) {
     df <- parameter_summary()

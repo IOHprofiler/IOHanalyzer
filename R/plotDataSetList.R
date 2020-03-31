@@ -978,7 +978,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                               lower_attr = NULL, subplot_attr = NULL, show.legend = F,
                               inf.action = 'none', ...){
   
-  l <- x <- isinf <- y <- text <- NULL #Set local binding to remove warnings
+  l <- x <- isinf <- y <- text <- l_orig <- NULL #Set local binding to remove warnings
   
   #Only allow valid plot types
   if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon'))) {

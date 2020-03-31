@@ -160,7 +160,7 @@ output$RT_PAR.Summary.Download <- downloadHandler(
     eval(RT_PAR_csv_name)
   },
   content = function(file) {
-    df <- parameter_summary()
+    df <- rt_parameter_summary()
     df <- df[input[["table_RT_PAR_summary_rows_all"]]]
     if (input$RT_PAR.Summary.Format == 'csv')
       write.csv(df, file, row.names = F)

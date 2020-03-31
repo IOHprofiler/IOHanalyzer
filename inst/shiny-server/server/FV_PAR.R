@@ -154,7 +154,7 @@ output$FV_PAR.Summary.Download <- downloadHandler(
     eval(FV_PAR_csv_name)
   },
   content = function(file) {
-    df <- parameter_summary()
+    df <- fv_parameter_summary()
     df <- df[input[["table_FV_PAR_summary_rows_all"]]]
     if (input$FV_PAR.Summary.Format == 'csv')
       write.csv(df, file, row.names = F)

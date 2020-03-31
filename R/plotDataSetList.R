@@ -1147,6 +1147,13 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              stop("Duplicated attribute selected for x-axis and legend.")
            }
            
+           # Force legend to be categorical
+           df[, l_orig := l]
+           if (is.numeric(df[['l']])) {
+             df[, l := paste0('A', l)]
+             names(colors) <- paste0('A', names(colors))
+           }
+           
            #Use linestyles to differentiate traces if only one attribute is selected to be plotted
            #TODO: Combine these two options more elegantly
            if (length(y_attr) == 1) {
@@ -1180,16 +1187,16 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              suppressWarnings(
                p %<>%
                  add_trace(
-                   data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l,
+                   data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l_orig, name = ~l_orig,
                    type = 'scatter', mode = 'lines+markers',
-                   linetype = ~l, marker = list(size = getOption('IOHanalyzer.markersize', 4)), linetypes = dashes,
+                   linetype = ~l_orig, marker = list(size = getOption('IOHanalyzer.markersize', 4)), linetypes = dashes,
                    colors = colors, showlegend = show.legend,
                    text = ~text, line = list(width = getOption('IOHanalyzer.linewidth', 2)),
                    hovertemplate = '%{text}',
                    ...
                  ) )
              if (inf.action != 'none') {
-               p %<>% add_trace(data = df[isinf == T], x = ~x, y = ~y, legendgroup = ~l,
+               p %<>% add_trace(data = df[isinf == T], x = ~x, y = ~y, legendgroup = ~l_orig, name = ~l_orig,
                     type = 'scatter', mode = 'markers',  color = ~l,
                     marker = list(symbol = 'circle-open', size = 8 + getOption('IOHanalyzer.markersize', 4)),
                     colors = colors, showlegend = F, text = 'Inf', hoverinfo = 'none',
@@ -1215,7 +1222,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                suppressWarnings(
                  p %<>%
                    add_trace(
-                     data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l,
+                     data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l_orig, name = ~l_orig,
                      type = 'scatter', mode = 'lines+markers', 
                      marker = list(size = getOption('IOHanalyzer.markersize', 4)), linetype = dashstyle,
                      colors = colors, showlegend = show.legend, name = ~l,

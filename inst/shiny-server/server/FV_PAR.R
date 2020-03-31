@@ -151,7 +151,7 @@ output$FV_PAR.Sample.Download <- downloadHandler(
 
 output$FV_PAR.Summary.Download <- downloadHandler(
   filename = function() {
-    eval(PAR_csv_name)
+    eval(FV_PAR_csv_name)
   },
   content = function(file) {
     df <- parameter_summary()

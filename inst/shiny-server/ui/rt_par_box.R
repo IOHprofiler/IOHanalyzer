@@ -21,7 +21,17 @@ rt_par_expected_value_box <- function(width = 12, collapsible = T, collapsed = T
       selectInput('RT_PAR.Plot.show.mean', label = 'Mean/median',
                   choices = c('mean', 'median'),
                   selected = 'mean'),
-      checkboxInput('RT_PAR.Plot.CI', "Show standard deviations", value = T),
+      selectInput('RT_PAR.Plot.CI', "Show standard deviations or quantiles", 
+                  choices = c('Standard Deviation', 'Outer Quantiles', 'None'), 
+                  selected = 'None') %>% 
+        shinyInput_label_embed(
+          custom_icon() %>%
+            bs_embed_popover(
+              title = "Outer quantiles", content = "This method uses the highest and lowest quantiles, which are 
+                  2% and 98% by default. This can be changed in the settings-tab.", 
+              placement = "auto"
+            )
+        ),
       checkboxInput('RT_PAR.Plot.Logx',
                     label = 'Scale x axis \\(\\log_{10}\\)',
                     value = T),

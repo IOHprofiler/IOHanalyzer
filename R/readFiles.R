@@ -305,6 +305,12 @@ check_format <- function(path) {
 
   format <- lapply(datafile, function(file) {
     tryCatch({
+      if (!file.exists(file)) {
+        cdatfile <- stri_replace(file, ".cdat", fixed = ".dat")
+        tdatfile <- stri_replace(file, ".tdat", fixed = ".dat")
+        if (file.exists(cdatfile)) file <- cdatfile
+        else file <- tdatfile
+      }
       first_line <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
     }, error = function(e) {
       stop("Error detecting data files specified in .info, please verify the

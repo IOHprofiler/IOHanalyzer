@@ -42,24 +42,29 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
                       TWO_COL = NULL)
     }
 
-    if (is.null(maximization) || (!(isTRUE(maximization) || isFALSE(maximization)))) {
-      maximization <- info$maximization
-      if (is.null(maximization) && !is.null(suite)) {
-        if (verbose)
-          warning("maximization or minimization not specified in .info-file,
-                  taking best guess based on the suite-name.")
-        if (grepl("\\w*bbob\\w*", suite, ignore.case = T) != 0)
-          maximization <- FALSE
-        else
-          maximization <- TRUE
-      } else {
+    if (is.null(maximization)) {
+      #TODO: Better way to deal with capitalization of attributes
+      if (!is.null(info$maximization)) maximization <- info$maximization
+      else if (!is.null(info$Maximization)) maximization <- info$Maximization
+      else if (!is.null(suite)) {
+          if (verbose)
+            warning("maximization or minimization not specified in .info-file,
+                    taking best guess based on the suite-name.")
+          if (grepl("\\w*bbob\\w*", suite, ignore.case = T) != 0)
+            maximization <- FALSE
+          else
+            maximization <- TRUE
+        } 
+      else {
         maximization <- FALSE # default to minimization
       }
     }
 
-    if(!(isTRUE(maximization) || isFALSE(maximization))) 
-      warning("unclear whether we should maximize or minimize.")
-
+    if (!(isTRUE(maximization) || isFALSE(maximization))) {
+      maximization <- grepl("t", maximization, ignore.case = T)
+      # warning("unclear whether we should maximize or minimize.")
+    }
+    
     datBaseName <- strsplit(basename(info$datafile), '\\.')[[1]][1]
     datFile <- file.path(path, paste0(datBaseName, '.dat'))
     tdatFile <- file.path(path, paste0(datBaseName, '.tdat'))

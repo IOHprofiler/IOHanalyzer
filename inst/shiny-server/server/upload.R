@@ -130,8 +130,8 @@ observeEvent(input$repository.load_button, {
   data <- subset(data, DIM %in% input$repository.dim)
   data <- subset(data, algId %in% input$repository.algId)
   
-  if (length(DataList$data) > 0 && attr(data, 'suite') != attr(DataList$data, 'suite')) {
-    shinyjs::alert(paste0("Attempting to add data from a different suite to the currently",
+  if (length(DataList$data) > 0 && attr(data, 'maximization') != attr(DataList$data, 'maximization')) {
+    shinyjs::alert(paste0("Attempting to add data from a different optimization type to the currently",
                    " loaded data.\nPlease either remove the currently loaded data or",
                    " choose a different dataset to load."))
     return(NULL)
@@ -220,7 +220,7 @@ observeEvent(selected_folders(), {
 
   format_selected <- input$upload.data_format
   maximization <- input$upload.maximization
-
+  if (maximization == "AUTOMATIC") maximization <- NULL
   req(length(folders) != 0)
 
   if (length(folderList$data) == 0)
@@ -252,7 +252,7 @@ observeEvent(selected_folders(), {
       # read the data set and handle potential errors
       new_data <- tryCatch(
         DataSetList(folder, print_fun = print_html,
-                    maximization = maximization,#NULL,
+                    maximization = maximization,
                     format = format_detected,
                     subsampling = input$upload.subsampling),
         error = function(e) {
@@ -290,20 +290,20 @@ observeEvent(selected_folders(), {
 })
 
 update_menu_visibility <- function(suite){
-  if (suite == NEVERGRAD) {
+  if (all(suite == NEVERGRAD)) {
     #TODO: Better way of doing this such that these pages are not even populated with data instead of just being hidden
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "#shiny-tab-ERT"))
   }
   else{
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "#shiny-tab-ERT"))
   }
-  if (suite == "PBO") {
+  if (all(suite == "PBO")) {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "FCE_ECDF"))
   }
   else {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "FCE_ECDF"))
   }
-  if (suite == "SOS") {
+  if (any(suite == "SOS")) {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "Positions"))
   }
   else {

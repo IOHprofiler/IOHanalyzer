@@ -21,7 +21,7 @@ setTextInput <- function(session, id, name, alternative) {
 
 # TODO: this function could be made more clear
 set_format_func <- function(suite) {
-   if (grepl("\\w*bbob\\w*", suite, ignore.case = T))
+   if (any(grepl("\\w*bbob\\w*", suite, ignore.case = T)))
      format_FV <- function(v) as.numeric(format(v, format = 'e', digits = getOption("IOHanalyzer.precision", 2),
                                      nsmall = getOption("IOHanalyzer.precision", 2)))
    else  

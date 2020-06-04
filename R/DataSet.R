@@ -36,10 +36,10 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
         warning("Suite-name not provided in .info-file, taking best guess based on
                 the format of data-files.")
       suite <- switch(format,
-                      IOHprofiler = "PBO",
+                      IOHprofiler = "Unknown",
                       COCO = "BBOB",
                       BIOBJ_COCO = "biobj-bbob",
-                      TWO_COL = NULL)
+                      TWO_COL = "Unknown")
     }
 
     if (is.null(maximization)) {
@@ -56,6 +56,8 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
             maximization <- TRUE
         } 
       else {
+        warning("Can't detect maximization based on suite-attribute, setting to 
+                minimization by default")
         maximization <- FALSE # default to minimization
       }
     }

@@ -139,7 +139,7 @@ observeEvent(input$repository.load_button, {
   
   DataList$data <- c(DataList$data, data)
   update_menu_visibility(attr(DataList$data, 'suite'))
-  set_format_func(attr(DataList$data, 'suite'))
+  # set_format_func(attr(DataList$data, 'suite'))
   set_color_scheme("Default", get_algId(DataList$data))
 })
 
@@ -278,13 +278,14 @@ observeEvent(selected_folders(), {
                     add = TRUE)
     }
   }
+  DataList$data <- clean_DataSetList(DataList$data)
   if (is.null(DataList$data)) {
     shinyjs::alert("An error occurred when processing the uploaded data.
                    Please ensure the data is not corrupted.")
     return(NULL)
   }
   update_menu_visibility(attr(DataList$data, 'suite'))
-  set_format_func(attr(DataList$data, 'suite'))
+  # set_format_func(attr(DataList$data, 'suite'))
   set_color_scheme("Default", get_algId(DataList$data))
   }, message = "Processing data, this might take some time")
 })

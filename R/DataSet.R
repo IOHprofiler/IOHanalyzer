@@ -42,7 +42,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
                       TWO_COL = NULL)
     }
 
-    if (is.null(maximization)) {
+    if (is.null(maximization) || maximization == AUTOMATIC) {
       #TODO: Better way to deal with capitalization of attributes
       if (!is.null(info$maximization)) maximization <- info$maximization
       else if (!is.null(info$Maximization)) maximization <- info$Maximization

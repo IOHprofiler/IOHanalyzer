@@ -110,7 +110,6 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
         }
         
         copy_flag <- TRUE
-        
         data <- DataSet(info, maximization = maximization,
                         format = format, subsampling = subsampling)
         
@@ -202,8 +201,6 @@ clean_DataSetList <- function(dsList) {
     attr(dsList, 'DIM') <- sapply(dsList, function(ds) attr(ds, 'DIM'))
     attr(dsList, 'funcId') <- sapply(dsList, function(ds) attr(ds, 'funcId'))
     attr(dsList, 'algId') <- sapply(dsList, function(ds) attr(ds, 'algId'))
-    attr(dsList, 'suite') <- sapply(dsList, function(ds) attr(ds, 'suite'))
-    attr(dsList, 'maximization') <- sapply(dsList, function(ds) attr(ds, 'maximization'))
   }
   dsList
 }

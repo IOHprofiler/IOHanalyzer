@@ -13,11 +13,36 @@ render_FV_PAR_PER_FUN <- reactive({
     
     dt <- get_data_FV_PAR_PER_FUN()
     dt <- dt[parId %in% input$FV_PAR.Plot.Params]
-    type <- if (input$FV_PAR.Plot.CI) 'line+ribbon' else 'line'
-    plot_general_data(dt, 'runtime', input$FV_PAR.Plot.show.mean, type,
-                      subplot_attr = 'parId', scale.xlog = input$FV_PAR.Plot.Logx,
-                      scale.ylog = input$FV_PAR.Plot.Logy, 
-                      lower_attr = 'lower', upper_attr = 'upper')
+    sub_attr <- if (length(input$FV_PAR.Plot.Params) > 1) 'parId' else NULL
+    
+    lower <- 'lower'
+    upper <- 'upper'
+    if (input$FV_PAR.Plot.CI == 'None') type <- 'line' 
+    else {
+      type <- 'line+ribbon'
+      if (input$FV_PAR.Plot.CI == 'Outer Quantiles') {
+        quantiles <- paste0(getOption("IOHanalyzer.quantiles", c(0.2, 0.98)) * 100, '%')
+        lower <- quantiles[[1]]
+        upper <- quantiles[[length(quantiles)]]
+      }
+    }
+    if (is.null(sub_attr) && type == 'line+ribbon') {
+      p <- plot_general_data(dt, 'runtime', input$FV_PAR.Plot.show.mean, 'line',
+                             subplot_attr = sub_attr, scale.xlog = input$FV_PAR.Plot.Logx,
+                             scale.ylog = input$FV_PAR.Plot.Logy, 
+                             lower_attr = lower, upper_attr = upper, show.legend = T)
+      p <- plot_general_data(dt, 'runtime', input$FV_PAR.Plot.show.mean, 'ribbon',
+                             subplot_attr = sub_attr, scale.xlog = input$FV_PAR.Plot.Logx,
+                             scale.ylog = input$FV_PAR.Plot.Logy, 
+                             lower_attr = lower, upper_attr = upper, show.legend = F, p = p)
+    }
+    else {
+      p <- plot_general_data(dt, 'runtime', input$FV_PAR.Plot.show.mean, type,
+                        subplot_attr = sub_attr, scale.xlog = input$FV_PAR.Plot.Logx,
+                        scale.ylog = input$FV_PAR.Plot.Logy, 
+                        lower_attr = lower, upper_attr = upper)
+    }
+    p
   },
   message = "Creating plot")
 })
@@ -151,10 +176,10 @@ output$FV_PAR.Sample.Download <- downloadHandler(
 
 output$FV_PAR.Summary.Download <- downloadHandler(
   filename = function() {
-    eval(PAR_csv_name)
+    eval(FV_PAR_csv_name)
   },
   content = function(file) {
-    df <- parameter_summary()
+    df <- fv_parameter_summary()
     df <- df[input[["table_FV_PAR_summary_rows_all"]]]
     if (input$FV_PAR.Summary.Format == 'csv')
       write.csv(df, file, row.names = F)

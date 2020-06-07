@@ -978,7 +978,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                               lower_attr = NULL, subplot_attr = NULL, show.legend = F,
                               inf.action = 'none', ...){
   
-  l <- x <- isinf <- y <- text <- NULL #Set local binding to remove warnings
+  l <- x <- isinf <- y <- text <- l_orig <- NULL #Set local binding to remove warnings
   
   #Only allow valid plot types
   if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon'))) {
@@ -997,9 +997,11 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
     }
     colnames(df)[colnames(df) == subplot_attr] <- "subplot_attr"
     attrs <- unique(df[, subplot_attr])
-    if (length(attrs) <= 1) stop("Attempting to create subplots with fewer than 2 unique values of 
+    if (length(attrs) == 0) stop("Attempting to create subplots with fewer than 2 unique values of
                                  `subplot_attrs`-column")
-    
+    if (length(attrs) == 1) return(plot_general_data(df, x_attr, y_attr, type, legend_attr, scale.xlog, scale.ylog,
+                                                     scale.reverse, p, x_title, y_title, attrs, upper_attr, lower_attr,
+                                                     show.legend = show.legend, subplot_attr = NULL, ...))
     if (subplot_attr == legend_attr) {
       df[, l := subplot_attr]
     }
@@ -1137,12 +1139,19 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                        ...
              )
            if (is_new_plot) {
-             p %<>% layout(yaxis = list(type = yscale, tickfont = f3, ticklen = 3))
+             p %<>% layout(yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
            }
          },
          'line' = {
            if (legend_attr == x_attr) {
              stop("Duplicated attribute selected for x-axis and legend.")
+           }
+           
+           # Force legend to be categorical
+           df[, l_orig := l]
+           if (is.numeric(df[['l']])) {
+             df[, l := paste0('A', l)]
+             names(colors) <- paste0('A', names(colors))
            }
            
            #Use linestyles to differentiate traces if only one attribute is selected to be plotted
@@ -1178,16 +1187,16 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              suppressWarnings(
                p %<>%
                  add_trace(
-                   data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l,
+                   data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l_orig, name = ~l_orig,
                    type = 'scatter', mode = 'lines+markers',
-                   linetype = ~l, marker = list(size = getOption('IOHanalyzer.markersize', 4)), linetypes = dashes,
+                   linetype = ~l_orig, marker = list(size = getOption('IOHanalyzer.markersize', 4)), linetypes = dashes,
                    colors = colors, showlegend = show.legend,
                    text = ~text, line = list(width = getOption('IOHanalyzer.linewidth', 2)),
                    hovertemplate = '%{text}',
                    ...
                  ) )
              if (inf.action != 'none') {
-               p %<>% add_trace(data = df[isinf == T], x = ~x, y = ~y, legendgroup = ~l,
+               p %<>% add_trace(data = df[isinf == T], x = ~x, y = ~y, legendgroup = ~l_orig, name = ~l_orig,
                     type = 'scatter', mode = 'markers',  color = ~l,
                     marker = list(symbol = 'circle-open', size = 8 + getOption('IOHanalyzer.markersize', 4)),
                     colors = colors, showlegend = F, text = 'Inf', hoverinfo = 'none',
@@ -1213,7 +1222,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                suppressWarnings(
                  p %<>%
                    add_trace(
-                     data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l,
+                     data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l_orig, name = ~l_orig,
                      type = 'scatter', mode = 'lines+markers', 
                      marker = list(size = getOption('IOHanalyzer.markersize', 4)), linetype = dashstyle,
                      colors = colors, showlegend = show.legend, name = ~l,
@@ -1226,9 +1235,9 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              }
            }
            if (is_new_plot) {
-             p %<>% layout(xaxis = list(type = xscale, tickfont = f3, ticklen = 3,
+             p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3,
                                         autorange = ifelse(scale.reverse, "reversed", T)),
-                           yaxis = list(type = yscale, tickfont = f3, ticklen = 3))
+                           yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
            }
          },
          'ribbon' = {
@@ -1255,9 +1264,9 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
            
            
            if (is_new_plot) {
-             p %<>% layout(xaxis = list(type = xscale, tickfont = f3, ticklen = 3,
+             p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3,
                                         autorange = ifelse(scale.reverse, "reversed", T)),
-                           yaxis = list(type = yscale, tickfont = f3, ticklen = 3))
+                           yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
            }
          },
          'radar' = {
@@ -1279,7 +1288,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                        fill = 'toself', connectgaps = T, fillcolor = ~col, color = ~l, colors = colors,
                        name =  ~l, legendgroup = ~l, ...)
            if (is_new_plot) {
-             p %<>% layout(polar = list(radialaxis = list(type = yscale, tickfont = f1, ticklen = 3,
+             p %<>% layout(polar = list(radialaxis = list(type = yscale, tickfont = f3(), ticklen = 3,
                                                           autorange = ifelse(scale.reverse, "reversed", T))))
            }
          },
@@ -1298,9 +1307,9 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                        ...)
            
            if (is_new_plot) {
-             p %<>% layout(xaxis = list(type = xscale, tickfont = f3, ticklen = 3,
+             p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3,
                                         autorange = ifelse(scale.reverse, "reversed", T)),
-                           yaxis = list(type = yscale, tickfont = f3, ticklen = 3))
+                           yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
            }
          }
   )

@@ -110,12 +110,14 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
         }
         
         copy_flag <- TRUE
+        
         data <- DataSet(info, maximization = maximization,
                         format = format, subsampling = subsampling)
         
         DIM[i] <- attr(data, 'DIM')
         funcId[i] <- attr(data, 'funcId')
         algId[i] <- attr(data, 'algId')
+        
         # TODO: double-check the following treatment on `instance`!!!
         instance <- attr(data, 'instance') #Was instance without index?
         suites[i] <- attr(data, 'suite')
@@ -176,26 +178,34 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
 #' @examples 
 #' clean_DataSetList(dsl)
 clean_DataSetList <- function(dsList) {
-  dsl <- apply(expand.grid(get_funcId(dsList), 
-                                  get_dim(dsList), 
-                                  get_algId(dsList)), 
-                      1, function(x) {
-    if (!is.na(as.numeric(x[[1]]))) {
-      x[[1]] <- as.numeric(x[[1]])
+  cases <- mapply(
+    function(...) paste0(list(...), collapse = ','),
+    c(attr(dsList, 'funcId'), attr(dsList, 'funcId')[2:3]), 
+    c(attr(dsList, 'DIM'), attr(dsList, 'DIM')[2:3]),
+    c(attr(dsList, 'algId'), attr(dsList, 'algId')[2:3]),
+    SIMPLIFY = T,
+    USE.NAMES = F
+  )
+    
+  dt <- as.data.table(cases)[, list(list(.I)), by = cases]
+  idx_to_del <- c()
+  
+  for (idx in dt$V1) {
+    if (length(idx) > 1) {
+      dsList[idx[1]] <- c.DataSet(dsList[idx])
+      idx_to_del <- c(idx_to_del, idx[-1])
     }
-    if (!is.na(as.numeric(x[[2]]))) {
-      x[[2]] <- as.numeric(x[[2]])
-    }
-    dsl_temp <- subset(dsList, funcId == x[[1]] && DIM == x[[2]] && algId == x[[3]])
-    c.DataSet(dsl_temp)
-  })
-  class(dsl) <- c('DataSetList', 'list')
-  attr(dsl, 'DIM') <- attr(dsList, 'DIM')
-  attr(dsl, 'funcId') <- attr(dsList, 'funcId')
-  attr(dsl, 'algId') <- attr(dsList, 'algId')
-  attr(dsl, 'suite') <- attr(dsList, 'suite')
-  attr(dsl, 'maximization') <- attr(dsList, 'maximization')
-  dsl
+  }
+  dsList[idx_to_del] <- NULL
+  
+  if (length(idx_to_del) > 0) {
+    attr(dsList, 'DIM') <- sapply(dsList, function(ds) attr(ds, 'DIM'))
+    attr(dsList, 'funcId') <- sapply(dsList, function(ds) attr(ds, 'funcId'))
+    attr(dsList, 'algId') <- sapply(dsList, function(ds) attr(ds, 'algId'))
+    attr(dsList, 'suite') <- sapply(dsList, function(ds) attr(ds, 'suite'))
+    attr(dsList, 'maximization') <- sapply(dsList, function(ds) attr(ds, 'maximization'))
+  }
+  dsList
 }
 
 #' S3 concatenation function for DataSetList

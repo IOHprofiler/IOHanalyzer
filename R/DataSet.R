@@ -59,8 +59,8 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
 
     if(!(isTRUE(maximization) || isFALSE(maximization))) 
       warning("unclear whether we should maximize or minimize.")
-
-    datBaseName <- strsplit(basename(info$datafile), '\\.')[[1]][1]
+    
+    datBaseName <- sub(pattern = '(.*)\\..*$', replacement = '\\1', basename(info$datafile))
     datFile <- file.path(path, paste0(datBaseName, '.dat'))
     tdatFile <- file.path(path, paste0(datBaseName, '.tdat'))
     cdatFile <- file.path(path, paste0(datBaseName, '.cdat'))
@@ -92,7 +92,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
       TWO_COL = read_dat  # TODO: perhaps rename `TWO_COL` or to use a better naming
                           # scheme for all format names
     )
-
+    
     RT_raw <- read_raw(rtFile, subsampling)
     FV_raw <- read_raw(fvFile, subsampling)
 
@@ -178,12 +178,13 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
 #' c(dsl[[1]], dsl[[1]])
 c.DataSet <- function(...) {
   dsl <- list(...)
+  
   if (length(dsl) == 1) dsl <- dsl[[1]]
   dsl <- dsl[sapply(dsl, length) != 0]
-  if (length(dsl) == 0)
-    return()
-  if (length(dsl) == 1)
-    return(dsl[[1]])
+  
+  if (length(dsl) == 0) return()
+  if (length(dsl) == 1) return(dsl[[1]])
+  
   for (ds in dsl) {
     if (!any((class(ds)) == 'DataSet'))
       stop("Operation only possible when all arguments are DataSets")
@@ -220,7 +221,6 @@ c.DataSet <- function(...) {
       cbind(rt_temp, as.numeric(rownames(ds$RT)))
     })
   }), recursive = F)
-  
   
   RT <- align_running_time(RT_raw, format = "TWO_COL", maximization = info$maximization)$RT
   FV <- align_function_value(RT_raw, format = "TWO_COL")$FV

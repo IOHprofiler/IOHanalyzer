@@ -180,9 +180,9 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
 clean_DataSetList <- function(dsList) {
   cases <- mapply(
     function(...) paste0(list(...), collapse = ','),
-    c(attr(dsList, 'funcId'), attr(dsList, 'funcId')[2:3]), 
-    c(attr(dsList, 'DIM'), attr(dsList, 'DIM')[2:3]),
-    c(attr(dsList, 'algId'), attr(dsList, 'algId')[2:3]),
+    attr(dsList, 'funcId'), 
+    attr(dsList, 'DIM'),
+    attr(dsList, 'algId'),
     SIMPLIFY = T,
     USE.NAMES = F
   )

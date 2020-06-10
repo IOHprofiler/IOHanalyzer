@@ -24,8 +24,13 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
       checkboxInput('FCEPlot.show.median',
                     label = 'Show/hide median',
                     value = F),
+      
       checkboxInput('FCEPlot.show.CI',
                     label = 'Show/hide mean +/- sd',
+                    value = F),
+      
+      checkboxInput('FCEPlot.show.IQR',
+                    label = 'Show/hide interquartile range',
                     value = F),
 
       checkboxInput('FCEPlot.semilogx',

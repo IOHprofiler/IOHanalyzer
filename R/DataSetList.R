@@ -798,9 +798,10 @@ generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL,
     all <- get_funvals(dsList)
   else
     all <- get_runtimes(dsList)
+
   maximization <- attr(dsList, 'maximization')
-  if (is.null(maximization)) maximization <- T
   
+  if (is.null(maximization)) maximization <- T
   if (is.null(start)) start <- min(all)
   if (is.null(stop)) stop <- max(all)
   

@@ -30,6 +30,16 @@ render_FV_PER_FUN <- reactive({
       p <- plot_general_data(get_data_FCE_PER_FUN(), x_attr = 'runtime', y_attr = 'mean', 
                              type = 'ribbon', legend_attr = 'algId', lower_attr = 'lower', 
                              upper_attr = 'upper', p = p)
+
+    else if (input$FCEPlot.show.IQR) {
+      IOHanalyzer.quantiles.bk <- getOption("IOHanalyzer.quantiles")
+      options(IOHanalyzer.quantiles = c(0.25, 0.75))
+      p <- plot_general_data(get_data_FCE_PER_FUN(), x_attr = 'runtime', y_attr = 'mean', 
+                                  type = 'ribbon', legend_attr = 'algId', lower_attr = '25%', 
+                                  upper_attr = '75%', p = p)
+      options(IOHanalyzer.quantiles = IOHanalyzer.quantiles.bk)
+    }
+      
     p
   },
   message = "Creating plot"

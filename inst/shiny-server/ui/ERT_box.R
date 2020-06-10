@@ -19,7 +19,17 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
           
           textInput('ERTPlot.Min',
                     label = F_MIN_LABEL,
-                    value = ''),
+                    value = '') %>% 
+            shinyInput_label_embed(
+              custom_icon() %>%
+                bs_embed_popover(
+                  title = "Interpolation", content = "The points on this plot are all interpollated where needed
+                    to create solid lines. This means that for functions with limited domains (such as integers),
+                    artifacts like step-wise behaviour can occur. Please carefully consider the domain of the function
+                    when interpreting this plot.", 
+                  placement = "auto"
+                )
+            ),
           textInput('ERTPlot.Max',
                     label = F_MAX_LABEL,
                     value = ''),

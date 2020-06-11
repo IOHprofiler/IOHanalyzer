@@ -661,32 +661,18 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
     return(data.table())
   }
 
-  if (1 < 2) {
-    data <- data[matched, , drop = FALSE]
-    apply(data, 1, IOHanalyzer_env$D_quantile) %>%
-      t %>%
-      as.data.table %>%
-      cbind(as.data.table(SP(data, maxRT))) %>%
-      cbind(algId, ftarget,
-            apply(data, 1, .mean),
-            apply(data, 1, .median),
-            apply(data, 1, .sd), .) %>%
-      set_colnames(c('algId', 'target', 'mean', 'median',
-                     'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%'),
-                     'ERT', 'runs', 'ps'))
-  } else {# TODO: remove this case, deprecated...
-    NAs <- is.na(matched)
-    if (any(NAs)) {
-      rbindlist(
-        list(
-          data[matched[!NAs], ],
-          data.table(cbind(t(t(ftarget[NAs])), matrix(NA, sum(NAs), ncol(data) - 1)))
-        )
-      ) %>% cbind(algId, .)
-    } else {
-      data[matched, -c('target')] %>% cbind(algId, ftarget, .)
-    }
-  }
+  data <- data[matched, , drop = FALSE]
+  apply(data, 1, IOHanalyzer_env$D_quantile) %>%
+    t %>%
+    as.data.table %>%
+    cbind(as.data.table(SP(data, maxRT))) %>%
+    cbind(algId, ftarget,
+          apply(data, 1, .mean),
+          apply(data, 1, .median),
+          apply(data, 1, .sd), .) %>%
+    set_colnames(c('algId', 'target', 'mean', 'median',
+                   'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%'),
+                   'ERT', 'runs', 'ps'))
 }
 
 #' Get the maximal running time
@@ -747,7 +733,7 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide', ...) {
     set_colnames(c('algId', 'target', paste0('run.', seq(N))))
 
   if (output == 'long') {
-    #TODO: option to not add runnr etc to speed up performance of ECDF calculation?
+    # TODO: option to not add run etc to speed up performance of ECDF calculation?
     res <- melt(res, id = c('algId', 'target'), variable.name = 'run', value.name = 'RT')
     res[, run := as.integer(as.numeric(gsub('run.', '', run)))
         ][, RT := as.integer(RT)
@@ -769,22 +755,17 @@ get_FV_summary.DataSet <- function(ds, runtime, ...) {
   runtime <- sort(as.numeric(unique(c(runtime))))
   RT <- as.numeric(rownames(data))
   idx <- seq_along(RT)
-
-  matched <- sapply(runtime, function(r) {
-    res <- idx[RT >= r][1]
-    ifelse(is.na(res), NR, res)
-  })
-
+  
+  matched <- sapply(runtime, function(r) rev(idx[r >= RT])[1])
   data <- data[matched, , drop = FALSE]
-  df <- cbind(algId, runtime, NC,
-              apply(data, 1, .mean),
-              apply(data, 1, .median),
-              apply(data, 1, .sd),
-              as.data.table(t(apply(data, 1, IOHanalyzer_env$C_quantile)))
-  )
-  colnames(df) <- c('algId', 'runtime', 'runs', 'mean', 'median', 'sd',
-                    paste0(getOption("IOHanalyzer.quantiles") * 100, '%'))
-  df
+  
+  cbind(algId, runtime, NC,
+        apply(data, 1, .mean),
+        apply(data, 1, .median),
+        apply(data, 1, .sd),
+        as.data.table(t(apply(data, 1, IOHanalyzer_env$C_quantile)))) %>% 
+    set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', 'sd',
+                    paste0(getOption("IOHanalyzer.quantiles") * 100, '%')))
 }
 
 #' @rdname get_FV_sample
@@ -803,11 +784,7 @@ get_FV_sample.DataSet <- function(ds, runtime, output = 'wide', ...) {
   RT <- as.numeric(rownames(data))
   idx <- seq_along(RT)
 
-  matched <- sapply(runtime, function(r) {
-    res <- idx[RT >= r][1]
-    ifelse(is.na(res), n_row, res)
-  })
-
+  matched <- sapply(runtime, function(r) rev(idx[r >= RT])[1])
   res <- cbind(algId, runtime, as.data.table(data[matched, , drop = FALSE])) %>%
     set_colnames(c('algId', 'runtime', paste0('run.', seq(N))))
 

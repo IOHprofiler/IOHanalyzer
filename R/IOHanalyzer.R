@@ -119,7 +119,7 @@ SOS <- 'SOS'
 #' Plot.RT.Single_Func(dsList[1])
 #' 
 #' @examples 
-#' \donttest{
+#' \dontrun{
 #' runServer()
 #' }
 NULL

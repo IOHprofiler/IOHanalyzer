@@ -19,4 +19,3 @@ This function generates a dataframe which can be easily plotted using the `plot_
 \examples{
 generate_data.AUC(subset(dsl, funcId == 1), c(12, 16))
 }
-

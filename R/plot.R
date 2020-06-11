@@ -321,7 +321,7 @@ color_palettes <- function(ncolor) {
 #' @param ... Additional arguments for orca
 #' @export
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' p <- Plot.RT.Single_Func(dsl[1])
 #' save_plotly(p, 'example_file.png')
 #' }

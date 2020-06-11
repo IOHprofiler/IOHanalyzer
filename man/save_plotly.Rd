@@ -21,7 +21,7 @@ save_plotly(p, file, width = NULL, height = NULL, ...)
 NOTE: This function requires orca to be installed
 }
 \examples{
-\donttest{
+\dontrun{
 p <- Plot.RT.Single_Func(dsl[1])
 save_plotly(p, 'example_file.png')
 }

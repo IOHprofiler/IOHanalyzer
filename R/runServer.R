@@ -2,7 +2,7 @@
 #' @param port Optional; which port the server should be opened at
 #' @export
 #' @examples 
-#' \donttest{
+#' \dontrun{
 #' runServer()
 #' }
 runServer <- function(port = getOption('shiny.port')) {

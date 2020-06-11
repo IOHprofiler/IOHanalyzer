@@ -30,7 +30,7 @@ dsList <- DataSetList(path)
 summary(dsList)
 Plot.RT.Single_Func(dsList[1])
 
-\donttest{
+\dontrun{
 runServer()
 }
 }

@@ -51,12 +51,14 @@ NumericVector c_impute(NumericVector x, NumericVector y, NumericVector rowname) 
 
   int j = 0;
   for (int i = 0; i < N; ++i) {
-    if (j < L && rowname[i] == y[j]) {
+    if (j < (L - 1) && rowname[i] >= y[j] && rowname[i] < y[j + 1]) {
       res[i] = x[j];
       ++j;
-    } else {
+    } else if (j == L - 1 && rowname[i] >= y[j]) {
+      res[i] = x[j]; 
+    } else if (rowname[i] < y[j] && j > 0) {
       res[i] = x[j - 1];
-    }
+    } 
   }
   return res;
 }

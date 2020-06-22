@@ -15,9 +15,7 @@
 #' @importFrom ggplot2 scale_x_continuous scale_x_log10 facet_wrap theme_set theme_grey theme
 #' @importFrom shiny req
 #' @importFrom Rcpp sourceCpp
-#' @importFrom withr with_dir
 #' @importFrom igraph graph_from_adjacency_matrix layout.circle plot.igraph 
-#' @importFrom scales rescale
 #' @importFrom PlayerRatings glicko2
 #' @importFrom stringi stri_detect_regex stri_detect_fixed stri_locate_all stri_replace
 #' @useDynLib IOHanalyzer

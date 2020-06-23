@@ -19,15 +19,15 @@ setTextInput <- function(session, id, name, alternative) {
     updateTextInput(session, id, value = alternative)
 }
 
-# TODO: this function could be made more clear
-set_format_func <- function(suite) {
-   if (grepl("\\w*bbob\\w*", suite, ignore.case = T))
-     format_FV <- function(v) as.numeric(format(v, format = 'e', digits = getOption("IOHanalyzer.precision", 2),
-                                     nsmall = getOption("IOHanalyzer.precision", 2)))
-   else  
-     format_FV <- function(v) as.numeric(format(v, digits = getOption("IOHanalyzer.precision", 2),
-                                     nsmall = getOption("IOHanalyzer.precision", 2)))
-}
+# # TODO: this function could be made more clear
+# set_format_func <- function(suite) {
+#    if (any(grepl("\\w*bbob\\w*", suite, ignore.case = T)))
+#      format_FV <- function(v) as.numeric(format(v, format = 'e', digits = getOption("IOHanalyzer.precision", 2),
+#                                      nsmall = getOption("IOHanalyzer.precision", 2)))
+#    else  
+#      format_FV <- function(v) as.numeric(format(v, digits = getOption("IOHanalyzer.precision", 2),
+#                                      nsmall = getOption("IOHanalyzer.precision", 2)))
+# }
 
 # register previous text inputs, which is used to restore those values
 REG <- lapply(widget_id, function(x) list())

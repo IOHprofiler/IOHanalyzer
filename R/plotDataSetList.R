@@ -869,7 +869,7 @@ Plot.Stats.Significance_Heatmap.DataSetList <- function(dsList, ftarget, alpha =
 #' @noRd
 radian.rescale <- function(x, start=0, direction=1) {
   c.rotate <- function(x) (x + start) %% (2 * pi) * direction
-  c.rotate(rescale(x, c(0, 2 * pi), range(x)))
+  c.rotate((2 * pi * (x - min(x)) / (max(x) - min(x))))
 }
 
 #' @rdname Plot.Stats.Significance_Graph

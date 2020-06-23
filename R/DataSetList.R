@@ -158,8 +158,8 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
   
   suite <- unique(suites)
   maximization <- unique(maximizations)
-  if (length(suite) != 1 || length(maximization) != 1) {
-    warning("Multipe different suites detected!")
+  if (length(maximization) != 1) {
+    warning("Multipe different optimization types detected!")
   }
   
   attr(object, 'suite') <- suite
@@ -231,7 +231,13 @@ c.DataSetList <- function(...) {
         attr(x, attr_str)))
   }
 
-  for (attr_str in c('suite', 'maximization')) {
+  ## Deal with Suites on the datasetlist level
+  attr(object, "suite") <- unique(
+    unlist(lapply(dsl, function(x)
+      attr(x, "suite"))))
+  
+  ## These attributes NEED to be the same across the datasetlist
+  for (attr_str in c('maximization')) {
     temp  <-
       unique(
         unlist(lapply(dsl, function(x)

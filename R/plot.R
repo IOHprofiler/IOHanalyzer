@@ -321,11 +321,16 @@ color_palettes <- function(ncolor) {
 #' @param ... Additional arguments for orca
 #' @export
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' p <- Plot.RT.Single_Func(dsl[1])
 #' save_plotly(p, 'example_file.png')
 #' }
 save_plotly <- function(p, file, width = NULL, height = NULL, ...) {
+
+  if (!requireNamespace("withr", quietly = TRUE)) {
+    stop("Package \"withr\" needed for this function to work. Please install it.",
+      call. = FALSE)
+  }
   des <- dirname(file)
   file <- basename(file)
   format <- tools::file_ext(file)

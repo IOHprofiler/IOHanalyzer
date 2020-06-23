@@ -13,7 +13,7 @@ runServer(port = getOption("shiny.port"))
 Create a shiny-server GUI to interactively use the IOHanalyzer
 }
 \examples{
-\donttest{
+\dontrun{
 runServer()
 }
 }

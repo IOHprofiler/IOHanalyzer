@@ -177,6 +177,8 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
 #' @examples 
 #' clean_DataSetList(dsl)
 clean_DataSetList <- function(dsList) {
+  #To ensure no uninitialized variables are present
+  .I <- NULL
   cases <- mapply(
     function(...) paste0(list(...), collapse = ','),
     attr(dsList, 'funcId'), 

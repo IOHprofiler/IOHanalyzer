@@ -72,6 +72,11 @@ IOHanalyzer_env$D_quantile <- function(x, pct = NULL) {
   )
 }
 
+rand_strings <- function(n = 10) {
+  a <- do.call(paste0, replicate(5, sample(LETTERS, n, TRUE), FALSE))
+  paste0(a, sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
+}
+
 # Quantile function for real values
 IOHanalyzer_env$C_quantile <- function(x, pct = NULL) {
   if (is.null(pct)) pct <- getOption("IOHanalyzer.quantiles")

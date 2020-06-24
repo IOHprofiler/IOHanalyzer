@@ -193,10 +193,10 @@ clean_DataSetList <- function(dsList) {
   
   for (idx in dt$V1) {
     if (length(idx) > 1) {
-      dsList[idx[1]] <- c.DataSet(dsList[idx])
+      dsList[[idx[1]]] <- c.DataSet(dsList[idx])
       idx_to_del <- c(idx_to_del, idx[-1])
     }
-  }
+  }  
   dsList[idx_to_del] <- NULL
   
   if (length(idx_to_del) > 0) {
@@ -213,7 +213,7 @@ clean_DataSetList <- function(dsList) {
 #' @return A new DataSetList
 #' @export
 #' @examples
-#' c(dsl[1],dsl[3])
+#' c(dsl[1], dsl[3])
 c.DataSetList <- function(...) {
   # TODO: maybe remove duplicated dataset in the further
   # remove the empty list first
@@ -228,22 +228,22 @@ c.DataSetList <- function(...) {
     class(object) <- c('DataSetList', class(object))
 
   for (attr_str in c('DIM', 'funcId', 'algId')) {
-    attr(object, attr_str) <-
-      unlist(lapply(dsl, function(x)
-        attr(x, attr_str)))
+    attr(object, attr_str) <- unlist(lapply(dsl, function(x) attr(x, attr_str)))
   }
 
-  ## Deal with Suites on the datasetlist level
+  # Deal with Suites on the datasetlist level
   attr(object, "suite") <- unique(
-    unlist(lapply(dsl, function(x)
-      attr(x, "suite"))))
+    unlist(
+      lapply(dsl, function(x) attr(x, "suite"))
+    )
+  )
   
-  ## These attributes NEED to be the same across the datasetlist
+  # These attributes NEED to be the same across the datasetlist
   for (attr_str in c('maximization')) {
-    temp  <-
-      unique(
-        unlist(lapply(dsl, function(x)
-          attr(x, attr_str))))
+    temp <- unique(
+        unlist(lapply(dsl, function(x) attr(x, attr_str)))
+    )
+
     if (length(temp) > 1) {
       stop(paste0("Attempted to add datasetlists with different ", attr_str,
                   "-attributes! This will lead to errors when processing

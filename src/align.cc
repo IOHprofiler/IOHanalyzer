@@ -49,16 +49,25 @@ NumericVector c_impute(NumericVector x, NumericVector y, NumericVector rowname) 
   int L = x.size();
   NumericVector res(N, NA_REAL);
 
+  int i = 0;
   int j = 0;
-  for (int i = 0; i < N; ++i) {
-    if (j < (L - 1) && rowname[i] >= y[j] && rowname[i] < y[j + 1]) {
-      res[i] = x[j];
-      ++j;
+  while (i < N) {
+    if (j < (L - 1) && rowname[i] >= y[j]) {
+      if (rowname[i] < y[j + 1]) {
+        res[i] = x[j];
+        ++j;
+      } else {
+        ++j;
+        continue;
+      }
+    // if the query value is larger than the last runtime value `y[L - 1]`
     } else if (j == L - 1 && rowname[i] >= y[j]) {
       res[i] = x[j]; 
+    // take the previous function value if the next runtime in y[j] is not reached
     } else if (rowname[i] < y[j] && j > 0) {
       res[i] = x[j - 1];
-    } 
+    }
+    ++i;
   }
   return res;
 }

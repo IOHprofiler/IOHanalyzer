@@ -230,13 +230,13 @@ c.DataSet <- function(...) {
   RT <- align_running_time(RT_raw, format = "TWO_COL", maximization = info$maximization)$RT
   FV <- align_function_value(RT_raw, format = "TWO_COL")$FV
 
-  #TODO: Deal with cases where aligned parameters are present in original DataSets
+  # TODO: to deal with cases where aligned parameters are present in original DataSets
   PAR <- list(
     'by_FV' = RT[names(RT) != 'RT'],
     'by_RT' = FV[names(FV) != 'FV']
   )
   
-  #Unaligned parameters
+  # Unaligned parameters
   for (par_name in names(dsl[[1]]$PAR)) {
     if (!par_name %in% c('by_FV', 'by_RT'))
       PAR[[par_name]] <- unlist(lapply(dsl, function(x) {x$PAR[[par_name]]}), recursive = F)

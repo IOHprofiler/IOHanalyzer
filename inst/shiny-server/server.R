@@ -11,6 +11,11 @@ format_RT <- function(v) as.integer(v)
 # directory where data are extracted from the zip file
 exdir <- file.path(tempdir(), 'data')
 
+rand_strings <- function(n = 10) {
+  a <- do.call(paste0, replicate(5, sample(LETTERS, n, TRUE), FALSE))
+  paste0(a, sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
+}
+
 setTextInput <- function(session, id, name, alternative) {
   v <- REG[[id]]
   if (name %in% names(v)) 

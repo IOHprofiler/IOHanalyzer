@@ -90,13 +90,13 @@ tagAssert <- function(tag, type = NULL, class = NULL, allowUI = TRUE) {
                         <table class=".table">
                           <tr>
                             <td>
-                              <select id="Overall.Dim" style="width: 100px; margin: 5px 5px 5px 5px;">
-                                <option>DIM</option>
+                              <b>Dimension:</b>
+                              <select id="Overall.Dim" style="width: 100px; margin: 7px 20px 5px 1px;">
                               </select>
                             </td>
                             <td>
-                              <select id="Overall.Funcid" style="width: 100px; margin: 5px 5px 5px 5px;">
-                                <option>Problem ID</option>
+                              <b>Problem ID:</b>
+                              <select id="Overall.Funcid" style="width: 100px; margin: 7px 20px 5px 1px;">
                               </select>
                             </td>
                           </tr>

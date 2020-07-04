@@ -323,9 +323,8 @@ observeEvent(input$upload.remove_data, {
     unlink(folderList$data, T)
     folderList$data <- list()
 
-    updateSelectInput(session, 'Overall.Dim', choices = c('DIM'), selected = 'DIM')
-    updateSelectInput(session, 'Overall.Funcid', choices = c('Problem ID'), 
-                      selected = 'Problem ID')
+    updateSelectInput(session, 'Overall.Dim', choices = c(), selected = '')
+    updateSelectInput(session, 'Overall.Funcid', choices = c(), selected = '')
 
     print_html('<p style="color:red;">all data are removed!</p>')
     print_html('', 'upload_data_promt')

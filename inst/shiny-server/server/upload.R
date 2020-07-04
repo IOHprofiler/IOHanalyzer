@@ -177,7 +177,8 @@ unzip_fct_recursive <- function(zipfile, exdir, print_fun = print, alert_fun = p
   
   if (depth <= 3) { # only allow for 4 levels of recursions
     for (zipfile in zip_files) {
-      .folders <- unzip_fct_recursive(zipfile, dirname(zipfile), alert_fun, print_fun, depth + 1)
+      .folders <- unzip_fct_recursive(zipfile, dirname(zipfile), alert_fun, 
+                                      print_fun, depth + 1)
       folders <- c(folders, .folders)
     }
   }
@@ -318,12 +319,16 @@ update_menu_visibility <- function(suite){
 # remove all uploaded data set
 observeEvent(input$upload.remove_data, {
   if (length(DataList$data) != 0) {
-    DataList$data <- DataSetList() # must be a 'DataSetList'
+    DataList$data <- DataSetList() # NOTE: this must be a `DataSetList` object
     unlink(folderList$data, T)
     folderList$data <- list()
+
+    updateSelectInput(session, 'Overall.Dim', choices = c('DIM'), selected = 'DIM')
+    updateSelectInput(session, 'Overall.Funcid', choices = c('Problem ID'), 
+                      selected = 'Problem ID')
+
     print_html('<p style="color:red;">all data are removed!</p>')
     print_html('', 'upload_data_promt')
-
   }
 })
 

@@ -508,6 +508,7 @@ observe({
 DATA <- reactive({
   dim <- input$Overall.Dim
   id <- input$Overall.Funcid
+  req(dim, id)
 
   if (length(DataList$data) == 0) return(NULL)
 

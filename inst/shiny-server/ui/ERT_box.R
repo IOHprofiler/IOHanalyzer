@@ -39,9 +39,11 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
                         label = 'Show/hide ERT',
                         value = T),
 
-          checkboxInput('ERTPlot.show.mean',
-                        label = 'Show/hide PAR-1',
-                        value = F) %>% 
+          checkboxInput(
+            'ERTPlot.show.mean',
+            label = 'Show/hide PAR-1',
+            value = F
+          ) %>% 
             shinyInput_label_embed(
               custom_icon() %>%
                 bs_embed_popover(

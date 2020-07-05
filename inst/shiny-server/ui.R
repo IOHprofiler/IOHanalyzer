@@ -57,57 +57,66 @@ tagAssert <- function(tag, type = NULL, class = NULL, allowUI = TRUE) {
     # instead making changes to the global settings, we've put them in a media
     # query (min-width: 768px), so that it won't override other media queries
     # (like max-width: 767px) that work for narrower screens.
-    custom_css <- tags$head(tags$style(HTML(gsub("_WIDTH_", titleWidth, fixed = TRUE, '
-      @media (min-width: 768px) {
-        .main-header > .navbar {
-          margin-left: _WIDTH_;
-        }
-        .main-header .logo {
-          width: _WIDTH_;
-        }
-      }
-    '))))
+    custom_css <- tags$head(
+      tags$style(
+        HTML(
+          gsub(
+            "_WIDTH_", titleWidth, fixed = TRUE, '
+            @media (min-width: 768px) {
+              .main-header > .navbar {
+                margin-left: _WIDTH_;
+              }
+              .main-header .logo {
+                width: _WIDTH_;
+              }
+            }'
+          )
+        )
+      )
+    )
   }
   
-  tags$header(class = "main-header",
-              id = 'header',
-              custom_css,
-              style = if (disable) "display: none;",
-              span(class = "logo", title),
-              tags$nav(class = "navbar navbar-static-top", role = "navigation",
-                       # Embed hidden icon so that we get the font-awesome dependency
-                       span(shiny::icon("bars"), style = "display:none;"),
-                       # Sidebar toggle button
-                       a(href="#", class="sidebar-toggle", `data-toggle`="offcanvas",
-                         role="button",
-                         span(class="sr-only", "Toggle navigation")
-                       ),
-                       
-                       # select inputs for dimension and function ID 
-                       HTML('
-                        <div class="col-sm-1">
-                        </div>
-                        <table class=".table">
-                          <tr>
-                            <td>
-                              <b>Dimension:</b>
-                              <select id="Overall.Dim" style="width: 100px; margin: 7px 20px 5px 1px;">
-                              </select>
-                            </td>
-                            <td>
-                              <b>Problem ID:</b>
-                              <select id="Overall.Funcid" style="width: 100px; margin: 7px 20px 5px 1px;">
-                              </select>
-                            </td>
-                          </tr>
-                        </table>
-                      '),
-                             
-                       div(
-                         class = "navbar-custom-menu",
-                         tags$ul(class = "nav navbar-nav", items)
-                       )
-              )
+  tags$header(
+    class = "main-header",
+    id = 'header',
+    custom_css,
+    style = if (disable) "display: none;",
+    span(class = "logo", title),
+    tags$nav(
+      class = "navbar navbar-static-top", role = "navigation",
+      # Embed hidden icon so that we get the font-awesome dependency
+      span(shiny::icon("bars"), style = "display:none;"),
+      # Sidebar toggle button
+      a(
+        href="#", class="sidebar-toggle", `data-toggle`="offcanvas",
+        role="button", span(class="sr-only", "Toggle navigation")
+      ),
+             
+      # select inputs for dimension and function/problem ID 
+      HTML('
+       <div class="col-sm-1">
+       </div>
+       <table class=".table">
+         <tr>
+           <td>
+             <b>Dimension:</b>
+             <select id="Overall.Dim" style="width: 100px; margin: 7px 20px 5px 1px;">
+             </select>
+           </td>
+           <td>
+             <b>Problem ID:</b>
+             <select id="Overall.Funcid" style="width: 100px; margin: 7px 20px 5px 1px;">
+             </select>
+           </td>
+         </tr>
+       </table>'
+      ),
+                   
+      div(
+        class = "navbar-custom-menu",
+        tags$ul(class = "nav navbar-nav", items)
+      )
+    )
   )
 }
 
@@ -293,7 +302,7 @@ body <- dashboardBody(
   # tabitems ----------------------
   tabItems(
     tabItem(tabName = 'about', includeMarkdown('markdown/about.md')),
-    tabItem(tabName = 'dataformat', includeMarkdown('markdown/dataformat.md')),
+    # tabItem(tabName = 'dataformat', includeMarkdown('markdown/dataformat.md')),
 
     # data uploading functionalities -----------------
     tabItem(tabName = 'upload',

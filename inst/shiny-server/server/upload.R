@@ -578,8 +578,6 @@ observe({
   fseq <- seq_FV(v, length.out = length.out)
   start <- fseq[1]
   stop <- fseq[length.out]
-  # s <- ((stop - start) * 0.1 + start)
-  # e <- ((stop - start) * 0.9 + start)
 
   #TODO: Make more general
   if (abs(2 * fseq[3] - fseq[2] - fseq[4]) < 1e-12) #arbitrary precision
@@ -622,8 +620,6 @@ observe({
   data <- DATA()
   v <- get_runtimes(data)
   name <- get_data_id(data)
-  # s <- ((max(v) - min(v)) * 0.05 + min(v)) %>% as.integer
-  # e <- ((max(v) - min(v)) * 0.95 + min(v)) %>% as.integer
 
   if (length(v) == 0) return()
 

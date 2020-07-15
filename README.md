@@ -6,12 +6,14 @@
 
 The __performance analyzer__ for **I**terative **O**ptimization **H**euristics (IOHs).
 
-* __Documentation__: [https://arxiv.org/abs/1810.05281](https://arxiv.org/abs/1810.05281)
+* __Documentation__: [https://arxiv.org/abs/2007.03953](https://arxiv.org/abs/2007.03953)
 * __Wiki page__: [https://iohprofiler.github.io/IOHanalyzer/](https://iohprofiler.github.io/IOHanalyzer/)
 * __Bug reports__: [https://github.com/IOHprofiler/IOHAnalyzer/issues](https://github.com/IOHprofiler/IOHAnalyzer/issues)
 * __Online service__: [http://iohprofiler.liacs.nl](http://iohprofiler.liacs.nl)
 * __General Contact__: [mailto:iohprofiler@liacs.leidenuniv.nl](mailto:iohprofiler@liacs.leidenuniv.nl)
 * __Mailing List__: [https://lists.leidenuniv.nl/mailman/listinfo/iohprofiler](https://lists.leidenuniv.nl/mailman/listinfo/iohprofiler)
+
+!(./misc/demo.gif)
 
 It _provides_:
 

@@ -450,7 +450,12 @@ observe({
   updateSelectInput(session, 'RT_Stats.Glicko.Algid', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RT_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'RT_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
-
+  
+  updateSelectInput(session, 'RT_Stats.DSC.Reference_alg', choices = algIds_, selected = algIds_[[1]])
+  updateSelectInput(session, 'RT_Stats.DSC.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RT_Stats.DSC.Funcid', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'RT_Stats.DSC.Dim', choices = DIMs, selected = DIMs)
+  
   updateSelectInput(session, 'RT_Stats.Overview.Algid', choices = algIds_, selected = algIds_)
 
   updateSelectInput(session, 'FV_Stats.Glicko.Algid', choices = algIds_, selected = algIds_)

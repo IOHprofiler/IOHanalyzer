@@ -953,7 +953,8 @@ add_transparancy <- function(colors, percentage){
 #' @param x_attr The column to specify the x_axis. Default is 'algId'
 #' @param legend_attr Default is 'algId' This is also used for the selection of colorschemes
 #' @param y_attr The column to specify the y_axis
-#' @param type The type of plot to use. Currently available: 'violin', 'line', 'radar', 'hist' and 'ribbon'
+#' @param type The type of plot to use. Currently available: 'violin', 'line', 'radar', 
+#' 'bar', hist' and 'ribbon'
 #' @param upper_attr When using ribbon-plot, this can be used to create a shaded area. 
 #' Only works in combination with`lower_attr` and `type` == 'ribbon' 
 #' @param lower_attr When using ribbon-plot, this can be used to create a shaded area. 
@@ -981,7 +982,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
   l <- x <- isinf <- y <- text <- l_orig <- NULL #Set local binding to remove warnings
   
   #Only allow valid plot types
-  if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon'))) {
+  if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon', 'bar'))) {
     stop(paste0("Provided plot type ('", type, "') is not supported"))
   }
   
@@ -1303,7 +1304,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              add_trace(data = df, x = ~x, y = ~y, width = ~width, type = 'bar',
                        name = ~l, text = ~text, hoverinfo = 'text',
                        colors = add_transparancy(colors, 0.6), color = ~l,
-                       marker = list(line = list(color = 'rgb(8,48,107)', width = 1)),
+                       marker = list(line = list(color = 'rgb(8,48,107)')),
                        ...)
            
            if (is_new_plot) {
@@ -1311,7 +1312,23 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                                         autorange = ifelse(scale.reverse, "reversed", T)),
                            yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
            }
-         }
+         },
+        'bar' = {
+          if (legend_attr != x_attr) {
+            warning("Inconsistent attribute selected for x-axis and legend. Using x_attr as name")
+          }
+          p %<>%
+            add_trace(data = df, x = ~x, y = ~y, type = 'bar',
+                      name = ~x,
+                      colors = add_transparancy(colors, 0.6), color = ~x,
+                      marker = list(line = list(color = 'rgb(8,48,107)')),
+                      ...)
+          
+          if (is_new_plot) {
+            p %<>% layout(xaxis = list(tickfont = f3(), ticklen = 3),
+                          yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
+          }
+        }
   )
   return(p)
 }

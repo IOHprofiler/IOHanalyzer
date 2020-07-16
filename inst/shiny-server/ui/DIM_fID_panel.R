@@ -3,7 +3,7 @@ DIM_fID_panel <- function() {
     "input.tabs!='Report' && input.tabs!='upload' && input.tabs!='readme' && input.tabs!='about' && input.tabs!='Settings'",
     column(12, offset = 0,
       div(
-        style = "padding: 0px 0px; margin-top:-5em; margin:0%", 
+        # style = "padding: 0px 0px; margin-top:-5em; margin:0%", 
         fluidRow(
           column(
             width = 11,
@@ -15,7 +15,7 @@ DIM_fID_panel <- function() {
         )
       ),
       div(
-        style = "padding: 0px 0px; margin-top:-50em;", 
+        # style = "padding: 0px 0px; margin-top:-50em;", 
         fluidRow(
           column(
             width = 11,

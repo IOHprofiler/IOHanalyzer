@@ -874,45 +874,71 @@ generate_data.PMF <- function(dsList, target, which = 'by_RT') {
 #' @examples 
 #' generate_data.hist(subset(dsl, funcId == 1), target = 15, which = 'by_RT')
 generate_data.hist <- function(dsList, target, use.equal.bins = F, which = 'by_RT') {
-  width <- NULL #Set local binding to remove warnings
-  if (length(get_funcId(dsList)) > 1 || length(get_dim(dsList)) > 1) {
-    stop("This function is only available a single function/dimension pair at a time.")
-  }
+  width <- NULL # Set local binding to remove warnings
+  
+  if (length(get_funcId(dsList)) > 1 || length(get_dim(dsList)) > 1)
+    stop('This function is only available a single function/dimension pair at a time.')
   
   if (use.equal.bins) {
-    if (which == "by_RT") {
-      res1 <- hist(get_RT_sample(dsList, target, output = 'long')$RT, breaks = nclass.FD, plot = F)
-    }
+    if (which == 'by_RT')
+      res1 <- hist(
+        get_RT_sample(dsList, target, output = 'long')$RT, 
+        breaks = nclass.FD, 
+        plot = F
+      )
     else
-      res1 <- hist(get_FV_sample(dsList, target, output = 'long')$`f(x)`, breaks = nclass.FD, plot = F)
+      res1 <- hist(
+        get_FV_sample(dsList, target, output = 'long')$`f(x)`, 
+        breaks = nclass.FD, 
+        plot = F
+      )
   }
   
-  dt <- as.data.table(rbindlist(lapply(dsList, function(df) {
-    algId <- attr(df, "algId")
-    if (which == "by_RT") {
-      data <- get_RT_sample(df, target, output = 'long')$RT
-    }
-    else if (which == "by_FV") {
-      data <- get_FV_sample(df, target, output = 'long')$`f(x)`
-    }
-    else stop("Invalid argument for parameter `which`.")
-    # TODO: skip if all runtime samples are NA
-    # if (sum(!is.na(data)) < 2)
-    #   next
-    if (use.equal.bins) breaks <- res1$breaks
-    else breaks <- nclass.FD
-    res <- hist(data, breaks = breaks, plot = F)
-    breaks <- res$breaks
-    
-    plot_data <- data.frame(x = res$mids, y = res$counts, width = breaks[2] - breaks[1],
-                            text = paste0('<b>count</b>: ', res$counts, '<br><b>breaks</b>: [',
-                                          breaks[-length(breaks)], ',', breaks[-1], ']')) %>%
-      mutate(width = width, algId = algId)
-  })))
+  dt <- as.data.table(
+    rbindlist(
+      lapply(
+        dsList, 
+        function(ds) {
+          algId <- attr(ds, 'algId')
+          
+          if (which == 'by_RT') 
+            data <- get_RT_sample(ds, target, output = 'long')$RT
+          else if (which == 'by_FV') 
+            data <- get_FV_sample(ds, target, output = 'long')$`f(x)`
+          else 
+            stop('Invalid argument for parameter `which`.')
+          
+          if (sum(!is.na(data)) < 2)
+            return(NULL)
+          
+          if (use.equal.bins) 
+            breaks <- res1$breaks
+          else 
+            breaks <- nclass.FD
+          
+          res <- hist(data, breaks = breaks, plot = F)
+          breaks <- res$breaks
+          
+          plot_text <- paste0(
+            '<b>count</b>: ', res$counts, '<br><b>breaks</b>: [',
+            breaks[-length(breaks)], ',', breaks[-1], ']'
+          )
+          
+          plot_data <- data.frame(
+            x = res$mids, 
+            y = res$counts, 
+            algId = algId,
+            width = breaks[2] - breaks[1],
+            text =  plot_text
+          )
+        }
+      ) %>% {
+        `[`(., !vapply(., is.null, logical(1)))
+      }
+    )
+  )
   dt
 }
-
-
 
 #' Generate dataframe of a single function/dimension pair
 #' 

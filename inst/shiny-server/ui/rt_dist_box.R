@@ -47,7 +47,7 @@ rt_histogram_box <- function(width = 12, collapsed = T, collapsible = T) {
                   and \\(75\\%\\) percentile of the runtime and \\(n\\) is the sample size.
                   The displayed algorithms can be selected by clicking on the legend on the right.
                   A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
-          plotlyOutput.IOHanalyzer('RT_HIST')
+          plotlyOutput.IOHanalyzer('RT_HIST', aspect_ratio = 16/14)
         )
       )
   )

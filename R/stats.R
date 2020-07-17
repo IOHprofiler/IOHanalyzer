@@ -599,3 +599,229 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = N
   lout$ratings$Player <- alg_names[lout$ratings$Player]
   lout
 }
+
+
+#' Verify that the credentials for DSCtool have been set
+#' 
+#' This uses the keyring package to store and load credentials. 
+#' If you already have an account, please call `add_DSC_credentials`
+#' with the corresponding username and password. 
+#' If you don't have an account, you can register for one using `register_DSC`
+#' 
+#' 
+#' 
+#' @export
+#' @examples 
+#' check_dsc_configured()
+check_dsc_configured <- function() {
+  tryCatch({
+    username <- keyring::key_get("DSCtool_name")
+    pwd <- keyring::key_get("DSCtool")
+    return(TRUE)
+    },
+    error = function(e) {
+      print("DSCtool connection not yet set. Please use the function `register_DSC` to 
+            create an account to use the DSC tool locally (or use 'add_DSC_credentials'
+            to use an existing account)")
+      return(FALSE)
+    }
+  )
+}
+
+#' Register an account to the DSCtool API
+#' 
+#' This uses the keyring package to store and load credentials. 
+#' If you already have an account, please call `add_DSC_credentials` instead
+#' 
+#' @param name Your name
+#' @param username A usename to be identified with. Will be stored on keyring under 'DSCtool_name'
+#' @param affiliation Your affiliation (university / company)
+#' @param email Your email adress
+#' @param password The password to use. If NULL, this will be generated at random. 
+#' Will be stored on keyring under 'DSCtool'
+#' 
+#' @export
+#' @examples
+#' \dontrun{ 
+#' register_DSC('John Doe', 'jdoe', 'Sample University', "j.doe.sample.com")
+#' }
+register_DSC <- function(name, username, affiliation, email, password = NULL) {
+  if (is.null(password)) password <- stri_rand_strings(1, 10)
+  url <- "https://ws.ijs.si:8443/dsc-1.5/service/manage/user"
+  result_json <- POST(url, add_headers(.headers = c('Content-Type' = "application/json",
+                                                    'Accept' = "application/json")),
+                      body = list(name = name, affiliation = affiliation, email = email,
+                                  username = username, password = password), 
+                      encode = "json")
+  if (result_json$status_code == 200) {
+    keyring::key_set_with_value("DSCtool", password = password)
+    keyring::key_set_with_value("DSCtool_name", password = username)
+    return(TRUE)
+  }
+  else {
+    stop("Something went wrong in registering for DSCtool")
+  }
+}
+
+#' Register an account to the DSCtool API
+#' 
+#' This uses the keyring package to store and load credentials. 
+#' If you already have an account, please call `add_DSC_credentials` instead
+#' 
+#' @param username The usename you use on DSCtool. Will be stored on keyring under 'DSCtool_name'
+#' @param password The password you use on DSCtool. Will be stored on keyring under 'DSCtool'
+#' 
+#' @export
+#' @examples 
+#' \dontrun{
+#' add_DSC_credentials('jdoe', 'monkey123')
+#' }
+add_DSC_credentials <- function(username, password) {
+  keyring::key_set_with_value("DSCtool", password = password)
+  keyring::key_set_with_value("DSCtool_name", password = username)
+}
+
+#' Convert a DataSetList to the format needed for the DSCtool
+#' 
+#' 
+#' @param dsList The DataSetList object
+#' @param targets Optional list of target values (Runtime or target value)
+#' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
+#' 
+#' @noRd
+#' @examples 
+#' convert_to_dsc_compliant(dsl)
+convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT') {
+  maximize <- attr(dsList, 'maximization')
+  variable <- fid <- value <- NULL #Set local binding to remove warnings
+  by_rt <- which == 'by_RT'
+  
+  if (is.null(targets)) {
+    targets <- get_target_dt(dsList, which)
+  }
+  
+  final_list <- lapply(get_algId(dsList), function(algname) {
+    dsl_sub <- subset(dsList, algId == algname)
+    problems <- lapply(dsl_sub, function(ds) {
+      target <- targets[funcId == attr(ds, 'funcId') & DIM == attr(ds, 'DIM'), 'target']
+      if (by_rt) {
+        data <- get_RT_sample(ds, target, output = 'long')$RT
+      }
+      else {
+        data <- get_FV_sample(ds, target, output = 'long')$`f(x)`
+      }
+      return(list(name = paste0("F", attr(ds, 'funcId'), "_", attr(ds, 'DIM'),"D"),
+                  data = data))
+    })
+    return(list(algorithm = algname, problems = problems))
+  })
+  
+  
+  return(final_list)
+}
+
+#' Get the matrix of rankings using the DSCtool api for a DataSetList
+#' 
+#' 
+#' @param dsList The DataSetList object
+#' @param targets Optional list of target values (Runtime or target value)
+#' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
+#' @param test_type Either 'AD' for Anderson-Darling or KS for Kolmogorov-Smirnov tests
+#' @param alpha Threshold value for statistical significance
+#' @param epsilon Minimum threshold to have practical difference between algorithms (eDSC)
+#' @param monte_carlo_iterations How many monte-carlo-simulations to perform 
+#' (set to 0 to use regular DSC)
+#' 
+#' @return A named list containing a ranked-matrix which has the rankin of each algorithm
+#' on each problem, as well as a list of which omnibus tests can be used to further process
+#' this data. This can be further analyzed using `get_dsc_omnibus`
+#' 
+#' @export
+#' @examples 
+#' get_dsc_rank(dsl)
+get_dsc_rank <- function(dsList, targets = NULL, which = 'by_RT', test_type = "AD", alpha = 0.05,
+                         epsilon = 0, monte_carlo_iterations = 0) {
+  url <- "https://ws.ijs.si:8443/dsc-1.5/service/rank"
+  dsc_list <- convert_to_dsc_compliant(dsList, targets, which)
+  json_list <- list(method = list(name = test_type, alpha = alpha), epsilon = epsilon, 
+                    data = dsc_list, monte_carlo_iterations = monte_carlo_iterations)
+  
+  result_json <- POST(url,
+                      authenticate(keyring::key_get("DSCtool_name"),keyring::key_get("DSCtool")),
+                      add_headers(.headers = c('Content-Type' = "application/json",
+                                               'Accept' = "application/json")),
+                      body = json_list, encode = "json")
+  
+  return(content(result_json)$result)
+}
+
+
+#' Perform omnibus statistical tests on the matrix of rankings from the DSCtool api 
+#' 
+#' 
+#' @param res The result of a call to the `get_dsc_rank`
+#' @param method Which method to use to do the tests. 
+#' Has be be one of the allowed ones in `res$valid_methods`. 
+#' When NULL, the first valid option is chosen by default
+#' @param alpha Threshold value for statistical significance
+#' 
+#' @return A named list containing the algorithm means
+#' 
+#' @export
+#' @examples 
+#' get_dsc_omnibus(get_dsc_rank(dsl))
+get_dsc_omnibus <- function(res, method = NULL, alpha = 0.05) {
+  if (is.null(method)) method <- res$valid_methods[[1]]
+  else req(method %in% res$valid_methods)
+  url <- "https://ws.ijs.si:8443/dsc-1.5/service/omnibus"
+  new_json <- list(method = list(name = method, alpha = alpha),
+                   ranked_matrix = res$ranked_matrix,
+                   number_algorithms = res$number_algorithms,
+                   parametric_tests = res$parametric_tests)
+  result_json <- POST(url,
+                      authenticate(keyring::key_get("DSCtool_name"),keyring::key_get("DSCtool")),
+                      add_headers(.headers = c('Content-Type' = "application/json",
+                                               'Accept' = "application/json")),
+                      body = new_json, encode = "json")
+  
+  return(content(result_json)$result)
+}
+
+#' Perform post-hoc processing on data from DSCtool
+#' 
+#' 
+#' @param omni_res The result from a call to `get_dsc_omnibus`
+#' @param nr_algs The number of algorithms present in `omni_res`
+#' @param nr_problems The number of problems present in `omni_res`
+#' @param base_algorithm The base algorithm to which the other are compared. 
+#' This has to be present in `omni_res$algorithm_means` as an `algorithm` property
+#' @param method Either 'friedman' or 'friedman-aligned-rank'
+#' @param alpha Threshold value for statistical significance
+#' 
+#' @return A named list containing 4 types of analyses:
+#' * Zvalue
+#' * UnadjustedPValue
+#' * Holm
+#' * Hochberg
+#' 
+#' @export
+#' @examples 
+#' get_dsc_posthoc(get_dsc_omnibus(get_dsc_rank(dsl)), 2, 2)
+get_dsc_posthoc <- function(omni_res, nr_algs, nr_problems, base_algorithm = NULL, 
+                            method = "friedman", alpha = 0.05) {
+  if (is.null(base_algorithm)) base_algorithm <- omni_res$algorithm_means[[1]]$algorithm
+  else req(base_algorithm %in% unlist(omni_res$algorithm_means))
+  url <- "https://ws.ijs.si:8443/dsc-1.5/service/posthoc"
+  new_json <- list(method = list(name = method, alpha = alpha),
+                   algorithm_means = omni_res$algorithm_means,
+                   n = nr_algs,
+                   k = nr_problems,
+                   base_algorithm = base_algorithm)
+  result_json <- POST(url,
+                      authenticate(keyring::key_get("DSCtool_name"), keyring::key_get("DSCtool")),
+                      add_headers(.headers = c('Content-Type' = "application/json",
+                                               'Accept' = "application/json")),
+                      body = new_json, encode = "json")
+  
+  return(content(result_json)$result)
+}

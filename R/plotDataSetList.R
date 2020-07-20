@@ -1332,3 +1332,58 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
   )
   return(p)
 }
+
+
+#' Create the PerformViz plot
+#' 
+#' From the paper: 
+#' 
+#' @param DSC_rank_result The result from a call to DSCtool rank service (`get_dsc_rank`)
+#' 
+#' @return A performviz plot
+#' @export
+#' @example 
+#' Plot.Performviz(get_dsc_rank(dsl))
+Plot.Performviz <- function(DSC_rank_result) {
+  if (!requireNamespace("ComplexHeatmap", quietly = TRUE)) {
+    stop("Package \"pkg\" needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
+  mlist <- DSC_rank_result$ranked_matrix
+  
+  # df_temp <- rbindlist(lapply(mlist[[problem_idx]]$result, 
+  #                             function(x) {
+  #                               list(algorithm = x$algorithm, rank =  x$rank)
+  #                             }))
+  # df_temp[, problem := mlist[[problem_idx]]$problem]
+  
+  df <- rbindlist(lapply(seq(length(mlist)), function(problem_idx) {
+    df_temp <- rbindlist(lapply(mlist[[problem_idx]]$result, 
+                                function(x) {
+                                  list(algorithm = x$algorithm, rank =  x$rank)
+                                }))
+    df_temp[, problem := mlist[[problem_idx]]$problem]
+  }))
+  
+  rank_matrix <- acast(df, algorithm ~ problem, value.var = 'rank')
+  df <- rank_matrix
+  # colnames(df)<-index
+  # rownames(df)<-vector
+  # Define some graphics to display the distribution of columns
+  # library(ComplexHeatmap)
+  .hist = anno_histogram(df, gp = gpar(fill = "lightblue"))
+  .density = anno_density(df, type = "line", gp = gpar(col = "blue"))
+  ha_mix_top = HeatmapAnnotation(hist = .hist, density = .density)
+  # Define some graphics to display the distribution of rows
+  .violin = anno_density(df, type = "violin", 
+                         gp = gpar(fill = "lightblue"), which = "row")
+  .boxplot = anno_boxplot(df, which = "row")
+  ha_mix_right = HeatmapAnnotation(violin = .violin, bxplt = .boxplot,
+                                   which = "row", width = unit(4, "cm"))
+  # Combine annotation with heatmap
+  Heatmap(df, name = "Ranking", 
+          column_names_gp = gpar(fontsize = 8),
+          top_annotation = ha_mix_top, 
+          top_annotation_height = unit(3.8, "cm")) + ha_mix_right
+  
+}

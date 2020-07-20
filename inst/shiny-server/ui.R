@@ -312,7 +312,9 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                fv_dsc_box(),
+                fv_dsc_box_rank(),
+                fv_dsc_box_omni(),
+                fv_dsc_box_posthoc(),
                 fv_glicko2_box(collapsed = T)
               )
             )

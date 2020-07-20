@@ -1,33 +1,91 @@
-FV_data_table_posthoc <- reactive({
-  input$FV_Stats.DSC.Create
+FV_DSC_rank_result <- reactive({
+  req(input$FV_Stats.DSC.Create_rank)
   
   isolate({
     withProgress({
       data <- FV_DSC_data()
       req(length(data) > 0)
+      if (input$FV_Stats.DSC.Value_type != 'Raw') {
+        shinyjs::alert("This feature is not yet implemented in the current version of IOHanalyzer.")
+      }
+      test_type <- if (input$FV_Stats.DSC.Test_rank == "Anderson-Darline") "AD" else "KS"
       rank_res <- get_dsc_rank(data, FV_stats_DSC_targets_obj, which = 'by_FV', 
-                               alpha = input$FV_Stats.DSC.Alpha, test_type = "AD")
+                               alpha = input$FV_Stats.DSC.Alpha_rank, 
+                               test_type = test_type,
+                               monte_carlo_iterations = input$FV_Stats.DSC.MCsamples_rank,
+                               epsilon = input$FV_Stats.DSC.Epsilon_rank)
       if (is.null(rank_res)) {
         shinyjs::alert("There was an error getting the ranking data from DSCtool. Please 
         select different settings and try again")
         return(NULL)
       }
-      omni_res <- get_dsc_omnibus(rank_res, alpha = input$FV_Stats.DSC.Alpha)
+      updateSelectInput(session, 'FV_Stats.DSC.Omni_options', choices = rank_res$valid_methods, 
+                        selected = rank_res$valid_methods[[1]])
+      
+      
+      rank_res
+    }, message = "Getting DSC ranking data")
+  })
+})
+
+FV_render_performviz <- reactive({
+  rank_res <- FV_DSC_rank_result()
+  if (is.null(rank_res)) {return(NULL)}
+  Plot.Performviz(rank_res)
+})
+
+output$FV_Stats.DSC.PerformViz <- renderPlot({
+  FV_render_performviz()
+})
+
+output$FV_Stats.DSC.Download_rank <- downloadHandler(
+  filename = function() {
+    eval(FV_DSC_figure_name_rank)
+  },
+  content = function(file) {
+    save_plotly(FV_render_performviz(), file)
+  },
+  contentType = paste0('image/', input$FV_Stats.DSC.Format_rank)
+)
+
+FV_DSC_omni_result <- reactive({
+  input$FV_Stats.DSC.Create_omni
+  
+  isolate({
+    withProgress({
+      rank_res <- FV_DSC_rank_result()
+      req(rank_res)
+      omni_res <- get_dsc_omnibus(rank_res, method = input$FV_Stats.DSC.Omni_options,
+                                  alpha = input$FV_Stats.DSC.Alpha_omni)
+      
+    }, message = "Creating Comparison, this might take a while")
+  })
+})
+
+
+output$FV_Stats.DSC.Output_omni <- renderText({
+  res_omni <- FV_DSC_omni_result()
+  req(res_omni)
+  paste0(res_omni$message, "(p-value: ", res_omni$p_value, ")")
+})
+
+
+FV_DSC_posthoc_result <- reactive({
+  input$FV_Stats.DSC.Create_posthoc
+  
+  isolate({
+    withProgress({
+      omni_res <- FV_DSC_omni_result()
+      req(omni_res)
+      data <- FV_DSC_data()
+      req(length(data) > 0)
       df_posthoc <- rbindlist(lapply(get_algId(data), function(algname){
         posthoc_res <- get_dsc_posthoc(omni_res, length(get_algId(data)), 
                                        nrow(FV_stats_DSC_targets_obj),
                                        alpha = input$FV_Stats.DSC.Alpha, 
-                                       base_algorithm = algname)
+                                       base_algorithm = algname,
+                                       method = input$FV_Stats.DSC.Posthoc_method)
         if (is.null(posthoc_res)) { return(NULL)}
-        # df <- rbindlist(lapply(seq(4), function(method_idx) {
-        #   dt_temp <- rbindlist(lapply(posthoc_res$adjusted_p_values[[method_idx]]$algorithms, 
-        #                               function(x) {
-        #                                 data.table(x$algorithm, x$value)
-        #                        }))
-        #   dt_temp[,('V3') := posthoc_res$adjusted_p_values[[method_idx]]$name]
-        #   colnames(dt_temp) <- c('algId', 'value', 'method')
-        #   dt_temp
-        # }))
         values <- lapply(seq(4), function(method_idx) {
           lapply(posthoc_res$adjusted_p_values[[method_idx]]$algorithms, 
                  function(x) {
@@ -51,17 +109,17 @@ FV_data_table_posthoc <- reactive({
 output$FV_Stats.DSC.PosthocTable <- DT::renderDataTable({
   
   req(length(DATA_RAW()) > 0)
-  FV_data_table_posthoc()
-}, options = list(dom = 'lFVip', pageLength = 15, scrollX = T, server = T))
+  FV_DSC_posthoc_result()
+}, options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
 
 FV_render_DSC_plot <- reactive({
-  dt <- FV_data_table_posthoc()
+  dt <- FV_DSC_posthoc_result()
   if (is.null(dt) || nrow(dt) < 1) {return(NULL)}
   # plot_general_data(dt[method == input$FV_Stats.DSC.method], x_attr = 'algId', y_attr = 'value', type = 'bar',
   #                   legend_attr = 'algId')
   dt <- dt[,c('baseline', 'compared alg', input$FV_Stats.DSC.method), with = F]
   p_matrix <- acast(dt, baseline ~ `compared alg`, value.var = input$FV_Stats.DSC.method)
-  
+  storage.mode(p_matrix) <- "numeric"
   y <- p_matrix <= alpha
   colorScale <- data.frame(x = c(-1, -0.33, -0.33, 0.33, 0.33, 1),
                            col = c('blue', 'blue', 'white', 'white', 'red', 'red')
@@ -84,7 +142,7 @@ output$FV_Stats.DSC.DownloadTable <- downloadHandler(
     eval(FV_DSC_table_name)
   },
   content = function(file) {
-    df <- FV_data_table_posthoc()
+    df <- FV_DSC_posthoc_result()
     if (input$FV_Stats.DSC.TableFormat == 'csv')
       write.csv(df, file, row.names = F)
     else{

@@ -61,7 +61,7 @@ render_DSC_plot <- reactive({
   #                   legend_attr = 'algId')
   dt <- dt[,c('baseline', 'compared alg', input$RT_Stats.DSC.method), with = F]
   p_matrix <- acast(dt, baseline ~ `compared alg`, value.var = input$RT_Stats.DSC.method)
-  
+  storage.mode(p_matrix) <- "numeric"
   y <- p_matrix <= alpha
   colorScale <- data.frame(x = c(-1, -0.33, -0.33, 0.33, 0.33, 1),
                            col = c('blue', 'blue', 'white', 'white', 'red', 'red')

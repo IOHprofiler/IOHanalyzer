@@ -49,5 +49,7 @@ RoxygenNote: 7.0.0
 Suggests: 
     testthat,
     withr,
-    shinydashboard
+    shinydashboard,
+    ComplexHeatmap,
+    grid
 Depends: R (>= 2.10)

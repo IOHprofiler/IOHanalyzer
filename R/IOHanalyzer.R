@@ -8,7 +8,7 @@
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom colorRamps primary.colors
 #' @importFrom data.table as.data.table rbindlist data.table fread := melt is.data.table 
-#' @importFrom data.table setorderv frank setnames
+#' @importFrom data.table setorderv frank setnames rbindlist
 #' @importFrom plotly add_annotations add_trace orca plot_ly rename_ subplot layout
 #' @importFrom ggplot2 aes geom_jitter geom_line geom_ribbon geom_violin ggplot element_text
 #' @importFrom ggplot2 guides scale_color_manual scale_colour_manual scale_fill_manual
@@ -20,6 +20,7 @@
 #' @importFrom stringi stri_detect_regex stri_detect_fixed stri_locate_all stri_replace
 #' @importFrom stringi stri_rand_strings
 #' @importFrom httr POST add_headers content authenticate
+#' @importFrom reshape2 acast
 #' @useDynLib IOHanalyzer
 NULL
 # Ugly hack, but appears to be required to appease CRAN

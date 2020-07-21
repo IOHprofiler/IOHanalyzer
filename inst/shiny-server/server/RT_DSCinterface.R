@@ -1,47 +1,103 @@
-data_table_posthoc <- reactive({
-  input$RT_Stats.DSC.Create
+RT_DSC_rank_result <- reactive({
+  req(input$RT_Stats.DSC.Create_rank)
   
   isolate({
     withProgress({
       data <- RT_DSC_data()
       req(length(data) > 0)
+      test_type <- if (input$RT_Stats.DSC.Test_rank == "Anderson-Darling") "AD" else "KS"
       rank_res <- get_dsc_rank(data, RT_stats_DSC_targets_obj, which = 'by_RT', 
-                               alpha = input$RT_Stats.DSC.Alpha, test_type = "AD")
+                               alpha = input$RT_Stats.DSC.Alpha_rank, 
+                               test_type = test_type,
+                               monte_carlo_iterations = input$RT_Stats.DSC.MCsamples_rank,
+                               epsilon = input$RT_Stats.DSC.Epsilon_rank, 
+                               na.correction = input$RT_Stats.DSC.Value_type)
       if (is.null(rank_res)) {
         shinyjs::alert("There was an error getting the ranking data from DSCtool. Please 
         select different settings and try again")
         return(NULL)
       }
-      omni_res <- get_dsc_omnibus(rank_res, alpha = input$RT_Stats.DSC.Alpha)
+      updateSelectInput(session, 'RT_Stats.DSC.Omni_options', choices = rank_res$valid_methods, 
+                        selected = rank_res$valid_methods[[1]])
+      
+      
+      rank_res
+    }, message = "Getting DSC ranking data")
+  })
+})
+
+RT_render_performviz <- reactive({
+  rank_res <- RT_DSC_rank_result()
+  if (is.null(rank_res)) {return(NULL)}
+  Plot.Performviz(rank_res)
+})
+
+output$RT_Stats.DSC.PerformViz <- renderPlot({
+  RT_render_performviz()
+})
+
+output$RT_Stats.DSC.Download_rank <- downloadHandler(
+  filename = function() {
+    eval(RT_DSC_figure_name_rank)
+  },
+  content = function(file) {
+    save_plotly(RT_render_performviz(), file)
+  },
+  contentType = paste0('image/', input$RT_Stats.DSC.Format_rank)
+)
+
+RT_DSC_omni_result <- reactive({
+  input$RT_Stats.DSC.Create_omni
+  
+  isolate({
+    withProgress({
+      rank_res <- RT_DSC_rank_result()
+      req(rank_res)
+      omni_res <- get_dsc_omnibus(rank_res, method = input$RT_Stats.DSC.Omni_options,
+                                  alpha = input$RT_Stats.DSC.Alpha_omni)
+      
+    }, message = "Creating Comparison, this might take a while")
+  })
+})
+
+
+output$RT_Stats.DSC.Output_omni <- renderText({
+  res_omni <- RT_DSC_omni_result()
+  req(res_omni)
+  paste0(res_omni$message, "(p-value: ", res_omni$p_value, ")")
+})
+
+
+RT_DSC_posthoc_result <- reactive({
+  input$RT_Stats.DSC.Create_posthoc
+  
+  isolate({
+    withProgress({
+      omni_res <- RT_DSC_omni_result()
+      req(omni_res)
+      data <- RT_DSC_data()
+      req(length(data) > 0)
       df_posthoc <- rbindlist(lapply(get_algId(data), function(algname){
-      posthoc_res <- get_dsc_posthoc(omni_res, length(get_algId(data)), 
-                                     nrow(RT_stats_DSC_targets_obj),
-                                     alpha = input$RT_Stats.DSC.Alpha, 
-                                     base_algorithm = algname)
-      if (is.null(posthoc_res)) { return(NULL)}
-      # df <- rbindlist(lapply(seq(4), function(method_idx) {
-      #   dt_temp <- rbindlist(lapply(posthoc_res$adjusted_p_values[[method_idx]]$algorithms, 
-      #                               function(x) {
-      #                                 data.table(x$algorithm, x$value)
-      #                        }))
-      #   dt_temp[,('V3') := posthoc_res$adjusted_p_values[[method_idx]]$name]
-      #   colnames(dt_temp) <- c('algId', 'value', 'method')
-      #   dt_temp
-      # }))
-      values <- lapply(seq(4), function(method_idx) {
-        lapply(posthoc_res$adjusted_p_values[[method_idx]]$algorithms, 
-               function(x) {
-                 x$value
-               })
-      })
-      
-      algnames <- lapply(posthoc_res$adjusted_p_values[[1]]$algorithms, 
-                         function(x) {
-                           x$algorithm
-                         })
-      df <- data.table("baseline" = algname, "compared alg" = algnames, z = values[[1]], "unadjusted P" = values[[2]], 
-                 "Holm" = values[[3]], "Hochberg" = values[[4]])
-      
+        posthoc_res <- get_dsc_posthoc(omni_res, length(get_algId(data)), 
+                                       nrow(RT_stats_DSC_targets_obj),
+                                       alpha = input$RT_Stats.DSC.Alpha_posthoc, 
+                                       base_algorithm = algname,
+                                       method = input$RT_Stats.DSC.Posthoc_test)
+        if (is.null(posthoc_res)) { return(NULL)}
+        values <- lapply(seq(4), function(method_idx) {
+          lapply(posthoc_res$adjusted_p_values[[method_idx]]$algorithms, 
+                 function(x) {
+                   x$value
+                 })
+        })
+        
+        algnames <- lapply(posthoc_res$adjusted_p_values[[1]]$algorithms, 
+                           function(x) {
+                             x$algorithm
+                           })
+        df <- data.table("baseline" = algname, "compared alg" = algnames, z = values[[1]], "unadjusted P" = values[[2]], 
+                         "Holm" = values[[3]], "Hochberg" = values[[4]])
+        
       }))
       as.data.table(format(df_posthoc, digits = 3))
     }, message = "Creating Comparison, this might take a while")
@@ -51,18 +107,18 @@ data_table_posthoc <- reactive({
 output$RT_Stats.DSC.PosthocTable <- DT::renderDataTable({
   
   req(length(DATA_RAW()) > 0)
-  data_table_posthoc()
+  RT_DSC_posthoc_result()
 }, options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
 
-render_DSC_plot <- reactive({
-  dt <- data_table_posthoc()
+RT_render_DSC_plot <- reactive({
+  dt <- RT_DSC_posthoc_result()
   if (is.null(dt) || nrow(dt) < 1) {return(NULL)}
   # plot_general_data(dt[method == input$RT_Stats.DSC.method], x_attr = 'algId', y_attr = 'value', type = 'bar',
   #                   legend_attr = 'algId')
-  dt <- dt[,c('baseline', 'compared alg', input$RT_Stats.DSC.method), with = F]
-  p_matrix <- acast(dt, baseline ~ `compared alg`, value.var = input$RT_Stats.DSC.method)
+  dt <- dt[,c('baseline', 'compared alg', input$RT_Stats.DSC.Posthoc_method), with = F]
+  p_matrix <- acast(dt, baseline ~ `compared alg`, value.var = input$RT_Stats.DSC.Posthoc_method)
   storage.mode(p_matrix) <- "numeric"
-  y <- p_matrix <= alpha
+  y <- p_matrix <= input$RT_Stats.DSC.Alpha_posthoc
   colorScale <- data.frame(x = c(-1, -0.33, -0.33, 0.33, 0.33, 1),
                            col = c('blue', 'blue', 'white', 'white', 'red', 'red')
   )
@@ -76,7 +132,7 @@ render_DSC_plot <- reactive({
 })
 
 output$RT_Stats.DSC.PosthocViz <- renderPlotly({
-  render_DSC_plot()
+  RT_render_DSC_plot()
 })
 
 output$RT_Stats.DSC.DownloadTable <- downloadHandler(
@@ -84,7 +140,7 @@ output$RT_Stats.DSC.DownloadTable <- downloadHandler(
     eval(RT_DSC_table_name)
   },
   content = function(file) {
-    df <- data_table_posthoc()
+    df <- RT_DSC_posthoc_result()
     if (input$RT_Stats.DSC.TableFormat == 'csv')
       write.csv(df, file, row.names = F)
     else{
@@ -98,7 +154,7 @@ output$RT_Stats.DSC.Download <- downloadHandler(
     eval(RT_DSC_figure_name)
   },
   content = function(file) {
-    save_plotly(render_DSC_plot(), file)
+    save_plotly(RT_render_DSC_plot(), file)
   },
   contentType = paste0('image/', input$RT_Stats.DSC.Format)
 )

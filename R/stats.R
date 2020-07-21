@@ -687,11 +687,13 @@ add_DSC_credentials <- function(username, password) {
 #' @param dsList The DataSetList object
 #' @param targets Optional list of target values (Runtime or target value)
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
+#' @param na.correction How to deal with missing values. Only used in fixed-target perspective.
 #' 
 #' @noRd
 #' @examples 
 #' convert_to_dsc_compliant(dsl)
-convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT') {
+convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT', 
+                                     na.correction = NULL) {
   maximize <- attr(dsList, 'maximization')
   variable <- fid <- value <- NULL #Set local binding to remove warnings
   by_rt <- which == 'by_RT'
@@ -706,9 +708,36 @@ convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT') {
       target <- targets[funcId == attr(ds, 'funcId') & DIM == attr(ds, 'DIM'), 'target']
       if (by_rt) {
         data <- get_RT_sample(ds, target, output = 'long')$RT
+        if (any(is.na(data)) & !is.null(na.correction)) {
+          if (na.correction == 'PAR-1') {
+            budgets <- attr(ds, 'maxRT')
+            data[is.na(data)] <- budgets[is.na(data)]
+          }
+          else if (na.correction == 'PAR-10') {
+            budgets <- attr(ds, 'maxRT')
+            data[is.na(data)] <- 10 * budgets[is.na(data)]
+          }
+          else if (na.correction == 'ERT') {
+            ert <- as.numeric(get_ERT(ds, target)$ERT)
+            if (is.infinite(ert)) {
+              ert <- sum(attr(ds, 'maxRT'))
+            }
+            data[is.na(data)] <- ert 
+          }
+          else if (na.correction == 'Remove-na') {
+            data <- data[!is.na(data)]
+          }
+          else {
+            stop('This value for `na.correction` is not supported')
+          }
+        }
       }
       else {
         data <- get_FV_sample(ds, target, output = 'long')$`f(x)`
+      }
+      if (any(is.na(data))) {
+        warning("NA-values detected in data preparation for DSCtool. This will likely result in an 
+                  error. Please verify the provided DataSetList.")
       }
       return(list(name = paste0("F", attr(ds, 'funcId'), "_", attr(ds, 'DIM'),"D"),
                   data = data))
@@ -731,6 +760,15 @@ convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT') {
 #' @param epsilon Minimum threshold to have practical difference between algorithms (eDSC)
 #' @param monte_carlo_iterations How many monte-carlo-simulations to perform 
 #' (set to 0 to use regular DSC)
+#' @param na.correction How to deal with missing values. Only used in fixed-target perspective.
+#' Options are: 
+#' - 'NULL': No correction is done. This will likely result in an error, as the DSCtool
+#' does not allow for na values
+#' - 'PAR-1' Replace missing values with Budget (budget taken from relevant DataSet)
+#' - 'PAR-10' Replace missing values with 10*Budget (budget taken from relevant DataSet)
+#' - 'ERT' Replace NA values with the Expected Running Time. If all values are NA, this 
+#' reverts to nr_runs * budget
+#' - 'Remove-na' Removes all NA values
 #' 
 #' @return A named list containing a ranked-matrix which has the rankin of each algorithm
 #' on each problem, as well as a list of which omnibus tests can be used to further process
@@ -740,14 +778,14 @@ convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT') {
 #' @examples 
 #' get_dsc_rank(dsl)
 get_dsc_rank <- function(dsList, targets = NULL, which = 'by_RT', test_type = "AD", alpha = 0.05,
-                         epsilon = 0, monte_carlo_iterations = 0) {
+                         epsilon = 0, monte_carlo_iterations = 0, na.correction = NULL) {
   url <- "https://ws.ijs.si:8443/dsc-1.5/service/rank"
-  dsc_list <- convert_to_dsc_compliant(dsList, targets, which)
+  dsc_list <- convert_to_dsc_compliant(dsList, targets, which, na.correction = na.correction)
   json_list <- list(method = list(name = test_type, alpha = alpha), epsilon = epsilon, 
                     data = dsc_list, monte_carlo_iterations = monte_carlo_iterations)
   
   result_json <- POST(url,
-                      authenticate(keyring::key_get("DSCtool_name"),keyring::key_get("DSCtool")),
+                      authenticate(keyring::key_get("DSCtool_name"), keyring::key_get("DSCtool")),
                       add_headers(.headers = c('Content-Type' = "application/json",
                                                'Accept' = "application/json")),
                       body = json_list, encode = "json")

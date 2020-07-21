@@ -223,16 +223,24 @@ body <- dashboardBody(
               )
             )
     ),
+    tabItem(tabName = 'RT_DSC',
+            fluidRow(
+              column(
+                width = 12,
+                rt_dsc_box_rank(),
+                rt_dsc_box_omni(),
+                rt_dsc_box_posthoc()
+              )
+            )
+    ),    
     tabItem(tabName = 'RT_Statistics_aggr',
             fluidRow(
               column(
                 width = 12,
-                rt_dsc_box(),
-                rt_glicko2_box(collapsed = T)
+                rt_glicko2_box(collapsed = F)
               )
             )
     ),    
-
     # FCE: Data Summary -----------------
     tabItem(tabName = 'FCE_DATA',
             fluidRow(
@@ -308,18 +316,25 @@ body <- dashboardBody(
             )
     ),
 
-    tabItem(tabName = 'FCE_Statistics_aggr',
+    tabItem(tabName = 'FCE_DSC',
             fluidRow(
               column(
                 width = 12,
                 fv_dsc_box_rank(),
                 fv_dsc_box_omni(),
-                fv_dsc_box_posthoc(),
-                fv_glicko2_box(collapsed = T)
+                fv_dsc_box_posthoc()
               )
             )
     ),
     
+    tabItem(tabName = 'FCE_Statistics_aggr',
+            fluidRow(
+              column(
+                width = 12,
+                fv_glicko2_box(collapsed = F)
+              )
+            )
+    ),
     tabItem(tabName = 'Positions',
             fluidRow(
               column(

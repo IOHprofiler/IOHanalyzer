@@ -134,10 +134,15 @@ FCE_multi_func_name <- parse(text = "paste0('MultiFCE-', paste0(input$Overall.Di
                              '.', input$FCEPlot.Aggr.TableFormat)")
 RT_Glicko2_table_name <- parse(text = "paste0('RT_Glicko2', '.', input$RT_Stats.Glicko.TableFormat)")
 RT_Glicko2_figure_name <- parse(text = "paste0('RT_Glicko2', '.', input$RT_Stats.Glicko.Format)")
+
 RT_DSC_table_name <- parse(text = "paste0('RT_DSC', '.', input$RT_Stats.DSC.TableFormat)")
 RT_DSC_figure_name <- parse(text = "paste0('RT_DSC', '.', input$RT_Stats.DSC.Format)")
+FV_DSC_figure_name_rank <- parse(text = "paste0('RT_DSC_PerformViz', '.', input$RT_Stats.DSC.Format_rank)")
+
 FV_DSC_table_name <- parse(text = "paste0('FV_DSC', '.', input$FV_Stats.DSC.TableFormat)")
 FV_DSC_figure_name <- parse(text = "paste0('FV_DSC', '.', input$FV_Stats.DSC.Format)")
+FV_DSC_figure_name_rank <- parse(text = "paste0('FV_DSC_PerformViz', '.', input$FV_Stats.DSC.Format_rank)")
+
 RT_Stats_table_name <- parse(text = "paste0('RT_Stat_Comp-', paste0(input$Overall.Dim, 'D'),
                              paste0('F', input$Overall.Funcid), '.', input$RT_Stats.Overview.TableFormat)")
 RT_Stats_heatmap_name <- parse(text = "paste0('RT_Stat_Heatmap-', paste0(input$Overall.Dim, 'D'),

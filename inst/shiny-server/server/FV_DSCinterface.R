@@ -5,10 +5,10 @@ FV_DSC_rank_result <- reactive({
     withProgress({
       data <- FV_DSC_data()
       req(length(data) > 0)
-      if (input$FV_Stats.DSC.Value_type != 'Raw') {
-        shinyjs::alert("This feature is not yet implemented in the current version of IOHanalyzer.")
-      }
-      test_type <- if (input$FV_Stats.DSC.Test_rank == "Anderson-Darline") "AD" else "KS"
+      # if (input$FV_Stats.DSC.Value_type != 'Raw') {
+      #   shinyjs::alert("This feature is not yet implemented in the current version of IOHanalyzer.")
+      # }
+      test_type <- if (input$FV_Stats.DSC.Test_rank == "Anderson-Darling") "AD" else "KS"
       rank_res <- get_dsc_rank(data, FV_stats_DSC_targets_obj, which = 'by_FV', 
                                alpha = input$FV_Stats.DSC.Alpha_rank, 
                                test_type = test_type,
@@ -82,9 +82,9 @@ FV_DSC_posthoc_result <- reactive({
       df_posthoc <- rbindlist(lapply(get_algId(data), function(algname){
         posthoc_res <- get_dsc_posthoc(omni_res, length(get_algId(data)), 
                                        nrow(FV_stats_DSC_targets_obj),
-                                       alpha = input$FV_Stats.DSC.Alpha, 
+                                       alpha = input$FV_Stats.DSC.Alpha_posthoc, 
                                        base_algorithm = algname,
-                                       method = input$FV_Stats.DSC.Posthoc_method)
+                                       method = input$FV_Stats.DSC.Posthoc_test)
         if (is.null(posthoc_res)) { return(NULL)}
         values <- lapply(seq(4), function(method_idx) {
           lapply(posthoc_res$adjusted_p_values[[method_idx]]$algorithms, 
@@ -117,10 +117,10 @@ FV_render_DSC_plot <- reactive({
   if (is.null(dt) || nrow(dt) < 1) {return(NULL)}
   # plot_general_data(dt[method == input$FV_Stats.DSC.method], x_attr = 'algId', y_attr = 'value', type = 'bar',
   #                   legend_attr = 'algId')
-  dt <- dt[,c('baseline', 'compared alg', input$FV_Stats.DSC.method), with = F]
-  p_matrix <- acast(dt, baseline ~ `compared alg`, value.var = input$FV_Stats.DSC.method)
+  dt <- dt[,c('baseline', 'compared alg', input$FV_Stats.DSC.Posthoc_method), with = F]
+  p_matrix <- acast(dt, baseline ~ `compared alg`, value.var = input$FV_Stats.DSC.Posthoc_method)
   storage.mode(p_matrix) <- "numeric"
-  y <- p_matrix <= alpha
+  y <- p_matrix <= input$FV_Stats.DSC.Alpha_posthoc
   colorScale <- data.frame(x = c(-1, -0.33, -0.33, 0.33, 0.33, 1),
                            col = c('blue', 'blue', 'white', 'white', 'red', 'red')
   )

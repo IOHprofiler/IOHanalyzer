@@ -1342,15 +1342,26 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
 #' 
 #' @return A performviz plot
 #' @export
-#' @example 
+#' @examples
+#' \dontrun{
 #' Plot.Performviz(get_dsc_rank(dsl))
+#' }
 Plot.Performviz <- function(DSC_rank_result) {
   if (!requireNamespace("ComplexHeatmap", quietly = TRUE)) {
     stop("Package \"pkg\" needed for this function to work. Please install it.",
          call. = FALSE)
   }
+  if (!requireNamespace("reshape2", quietly = TRUE)) {
+    stop("Package \"pkg\" needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
+  if (!requireNamespace("grid", quietly = TRUE)) {
+    stop("Package \"pkg\" needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
   mlist <- DSC_rank_result$ranked_matrix
   
+  problem <- NULL #Assign variable to remove warnings
   # df_temp <- rbindlist(lapply(mlist[[problem_idx]]$result, 
   #                             function(x) {
   #                               list(algorithm = x$algorithm, rank =  x$rank)
@@ -1365,25 +1376,25 @@ Plot.Performviz <- function(DSC_rank_result) {
     df_temp[, problem := mlist[[problem_idx]]$problem]
   }))
   
-  rank_matrix <- acast(df, algorithm ~ problem, value.var = 'rank')
+  rank_matrix <- reshape2::acast(df, algorithm ~ problem, value.var = 'rank')
   df <- rank_matrix
   # colnames(df)<-index
   # rownames(df)<-vector
   # Define some graphics to display the distribution of columns
   # library(ComplexHeatmap)
-  .hist = anno_histogram(df, gp = gpar(fill = "lightblue"))
-  .density = anno_density(df, type = "line", gp = gpar(col = "blue"))
-  ha_mix_top = HeatmapAnnotation(hist = .hist, density = .density)
+  .hist = ComplexHeatmap::anno_histogram(df, gp = grid::gpar(fill = "lightblue"))
+  .density = ComplexHeatmap::anno_density(df, type = "line", gp = grid::gpar(col = "blue"))
+  ha_mix_top = ComplexHeatmap::HeatmapAnnotation(hist = .hist, density = .density)
   # Define some graphics to display the distribution of rows
-  .violin = anno_density(df, type = "violin", 
-                         gp = gpar(fill = "lightblue"), which = "row")
-  .boxplot = anno_boxplot(df, which = "row")
-  ha_mix_right = HeatmapAnnotation(violin = .violin, bxplt = .boxplot,
-                                   which = "row", width = unit(4, "cm"))
+  .violin = ComplexHeatmap::anno_density(df, type = "violin", 
+                         gp = grid::gpar(fill = "lightblue"), which = "row")
+  .boxplot = ComplexHeatmap::anno_boxplot(df, which = "row")
+  ha_mix_right = ComplexHeatmap::HeatmapAnnotation(violin = .violin, bxplt = .boxplot,
+                                   which = "row", width = grid::unit(4, "cm"))
   # Combine annotation with heatmap
-  Heatmap(df, name = "Ranking", 
-          column_names_gp = gpar(fontsize = 8),
+  ComplexHeatmap::Heatmap(df, name = "Ranking", 
+          column_names_gp = grid::gpar(fontsize = 8),
           top_annotation = ha_mix_top, 
-          top_annotation_height = unit(3.8, "cm")) + ha_mix_right
+          top_annotation_height = grid::unit(3.8, "cm")) + ha_mix_right
   
 }

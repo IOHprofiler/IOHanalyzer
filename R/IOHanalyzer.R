@@ -16,7 +16,6 @@
 #' @importFrom shiny req
 #' @importFrom Rcpp sourceCpp
 #' @importFrom igraph graph_from_adjacency_matrix layout.circle plot.igraph 
-#' @importFrom PlayerRatings glicko2
 #' @importFrom stringi stri_detect_regex stri_detect_fixed stri_locate_all stri_replace
 #' @importFrom stringi stri_rand_strings
 #' @importFrom httr POST add_headers content authenticate

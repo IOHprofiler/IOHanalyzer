@@ -39,17 +39,17 @@ Imports:
   DT,
   igraph,
   kableExtra,
-  PlayerRatings,
   stringi,
-  httr,
-  keyring
+  httr
 LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 7.0.0
 Suggests: 
-    testthat,
-    withr,
-    shinydashboard,
-    ComplexHeatmap,
-    grid
+  testthat,
+  withr,
+  shinydashboard,
+  ComplexHeatmap,
+  grid,
+  keyring,
+  PlayerRatings
 Depends: R (>= 2.10)

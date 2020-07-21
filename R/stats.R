@@ -504,6 +504,10 @@ get_target_RT <- function(dsList){
 #' glicko2_ranking(dsl, nr_round = 25)
 #' glicko2_ranking(dsl, nr_round = 25, which = 'by_RT')
 glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = NULL){
+  if (!requireNamespace("PlayerRatings", quietly = TRUE)) {
+    stop("Package \"pkg\" needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
   req(length(get_algId(dsl)) > 1)
 
   if (!is.null(target_dt) && !('data.table' %in% class(target_dt))) {
@@ -595,7 +599,7 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = N
   }
   # weeks <- seq(1,1,length.out = length(p1))
   games <- data.frame(Weeks = weeks, Player1 = p1, Player2 = p2, Scores = as.numeric(scores))
-  lout <- glicko2(games, init =  c(1500,350,0.06))
+  lout <- PlayerRatings::glicko2(games, init =  c(1500,350,0.06))
   lout$ratings$Player <- alg_names[lout$ratings$Player]
   lout
 }
@@ -614,6 +618,10 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = N
 #' @examples 
 #' check_dsc_configured()
 check_dsc_configured <- function() {
+  if (!requireNamespace("keyring", quietly = TRUE)) {
+    stop("Package \"pkg\" needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
   tryCatch({
     username <- keyring::key_get("DSCtool_name")
     pwd <- keyring::key_get("DSCtool")
@@ -779,6 +787,7 @@ convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT',
 #' get_dsc_rank(dsl)
 get_dsc_rank <- function(dsList, targets = NULL, which = 'by_RT', test_type = "AD", alpha = 0.05,
                          epsilon = 0, monte_carlo_iterations = 0, na.correction = NULL) {
+  if (!check_dsc_configured()) return(NULL)
   url <- "https://ws.ijs.si:8443/dsc-1.5/service/rank"
   dsc_list <- convert_to_dsc_compliant(dsList, targets, which, na.correction = na.correction)
   json_list <- list(method = list(name = test_type, alpha = alpha), epsilon = epsilon, 
@@ -809,6 +818,7 @@ get_dsc_rank <- function(dsList, targets = NULL, which = 'by_RT', test_type = "A
 #' @examples 
 #' get_dsc_omnibus(get_dsc_rank(dsl))
 get_dsc_omnibus <- function(res, method = NULL, alpha = 0.05) {
+  if (!check_dsc_configured()) return(NULL)
   if (is.null(method)) method <- res$valid_methods[[1]]
   else req(method %in% res$valid_methods)
   url <- "https://ws.ijs.si:8443/dsc-1.5/service/omnibus"
@@ -847,6 +857,7 @@ get_dsc_omnibus <- function(res, method = NULL, alpha = 0.05) {
 #' get_dsc_posthoc(get_dsc_omnibus(get_dsc_rank(dsl)), 2, 2)
 get_dsc_posthoc <- function(omni_res, nr_algs, nr_problems, base_algorithm = NULL, 
                             method = "friedman", alpha = 0.05) {
+  if (!check_dsc_configured()) return(NULL)
   if (is.null(base_algorithm)) base_algorithm <- omni_res$algorithm_means[[1]]$algorithm
   else req(base_algorithm %in% unlist(omni_res$algorithm_means))
   url <- "https://ws.ijs.si:8443/dsc-1.5/service/posthoc"

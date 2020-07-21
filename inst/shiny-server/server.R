@@ -1,8 +1,8 @@
-# active_suite <- NULL         # the unique format of the data set
-# sub_sampling <- TRUE   # perform sub-sampling of the data set?
+
 repo_dir <- ''         # repository directory
 repo_data <- NULL      # repository data
 has_rendered_ERT_per_fct <- FALSE
+
 # Formatter for function values. Somewhat overkill with as.numeric, but this prevents unneeded precision
 format_FV <- function(v) as.numeric(format(v, digits = getOption("IOHanalyzer.precision", 2), 
                                 nsmall = getOption("IOHanalyzer.precision", 2)))
@@ -11,6 +11,11 @@ format_RT <- function(v) as.integer(v)
 # directory where data are extracted from the zip file
 exdir <- file.path(tempdir(), 'data')
 
+rand_strings <- function(n = 10) {
+  a <- do.call(paste0, replicate(5, sample(LETTERS, n, TRUE), FALSE))
+  paste0(a, sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
+}
+
 setTextInput <- function(session, id, name, alternative) {
   v <- REG[[id]]
   if (name %in% names(v)) 
@@ -18,16 +23,6 @@ setTextInput <- function(session, id, name, alternative) {
   else
     updateTextInput(session, id, value = alternative)
 }
-
-# # TODO: this function could be made more clear
-# set_format_func <- function(suite) {
-#    if (any(grepl("\\w*bbob\\w*", suite, ignore.case = T)))
-#      format_FV <- function(v) as.numeric(format(v, format = 'e', digits = getOption("IOHanalyzer.precision", 2),
-#                                      nsmall = getOption("IOHanalyzer.precision", 2)))
-#    else  
-#      format_FV <- function(v) as.numeric(format(v, digits = getOption("IOHanalyzer.precision", 2),
-#                                      nsmall = getOption("IOHanalyzer.precision", 2)))
-# }
 
 # register previous text inputs, which is used to restore those values
 REG <- lapply(widget_id, function(x) list())

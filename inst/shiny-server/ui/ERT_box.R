@@ -30,6 +30,7 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
                   placement = "auto"
                 )
             ),
+          
           textInput('ERTPlot.Max',
                     label = F_MAX_LABEL,
                     value = ''),
@@ -38,9 +39,19 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
                         label = 'Show/hide ERT',
                         value = T),
 
-          checkboxInput('ERTPlot.show.mean',
-                        label = 'Show/hide mean',
-                        value = F),
+          checkboxInput(
+            'ERTPlot.show.mean',
+            label = 'Show/hide PAR-1',
+            value = F
+          ) %>% 
+            shinyInput_label_embed(
+              custom_icon() %>%
+                bs_embed_popover(
+                  title = "Penalized Average Runtime", content = "PAR-1 score is ther average of running time values, 
+                    where non-successful runs are counted as evaluation budget B.", 
+                  placement = "auto"
+                )
+            ),
 
           checkboxInput('ERTPlot.show.CI',
                         label = 'Show/hide mean +/- sd',

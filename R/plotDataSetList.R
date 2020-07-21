@@ -977,7 +977,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                               scale.reverse = F, p = NULL, x_title = NULL,
                               y_title = NULL, plot_title = NULL, upper_attr = NULL,
                               lower_attr = NULL, subplot_attr = NULL, show.legend = F,
-                              inf.action = 'none', ...){
+                              inf.action = 'none', ...) {
   
   l <- x <- isinf <- y <- text <- l_orig <- NULL #Set local binding to remove warnings
   
@@ -1013,7 +1013,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
     names(legends_show) <- attrs
     
     #Get some number of rows and columns
-    n_cols <- 1 +  ceiling(length(attrs)/10)
+    n_cols <- 1 + ceiling(length(attrs)/10)
     n_rows <- ceiling(length(attrs) / n_cols)
     
     p <- lapply(seq(length(attrs)), function(idx) {
@@ -1054,8 +1054,10 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
         )
     })
     
-    
-    p <- subplot(p, nrows = n_rows, titleX = T, titleY = T, margin = 0.03) %>% 
+    p <- subplot(
+      p, nrows = n_rows, titleX = T, titleY = T, 
+      margin = c(0.02, 0.02, 0.06, 0.06)
+    ) %>% 
       layout(title = plot_title)
     return(p)
   }
@@ -1184,18 +1186,19 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                }
              }
              
-          
              suppressWarnings(
                p %<>%
                  add_trace(
                    data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l_orig, name = ~l_orig,
                    type = 'scatter', mode = 'lines+markers',
-                   linetype = ~l_orig, marker = list(size = getOption('IOHanalyzer.markersize', 4)), linetypes = dashes,
+                   linetype = ~l_orig, marker = list(size = getOption('IOHanalyzer.markersize', 4)), 
+                   linetypes = dashes,
                    colors = colors, showlegend = show.legend,
                    text = ~text, line = list(width = getOption('IOHanalyzer.linewidth', 2)),
                    hovertemplate = '%{text}',
                    ...
-                 ) )
+                 ) 
+            )
              if (inf.action != 'none') {
                p %<>% add_trace(data = df[isinf == T], x = ~x, y = ~y, legendgroup = ~l_orig, name = ~l_orig,
                     type = 'scatter', mode = 'markers',  color = ~l,

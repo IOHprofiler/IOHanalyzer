@@ -6,22 +6,24 @@
 
 The __performance analyzer__ for **I**terative **O**ptimization **H**euristics (IOHs).
 
-* __Documentation__: [https://arxiv.org/abs/1810.05281](https://arxiv.org/abs/1810.05281)
+* __Documentation__: [https://arxiv.org/abs/2007.03953](https://arxiv.org/abs/2007.03953)
 * __Wiki page__: [https://iohprofiler.github.io/IOHanalyzer/](https://iohprofiler.github.io/IOHanalyzer/)
 * __Bug reports__: [https://github.com/IOHprofiler/IOHAnalyzer/issues](https://github.com/IOHprofiler/IOHAnalyzer/issues)
 * __Online service__: [http://iohprofiler.liacs.nl](http://iohprofiler.liacs.nl)
 * __General Contact__: [mailto:iohprofiler@liacs.leidenuniv.nl](mailto:iohprofiler@liacs.leidenuniv.nl)
 * __Mailing List__: [https://lists.leidenuniv.nl/mailman/listinfo/iohprofiler](https://lists.leidenuniv.nl/mailman/listinfo/iohprofiler)
 
+![](./misc/demo.gif)
+
 It _provides_:
 
-* a web-based interface to analyze and visualize the empirical performance of IOHs,
-* interactive plot,
+* a web-based graphical user interface (GUI) to analyze and visualize the empirical performance of IOHs,
+* interactive plotting,
 * statistical evaluation,
 * report generation, and
-* `R` programming interfaces in the backend.
+* a command-line interface (CLI) for the `R` console allowing for fine-grained controls.  
 
-It is _built on_:
+It is _built mainly on_:
 
 * `R` packages [Shiny](https://shiny.rstudio.com/), [Plotly](https://plot.ly/) and [Rcpp](http://www.rcpp.org/).
 <!-- * [scmacp](https://github.com/b0rxa/scmamp) package for Bayesian analysis. -->
@@ -44,10 +46,10 @@ A free server [http://iohprofiler.liacs.nl](http://iohprofiler.liacs.nl) running
 
 ### Stable version
 
-Please start up a `R` console and install the stable version as:
+Please start up an `R` console and install the stable version as:
 
 ```r
-install.packages('IOHanalyzer')
+R> install.packages('IOHanalyzer')
 ```
 
 which is maintained on [CRAN](https://CRAN.R-project.org/package=IOHanalyzer) (Comprehensive R Archive Network).
@@ -57,8 +59,8 @@ which is maintained on [CRAN](https://CRAN.R-project.org/package=IOHanalyzer) (C
 The lastest development is always hosted on Github. In case you'd like to try out this version, the `R` package **devtool** is needed:
 
 ```r
-install.packages('devtools')
-devtools::install_github('IOHprofiler/IOHanalyzer')
+R> install.packages('devtools')
+R> devtools::install_github('IOHprofiler/IOHanalyzer')
 ```
 
 ### Development version
@@ -66,8 +68,7 @@ devtools::install_github('IOHprofiler/IOHanalyzer')
 If you want to run the version on which you develop:
 
 ```r
-install.packages('devtools')
-devtools::install_git("/path/to/your/IOHanalyzer/git/repo")
+R> devtools::install_git("/path/to/your/IOHanalyzer/git/repo")
 ```
 
 ## <a name="run"></a>Runinng the Web Interface locally
@@ -75,22 +76,22 @@ devtools::install_git("/path/to/your/IOHanalyzer/git/repo")
 The IOHanalyzer package can be loaded using the following commands:
 
 ```r
-library('IOHanalyzer')
-runServer()
+R> library('IOHanalyzer')
+R> runServer()
 ```
 
-It should open a browser on the `localhost` server, using a random port.
+It should open a browser on the `localhost` server, using a random port number. Of course, you
+could also specify the port number directly:
 
-You can also use a given port:
 ```r
-library('IOHanalyzer'); runServer(1234)
+R> runServer(port = 1234)
 ```
 
 Have fun! For the complete reference on usage, please check out our [Wiki page](https://iohprofiler.github.io/).
 
-## Host it online?
+## Host it online
 
-We provide docker file for deploying __IOHanalyzer__ on the server. Please see [https://github.com/IOHprofiler/IOHanalyzer-docker](https://github.com/IOHprofiler/IOHanalyzer-docker) for details.
+We provide a docker file for deploying __IOHanalyzer__ on the server. Please see [https://github.com/IOHprofiler/IOHanalyzer-docker](https://github.com/IOHprofiler/IOHanalyzer-docker) for details.
 
 ## Supported Data Format
 
@@ -104,28 +105,28 @@ then you just need to compress the data folder obtained from the experiment into
 
 ## Our Team
 
-* [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang), Leiden Institute of Advanced Computer Science.
-* [Diederick Vermetten](https://www.universiteitleiden.nl/en/staffmembers/diederick-vermetten), Leiden Institute of Advanced Computer Science.
-* [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye), Leiden Institute of Advanced Computer Science.
+* [Hao Wang](https://www.lip6.fr/actualite/personnes-fiche.php?ident=D2381), Sorbonne Université, LIP6, France.
+* [Diederick Vermetten](https://www.universiteitleiden.nl/en/staffmembers/diederick-vermetten), Leiden Institute of Advanced Computer Science, The Netherlands.
+* [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye), Leiden Institute of Advanced Computer Science, The Netherlands.
 * [Ofer M. Shir](https://ofersh.github.io/telhai), Tel-Hai College, Israel.
-* [Carola Doerr](http://www-desir.lip6.fr/~doerr/), CNRS and Sorbonne University.
-* [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back), Leiden Institute of Advanced Computer Science.
+* [Carola Doerr](http://www-desir.lip6.fr/~doerr/), Sorbonne Université, CNRS, LIP6, France.
+* [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back), Leiden Institute of Advanced Computer Science, The Netherlands.
 
 When using IOHprofiler and parts thereof, please kindly cite this work as
 
-Carola Doerr, Hao Wang, Furong Ye, Sander van Rijn, Thomas Bäck: _IOHprofiler: A Benchmarking and Profiling Tool for Iterative Optimization Heuristics_, arXiv e-prints:1810.05281, 2018.
+Hao Wang, Diederick Vermettern, Furong Ye, Carola Doerr and Thomas Bäck: _IOHanalyzer: Performance Analysis for Iterative Optimization Heuristic_, arXiv e-prints:2007.03953, 2020.
 
 ```bibtex
 @ARTICLE{IOHprofiler,
-  author = {Carola Doerr and Hao Wang and Furong Ye and Sander van Rijn and Thomas B{\"a}ck},
-  title = {{IOHprofiler: A Benchmarking and Profiling Tool for Iterative Optimization Heuristics}},
-  journal = {arXiv e-prints:1810.05281},
+  author = {Hao Wang and Diederick Vermettern and Furong Ye and Carola Doerr and Thomas B{\"a}ck},
+  title = {{IOHanalyzer: Performance Analysis for Iterative Optimization Heuristic}},
+  journal = {arXiv e-prints:2007.03953},
   archivePrefix = "arXiv",
-  eprint = {1810.05281},
-  year = 2018,
-  month = oct,
+  eprint = {2007.03953},
+  year = 2020,
+  month = July,
   keywords = {Computer Science - Neural and Evolutionary Computing},
-  url = {https://arxiv.org/abs/1810.05281}
+  url = {https://arxiv.org/abs/2007.03953}
 }
 ```
 

@@ -141,11 +141,11 @@ body <- dashboardBody(
          position: fixed;
          top: 0;
          width: 100%;
-       }
+        }
        
        .sticky2 {
          position: fixed;
-       }
+        }
        
        .table {
           border-collapse: collapse;
@@ -207,8 +207,8 @@ body <- dashboardBody(
       $(document).ready(function() {
         $("header").find("nav").append(\'<span class="myClass">Performance Evaluation for Iterative 
         Optimization Heuristics</span>\');
-      })
-   ')
+      })'
+    )
   ),
   
   tags$script(
@@ -254,8 +254,8 @@ body <- dashboardBody(
        window.setInterval(function() {
          var elem = document.getElementById("upload_data_promt");
          if (typeof elem !== "undefined" && elem !== null) elem.scrollTop = elem.scrollHeight;
-       }, 20);
-    ')
+       }, 20);'
+    )
   ),
   
   # render the header and the side bar 'sticky'
@@ -312,20 +312,24 @@ body <- dashboardBody(
       ),
       
       fluidRow(
-        column(width = 6,
-               upload_box(collapsible = F)
+        column(
+          width = 6,
+          upload_box(collapsible = F)
         ),
-        column(width = 6,
-               repository_box(collapsible = F)
+        column(
+          width = 6,
+          repository_box(collapsible = F)
         )
       ),
 
       fluidRow(
-        column(width = 6,
-               upload_prompt_box(collapsible = F)
+        column(
+          width = 6,
+          upload_prompt_box(collapsible = F)
         ),
-        column(width = 6,
-               data_list_box(collapsible = F)
+        column(
+          width = 6,
+          data_list_box(collapsible = F)
         )
       )
     ),
@@ -334,9 +338,10 @@ body <- dashboardBody(
     tabItem(
       tabName = 'overview',
       fluidRow(
-        column(width = 12,
-               general_overview_box_all(collapsed = F),
-               general_overview_box_single(collapsed = F)
+        column(
+          width = 12,
+          general_overview_box_all(collapsed = F),
+          general_overview_box_single(collapsed = F)
         )
       )
     ),

@@ -1,3 +1,7 @@
+apt_packages:
+  - libsodium-dev
+  - libsecret-1-dev
+  
 language: r
 
 cache: packages

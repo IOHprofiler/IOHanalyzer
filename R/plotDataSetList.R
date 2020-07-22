@@ -1395,9 +1395,11 @@ Plot.Performviz <- function(DSC_rank_result) {
   ha_mix_right = ComplexHeatmap::HeatmapAnnotation(violin = .violin, bxplt = .boxplot,
                                    which = "row", width = grid::unit(4, "cm"))
   # Combine annotation with heatmap
-  ComplexHeatmap::Heatmap(df, name = "Ranking", 
+  heatmap_main <- ComplexHeatmap::Heatmap(df, name = "Ranking", 
           column_names_gp = grid::gpar(fontsize = 8),
           top_annotation = ha_mix_top, 
-          top_annotation_height = grid::unit(3.8, "cm")) + ha_mix_right
-  
+          top_annotation_height = grid::unit(3.8, "cm"))
+  return(ComplexHeatmap::draw(
+    ComplexHeatmap::`+.AdditiveUnit`(heatmap_main, ha_mix_right))
+  )
 }

@@ -34,18 +34,23 @@ fv_dsc_box_rank <- function(width = 12, collapsible = T, collapsed = F) {
       
       mainPanel(
         width = 9,
-        HTML_P('The <b>DSC</b> comparison is described in the paper: .... This is the first of 
-               3 parts of the process: the per-function ranking procedure. The two other processes
-               are the omnibus test and the post-hoc processing, which are shown in the two boxes 
-               below this one. Note that both of these are impacted by the settings selected for this 
-               ranking procedure!'),
+        HTML_P("The <b>DSC</b> comparison is described in the paper: 'DSCTool: A web-service-based 
+               framework for statistical comparison of stochastic optimization algorithms.' by 
+               T. Eftimov et al.
+               This is the first of 3 parts of the process: the per-function ranking procedure. 
+               The two other processes are the omnibus test and the post-hoc processing, 
+               which are shown in the two boxes below this one. 
+               Note that both of these are impacted by the settings selected for this 
+               ranking procedure!"),
         HTML_P("The chosen <b>budget values</b> per (function, dimension)-pair are as follows 
                  (double click an entry to edit it):"),
         DT::dataTableOutput("FV_Stats.DSC.Targets"),
         hr(), 
-        HTML_P("The results of the ranking are shown in the following plot (performviz), 
-               as described in the paper ...:"),
-        plotOutput("FV_Stats.DSC.PerformViz")
+        HTML_P("The results of the ranking are shown in the following plot, using the visualization techniques 
+               as described in the paper: 'PerformViz: A Machine Learning Approach to Visualize and
+                Understand the Performance of Single-objective Optimization
+                Algorithms' By T. Eftimov et al."),
+        plotOutput("FV_Stats.DSC.PerformViz", height = "800px")
       )
   )
 }
@@ -105,9 +110,7 @@ fv_dsc_box_posthoc <- function(width = 12, collapsible = T, collapsed = F) {
       
       mainPanel(
         width = 9,
-        HTML_P('The <b>DSC</b> comparison is described in the paper: ...'),
-        hr(), 
-        HTML_P("The results of the ranking are:"),
+        HTML_P("The results of the post-hoc comparison are:"),
         plotlyOutput.IOHanalyzer("FV_Stats.DSC.PosthocViz"),
         DT::dataTableOutput('FV_Stats.DSC.PosthocTable')
       )
@@ -152,18 +155,23 @@ rt_dsc_box_rank <- function(width = 12, collapsible = T, collapsed = F) {
       
       mainPanel(
         width = 9,
-        HTML_P('The <b>DSC</b> comparison is described in the paper: .... This is the first of 
-               3 parts of the process: the per-function ranking procedure. The two other processes
-               are the omnibus test and the post-hoc processing, which are shown in the two boxes 
-               below this one. Note that both of these are impacted by the settings selected for this 
-               ranking procedure!'),
+        HTML_P("The <b>DSC</b> comparison is described in the paper: 'DSCTool: A web-service-based 
+               framework for statistical comparison of stochastic optimization algorithms.' by 
+               T. Eftimov et al.
+               This is the first of 3 parts of the process: the per-function ranking procedure. 
+               The two other processes are the omnibus test and the post-hoc processing, 
+               which are shown in the two boxes below this one. 
+               Note that both of these are impacted by the settings selected for this 
+               ranking procedure!"),
         HTML_P("The chosen <b>budget values</b> per (function, dimension)-pair are as follows 
                  (double click an entry to edit it):"),
         DT::dataTableOutput("RT_Stats.DSC.Targets"),
         hr(), 
-        HTML_P("The results of the ranking are shown in the following plot (performviz), 
-               as described in the paper ...:"),
-        plotOutput("RT_Stats.DSC.PerformViz")
+        HTML_P("The results of the ranking are shown in the following plot, using the visualization techniques 
+               as described in the paper: 'PerformViz: A Machine Learning Approach to Visualize and
+                Understand the Performance of Single-objective Optimization
+                Algorithms' By T. Eftimov et al."),
+        plotOutput("RT_Stats.DSC.PerformViz", height = "800px")
       )
   )
 }
@@ -223,9 +231,7 @@ rt_dsc_box_posthoc <- function(width = 12, collapsible = T, collapsed = F) {
       
       mainPanel(
         width = 9,
-        HTML_P('The <b>DSC</b> comparison is described in the paper: ...'),
-        hr(), 
-        HTML_P("The results of the ranking are:"),
+        HTML_P("The results of the post-hoc comparison are:"),
         plotlyOutput.IOHanalyzer("RT_Stats.DSC.PosthocViz"),
         DT::dataTableOutput('RT_Stats.DSC.PosthocTable')
       )

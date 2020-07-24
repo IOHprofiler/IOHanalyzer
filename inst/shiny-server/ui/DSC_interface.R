@@ -27,9 +27,13 @@ fv_dsc_box_rank <- function(width = 12, collapsible = T, collapsed = F) {
         actionButton('FV_Stats.DSC.Create_rank', 'Create Ranking'),
         hr(),
         selectInput('FV_Stats.DSC.Format_rank', label = 'Select the figure format',
-                    choices = supported_fig_format, selected = 'pdf'),
+                    choices = c("pdf"), selected = 'pdf'),
         
-        downloadButton('FV_Stats.DSC.Download_rank', label = 'Download the figure')
+        downloadButton('FV_Stats.DSC.Download_rank', label = 'Download the figure'),
+        selectInput('FV_Stats.DSC.TableFormat_rank', label = 'Select the table format',
+                    choices = c('csv','tex'), selected = 'csv'),
+        downloadButton('FV_Stats.DSC.Download_rank_table', label = 'Download the raw ranking data')
+        
       ),
       
       mainPanel(
@@ -148,9 +152,13 @@ rt_dsc_box_rank <- function(width = 12, collapsible = T, collapsed = F) {
         actionButton('RT_Stats.DSC.Create_rank', 'Create Ranking'),
         hr(),
         selectInput('RT_Stats.DSC.Format_rank', label = 'Select the figure format',
-                    choices = supported_fig_format, selected = 'pdf'),
+                    choices = c("pdf"), selected = 'pdf'),
         
-        downloadButton('RT_Stats.DSC.Download_rank', label = 'Download the figure')
+        downloadButton('RT_Stats.DSC.Download_rank', label = 'Download the figure'),
+        selectInput('RT_Stats.DSC.TableFormat_rank', label = 'Select the table format',
+                    choices = c('csv','tex'), selected = 'csv'),
+        downloadButton('RT_Stats.DSC.Download_rank_table', label = 'Download the raw ranking data')
+        
       ),
       
       mainPanel(

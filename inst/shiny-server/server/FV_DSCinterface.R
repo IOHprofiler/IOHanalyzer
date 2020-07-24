@@ -38,12 +38,41 @@ output$FV_Stats.DSC.PerformViz <- renderPlot({
   FV_render_performviz()
 })
 
+output$FV_Stats.DSC.Download_rank_table <- downloadHandler(
+  filename = function() {
+    eval(FV_DSC_table_name_rank)
+  },
+  content = function(file) {
+    mlist <- FV_DSC_rank_result()$ranked_matrix
+    df <- rbindlist(lapply(seq(length(mlist)), function(problem_idx) {
+      df_temp <- rbindlist(lapply(mlist[[problem_idx]]$result, 
+                                  function(x) {
+                                    list(algorithm = x$algorithm, rank =  x$rank)
+                                  }))
+      df_temp[, problem := mlist[[problem_idx]]$problem]
+    }))
+    df <- reshape2::acast(df, algorithm ~ problem, value.var = 'rank')
+    if (input$FV_Stats.DSC.TableFormat_rank == 'csv')
+      write.csv(df, file, row.names = T)
+    else{
+      print(xtable(df), file = file)
+    }
+  },
+  contentType = paste0('image/', input$FV_Stats.DSC.TableFormat_rank)
+)
+
 output$FV_Stats.DSC.Download_rank <- downloadHandler(
   filename = function() {
     eval(FV_DSC_figure_name_rank)
   },
   content = function(file) {
-    save_plotly(FV_render_performviz(), file)
+    #Temporary settings, will replace plotting from complexheatmap to 
+    #Some other plotly-compatible library later, and use save_plotly
+    suppressWarnings({
+      pdf(file = file, width = 16, height = 9)
+      RT_render_performviz()
+      dev.off()
+    })
   },
   contentType = paste0('image/', input$FV_Stats.DSC.Format_rank)
 )

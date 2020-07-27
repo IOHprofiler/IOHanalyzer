@@ -17,10 +17,24 @@ fv_dsc_box_rank <- function(width = 12, collapsible = T, collapsed = F) {
                   value = 0.05, min = 0, max = 0.5),
         numericInput('FV_Stats.DSC.Epsilon_rank', 
                   label = "Threshold for practical significance (pDSC)", 
-                  value = 0),
+                  value = 0) %>% 
+          shinyInput_label_embed(
+            custom_icon() %>%
+              bs_embed_popover(
+                title = "Practical Significance", content = Pdsc_info,
+                placement = "auto"
+              )
+          ),
         numericInput('FV_Stats.DSC.MCsamples_rank', 
                   label = "Number of monte carlo samples to use in the DSC procdure", 
-                  value = 0),
+                  value = 0) %>% 
+          shinyInput_label_embed(
+            custom_icon() %>%
+              bs_embed_popover(
+                title = "Monte Carlo Samples", content = Pdsc_mc_info,
+                placement = "auto"
+              )
+          ),
         selectInput("FV_Stats.DSC.Test_rank", "Test Type",  
                     choices = c("Anderson-Darling", "Kolmogorov-Smirnov"), 
                     selected = "Anderson-Darling"),
@@ -53,7 +67,10 @@ fv_dsc_box_rank <- function(width = 12, collapsible = T, collapsed = F) {
         HTML_P("The results of the ranking are shown in the following plot, using the visualization techniques 
                as described in the paper: 'PerformViz: A Machine Learning Approach to Visualize and
                 Understand the Performance of Single-objective Optimization
-                Algorithms' By T. Eftimov et al."),
+                Algorithms' By T. Eftimov et al. Performviz allows one to clearly see, 
+                from a single plot, which algorithms are most suited for a given problem, 
+                the influence of each problem on the overall algorithm performance and 
+                similarities among both algorithms and problems."),
         plotOutput("FV_Stats.DSC.PerformViz", height = "800px")
       )
   )
@@ -142,10 +159,24 @@ rt_dsc_box_rank <- function(width = 12, collapsible = T, collapsed = F) {
                      value = 0.05, min = 0, max = 0.5),
         numericInput('RT_Stats.DSC.Epsilon_rank', 
                      label = "Threshold for practical significance (pDSC)", 
-                     value = 0),
+                     value = 0) %>% 
+          shinyInput_label_embed(
+            custom_icon() %>%
+              bs_embed_popover(
+                title = "Practical Significance", content = Pdsc_info,
+                placement = "auto"
+              )
+          ),
         numericInput('RT_Stats.DSC.MCsamples_rank', 
                      label = "Number of monte carlo samples to use in the DSC procdure", 
-                     value = 0),
+                     value = 0) %>% 
+          shinyInput_label_embed(
+            custom_icon() %>%
+              bs_embed_popover(
+                title = "Monte Carlo Samples", content = Pdsc_mc_info,
+                placement = "auto"
+              )
+          ),
         selectInput("RT_Stats.DSC.Test_rank", "Test Type",  
                     choices = c("Anderson-Darling", "Kolmogorov-Smirnov"), 
                     selected = "Anderson-Darling"),
@@ -178,7 +209,10 @@ rt_dsc_box_rank <- function(width = 12, collapsible = T, collapsed = F) {
         HTML_P("The results of the ranking are shown in the following plot, using the visualization techniques 
                as described in the paper: 'PerformViz: A Machine Learning Approach to Visualize and
                 Understand the Performance of Single-objective Optimization
-                Algorithms' By T. Eftimov et al."),
+                Algorithms' By T. Eftimov et al. Performviz allows one to clearly see, 
+                from a single plot, which algorithms are most suited for a given problem, 
+                the influence of each problem on the overall algorithm performance and 
+                similarities among both algorithms and problems."),
         plotOutput("RT_Stats.DSC.PerformViz", height = "800px")
       )
   )

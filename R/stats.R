@@ -608,7 +608,7 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = N
 #' Verify that the credentials for DSCtool have been set
 #' 
 #' This uses the keyring package to store and load credentials. 
-#' If you already have an account, please call `add_DSC_credentials`
+#' If you already have an account, please call `set_DSC_credentials`
 #' with the corresponding username and password. 
 #' If you don't have an account, you can register for one using `register_DSC`
 #' 
@@ -619,8 +619,20 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = N
 #' check_dsc_configured()
 check_dsc_configured <- function() {
   if (!requireNamespace("keyring", quietly = TRUE)) {
-    stop("Package \"pkg\" needed for this function to work. Please install it.",
-         call. = FALSE)
+    warning("It is recommended to have the 'keyring' package installed to store
+            DSCtool settings. Since this package is not found, we default
+            to a local settings-file instead.")
+    
+    saveRDS(list(username = 'IOHprofiler', password = "Xaefasefaw3e"), 
+            paste0(find.package("IOHanalyzer"), "/config.rds"))
+    if (!file.exists(paste0(find.package("IOHanalyzer"), "/config.rds"))) {
+      return(FALSE)
+    }
+    data <- readRDS(paste0(find.package("IOHanalyzer"), "/config.rds"))
+    if (is.null(data$DSCusername) || is.null(data$DSCpassword)) {
+      return(FALSE)
+    } 
+    return(TRUE)
   }
   tryCatch({
     username <- keyring::key_get("DSCtool_name")
@@ -639,7 +651,7 @@ check_dsc_configured <- function() {
 #' Register an account to the DSCtool API
 #' 
 #' This uses the keyring package to store and load credentials. 
-#' If you already have an account, please call `add_DSC_credentials` instead
+#' If you already have an account, please call `set_DSC_credentials` instead
 #' 
 #' @param name Your name
 #' @param username A usename to be identified with. Will be stored on keyring under 'DSCtool_name'
@@ -662,9 +674,16 @@ register_DSC <- function(name, username, affiliation, email, password = NULL) {
                                   username = username, password = password), 
                       encode = "json")
   if (result_json$status_code == 200) {
-    keyring::key_set_with_value("DSCtool", password = password)
-    keyring::key_set_with_value("DSCtool_name", password = username)
-    return(TRUE)
+    if (!requireNamespace("keyring", quietly = TRUE)) {
+      saveRDS(list(username = username, password = password), 
+              paste0(find.package("IOHanalyzer"), "/config.rds"))
+      return(TRUE)
+    }
+    else {
+      keyring::key_set_with_value("DSCtool", password = password)
+      keyring::key_set_with_value("DSCtool_name", password = username)
+      return(TRUE)
+    }
   }
   else {
     stop("Something went wrong in registering for DSCtool")
@@ -682,11 +701,36 @@ register_DSC <- function(name, username, affiliation, email, password = NULL) {
 #' @export
 #' @examples 
 #' \dontrun{
-#' add_DSC_credentials('jdoe', 'monkey123')
+#' set_DSC_credentials('jdoe', 'monkey123')
 #' }
-add_DSC_credentials <- function(username, password) {
-  keyring::key_set_with_value("DSCtool", password = password)
-  keyring::key_set_with_value("DSCtool_name", password = username)
+set_DSC_credentials <- function(username, password) {
+  if (!requireNamespace("keyring", quietly = TRUE)) {
+    saveRDS(list(username = username, password = password), 
+            paste0(find.package("IOHanalyzer"), "/config.rds"))
+  }
+  else {
+    keyring::key_set_with_value("DSCtool", password = password)
+    keyring::key_set_with_value("DSCtool_name", password = username)
+  }
+}
+
+#' Load stored credentials for DSCtool
+#' 
+#' 
+#' @noRd
+#' @examples 
+#' \dontrun{
+#' get_DSC_credentials()
+#' }
+get_DSC_credentials <- function() {
+  if (!requireNamespace("keyring", quietly = TRUE)) {
+    data <- readRDS(paste0(find.package("IOHanalyzer"), "/config.rds"))
+    return(list(name = data$DSCusername, pwd = data$DSCpassword))
+  }
+  else {
+    return(list(name = keyring::key_get("DSCtool_name"), 
+                pwd = keyring::key_get("DSCtool")))
+  }
 }
 
 #' Convert a DataSetList to the format needed for the DSCtool
@@ -794,7 +838,7 @@ get_dsc_rank <- function(dsList, targets = NULL, which = 'by_RT', test_type = "A
                     data = dsc_list, monte_carlo_iterations = monte_carlo_iterations)
   
   result_json <- POST(url,
-                      authenticate(keyring::key_get("DSCtool_name"), keyring::key_get("DSCtool")),
+                      authenticate(get_DSC_credentials()$name, get_DSC_credentials()$pwd),
                       add_headers(.headers = c('Content-Type' = "application/json",
                                                'Accept' = "application/json")),
                       body = json_list, encode = "json")
@@ -827,7 +871,7 @@ get_dsc_omnibus <- function(res, method = NULL, alpha = 0.05) {
                    number_algorithms = res$number_algorithms,
                    parametric_tests = res$parametric_tests)
   result_json <- POST(url,
-                      authenticate(keyring::key_get("DSCtool_name"),keyring::key_get("DSCtool")),
+                      authenticate(get_DSC_credentials()$name, get_DSC_credentials()$pwd),
                       add_headers(.headers = c('Content-Type' = "application/json",
                                                'Accept' = "application/json")),
                       body = new_json, encode = "json")
@@ -867,7 +911,7 @@ get_dsc_posthoc <- function(omni_res, nr_algs, nr_problems, base_algorithm = NUL
                    k = nr_problems,
                    base_algorithm = base_algorithm)
   result_json <- POST(url,
-                      authenticate(keyring::key_get("DSCtool_name"), keyring::key_get("DSCtool")),
+                      authenticate(get_DSC_credentials()$name, get_DSC_credentials()$pwd),
                       add_headers(.headers = c('Content-Type' = "application/json",
                                                'Accept' = "application/json")),
                       body = new_json, encode = "json")

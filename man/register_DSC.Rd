@@ -20,7 +20,7 @@ Will be stored on keyring under 'DSCtool'}
 }
 \description{
 This uses the keyring package to store and load credentials. 
-If you already have an account, please call `add_DSC_credentials` instead
+If you already have an account, please call `set_DSC_credentials` instead
 }
 \examples{
 \dontrun{ 

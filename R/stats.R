@@ -629,10 +629,10 @@ check_dsc_configured <- function() {
     if (!is.null(getOption("IOHprofiler.repo_dir"))) {
       repo_dir <- getOption("IOHprofiler.repo_dir")
     }
-    if (!file.exists(repo_dir, "/config.rds")) {
+    if (!file.exists(paste0(repo_dir, "/config.rds"))) {
       return(FALSE)
     }
-    data <- readRDS(paste0(find.package("IOHanalyzer"), "/config.rds"))
+    data <- readRDS(paste0(repo_dir, "/config.rds"))
     if (is.null(data$DSCusername) || is.null(data$DSCpassword)) {
       return(FALSE)
     } 

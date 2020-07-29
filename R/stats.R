@@ -608,6 +608,9 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = N
 #' Verify that the credentials for DSCtool have been set
 #' 
 #' This uses the keyring package to store and load credentials. 
+#' If the keyring package does not exists, it will default to look for
+#' a config-file in the 'repository'-folder, under your home directory.
+#' This can be changed by setting the option IOHprofiler.config_dir
 #' If you already have an account, please call `set_DSC_credentials`
 #' with the corresponding username and password. 
 #' If you don't have an account, you can register for one using `register_DSC`
@@ -622,10 +625,11 @@ check_dsc_configured <- function() {
     warning("It is recommended to have the 'keyring' package installed to store
             DSCtool settings. Since this package is not found, we default
             to a local settings-file instead.")
-    
-    saveRDS(list(username = 'IOHprofiler', password = "Xaefasefaw3e"), 
-            paste0(find.package("IOHanalyzer"), "/config.rds"))
-    if (!file.exists(paste0(find.package("IOHanalyzer"), "/config.rds"))) {
+    repo_dir <- paste0(file.path(Sys.getenv('HOME'), 'repository'))
+    if (!is.null(getOption("IOHprofiler.repo_dir"))) {
+      repo_dir <- getOption("IOHprofiler.repo_dir")
+    }
+    if (!file.exists(repo_dir, "/config.rds")) {
       return(FALSE)
     }
     data <- readRDS(paste0(find.package("IOHanalyzer"), "/config.rds"))
@@ -675,8 +679,12 @@ register_DSC <- function(name, username, affiliation, email, password = NULL) {
                       encode = "json")
   if (result_json$status_code == 200) {
     if (!requireNamespace("keyring", quietly = TRUE)) {
-      saveRDS(list(username = username, password = password), 
-              paste0(find.package("IOHanalyzer"), "/config.rds"))
+      repo_dir <- paste0(file.path(Sys.getenv('HOME'), 'repository'))
+      if (!is.null(getOption("IOHprofiler.repo_dir"))) {
+        repo_dir <- getOption("IOHprofiler.repo_dir")
+      }
+      saveRDS(list(DSCusername = username, DSCpassword = password), 
+              paste0(repo_dir, "/config.rds"))
       return(TRUE)
     }
     else {
@@ -705,8 +713,12 @@ register_DSC <- function(name, username, affiliation, email, password = NULL) {
 #' }
 set_DSC_credentials <- function(username, password) {
   if (!requireNamespace("keyring", quietly = TRUE)) {
-    saveRDS(list(username = username, password = password), 
-            paste0(find.package("IOHanalyzer"), "/config.rds"))
+    repo_dir <- paste0(file.path(Sys.getenv('HOME'), 'repository'))
+    if (!is.null(getOption("IOHprofiler.repo_dir"))) {
+      repo_dir <- getOption("IOHprofiler.repo_dir")
+    }
+    saveRDS(list(DSCusername = username, DSCpassword = password), 
+            paste0(repo_dir, "/config.rds"))
   }
   else {
     keyring::key_set_with_value("DSCtool", password = password)
@@ -724,7 +736,11 @@ set_DSC_credentials <- function(username, password) {
 #' }
 get_DSC_credentials <- function() {
   if (!requireNamespace("keyring", quietly = TRUE)) {
-    data <- readRDS(paste0(find.package("IOHanalyzer"), "/config.rds"))
+    repo_dir <- paste0(file.path(Sys.getenv('HOME'), 'repository'))
+    if (!is.null(getOption("IOHprofiler.repo_dir"))) {
+      repo_dir <- getOption("IOHprofiler.repo_dir")
+    }
+    data <- readRDS(paste0(repo_dir, "/config.rds"))
     return(list(name = data$DSCusername, pwd = data$DSCpassword))
   }
   else {

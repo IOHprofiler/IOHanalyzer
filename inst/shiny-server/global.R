@@ -94,8 +94,11 @@ NEVERGRAD <- 'NEVERGRAD'
 
 # directory where rds-data is stored
 get_repo_location <- function() {
-  user_repo <- file.path(Sys.getenv('HOME'), 'repository')
-  if (file.exists(user_repo)) user_repo else ''
+  repo_dir <- paste0(file.path(Sys.getenv('HOME'), 'repository'))
+  if (!is.null(getOption("IOHprofiler.repo_dir"))) {
+    repo_dir <- getOption("IOHprofiler.repo_dir")
+  }
+  if (file.exists(repo_dir)) user_repo else ''
 }
 
 print_html <- function(s, widget_id = 'process_data_promt') 

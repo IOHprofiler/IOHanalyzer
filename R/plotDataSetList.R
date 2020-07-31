@@ -981,7 +981,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
   l <- x <- isinf <- y <- text <- l_orig <- NULL #Set local binding to remove warnings
   
   #Only allow valid plot types
-  if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon'))) {
+  if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon', 'bar'))) {
     stop(paste0("Provided plot type ('", type, "') is not supported"))
   }
   
@@ -1197,13 +1197,13 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                    hovertemplate = '%{text}',
                    ...
                  ) 
-            )
+             )
              if (inf.action != 'none') {
                p %<>% add_trace(data = df[isinf == T], x = ~x, y = ~y, legendgroup = ~l_orig, name = ~l_orig,
-                    type = 'scatter', mode = 'markers',  color = ~l,
-                    marker = list(symbol = 'circle-open', size = 8 + getOption('IOHanalyzer.markersize', 4)),
-                    colors = colors, showlegend = F, text = 'Inf', hoverinfo = 'none',
-                    ...
+                                type = 'scatter', mode = 'markers',  color = ~l,
+                                marker = list(symbol = 'circle-open', size = 8 + getOption('IOHanalyzer.markersize', 4)),
+                                colors = colors, showlegend = F, text = 'Inf', hoverinfo = 'none',
+                                ...
                )
              }   
              
@@ -1238,9 +1238,14 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              }
            }
            if (is_new_plot) {
-             p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3,
-                                        autorange = ifelse(scale.reverse, "reversed", T)),
-                           yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
+             if (is.numeric(df[['x']]))
+               p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3,
+                                          autorange = ifelse(scale.reverse, "reversed", T)),
+                             yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
+             else
+               p %<>% layout(xaxis = list(type = 'category', tickfont = f3(), ticklen = 3),
+                             yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
+             
            }
          },
          'ribbon' = {
@@ -1306,12 +1311,28 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              add_trace(data = df, x = ~x, y = ~y, width = ~width, type = 'bar',
                        name = ~l, text = ~text, hoverinfo = 'text',
                        colors = add_transparancy(colors, 0.6), color = ~l,
-                       marker = list(line = list(color = 'rgb(8,48,107)', width = 1)),
+                       marker = list(line = list(color = 'rgb(8,48,107)')),
                        ...)
            
            if (is_new_plot) {
              p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3,
                                         autorange = ifelse(scale.reverse, "reversed", T)),
+                           yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
+           }
+         },
+         'bar' = {
+           if (legend_attr != x_attr) {
+             warning("Inconsistent attribute selected for x-axis and legend. Using x_attr as name")
+           }
+           p %<>%
+             add_trace(data = df, x = ~x, y = ~y, type = 'bar',
+                       name = ~x,
+                       colors = add_transparancy(colors, 0.6), color = ~x,
+                       marker = list(line = list(color = 'rgb(8,48,107)')),
+                       ...)
+           
+           if (is_new_plot) {
+             p %<>% layout(xaxis = list(tickfont = f3(), ticklen = 3),
                            yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
            }
          }

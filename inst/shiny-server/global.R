@@ -98,7 +98,7 @@ get_repo_location <- function() {
   if (!is.null(getOption("IOHprofiler.repo_dir"))) {
     repo_dir <- getOption("IOHprofiler.repo_dir")
   }
-  if (file.exists(repo_dir)) user_repo else ''
+  if (file.exists(repo_dir)) repo_dir else ''
 }
 
 print_html <- function(s, widget_id = 'process_data_promt') 

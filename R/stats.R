@@ -708,9 +708,7 @@ register_DSC <- function(name, username, affiliation, email, password = NULL) {
 #' 
 #' @export
 #' @examples 
-#' \dontrun{
-#' set_DSC_credentials('jdoe', 'monkey123')
-#' }
+#' \dontrun{set_DSC_credentials('jdoe', 'monkey123')}
 set_DSC_credentials <- function(username, password) {
   if (!requireNamespace("keyring", quietly = TRUE)) {
     repo_dir <- paste0(file.path(Sys.getenv('HOME'), 'repository'))

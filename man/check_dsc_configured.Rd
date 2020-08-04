@@ -8,6 +8,9 @@ check_dsc_configured()
 }
 \description{
 This uses the keyring package to store and load credentials. 
+If the keyring package does not exists, it will default to look for
+a config-file in the 'repository'-folder, under your home directory.
+This can be changed by setting the option IOHprofiler.config_dir
 If you already have an account, please call `set_DSC_credentials`
 with the corresponding username and password. 
 If you don't have an account, you can register for one using `register_DSC`

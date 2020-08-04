@@ -4,8 +4,10 @@ apt_packages:
   
 language: r
 r:
-  - 3.4
   - 3.5
   - 3.6
+  - release
+
+bioc_packages: ComplexHeatmap
 
 cache: packages

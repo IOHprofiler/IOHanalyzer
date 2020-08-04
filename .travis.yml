@@ -3,5 +3,9 @@ apt_packages:
   - libsecret-1-dev
   
 language: r
+r:
+  - 3.4
+  - 3.5
+  - 3.6
 
 cache: packages

@@ -460,10 +460,16 @@ get_target_dt <- function(dsList, which = 'by_RT') {
   }
   else stop("Invalid argument for `which`; can only be `by_FV` or `by_RT`.")
   targets <- apply(dt, 1,
-                   function(x) {target_func(subset(dsList, funcId == x[[1]], DIM == x[[2]]))})
+                   function(x) {
+                     dsl_sub <- subset(dsList, funcId == x[[1]], DIM == x[[2]])
+                     if (length(dsl_sub) > 0)
+                        target_func(dsl_sub)
+                     else
+                        NULL
+                     })
   dt[, target := targets]
 
-  return(dt)
+  return(dt[!sapply(dt[['target']], is.null)])
 }
 
 #' Helper function for `get_target_dt`
@@ -599,7 +605,7 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = N
   }
   # weeks <- seq(1,1,length.out = length(p1))
   games <- data.frame(Weeks = weeks, Player1 = p1, Player2 = p2, Scores = as.numeric(scores))
-  lout <- PlayerRatings::glicko2(games, init =  c(1500,350,0.06))
+  lout <- glicko2(games, init =  c(1500,350,0.06))
   lout$ratings$Player <- alg_names[lout$ratings$Player]
   lout
 }

@@ -551,6 +551,8 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = N
       targets_temp <- target_dt[target_dt$DIM == dim]
       for (fid in get_funcs()) {
         dsl_s <- subset(dsl, funcId == fid && DIM == dim)
+        if (length(dsl_s) == 0)
+          next
         if (which == 'by_FV') {
           target <- targets_temp[targets_temp$funcId == fid]$target
           x_arr <- get_RT_sample(dsl_s, target)
@@ -605,7 +607,7 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = N
   }
   # weeks <- seq(1,1,length.out = length(p1))
   games <- data.frame(Weeks = weeks, Player1 = p1, Player2 = p2, Scores = as.numeric(scores))
-  lout <- glicko2(games, init =  c(1500,350,0.06))
+  lout <- PlayerRatings::glicko2(games, init =  c(1500,350,0.06))
   lout$ratings$Player <- alg_names[lout$ratings$Player]
   lout
 }
@@ -778,6 +780,9 @@ convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT',
     dsl_sub <- subset(dsList, algId == algname)
     problems <- lapply(dsl_sub, function(ds) {
       target <- targets[funcId == attr(ds, 'funcId') & DIM == attr(ds, 'DIM'), 'target']
+      if (!is.numeric(target)) { #TODO: more robust solution
+        target <- target[[1]][[1]]
+      }
       if (by_rt) {
         data <- get_RT_sample(ds, target, output = 'long')$RT
         if (any(is.na(data)) & !is.null(na.correction)) {

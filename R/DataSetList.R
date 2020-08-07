@@ -67,6 +67,9 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
   else if (format == SOS) {
     return(read_datasetlist_SOS(path, locate_corrections_files(path)))
   }
+  else if (format == "bayesmark") {
+    return(create_dsl_bayesmark(path))
+  }
   else
     indexFiles <- scan_index_file(path)
   

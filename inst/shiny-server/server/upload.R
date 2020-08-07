@@ -166,7 +166,7 @@ unzip_fct_recursive <- function(zipfile, exdir, print_fun = print, alert_fun = p
   }
   print_fun(paste0('<p style="color:blue;">Succesfully unzipped ', basename(zipfile), '.<br>'))
   
-  folders <- grep('*.info|csv|txt', files, value = T) %>% 
+  folders <- grep('*.info|csv|txt|json', files, value = T) %>% 
     dirname %>% 
     unique %>% 
     grep('__MACOSX', ., value = T, invert = T) %>%  # to get rid of __MACOSX folder on MAC..
@@ -231,54 +231,80 @@ observeEvent(selected_folders(), {
       folder_new <- setdiff(folders, intersect(folderList$data, folders))
   
     req(length(folder_new) != 0)
-    format_detected <- lapply(folder_new, check_format) %>% unique
-  
-    if (length(format_detected) != 1)
-      print_html(paste('<p style="color:red;">more than one format: <br>',
-                       format_detected,
-                       'is detected in the uploaded data set... skip the uploaded data'))
-    else
-      format_detected <- format_detected[[1]]
     
-    print_html(paste0('<p style="color:blue;">Data processing of source type:', format_detected, ' <br>'))
-  
-    for (folder in folder_new) {
-      indexFiles <- scan_index_file(folder)
-  
-      if (length(indexFiles) == 0 && format_detected != NEVERGRAD && format_detected != "SOS")
-        print_html(paste('<p style="color:red;">No .info-files detected in the
-                         uploaded folder, while they were expected:</p>', folder))
-      else {
-        folderList$data <- c(folderList$data, folder)
-  
-        # read the data set and handle potential errors
-        new_data <- tryCatch(
-          DataSetList(folder, print_fun = print_html,
-                      maximization = maximization,
-                      format = format_detected,
-                      subsampling = input$upload.subsampling),
-          error = function(e) {
-            print_html(paste('<p style="color:red;">The following error happened
-                             when processing the data set:</p>'))
-            print_html(paste('<p style="color:red;">', e, '</p>'))
-            DataSetList()
-          }
-        )
-  
-        tryCatch(
-          DataList$data <- c(DataList$data, new_data),
-          error = function(e) {
-            print_html(paste('<p style="color:red;">The following error happened',
-                             'when adding the uploaded data set:</p>'))
-            print_html(paste('<p style="color:red;">', e,
-                             '\nRemoving the old data.</p>'))
-            DataList$data <- new_data
-          }
-        )
-        shinyjs::html("upload_data_promt",
-                      sprintf('%d: %s\n', length(folderList$data), folder),
-                      add = TRUE)
-      }
+    if (format_selected == "bayesmark") {
+      new_data <- tryCatch(
+        DataSetList(dirname(dirname(folder_new[[1]])), print_fun = print_html,
+                    maximization = maximization,
+                    format = format_selected,
+                    subsampling = input$upload.subsampling),
+        error = function(e) {
+          print_html(paste('<p style="color:red;">The following error happened
+                               when processing the data set:</p>'))
+          print_html(paste('<p style="color:red;">', e, '</p>'))
+          DataSetList()
+        }
+      )
+      tryCatch(
+        DataList$data <- c(DataList$data, new_data),
+        error = function(e) {
+          print_html(paste('<p style="color:red;">The following error happened',
+                           'when adding the uploaded data set:</p>'))
+          print_html(paste('<p style="color:red;">', e,
+                           '\nRemoving the old data.</p>'))
+          DataList$data <- new_data
+        }
+      )
+    }
+    else {
+      format_detected <- lapply(folder_new, check_format) %>% unique
+    
+      if (length(format_detected) != 1)
+        print_html(paste('<p style="color:red;">more than one format: <br>',
+                         format_detected,
+                         'is detected in the uploaded data set... skip the uploaded data'))
+      else
+        format_detected <- format_detected[[1]]
+      
+      print_html(paste0('<p style="color:blue;">Data processing of source type:', format_detected, ' <br>'))
+    
+      for (folder in folder_new) {
+        indexFiles <- scan_index_file(folder)
+    
+        if (length(indexFiles) == 0 && format_detected != NEVERGRAD && format_detected != "SOS")
+          print_html(paste('<p style="color:red;">No .info-files detected in the
+                           uploaded folder, while they were expected:</p>', folder))
+        else {
+          folderList$data <- c(folderList$data, folder)
+    
+          # read the data set and handle potential errors
+          new_data <- tryCatch(
+            DataSetList(folder, print_fun = print_html,
+                        maximization = maximization,
+                        format = format_detected,
+                        subsampling = input$upload.subsampling),
+            error = function(e) {
+              print_html(paste('<p style="color:red;">The following error happened
+                               when processing the data set:</p>'))
+              print_html(paste('<p style="color:red;">', e, '</p>'))
+              DataSetList()
+            }
+          )
+    
+          tryCatch(
+            DataList$data <- c(DataList$data, new_data),
+            error = function(e) {
+              print_html(paste('<p style="color:red;">The following error happened',
+                               'when adding the uploaded data set:</p>'))
+              print_html(paste('<p style="color:red;">', e,
+                               '\nRemoving the old data.</p>'))
+              DataList$data <- new_data
+            }
+          )
+          shinyjs::html("upload_data_promt",
+                        sprintf('%d: %s\n', length(folderList$data), folder),
+                        add = TRUE)
+        }
     }
     
     DataList$data <- clean_DataSetList(DataList$data)
@@ -287,7 +313,7 @@ observeEvent(selected_folders(), {
                      Please ensure the data is not corrupted.")
       return(NULL)
     }
-    
+  }
     update_menu_visibility(attr(DataList$data, 'suite'))
     # set_format_func(attr(DataList$data, 'suite'))
     set_color_scheme("Default", get_algId(DataList$data))
@@ -308,7 +334,7 @@ update_menu_visibility <- function(suite){
   else {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "FCE_ECDF"))
   }
-  if (any(suite == "SOS")) {
+  if (any(suite == "SOS") || any(suite == "bayesmark")) {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "Positions"))
   }
   else {

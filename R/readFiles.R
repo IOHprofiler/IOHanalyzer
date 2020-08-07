@@ -871,3 +871,110 @@ locate_corrections_files <- function(path) {
   files <- list.files(path, recursive = T, pattern = "*.txt", full.names = T)
   files[stri_detect_fixed(files, 'corrections')]
 }
+
+#' Read DataSetList of bayesmark-based data
+#' 
+#' Read output folder of bayesmark (containing subdirectories 'eval' and 'suggest_log', each
+#' containing one json file per run) and transform it into a DataSetList object
+#'
+#' @param path The path to the directory file
+#' @return The DataSetList extracted from the directory provided
+#' @noRd
+create_dsl_bayesmark <- function(path) {
+  dsl_temp <- lapply(list.dirs(path, recursive = F), function(folder){
+    filenames <- list.files(paste0(folder, "/eval"))
+    dsls_bbo <- lapply(filenames, function(filename) {
+      # print(filename)
+      tryCatch({
+        res <- fromJSON(file = paste0(folder, "/eval/", filename))
+        
+        raw_data <- res$data$data_vars$`_visible_to_opt`$data %>% unlist
+        
+        temp <- Inf
+        best_so_far <- unlist(lapply(raw_data, function(x) {
+          if (x < temp) temp <<- x
+          return(temp)
+        }))
+        
+        df <- data.table('function evaluation' = sort(rep(seq(1,16)*8,8)), 'current f(x)' = raw_data, 'best-so-far f(x)' = best_so_far,
+                         'transformed f(x)' = raw_data, 'best-so-far transformed f(x)' = best_so_far)
+        
+        res2 <- fromJSON(file = paste0(folder, "/suggest_log/", filename))
+        
+        params <- attributes(res2$data$data_vars)
+        dim <- length(params$names)
+        temp <- lapply(params$names, function(param) {
+          unlist(res2$data$data_vars[[param]]$data)
+        })
+        df_par <- as.data.table(temp)
+        colnames(df_par) <- params$names
+        
+        df_full <- data.table(df, df_par)
+        
+        mat <- as.matrix(df_full)
+        
+        best_idx <- which.min(mat[,'current f(x)'])
+        final_pos <- mat[best_idx, params$names]
+        
+        RT <- align_running_time(list(mat), format = IOHprofiler, maximization = F)
+        FV <- align_function_value(list(mat), format = IOHprofiler)
+        
+        PAR <- list(
+          'by_FV' = RT[names(RT) != 'RT'],
+          'by_RT' = FV[names(FV) != 'FV'],
+          'final_position' = list(final_pos)
+        )
+        
+        RT <- RT$RT
+        mode(RT) <- 'integer'
+        FV <- FV$FV
+        
+        
+        make_ds <- function() {
+          do.call(
+            function(...)
+              structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
+            c( list(maxRT = 128, finalFV = min(FV), format = IOHprofiler, budget = 128,
+                    maximization = F, suite = 'bayesmark', algId = res$meta$args$`--opt`,
+                    DIM = length(params$names), #Might consider setting to static value for easier aggregation?
+                    funcId = paste0(res$meta$args$`--data`, "_", res$meta$args$`--classifier`, "_", res$meta$args$`--metric`),
+                    metric = res$meta$args$`--metric`,
+                    classifier = res$meta$args$`--classifier`,
+                    dataset = res$meta$args$`--data`))
+          )}
+        
+        dsl_bbo <- make_ds()
+        dsl_bbo
+      }, error = function(e) {print(e)
+        NULL
+      })
+    })
+    
+    if (any(sapply(dsls_bbo, is.null)))
+      object <- dsls_bbo[-which(sapply(dsls_bbo, is.null))]
+    else
+      object <- dsls_bbo
+    
+    attr(object, 'DIM') <- sapply(object, function(x) {attr(x, "DIM")})
+    attr(object, 'funcId') <- sapply(object, function(x) {attr(x, "funcId")})
+    attr(object, 'algId') <- sapply(object, function(x) {attr(x, "algId")})
+    
+    
+    suite <- 'bayesmark'
+    maximization <- F
+    
+    attr(object, 'suite') <- suite
+    attr(object, 'maximization') <- maximization
+    class(object) <- c('DataSetList', class(object))
+    dsl_bbo <- clean_DataSetList(object)
+    attr(dsl_bbo, 'DIM') <- unlist(attr(dsl_bbo, 'DIM'))
+    attr(dsl_bbo, 'funcId') <- unlist(attr(dsl_bbo, 'funcId'))
+    attr(dsl_bbo, 'algId') <- unlist(attr(dsl_bbo, 'algId'))
+    dsl_bbo
+  })
+  temp <- DataSetList()
+  for (x in dsl_temp) {
+    temp <- c(temp, x)
+  }
+  temp
+}

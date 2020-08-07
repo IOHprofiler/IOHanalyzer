@@ -13,7 +13,7 @@ upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: fin
       selectInput(
         'upload.data_format',
         label = "Please choose the format of your datasets",
-        choices = c(AUTOMATIC, TWO_COL),
+        choices = c(AUTOMATIC, TWO_COL, "bayesmark"),
         selected = AUTOMATIC, width = '60%'
       ) %>%
         shinyInput_label_embed(

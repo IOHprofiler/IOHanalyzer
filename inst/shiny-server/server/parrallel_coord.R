@@ -1,6 +1,6 @@
 render_parallel_coord <- reactive({
   data <- DATA()
-  req(attr(data, 'suite') == "SOS")
+  req(attr(data[[1]], 'final_position'))
   data <- subset(data, algId == input$ParCoordPlot.Algs)
   withProgress({
     p <- IOH_plot_ly_default("Parallel coordinate plot", "Coordinate", "Value")

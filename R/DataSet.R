@@ -229,11 +229,26 @@ c.DataSet <- function(...) {
   
   RT <- align_running_time(RT_raw, format = "TWO_COL", maximization = info$maximization)$RT
   FV <- align_function_value(RT_raw, format = "TWO_COL")$FV
+  
+  #TODO: More permanent way to solve this aligning of parameters + 
+  # A way which deals with by_fv as well
+  pars <- dsl[[1]]$PAR$by_RT
+  param_names <- attributes(pars)$names
 
-  # TODO: to deal with cases where aligned parameters are present in original DataSets
+  temp_rt <- lapply(param_names, function(pname) { 
+    align_running_time(
+      lapply(dsl, function(ds) {
+        rt_temp <- as.matrix(ds$PAR$by_RT[[pname]])
+        cbind(rt_temp, as.numeric(rownames(ds$PAR$by_RT[[pname]])))
+      }
+      ), "TWO_COL")$RT
+  })
+  
+  names(temp_rt) <- param_names
+  
   PAR <- list(
-    'by_FV' = RT[names(RT) != 'RT'],
-    'by_RT' = FV[names(FV) != 'FV']
+    'by_RT' = temp_rt,
+    'by_FV' = RT[names(RT) != 'RT']
   )
   
   # Unaligned parameters

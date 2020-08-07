@@ -18,6 +18,7 @@
 #' @importFrom igraph graph_from_adjacency_matrix layout.circle plot.igraph 
 #' @importFrom PlayerRatings glicko2
 #' @importFrom stringi stri_detect_regex stri_detect_fixed stri_locate_all stri_replace
+#' @importFrom rjson fromJSON
 #' @useDynLib IOHanalyzer
 NULL
 # Ugly hack, but appears to be required to appease CRAN

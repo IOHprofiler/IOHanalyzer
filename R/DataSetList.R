@@ -206,6 +206,11 @@ clean_DataSetList <- function(dsList) {
     attr(dsList, 'DIM') <- sapply(dsList, function(ds) attr(ds, 'DIM'))
     attr(dsList, 'funcId') <- sapply(dsList, function(ds) attr(ds, 'funcId'))
     attr(dsList, 'algId') <- sapply(dsList, function(ds) attr(ds, 'algId'))
+    if (attr(dsList, 'suite') == "bayesmark") {
+      attr(dsList, 'metric') <- sapply(dsList, function(ds) attr(ds, 'metric'))
+      attr(dsList, 'classifier') <- sapply(dsList, function(ds) attr(ds, 'classifier'))
+      attr(dsList, 'dataset') <- sapply(dsList, function(ds) attr(ds, 'dataset'))
+    }
   }
   dsList
 }
@@ -230,7 +235,14 @@ c.DataSetList <- function(...) {
   if (!any((class(object)) == 'DataSetList'))
     class(object) <- c('DataSetList', class(object))
 
-  for (attr_str in c('DIM', 'funcId', 'algId')) {
+  attr_strs <- c('DIM', 'funcId', 'algId')
+  
+  #TODO: More generic way to deal with these additional attributes
+  if (attr(dsl[[1]], "suite") == "bayesmark") {
+    attr_strs <- c(attr_strs, "dataset", "classifier", "metric")
+  }
+  
+  for (attr_str in attr_strs) {
     attr(object, attr_str) <- unlist(lapply(dsl, function(x) attr(x, attr_str)))
   }
 
@@ -277,7 +289,13 @@ c.DataSetList <- function(...) {
   attr(obj, 'algId') <- attr(x, 'algId')[i]
   attr(obj, 'suite') <- attr(x, 'suite')
   attr(obj, 'maximization') <- attr(x, 'maximization')
-
+  
+  if (attr(obj, 'suite') == "bayesmark") {
+    attr(obj, 'dataset') <- attr(x, 'dataset')[i]
+    attr(obj, 'classifier') <- attr(x, 'classifier')[i]
+    attr(obj, 'metric') <- attr(x, 'metric')[i]
+  }
+  
   obj
 }
 

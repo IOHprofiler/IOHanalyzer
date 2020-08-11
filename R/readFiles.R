@@ -958,6 +958,9 @@ create_dsl_bayesmark <- function(path) {
     attr(object, 'DIM') <- sapply(object, function(x) {attr(x, "DIM")})
     attr(object, 'funcId') <- sapply(object, function(x) {attr(x, "funcId")})
     attr(object, 'algId') <- sapply(object, function(x) {attr(x, "algId")})
+    attr(object, 'metric') <- sapply(object, function(x) {attr(x, "metric")})
+    attr(object, 'classifier') <- sapply(object, function(x) {attr(x, "classifier")})
+    attr(object, 'dataset') <- sapply(object, function(x) {attr(x, "dataset")})
     
     
     suite <- 'bayesmark'
@@ -970,6 +973,9 @@ create_dsl_bayesmark <- function(path) {
     attr(dsl_bbo, 'DIM') <- unlist(attr(dsl_bbo, 'DIM'))
     attr(dsl_bbo, 'funcId') <- unlist(attr(dsl_bbo, 'funcId'))
     attr(dsl_bbo, 'algId') <- unlist(attr(dsl_bbo, 'algId'))
+    attr(dsl_bbo, 'metric') <- unlist(attr(dsl_bbo, 'metric'))
+    attr(dsl_bbo, 'classifier') <- unlist(attr(dsl_bbo, 'classifier'))
+    attr(dsl_bbo, 'dataset') <- unlist(attr(dsl_bbo, 'dataset'))
     dsl_bbo
   })
   temp <- DataSetList()

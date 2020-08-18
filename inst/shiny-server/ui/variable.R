@@ -14,7 +14,7 @@ F_STEP_LABEL <- HTML('<p>\\(\\Delta f:\\) Granularity (step size)</p>')
 
 Pdsc_info <- "Practical Deep Comparison uses this 
                 as a threshold parameter to determine when two performance measure values are 
-                equal or different from a practical point of view. /n
+                equal or different from a practical point of view.
                 Since the practical significance 
                 is handled with preprocessing using the predefined threshold in sequential order of 
                 the obtained runs, to make more robust analysis a Monte-Carlo simulation is required."

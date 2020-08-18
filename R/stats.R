@@ -811,6 +811,7 @@ convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT',
       }
       else {
         data <- get_FV_sample(ds, target, output = 'long')$`f(x)`
+        if (attr(ds, 'maximization')) data <- -1  * data
       }
       if (any(is.na(data))) {
         warning("NA-values detected in data preparation for DSCtool. This will likely result in an 

@@ -933,8 +933,8 @@ get_dsc_posthoc <- function(omni_res, nr_algs, nr_problems, base_algorithm = NUL
   url <- "https://ws.ijs.si:8443/dsc-1.5/service/posthoc"
   new_json <- list(method = list(name = method, alpha = alpha),
                    algorithm_means = omni_res$algorithm_means,
-                   n = nr_algs,
-                   k = nr_problems,
+                   n = nr_problems,
+                   k = nr_algs,
                    base_algorithm = base_algorithm)
   result_json <- POST(url,
                       authenticate(get_DSC_credentials()$name, get_DSC_credentials()$pwd),

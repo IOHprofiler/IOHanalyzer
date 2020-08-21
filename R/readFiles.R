@@ -82,8 +82,11 @@ read_index_file__IOH <- function(fname) {
           value <- ans[[name]]
           ans[[name]] <- gsub("'", '', value)
           
-          if (name == 'maximization')
+          .name <- tolower(name)
+          if (.name == 'maximization') {
+            name <- .name 
             value <- as.logical(value)
+          }
           else
             value <- suppressWarnings(as.numeric(value)) # convert quoted numeric values to numeric
           
@@ -93,7 +96,6 @@ read_index_file__IOH <- function(fname) {
       }
 
     record <- trimws(strsplit(lines[3], ',')[[1]])
-
     # TODO: this must also be removed...
     if (record[2] == "") {
       warning(sprintf('File %s is incomplete!', fname))

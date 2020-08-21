@@ -24,7 +24,7 @@
 #' path <- system.file('extdata', 'ONE_PLUS_LAMDA_EA', package = 'IOHanalyzer')
 #' info <- read_index_file(file.path(path, 'IOHprofiler_f1_i1.info'))
 #' DataSet(info[[1]])
-DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler,
+DataSet <- function(info, verbose = F, maximization = AUTOMATIC, format = IOHprofiler,
                     subsampling = FALSE) {
   if (!is.null(info)) {
     path <- dirname(info$datafile)
@@ -35,17 +35,18 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
       if (verbose)
         warning("Suite-name not provided in .info-file, taking best guess based on
                 the format of data-files.")
-      suite <- switch(format,
-                      IOHprofiler = "Unknown",
-                      COCO = "BBOB",
-                      BIOBJ_COCO = "biobj-bbob",
-                      TWO_COL = "Unknown")
+      suite <- switch(
+        format,
+        IOHprofiler = "Unknown",
+        COCO = "BBOB",
+        BIOBJ_COCO = "biobj-bbob",
+        TWO_COL = "Unknown"
+      )
     }
 
-    if (is.null(maximization) || maximization == AUTOMATIC) {
-      #TODO: Better way to deal with capitalization of attributes
+    if (maximization == AUTOMATIC) {
       if (!is.null(info$maximization)) maximization <- info$maximization
-      else if (!is.null(info$Maximization)) maximization <- info$Maximization
+      # else if (!is.null(info$Maximization)) maximization <- info$Maximization
       else if (!is.null(suite)) {
           if (verbose)
             warning("maximization or minimization not specified in .info-file,

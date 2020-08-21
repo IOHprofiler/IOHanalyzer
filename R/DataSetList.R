@@ -51,8 +51,9 @@ read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
 #' @examples
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package = "IOHanalyzer")
 #' DataSetList(path)
-DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization = NULL,
-                        format = IOHprofiler, subsampling = FALSE) {
+DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, 
+                        maximization = AUTOMATIC, format = IOHprofiler, 
+                        subsampling = FALSE) {
   if (is.null(path))
     return(structure(list(), class = c('DataSetList', 'list')))
   
@@ -61,8 +62,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
     if (sub('[^\\.]*\\.', '', basename(path), perl = T) == "csv")
       return(read_nevergrad(path))
     else
-      indexFiles <-
-        file.path(path, list.files(path, pattern = '.csv', recursive = T))
+      indexFiles <- file.path(path, list.files(path, pattern = '.csv', recursive = T))
   }
   else if (format == SOS) {
     return(read_datasetlist_SOS(path, locate_corrections_files(path)))
@@ -110,8 +110,10 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
         }
         
         copy_flag <- TRUE
-        data <- DataSet(info, maximization = maximization,
-                        format = format, subsampling = subsampling)
+        data <- DataSet(
+          info, maximization = maximization,
+          format = format, subsampling = subsampling
+        )
         
         DIM[i] <- attr(data, 'DIM')
         funcId[i] <- attr(data, 'funcId')

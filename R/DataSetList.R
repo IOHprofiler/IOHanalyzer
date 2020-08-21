@@ -418,21 +418,26 @@ get_ERT.DataSetList <-
 #' @rdname get_RT_summary
 #' @param algorithm Which algorithms in the DataSetList to consider.
 #' @export
-get_RT_summary.DataSetList <-
-  function(ds, ftarget, algorithm = 'all', ...) {
+get_RT_summary.DataSetList <- function(ds, ftarget, ignore_instance = T, 
+                                       algorithm = 'all', ...) {
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
 
-    rbindlist(lapply(ds, function(ds) {
-      res <-
-        cbind(attr(ds, 'DIM'),
-              attr(ds, 'funcId'),
-              get_RT_summary(ds, ftarget))
-      colnames(res)[1] <- 'DIM'
-      colnames(res)[2] <- 'funcId'
-      res
-    }))
-  }
+    rbindlist(
+      lapply(
+        ds, function(ds) {
+          res <- cbind(
+            attr(ds, 'DIM'),
+            attr(ds, 'funcId'),
+            get_RT_summary(ds, ftarget, ignore_instance)
+          )
+          colnames(res)[1] <- 'DIM'
+          colnames(res)[2] <- 'funcId'
+          res
+        }
+      )
+    )
+}
 
 #' @rdname get_RT_sample
 #' @param algorithm Which algorithms in the DataSetList to consider.

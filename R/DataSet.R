@@ -35,6 +35,7 @@ DataSet <- function(info, verbose = F, maximization = AUTOMATIC, format = IOHpro
       if (verbose)
         warning("Suite-name not provided in .info-file, taking best guess based on
                 the format of data-files.")
+      
       suite <- switch(
         format,
         IOHprofiler = "Unknown",
@@ -47,7 +48,7 @@ DataSet <- function(info, verbose = F, maximization = AUTOMATIC, format = IOHpro
     if (maximization == AUTOMATIC) {
       if (!is.null(info$maximization)) maximization <- info$maximization
       # else if (!is.null(info$Maximization)) maximization <- info$Maximization
-      else if (!is.null(suite)) {
+      else if (!is.null(suite)) {  # could `suite` still be `NULL` at this stage?
           if (verbose)
             warning("maximization or minimization not specified in .info-file,
                     taking best guess based on the suite-name.")
@@ -55,7 +56,7 @@ DataSet <- function(info, verbose = F, maximization = AUTOMATIC, format = IOHpro
             maximization <- FALSE
           else
             maximization <- TRUE
-        } 
+      } 
       else {
         warning("Can't detect maximization based on suite-attribute, setting to 
                 minimization by default")
@@ -159,12 +160,16 @@ DataSet <- function(info, verbose = F, maximization = AUTOMATIC, format = IOHpro
         warning('The number of instances found in the info is inconsistent with the data!')
       info$instance <- seq(length(RT_raw))
     }
-
+    
     do.call(
-      function(...)
-        structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
-      c(info, list(maxRT = maxRT, finalFV = finalFV, format = format,
-                   maximization = maximization, suite = suite))
+      function(...) structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
+      c(
+        info, 
+        list(
+          maxRT = maxRT, finalFV = finalFV, format = format,
+          maximization = maximization, suite = suite
+        )
+      )
     )
   }
   else
@@ -639,15 +644,20 @@ get_ERT.DataSet <- function(ds, ftarget, ...) {
   dt
 }
 
+.get_RT_summary.DataSet <- function(data, maxRT) {
+  # TODO: maybe get rid of `%>%`s for speed concern
+  
+}
+
 #' @rdname get_RT_summary
 #' @export
 #'
-get_RT_summary.DataSet <- function(ds, ftarget, ...) {
+get_RT_summary.DataSet <- function(ds, ftarget, ignore_instance = T, ...) {
   data <- ds$RT
   maxRT <- attr(ds, 'maxRT')
   algId <- attr(ds, 'algId')
   maximization <- attr(ds, 'maximization')
-
+  
   ftarget <- sort(as.double(unique(c(ftarget))), decreasing = !maximization)
   FValues <- as.numeric(rownames(data))
   idx <- seq_along(FValues)
@@ -663,19 +673,56 @@ get_RT_summary.DataSet <- function(ds, ftarget, ...) {
   if (is.list(matched)) {
     return(data.table())
   }
-
   data <- data[matched, , drop = FALSE]
-  apply(data, 1, IOHanalyzer_env$D_quantile) %>%
-    t %>%
-    as.data.table %>%
-    cbind(as.data.table(SP(data, maxRT))) %>%
-    cbind(algId, ftarget,
-          apply(data, 1, .mean),
-          apply(data, 1, .median),
-          apply(data, 1, .sd), .) %>%
-    set_colnames(c('algId', 'target', 'mean', 'median',
-                   'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%'),
-                   'ERT', 'runs', 'ps'))
+  
+  if (ignore_instance) {
+    apply(data, 1, IOHanalyzer_env$D_quantile) %>%
+      t %>%
+      as.data.table %>%
+      cbind(as.data.table(SP(data, maxRT))) %>%
+      cbind(
+        algId, ftarget,
+        apply(data, 1, .mean),
+        apply(data, 1, .median),
+        apply(data, 1, .sd), .
+      ) %>%
+      set_colnames(
+        c(
+          'algId', 'target', 'mean', 'median',
+          'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%'),
+          'ERT', 'runs', 'ps'
+        )
+      )
+  }
+  else {
+    instance <- attr(ds, 'instance')
+    lapply(
+      unique(instance), 
+      function(i) {
+        .data <- data[, instance == i, drop = FALSE]
+        .maxRT <- maxRT[instance == i]
+        
+        apply(.data, 1, IOHanalyzer_env$D_quantile) %>%
+          t %>%
+          as.data.table %>%
+          cbind(as.data.table(SP(.data, .maxRT))) %>%
+          cbind(
+            i, algId, ftarget,
+            apply(.data, 1, .mean),
+            apply(.data, 1, .median),
+            apply(.data, 1, .sd), .
+          ) %>%
+          set_colnames(
+            c(
+              'instance', 'algId', 'target', 'mean', 'median',
+              'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%'),
+              'ERT', 'runs', 'ps'
+            )
+          )
+      }
+    ) %>% 
+    rbindlist
+  }
 }
 
 #' Get the maximal running time

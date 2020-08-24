@@ -540,6 +540,16 @@ body <- dashboardBody(
         )
       )
     ),
+    tabItem(
+      tabName = 'BBOcomp',
+      fluidRow(
+        column(
+          width = 12,
+          bbocomp_table_box(),
+          bbocomp_plot_box()
+        )
+      )
+    ),
     
     tabItem(
       tabName = 'Positions',

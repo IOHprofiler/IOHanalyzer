@@ -35,6 +35,7 @@ sidebar_menu <- function() {
                        )
                        ),
               menuItem("Position Information", tabName = "Positions", icon = icon("arrows-alt")),
+              menuItem("BBOcomp-specific", tabName = "BBOcomp", icon = icon("arrows-alt")),
               # menuItem("Data Format", tabName = "dataformat", icon = icon("fas fa-database")),
               menuItem("About", tabName = "about", icon = icon("question")),
               menuItem("Settings", tabName = "Settings", icon = icon("cog"))

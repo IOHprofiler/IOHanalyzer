@@ -546,7 +546,8 @@ body <- dashboardBody(
         column(
           width = 12,
           bbocomp_table_box(),
-          bbocomp_plot_box()
+          bbocomp_plot_box(),
+          bbocomp_table_pos_box()
         )
       )
     ),

@@ -108,3 +108,43 @@ render_bbocomp_plot <- reactive({
 output$BBOcomp.Plot.Figure <- renderPlotly({
   render_bbocomp_plot()
 })
+
+get_best_xpos <- function(dsList) {
+  ds_idx <- which.min(sapply(dsList, function(ds) {min(attr(ds, 'finalFV'))}))
+  ds <- dsList[[ds_idx]]
+  final_fvs <- attr(ds, 'finalFV')
+  idx_min <- which.min(final_fvs)
+  return(ds$PAR$final_position[[idx_min]])
+}
+
+
+
+
+
+
+pos_dt <- reactive({
+  
+  data <- DATA_RAW()
+  dsl_bbo_sub <- subset(dsl_bbo_large, classifier == input$BBOcomp.Postable.classifier)
+  
+  
+  
+  dt_full <- rbindlist(lapply(get_funcId(dsl_bbo_sub), function(funcname) {
+    dsl_sub <- subset(dsl_bbo_sub, funcId == funcname)
+    temp <- get_best_xpos(dsl_sub)
+    dt <- data.table(value = temp) %>% transpose %>% `colnames<-`(names(temp))
+    dt[, dataset := attr(dsl_sub[[1]], "dataset")]
+    dt[, metric := attr(dsl_sub[[1]], "metric")]
+    setcolorder(dt, c("dataset", "metric"))
+    dt
+  }), fill = T)
+  
+})
+
+output$table_BBOcomp_pos <- DT::renderDataTable({
+  dt <- pos_dt()
+  req(length(dt) != 0)
+  dt[is.na(dt)] <- 'NA'
+  dt
+}, filter = list(position = 'top', clear = FALSE),
+options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))

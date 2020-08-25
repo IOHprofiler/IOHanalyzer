@@ -13,7 +13,7 @@ bbocomp_table_box <- function(width = 12, collapsible = T, collapsed = F) {
       selectInput("BBOcomp.aggr_averaging", "Aggregation_method", 
                   c("Average"), selected = "Average"),
       hr(),
-      selectInput('BBOcomp.Format', 'Format', choices = c('csv','tex'), selected = 'csv'),
+      selectInput('BBOcomp.Format', 'Format', choices = c('csv','tex'), selected = 'csv')
       # downloadButton("BBOcomp.Download", "Save this table as csv")
     ),
     
@@ -38,7 +38,7 @@ bbocomp_plot_box <- function(width = 12, collapsible = T, collapsed = T) {
                   choices = c("none", "algId", "classifier", "dataset", "metric"), selected = "none"),
       hr(),
       selectInput('BBOcomp.Plot.Format', label = 'Select the figure format',
-                  choices = supported_fig_format, selected = 'pdf'),
+                  choices = supported_fig_format, selected = 'pdf')
       # downloadButton('BBOcomp.Plot.Download', label = 'Download the figure')
     ),
     
@@ -51,3 +51,25 @@ bbocomp_plot_box <- function(width = 12, collapsible = T, collapsed = T) {
     )
   )
 }
+
+bbocomp_table_pos_box <- function(width = 12, collapsible = T, collapsed = T) {
+  box(
+    title = HTML('<p style="font-size:120%;">Best found configurations</p>'),
+    width = width, collapsible = collapsible, collapsed = collapsed,
+    solidHeader = T, status = "primary",
+    sidebarPanel(
+      width = 3,
+      HTML_P('Select which classifier to use.'),
+      selectInput("BBOcomp.Postable.classifier", "Classifier", NULL),
+      hr(),
+      selectInput('BBOcomp.Postable.Format', 'Format', choices = c('csv','tex'), selected = 'csv')
+      # downloadButton("BBOcomp.Download", "Save this table as csv")
+    ),
+    
+    mainPanel(
+      width = 9,
+      DT::dataTableOutput('table_BBOcomp_pos')
+    )
+  )
+}
+

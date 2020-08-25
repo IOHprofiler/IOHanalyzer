@@ -340,6 +340,17 @@ update_menu_visibility <- function(suite){
   else {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "Positions"))
   }
+  if (any(suite == "bayesmark")) {
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "BBOcomp"))
+    
+    data <- DataList$data
+    classifiers = unique(attr(data, "classifier"))
+    updateSelectInput(session, 'BBOcomp.Postable.classifier', choices = classifiers, selected = classifiers[[1]])
+    
+  }
+  else {
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "BBOcomp"))
+  }
 }
 
 # remove all uploaded data set

@@ -5,6 +5,12 @@ bbocomp_table_box <- function(width = 12, collapsible = T, collapsed = F) {
     solidHeader = T, status = "primary",
     sidebarPanel(
       width = 3,
+      HTML_P('Select the values of the attributes to include.'),
+      selectInput("BBOcomp.Aggr.algid", "Algorithms", NULL, multiple = T),
+      selectInput("BBOcomp.Aggr.dataset", "Datasets", NULL, multiple = T),
+      selectInput("BBOcomp.Aggr.metric", "Metrics", NULL, multiple = T),
+      selectInput("BBOcomp.Aggr.classifier", "Classifiers", NULL, multiple = T),
+      
       HTML_P('Select which attributes to aggregate over.'),
       checkboxInput('BBOcomp.aggr_alg', 'Algorithms', value = TRUE),
       checkboxInput('BBOcomp.aggr_class', 'Classifiers', value = TRUE),
@@ -13,8 +19,8 @@ bbocomp_table_box <- function(width = 12, collapsible = T, collapsed = F) {
       selectInput("BBOcomp.aggr_averaging", "Aggregation_method", 
                   c("Average"), selected = "Average"),
       hr(),
-      selectInput('BBOcomp.Format', 'Format', choices = c('csv','tex'), selected = 'csv')
-      # downloadButton("BBOcomp.Download", "Save this table as csv")
+      selectInput('BBOcomp.Format', 'Format', choices = c('csv','tex'), selected = 'csv'),
+      downloadButton("BBOcomp.Download", "Save this table in the selected format")
     ),
     
     mainPanel(
@@ -31,6 +37,11 @@ bbocomp_plot_box <- function(width = 12, collapsible = T, collapsed = T) {
     solidHeader = TRUE, status = "primary",
     sidebarPanel(
       width = 3,
+      HTML_P('Select the values of the attributes to include.'),
+      selectInput("BBOcomp.Plot.algid", "Algorithms", NULL, multiple = T),
+      selectInput("BBOcomp.Plot.dataset", "Datasets", NULL, multiple = T),
+      selectInput("BBOcomp.Plot.metric", "Metrics", NULL, multiple = T),
+      selectInput("BBOcomp.Plot.classifier", "Classifiers", NULL, multiple = T),
       
       selectInput('BBOcomp.Plot.xattr', "Select the attribute to use in x-axis",
                   choices = c("algId", "classifier", "dataset", "metric"), selected = "algId"),
@@ -38,8 +49,8 @@ bbocomp_plot_box <- function(width = 12, collapsible = T, collapsed = T) {
                   choices = c("none", "algId", "classifier", "dataset", "metric"), selected = "none"),
       hr(),
       selectInput('BBOcomp.Plot.Format', label = 'Select the figure format',
-                  choices = supported_fig_format, selected = 'pdf')
-      # downloadButton('BBOcomp.Plot.Download', label = 'Download the figure')
+                  choices = supported_fig_format, selected = 'pdf'),
+      downloadButton('BBOcomp.Plot.Download', label = 'Download the figure')
     ),
     
     mainPanel(
@@ -62,8 +73,8 @@ bbocomp_table_pos_box <- function(width = 12, collapsible = T, collapsed = T) {
       HTML_P('Select which classifier to use.'),
       selectInput("BBOcomp.Postable.classifier", "Classifier", NULL),
       hr(),
-      selectInput('BBOcomp.Postable.Format', 'Format', choices = c('csv','tex'), selected = 'csv')
-      # downloadButton("BBOcomp.Download", "Save this table as csv")
+      selectInput('BBOcomp.Postable.Format', 'Format', choices = c('csv','tex'), selected = 'csv'),
+      downloadButton("BBOcomp.Pos_Download", "Save this table as csv")
     ),
     
     mainPanel(

@@ -345,7 +345,20 @@ update_menu_visibility <- function(suite){
     
     data <- DataList$data
     classifiers = unique(attr(data, "classifier"))
+    algids = unique(attr(data, "algId"))
+    metrics = unique(attr(data, "metric"))
+    datasets = unique(attr(data, "dataset"))
+    
     updateSelectInput(session, 'BBOcomp.Postable.classifier', choices = classifiers, selected = classifiers[[1]])
+    updateSelectInput(session, 'BBOcomp.Aggr.algid', choices = algids, selected = algids)
+    updateSelectInput(session, 'BBOcomp.Aggr.dataset', choices = datasets, selected = datasets)
+    updateSelectInput(session, 'BBOcomp.Aggr.metric', choices = metrics, selected = metrics)
+    updateSelectInput(session, 'BBOcomp.Aggr.classifier', choices = classifiers, selected = classifiers)
+    
+    updateSelectInput(session, 'BBOcomp.Plot.algid', choices = algids, selected = algids)
+    updateSelectInput(session, 'BBOcomp.Plot.dataset', choices = datasets, selected = datasets)
+    updateSelectInput(session, 'BBOcomp.Plot.metric', choices = metrics, selected = metrics)
+    updateSelectInput(session, 'BBOcomp.Plot.classifier', choices = classifiers, selected = classifiers)
     
   }
   else {

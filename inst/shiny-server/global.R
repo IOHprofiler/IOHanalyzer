@@ -163,6 +163,10 @@ FIG_NAME_FV_AUC <- parse(text = "paste0('FV_AUC-', Sys.Date(), '.', input$FCEECD
 FIG_NAME_RT_PAR_PER_FUN <- parse(text = "paste0('RT_PAR-', Sys.Date(), '.', input$RT_PAR.Plot.Format)")
 FIG_NAME_FV_PAR_PER_FUN <- parse(text = "paste0('FV_PAR-', Sys.Date(), '.', input$FV_PAR.Plot.Format)")
 
+BBOcomp_table_name <- parse(text = "paste0('BBOcomp-', Sys.Date(), '.', input$BBOcomp.Format)")
+BBOcomp_plot_name <- parse(text = "paste0('BBOcomp-', Sys.Date(), '.', input$BBOcomp.Plot.Format)")
+BBOcomp_pos_name <- parse(text = "paste0('BBOcomp_pos-', Sys.Date(), '.', input$BBOcomp.Postable.Format)")
+
 
 # ID of the control widget, whose current value should de always recorded and restored ----
 # those control widget are switched on and off

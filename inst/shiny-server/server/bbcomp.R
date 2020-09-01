@@ -47,9 +47,28 @@ get_FV_sample_bbo_ds <- function(ds, runtime,...) {
   res
 }
 
+output$BBOcomp.Download <- downloadHandler(
+  filename = function() {
+    eval(BBOcomp_table_name)
+  },
+  content = function(file) {
+    df <- aggr_dt()
+    req(length(dt) != 0)
+    dt[is.na(dt)] <- 'NA'
+    if (input$BBOcomp.Format == 'csv')
+      write.csv2(df, file, row.names = F)
+    else
+      print(xtable(df), file = file)
+  },
+  contentType = "text/csv"
+)
+
 aggr_dt <- reactive({
   
   data <- DATA_RAW()
+  
+  data <- subset(data, algId %in% input$BBOcomp.Aggr.algid && dataset %in% input$BBOcomp.Aggr.dataset &&
+                   classifier %in% input$BBOcomp.Aggr.classifier && metric %in% input$BBOcomp.Aggr.metric)
   
   aggr_attrs <- c()
   if (input$BBOcomp.aggr_alg) aggr_attrs <- c(aggr_attrs, "algId")
@@ -76,8 +95,8 @@ render_bbocomp_plot <- reactive({
   withProgress({
     data <- DATA_RAW()
     
-    aggr_attrs <- c()
-
+    data <- subset(data, algId %in% input$BBOcomp.Plot.algid && dataset %in% input$BBOcomp.Plot.dataset &&
+                     classifier %in% input$BBOcomp.Plot.classifier && metric %in% input$BBOcomp.Plot.metric)
     
     dt <- get_FV_sample_bbo(data, 128, output = "long")
     sub_attr <- NULL
@@ -95,15 +114,15 @@ render_bbocomp_plot <- reactive({
 
 
 
-# output$FV_PAR.Plot.Download <- downloadHandler(
-#   filename = function() {
-#     eval(FIG_NAME_FV_PAR_PER_FUN)
-#   },
-#   content = function(file) {
-#     save_plotly(render_FV_PAR_PER_FUN(), file)
-#   },
-#   contentType = paste0('image/', input$FV_PAR.Plot.Format)
-# )
+output$BBOcomp.Plot.Download <- downloadHandler(
+  filename = function() {
+    eval(BBOcomp_plot_name)
+  },
+  content = function(file) {
+    save_plotly(render_bbocomp_plot(), file)
+  },
+  contentType = paste0('image/', input$BBOcomp.Plot.Format)
+)
 
 output$BBOcomp.Plot.Figure <- renderPlotly({
   render_bbocomp_plot()
@@ -148,3 +167,19 @@ output$table_BBOcomp_pos <- DT::renderDataTable({
   dt
 }, filter = list(position = 'top', clear = FALSE),
 options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
+
+output$BBOcomp.Pos_Download <- downloadHandler(
+  filename = function() {
+    eval(BBOcomp_pos_name)
+  },
+  content = function(file) {
+    df <- aggr_dt()
+    req(length(dt) != 0)
+    dt[is.na(dt)] <- 'NA'
+    if (input$BBOcomp.Postable.Format == 'csv')
+      write.csv2(df, file, row.names = F)
+    else
+      print(xtable(df), file = file)
+  },
+  contentType = "text/csv"
+)

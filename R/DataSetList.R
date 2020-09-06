@@ -239,18 +239,18 @@ c.DataSetList <- function(...) {
   )
   
   # These attributes NEED to be the same across the datasetlist
-  for (attr_str in c('maximization')) {
-    temp <- unique(
-        unlist(lapply(dsl, function(x) attr(x, attr_str)))
-    )
+  # for (attr_str in c('maximization')) {
+  #   temp <- unique(
+  #       unlist(lapply(dsl, function(x) attr(x, attr_str)))
+  #   )
 
-    if (length(temp) > 1) {
-      stop(paste0("Attempted to add datasetlists with different ", attr_str,
-                  "-attributes! This will lead to errors when processing
-                  this data!"))
-    }
-    attr(object, attr_str) <- temp[[1]]
-  }
+  #   if (length(temp) > 1) {
+  #     stop(paste0("Attempted to add datasetlists with different ", attr_str,
+  #                 "-attributes! This will lead to errors when processing
+  #                 this data!"))
+  #   }
+  #   attr(object, attr_str) <- temp[[1]]
+  # }
   object
 }
 

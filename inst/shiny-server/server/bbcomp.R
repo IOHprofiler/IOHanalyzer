@@ -138,15 +138,10 @@ get_best_xpos <- function(dsList) {
 
 
 
-
-
-
 pos_dt <- reactive({
   
   data <- DATA_RAW()
-  dsl_bbo_sub <- subset(dsl_bbo_large, classifier == input$BBOcomp.Postable.classifier)
-  
-  
+  dsl_bbo_sub <- subset(data, classifier == input$BBOcomp.Postable.classifier)
   
   dt_full <- rbindlist(lapply(get_funcId(dsl_bbo_sub), function(funcname) {
     dsl_sub <- subset(dsl_bbo_sub, funcId == funcname)

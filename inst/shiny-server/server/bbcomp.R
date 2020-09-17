@@ -168,7 +168,7 @@ output$BBOcomp.Pos_Download <- downloadHandler(
     eval(BBOcomp_pos_name)
   },
   content = function(file) {
-    df <- aggr_dt()
+    df <- pos_dt()
     req(length(dt) != 0)
     dt[is.na(dt)] <- 'NA'
     if (input$BBOcomp.Postable.Format == 'csv')

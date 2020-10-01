@@ -762,10 +762,10 @@ get_ECDF_targets <- function(dsList, type = "log-linear", number_targets = 10) {
     else {
       dsl <- subset(dsList, funcId == x[[1]] && DIM == x[[2]])
       if (length(dsl) == 0) 
-        NULL
+        return(NULL)
       fall <- get_funvals(dsl)
       if (length(fall) < 2) 
-        NULL 
+        return(NULL) 
       
       fseq <- seq_FV(fall, length.out = number_targets, scale = ifelse(type == "log-linear", 'log', 'linear'))
     }

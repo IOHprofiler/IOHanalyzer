@@ -52,6 +52,7 @@ render_RT_ECDF_MULT <- reactive({
   withProgress({
     plot_general_data(get_data_RT_ECDF_MULT(), 'x', 'mean', 'line', 
                       scale.xlog = input$RTECDF.Aggr.Logx, 
+                      scale.ylog = input$RTECDF.Aggr.Logy, 
                       x_title = "Function Evaluations",
                       y_title = "Proportion of (run, target, ...) pairs", 
                       show.legend = T)

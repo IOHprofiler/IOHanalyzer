@@ -1198,13 +1198,13 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                    hovertemplate = '%{text}',
                    ...
                  ) 
-            )
+             )
              if (inf.action != 'none') {
                p %<>% add_trace(data = df[isinf == T], x = ~x, y = ~y, legendgroup = ~l_orig, name = ~l_orig,
-                    type = 'scatter', mode = 'markers',  color = ~l,
-                    marker = list(symbol = 'circle-open', size = 8 + getOption('IOHanalyzer.markersize', 4)),
-                    colors = colors, showlegend = F, text = 'Inf', hoverinfo = 'none',
-                    ...
+                                type = 'scatter', mode = 'markers',  color = ~l,
+                                marker = list(symbol = 'circle-open', size = 8 + getOption('IOHanalyzer.markersize', 4)),
+                                colors = colors, showlegend = F, text = 'Inf', hoverinfo = 'none',
+                                ...
                )
              }   
              
@@ -1239,9 +1239,14 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              }
            }
            if (is_new_plot) {
-             p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3,
-                                        autorange = ifelse(scale.reverse, "reversed", T)),
-                           yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
+             if (is.numeric(df[['x']]))
+               p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3,
+                                          autorange = ifelse(scale.reverse, "reversed", T)),
+                             yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
+             else
+               p %<>% layout(xaxis = list(type = 'category', tickfont = f3(), ticklen = 3),
+                             yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
+             
            }
          },
          'ribbon' = {

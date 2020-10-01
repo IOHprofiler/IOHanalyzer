@@ -117,6 +117,16 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
       checkboxInput("RTECDF.Aggr.Func", "Aggregate functions", value = T),
       checkboxInput("RTECDF.Aggr.Dim", "Aggregate dimensions", value = F),
       checkboxInput("RTECDF.Aggr.Logx", "Scale x axis \\(\\log_{10}\\)", value = T),
+      checkboxInput("RTECDF.Aggr.Logy", "Scale y axis \\(\\log_{10}\\)", value = F) %>% 
+        shinyInput_label_embed(
+          custom_icon() %>%
+            bs_embed_popover(
+              title = "Scaling", content = "The logorithmic scaling might cause some visual issues
+              when the smallest y-values are (very close to) 0. 
+              Please be mindful of this fact when using this option.", 
+              placement = "auto"
+            )
+        ),
       
       br(),
       actionButton(

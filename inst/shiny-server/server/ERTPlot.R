@@ -147,6 +147,8 @@ get_data_ERT_multi_func_bulk <- reactive({
 get_data_ERT_multi_func <- reactive({
   req(isolate(input$ERTPlot.Multi.Algs))
   input$ERTPlot.Multi.PlotButton
+  data <- subset(DATA_RAW(),
+                 DIM == input$Overall.Dim)
   if (length(get_algId(data)) < 20) {
     get_data_ERT_multi_func_bulk()[algId %in% isolate(input$ERTPlot.Multi.Algs), ]
   }
@@ -165,7 +167,10 @@ get_data_ERT_multi_func <- reactive({
 render_ERTPlot_multi_plot <- reactive({
   req(isolate(input$ERTPlot.Multi.Algs))
   withProgress({
-  plot_general_data(get_data_ERT_multi_func(), x_attr = 'target', y_attr = 'ERT', 
+    dt <- get_data_ERT_multi_func()
+    if (is.null(dt)) 
+      return(NULL)
+  plot_general_data(dt, x_attr = 'target', y_attr = 'ERT', 
                     subplot_attr = 'funcId', type = 'line', scale.xlog = input$ERTPlot.Multi.Logx, 
                     scale.ylog = input$ERTPlot.Multi.Logy, x_title = 'Best-so-far f(x)', 
                     y_title = 'ERT', show.legend = T,

@@ -1,4 +1,4 @@
-bbocomp_table_box <- function(width = 12, collapsible = T, collapsed = F) {
+bbocomp_table_box <- function(width = 12, collapsible = T, collapsed = T) {
   box(
     title = HTML('<p style="font-size:120%;">Aggregated comparisons</p>'),
     width = width, collapsible = collapsible, collapsed = collapsed,
@@ -80,6 +80,35 @@ bbocomp_table_pos_box <- function(width = 12, collapsible = T, collapsed = T) {
     mainPanel(
       width = 9,
       DT::dataTableOutput('table_BBOcomp_pos')
+    )
+  )
+}
+
+bbocomp_plot_algsel <- function(width = 12, collapsible = T, collapsed = T) {
+  box(
+    title = HTML('<p style="font-size:120%;">Algorithm selection potential</p>'),
+    width = width, collapsible = collapsible, collapsed = collapsed,
+    solidHeader = TRUE, status = "primary",
+    sidebarPanel(
+      width = 3,
+      HTML_P('Select the values of the attributes to include.'),
+      selectInput("BBOcomp.AS.algid", "Algorithms", NULL, multiple = T),
+      selectInput("BBOcomp.AS.dataset", "Datasets", NULL, multiple = T),
+      selectInput("BBOcomp.AS.metric", "Metrics", NULL, multiple = T),
+      selectInput("BBOcomp.AS.classifier", "Classifiers", NULL, multiple = T),
+      
+      hr(),
+      selectInput('BBOcomp.AS.Format', label = 'Select the figure format',
+                  choices = supported_fig_format, selected = 'pdf'),
+      downloadButton('BBOcomp.AS.Download', label = 'Download the figure')
+    ),
+    
+    mainPanel(
+      width = 9,
+      column(
+        width = 12, align = "center",
+        plotlyOutput.IOHanalyzer('BBOcomp.AS.Figure')
+      )
     )
   )
 }

@@ -360,6 +360,11 @@ update_menu_visibility <- function(suite){
     updateSelectInput(session, 'BBOcomp.Plot.metric', choices = metrics, selected = metrics)
     updateSelectInput(session, 'BBOcomp.Plot.classifier', choices = classifiers, selected = classifiers)
     
+    updateSelectInput(session, 'BBOcomp.AS.algid', choices = algids, selected = algids)
+    updateSelectInput(session, 'BBOcomp.AS.dataset', choices = datasets, selected = datasets)
+    updateSelectInput(session, 'BBOcomp.AS.metric', choices = metrics, selected = metrics)
+    updateSelectInput(session, 'BBOcomp.AS.classifier', choices = classifiers, selected = classifiers)
+    
   }
   else {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "BBOcomp"))

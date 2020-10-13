@@ -178,3 +178,67 @@ output$BBOcomp.Pos_Download <- downloadHandler(
   },
   contentType = "text/csv"
 )
+
+bbo_translate_scale <- function(values, classifiers, datasets, metrics) {
+  temp <- c()
+  can_compute <- T
+  for (i in seq(length(values))) {
+    dt_item <- dts[classifier == classifiers[i] & dataset == datasets[i] & metric == metrics[i], ]
+    if (nrow(dt_item) == 0) {
+      can_compute = F
+    }
+    u <- as.numeric(dt_item[,5])
+    l <- as.numeric(dt_item[,4])
+    s <- as.numeric(dt_item[,6])
+    temp <- c(temp, 100 * ((u - as.numeric(values[i])) * (s)))
+  }
+  if (!can_compute) {
+    temp <- c()
+    for (i in seq(length(values))) {
+      temp <- c(temp, as.numeric(values[i]))
+    }
+  }
+  return(temp)
+}
+
+render_bbocomp_AS <- reactive({
+  withProgress({
+    data <- DATA_RAW()
+    
+    data <- subset(data, algId %in% input$BBOcomp.AS.algid && dataset %in% input$BBOcomp.AS.dataset &&
+                     classifier %in% input$BBOcomp.AS.classifier && metric %in% input$BBOcomp.AS.metric)
+    classifiers <- input$BBOcomp.AS.classifier
+
+    dt3 <- get_best_alg(data, c("algId", "classifier", "dataset", "metric"))
+    dt3[, translated := bbo_translate_scale(value, classifier, dataset, metric)]
+    dt4 <- dt3[, mean(translated), by = .(classifier, algId)]
+    
+    mat <- acast(dt4, algId~classifier, value.var = "V1")
+    
+    bests <- apply(mat, 2, max)
+    vbs <- mean(bests)
+    
+    all_avgs <- apply(mat, 1, mean)
+    sbs <- max(all_avgs)
+    
+    p <- plot_general_data(as.data.table(arrange(dt4, classifier)), "classifier", "V1", type = "line", 
+                           legend_attr = "algId", show.legend = T)#, plot_title = paste0("SBS gets score: ", sbs, " while VBS gets: ", vbs))
+    
+    p
+  },
+  message = "Creating plot")
+})
+
+output$BBOcomp.AS.Download <- downloadHandler(
+  filename = function() {
+    eval(BBOcomp_AS_name)
+  },
+  content = function(file) {
+    save_plotly(render_bbocomp_AS(), file)
+  },
+  contentType = paste0('image/', input$BBOcomp.AS.Format)
+)
+
+output$BBOcomp.AS.Figure <- renderPlotly({
+  render_bbocomp_AS()
+})

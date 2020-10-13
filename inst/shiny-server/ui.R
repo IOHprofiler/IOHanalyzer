@@ -545,6 +545,7 @@ body <- dashboardBody(
       fluidRow(
         column(
           width = 12,
+          bbocomp_plot_algsel(collapsed = F),
           bbocomp_table_box(),
           bbocomp_plot_box(),
           bbocomp_table_pos_box()

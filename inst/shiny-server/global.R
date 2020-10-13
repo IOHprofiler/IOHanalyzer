@@ -165,6 +165,7 @@ FIG_NAME_FV_PAR_PER_FUN <- parse(text = "paste0('FV_PAR-', Sys.Date(), '.', inpu
 
 BBOcomp_table_name <- parse(text = "paste0('BBOcomp-', Sys.Date(), '.', input$BBOcomp.Format)")
 BBOcomp_plot_name <- parse(text = "paste0('BBOcomp-', Sys.Date(), '.', input$BBOcomp.Plot.Format)")
+BBOcomp_AS_name <- parse(text = "paste0('BBOcomp_AS-', Sys.Date(), '.', input$BBOcomp.AS.Format)")
 BBOcomp_pos_name <- parse(text = "paste0('BBOcomp_pos-', Sys.Date(), '.', input$BBOcomp.Postable.Format)")
 
 

@@ -1007,6 +1007,34 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT') 
   dt[, mean(mean), by = .(x, algId)][, .(mean = V1, algId = algId, x = x)]
 }
 
+
+#' Generate dataframe of AUC for multiple functions / targets
+#' 
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
+#' 
+#' @param dsList The DataSetList object
+#' @param targets A list or data.table containing the targets per function / dimension. If this is 
+#' a data.table, it needs columns 'target', 'DIM' and 'funcId'
+#' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
+#' @param dt_ecdf A data table of the ECDF to avoid needless recomputations
+#' 
+#' @export
+#' @examples 
+#' generate_data.AUC2(dsl, get_ECDF_targets(dsl))
+generate_data.AUC2 <- function(dsList, targets, scale.log = F, which = 'by_RT', dt_ecdf = NULL) {
+  if (is.null(dt_ecdf))
+    dt_ecdf <- generate_data.ECDF(dsList, targets, scale_log, which)
+  dt_ecdf[, idx := seq(50), by = 'algId']
+  dt3 = copy(dt_ecdf)
+  dt3[, idx := idx - 1]
+  dt_merged = merge(dt_ecdf, dt3, by = c('algId', 'idx'))
+  colnames(dt_merged) <- c("algId", "idx", "mean_pre", "x_pre", "mean_post", "x")
+  dt_merged[, auc_contrib := ((mean_pre + mean_post)/2)*(x - x_pre)]
+  dt_merged[, auc := cumsum(auc_contrib)/x, by = 'algId']
+  return(dt_merged[,c('algId','x','auc') ])
+}
+  
+  
 #' Generate dataframe of a single function/dimension pair
 #' 
 #' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 

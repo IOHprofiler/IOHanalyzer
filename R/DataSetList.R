@@ -1029,7 +1029,7 @@ generate_data.AUC <- function(dsList, targets, scale_log = F, which = 'by_RT', d
                               multiple_x = FALSE) {
   idx <- auc_contrib <- mean_pre <- mean_post <- x <- x_pre <- auc <- NULL
   if (is.null(dt_ecdf)) {
-    if (is.null(dsList) || is.null(targets))
+    if (length(dsList) == 0 || is.null(targets))
       return(NULL)
     dt_ecdf <- generate_data.ECDF(dsList, targets, scale_log, which)
   }

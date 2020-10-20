@@ -69,15 +69,18 @@ test_that("ECDF-data (multiple functions, auto-generated targets)", {
 test_that("AUC-data", {
   dt <- generate_data.AUC(subset(dsl, funcId == 1), c(10, 13, 16))
   expect_true(is.data.table(dt))
-  expect_true(all(c("x", "AUC", "algId") %in% colnames(dt)))
-  expect_true(all(dt[['AUC']] <= 1) && all(dt[['AUC']] >= 0) )
+  expect_true(all(c("x", "auc", "algId") %in% colnames(dt)))
+  expect_true(all(dt[['auc']] <= 1) && all(dt[['auc']] >= 0) )
   
   dt <- generate_data.AUC(subset(dsl, funcId == 1), c(1, 10, 100), which = 'by_FV')
   expect_true(is.data.table(dt))
-  expect_true(all(c("x", "AUC", "algId") %in% colnames(dt)))
-  expect_true(all(dt[['AUC']] <= 1) && all(dt[['AUC']] >= 0) )
+  expect_true(all(c("x", "auc", "algId") %in% colnames(dt)))
+  expect_true(all(dt[['auc']] <= 1) && all(dt[['auc']] >= 0) )
   
-  expect_error(generate_data.AUC(dsl, c(10, 16)))
+  dt <- generate_data.AUC(dsl, c(10, 16))
+  expect_true(is.data.table(dt))
+  subset(dsl, funcId == 1)
+  expect_true(all(dt[['auc']] <= 1) && all(dt[['auc']] >= 0) )
 })
 
 test_that("Parameter-data", {

@@ -77,7 +77,7 @@ test_that("AUC-data", {
   expect_true(all(c("x", "auc", "algId") %in% colnames(dt)))
   expect_true(all(dt[['auc']] <= 1) && all(dt[['auc']] >= 0) )
   
-  dt <- generate_data.AUC(dsl, c(10, 16))
+  dt <- generate_data.AUC(dsl, get_ECDF_targets(dsl))
   expect_true(is.data.table(dt))
   subset(dsl, funcId == 1)
   expect_true(all(dt[['auc']] <= 1) && all(dt[['auc']] >= 0) )

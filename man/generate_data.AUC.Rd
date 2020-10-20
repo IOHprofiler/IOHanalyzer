@@ -2,20 +2,30 @@
 % Please edit documentation in R/DataSetList.R
 \name{generate_data.AUC}
 \alias{generate_data.AUC}
-\title{Generate dataframe of a single function/dimension pair}
+\title{Generate dataframe containing the AUC for any ECDF-curves}
 \usage{
-generate_data.AUC(dsList, targets, which = "by_RT")
+generate_data.AUC(dsList, targets, scale_log = F, which = "by_RT",
+  dt_ecdf = NULL, multiple_x = FALSE)
 }
 \arguments{
 \item{dsList}{The DataSetList object}
 
-\item{targets}{A list of the target value for which to calculate the AUC (Runtime or target value)}
+\item{targets}{A list or data.table containing the targets per function / dimension. If this is 
+a data.table, it needs columns 'target', 'DIM' and 'funcId'}
+
+\item{scale_log}{Whether to use logarithmic scaling or not}
 
 \item{which}{Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'}
+
+\item{dt_ecdf}{A data table of the ECDF to avoid needless recomputations. Will take preference if it 
+is provided together with dsList and targets}
+
+\item{multiple_x}{Boolean, whether to get only the total AUC or get stepwise AUC values}
 }
 \description{
 This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
 }
 \examples{
-generate_data.AUC(subset(dsl, funcId == 1), c(12, 16))
+generate_data.AUC(dsl, get_ECDF_targets(dsl))
+generate_data.AUC(NULL, NULL, dt_ecdf = generate_data.ECDF(dsl, get_ECDF_targets(dsl)))
 }

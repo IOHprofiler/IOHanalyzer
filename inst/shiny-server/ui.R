@@ -401,8 +401,8 @@ body <- dashboardBody(
         column(
           width = 12,
           rt_ecdf_single_target_box(collapsed = F),
-          rt_ecdf_agg_targets_box(),
-          rt_ecdf_auc_box()
+          rt_ecdf_agg_targets_box()
+          # rt_ecdf_auc_box()
         )
       )
     ),

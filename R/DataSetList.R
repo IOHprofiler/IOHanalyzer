@@ -1008,7 +1008,7 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT') 
 }
 
 
-#' Generate dataframe of AUC for multiple functions / targets
+#' Generate dataframe containing the AUC for any ECDF-curves
 #' 
 #' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
 #' 
@@ -1016,14 +1016,23 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT') 
 #' @param targets A list or data.table containing the targets per function / dimension. If this is 
 #' a data.table, it needs columns 'target', 'DIM' and 'funcId'
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
-#' @param dt_ecdf A data table of the ECDF to avoid needless recomputations
+#' @param scale_log Whether to use logarithmic scaling or not
+#' @param dt_ecdf A data table of the ECDF to avoid needless recomputations. Will take preference if it 
+#' is provided together with dsList and targets
+#' @param multiple_x Boolean, whether to get only the total AUC or get stepwise AUC values
 #' 
 #' @export
 #' @examples 
-#' generate_data.AUC2(dsl, get_ECDF_targets(dsl))
-generate_data.AUC2 <- function(dsList, targets, scale.log = F, which = 'by_RT', dt_ecdf = NULL) {
-  if (is.null(dt_ecdf))
+#' generate_data.AUC(dsl, get_ECDF_targets(dsl))
+#' generate_data.AUC(NULL, NULL, dt_ecdf = generate_data.ECDF(dsl, get_ECDF_targets(dsl)))
+generate_data.AUC <- function(dsList, targets, scale_log = F, which = 'by_RT', dt_ecdf = NULL,
+                              multiple_x = FALSE) {
+  idx <- auc_contrib <- mean_pre <- mean_post <- x <- x_pre <- auc <- NULL
+  if (is.null(dt_ecdf)) {
+    if (is.null(dsList) || is.null(targets))
+      return(NULL)
     dt_ecdf <- generate_data.ECDF(dsList, targets, scale_log, which)
+  }
   max_idx <- nrow(unique(dt_ecdf[,'x']))
   dt_ecdf[, idx := seq(max_idx), by = 'algId']
   dt3 = copy(dt_ecdf)
@@ -1033,69 +1042,71 @@ generate_data.AUC2 <- function(dsList, targets, scale.log = F, which = 'by_RT', 
   dt_merged[, auc_contrib := ((mean_pre + mean_post)/2)*(x - x_pre)]
   dt_merged[, auc := cumsum(auc_contrib)/x, by = 'algId']
   #TODO: just for max x
+  if (multiple_x)
+    return(dt_merged[, c('algId','x','auc') ])
   return(dt_merged[idx == (max_idx - 1), c('algId','x','auc') ])
 }
   
   
-#' Generate dataframe of a single function/dimension pair
-#' 
-#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
-#' 
-#' @param dsList The DataSetList object
-#' @param targets A list of the target value for which to calculate the AUC (Runtime or target value)
-#' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
-#' 
-#' @export
-#' @examples 
-#' generate_data.AUC(subset(dsl, funcId == 1), c(12, 16))
-generate_data.AUC <- function(dsList, targets, which = 'by_RT') {
-  if (length(get_funcId(dsList)) > 1 || length(get_dim(dsList)) > 1) {
-    stop("This function is only available a single function/dimension pair at a time.")
-  }
-  by_rt <- which == 'by_RT'
-  
-  if (by_rt)
-    RT.max <- sapply(dsList, function(ds) max(attr(ds, 'maxRT'))) %>% max
-  else {
-    funevals.max <- sapply(dsList, function(ds) max(attr(ds, 'finalFV'))) %>% max
-    funevals.min <- sapply(dsList, function(ds) min(attr(ds, 'finalFV'))) %>% min
-  }
-  
-  as.data.table(rbindlist(lapply(dsList, function(df) {
-    algId <- attr(df, 'algId')
-    if (by_rt)
-      auc <- sapply(targets, function(fv) {
-        ECDF(df, fv) %>% AUC(from = 1, to = RT.max)
-      })
-    else {
-      funs <- lapply(targets, function(r) {
-        get_FV_sample(df, r, output = 'long')$'f(x)' %>% {
-          if (all(is.na(.))) NULL
-          else  {
-            f <- ecdf(.)
-            attr(f, 'min') <- min(.)
-            attr(f, 'max') <- max(.)
-            f
-          }
-        }
-      })
-      
-      auc <- sapply(funs,
-                    function(fun) {
-                      if (is.null(fun)) 0
-                      else{ 
-                        if (attr(df, 'maximization'))
-                          integrate(fun, lower = attr(fun, 'min') - 1, upper = funevals.max,
-                                    subdivisions = 1e3) %>% {'$'(., 'value') / funevals.max}
-                        else 
-                          integrate(fun, lower =  funevals.min, upper = attr(fun, 'max') + 1,
-                                    subdivisions = 1e3) %>% {'$'(., 'value') / (attr(fun, 'max') + 1)}
-                      }
-                    })
-    }
-    data.frame(x = targets, AUC = auc, algId = algId)
-  })))
-}
+# #' Generate dataframe of a single function/dimension pair
+# #' 
+# #' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
+# #' 
+# #' @param dsList The DataSetList object
+# #' @param targets A list of the target value for which to calculate the AUC (Runtime or target value)
+# #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
+# #' 
+# #' @export
+# #' @examples
+# #' generate_data.AUC(subset(dsl, funcId == 1), c(12, 16))
+# generate_data.AUC <- function(dsList, targets, which = 'by_RT') {
+#   if (length(get_funcId(dsList)) > 1 || length(get_dim(dsList)) > 1) {
+#     stop("This function is only available a single function/dimension pair at a time.")
+#   }
+#   by_rt <- which == 'by_RT'
+#   
+#   if (by_rt)
+#     RT.max <- sapply(dsList, function(ds) max(attr(ds, 'maxRT'))) %>% max
+#   else {
+#     funevals.max <- sapply(dsList, function(ds) max(attr(ds, 'finalFV'))) %>% max
+#     funevals.min <- sapply(dsList, function(ds) min(attr(ds, 'finalFV'))) %>% min
+#   }
+#   
+#   as.data.table(rbindlist(lapply(dsList, function(df) {
+#     algId <- attr(df, 'algId')
+#     if (by_rt)
+#       auc <- sapply(targets, function(fv) {
+#         ECDF(df, fv) %>% AUC(from = 1, to = RT.max)
+#       })
+#     else {
+#       funs <- lapply(targets, function(r) {
+#         get_FV_sample(df, r, output = 'long')$'f(x)' %>% {
+#           if (all(is.na(.))) NULL
+#           else  {
+#             f <- ecdf(.)
+#             attr(f, 'min') <- min(.)
+#             attr(f, 'max') <- max(.)
+#             f
+#           }
+#         }
+#       })
+#       
+#       auc <- sapply(funs,
+#                     function(fun) {
+#                       if (is.null(fun)) 0
+#                       else{ 
+#                         if (attr(df, 'maximization'))
+#                           integrate(fun, lower = attr(fun, 'min') - 1, upper = funevals.max,
+#                                     subdivisions = 1e3) %>% {'$'(., 'value') / funevals.max}
+#                         else 
+#                           integrate(fun, lower =  funevals.min, upper = attr(fun, 'max') + 1,
+#                                     subdivisions = 1e3) %>% {'$'(., 'value') / (attr(fun, 'max') + 1)}
+#                       }
+#                     })
+#     }
+#     data.frame(x = targets, AUC = auc, algId = algId)
+#   })))
+# }
 
 #' Generate dataframe of a single function/dimension pair
 #' 

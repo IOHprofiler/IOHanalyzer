@@ -1024,14 +1024,16 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT') 
 generate_data.AUC2 <- function(dsList, targets, scale.log = F, which = 'by_RT', dt_ecdf = NULL) {
   if (is.null(dt_ecdf))
     dt_ecdf <- generate_data.ECDF(dsList, targets, scale_log, which)
-  dt_ecdf[, idx := seq(50), by = 'algId']
+  max_idx <- nrow(unique(dt_ecdf[,'x']))
+  dt_ecdf[, idx := seq(max_idx), by = 'algId']
   dt3 = copy(dt_ecdf)
   dt3[, idx := idx - 1]
   dt_merged = merge(dt_ecdf, dt3, by = c('algId', 'idx'))
   colnames(dt_merged) <- c("algId", "idx", "mean_pre", "x_pre", "mean_post", "x")
   dt_merged[, auc_contrib := ((mean_pre + mean_post)/2)*(x - x_pre)]
   dt_merged[, auc := cumsum(auc_contrib)/x, by = 'algId']
-  return(dt_merged[,c('algId','x','auc') ])
+  #TODO: just for max x
+  return(dt_merged[idx == (max_idx - 1), c('algId','x','auc') ])
 }
   
   

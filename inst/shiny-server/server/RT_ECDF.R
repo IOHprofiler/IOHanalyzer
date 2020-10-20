@@ -107,6 +107,43 @@ observe({
   trigger_renderDT(rnorm(1))
 })
 
+output$RTECDF.AUC.Table.Download <- downloadHandler(
+  filename = 'AUC_ECDF_table.csv',
+  content = function(file) {
+    write.csv2(auc_grid_table(), file, row.names = F)
+  },
+  contentType = "text/csv"
+)
+
+auc_grid_table <- reactive({
+  dsList <- subset(DATA_RAW(), algId %in% input$RTECDF.Aggr.Algs)
+  dt_ecdf <- get_data_RT_ECDF_MULT()
+  isolate({
+    targets <- RT_ECDF_MULTI_TABLE()
+  })
+  generate_data.AUC2(dsList, targets, dt_ecdf = dt_ecdf)
+})
+
+output$AUC_GRID_GENERATED <- DT::renderDataTable({
+  req(length(DATA_RAW()) > 0)
+  isolate({auc_grid_table()})
+  }, 
+  editable = FALSE, 
+  rownames = FALSE,
+  options = list(
+    pageLength = 10, 
+    lengthMenu = c(5, 10, 25, -1), 
+    scrollX = T, 
+    server = T,
+    columnDefs = list(
+      list(
+        className = 'dt-right', targets = "_all"
+      )
+    )
+  ),
+  filter = 'top'
+)
+
 output$RT_GRID_GENERATED <- DT::renderDataTable({
   req(length(DATA_RAW()) > 0)
   trigger_renderDT()

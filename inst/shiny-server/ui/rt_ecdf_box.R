@@ -175,7 +175,9 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
       selectInput('RTECDF.Aggr.Format', label = 'figure format to download',
                   choices = supported_fig_format, selected = 'pdf'),
 
-      downloadButton('RTECDF.Aggr.Download', label = 'Download the figure')
+      downloadButton('RTECDF.Aggr.Download', label = 'Download the figure'),
+      hr(),
+      downloadButton('RTECDF.AUC.Table.Download', label = 'Download the AUC table')
     ),
 
     mainPanel(
@@ -195,6 +197,8 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
                 the left; when aggregation is off the selected function / dimension
                 is chosen according the the value in the bottom-left selection-box.'),
         plotlyOutput.IOHanalyzer('RT_ECDF_MULT'),
+        HTML_P('The Area Under the Curve is:'),
+        DT::dataTableOutput('AUC_GRID_GENERATED'),
         HTML_P('The selected targets are:'),
         DT::dataTableOutput('RT_GRID_GENERATED')
       )

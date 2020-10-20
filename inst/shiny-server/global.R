@@ -17,7 +17,7 @@ suppressMessages(library(kableExtra))
 # global options
 options(datatable.print.nrows = 20)
 options(width = 80)
-options(shiny.maxRequestSize = 200 * 1024 ^ 2)  # maximal upload file size
+options(shiny.maxRequestSize = 500 * 1024 ^ 2)  # maximal upload file size
 
 # for customized 'plotlyOutput' function -----
 widget_html <- function(name, package, id, style, class, inline = FALSE, ...) {

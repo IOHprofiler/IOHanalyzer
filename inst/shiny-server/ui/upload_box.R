@@ -43,12 +43,13 @@ upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: fin
                              Please choose a <i>zip file</i> containing the 
                              benchmark data</p>'),
                 multiple = TRUE, accept = c("Application/zip", ".zip",
-                                            ".csv", 'bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz')),
+                                            ".csv", 'bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz', '.rds')),
 
       actionButton('upload.remove_data', 
                    label = HTML('<p align="center" style="margin-bottom:0;"><b> 
-                   Remove all the data</b></p>'))
-      )
+                   Remove all the data</b></p>')),
+      downloadButton('upload.Download_processed', label = 'Download the currently loaded data in rds format')
+    )
     )
 }
 

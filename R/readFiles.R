@@ -299,7 +299,10 @@ read_index_file__BIOBJ_COCO <- function(fname) {
 check_format <- function(path) {
   if (sub('[^\\.]*\\.', '', basename(path), perl = T) == "csv")
     return(NEVERGRAD)
-
+  
+  if (sub('[^\\.]*\\.', '', basename(path), perl = T) == "rds")
+    return("RDS")
+  
   index_files <- scan_index_file(path)
   if (length(index_files) == 0) 
     return(SOS)

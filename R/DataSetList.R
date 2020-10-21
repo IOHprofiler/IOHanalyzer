@@ -949,18 +949,29 @@ generate_data.hist <- function(dsList, target, use.equal.bins = F, which = 'by_R
 #' a data.table, it needs columns 'target', 'DIM' and 'funcId'
 #' @param scale_log Wheterh to use logarithmic scaling or not
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
+#' @param use_full_range Whether or not to use the full range of the x-axis or cut it off as soon as 
+#' all algorithms reach 98\% success (+10\% buffer). Only supported in the case of one function and dimension
 #' 
 #' @export
 #' @examples 
 #' generate_data.ECDF(subset(dsl, funcId == 1), c(10, 15, 16))
-generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT') {
+generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', use_full_range = TRUE) {
   V1 <- NULL #Set local binding to remove warnings
   by_rt <- which == 'by_RT'
   if (by_rt) {
     RT <- get_runtimes(dsList)
+    if (!use_full_range) {
+      if (length(unique(get_funcId(dsList))) > 1 || length(unique(get_dim(dsList))) > 1) {
+        warning("The limiting of x-values is only supported in the case of 1 function 1 dimension!")
+      }
+      else {
+        maxRT <- as.integer(max(get_RT_summary(dsList, targets)[,'98%']) * 1.1) #Slight buffer for nicer plotting
+        RT <- c(min(RT), maxRT)
+      }
+    }
     x <- unique(seq_RT(RT, length.out = 50, scale = ifelse(scale_log, 'log', 'linear')))
-    #TODO: Some scaling by dimension?
     
+    #TODO: Some scaling by dimension?
     
     if (!is.data.table(targets)) {
       if (length(get_funcId(dsList)) > 1 || length(get_dim(dsList)) > 1 )

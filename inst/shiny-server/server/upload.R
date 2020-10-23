@@ -268,6 +268,28 @@ update_menu_visibility <- function(suite){
   }
 }
 
+observeEvent(input$Upload.Add_to_repo, {
+  data <- DATA_RAW()
+  repo_dir <- get_repo_location()
+  if (!file.exists(file.path(repo_dir, "public_repo"))) return(NULL)
+  nr_skipped <- 0
+  public_dir <- file.path(repo_dir, "public_repo")
+  for (algname in get_algId(data)) {
+    filename <- file.path(public_dir, paste0(algname, '.rds'))
+    if (file.exists(filename)) {
+      nr_skipped <- nr_skipped + 1
+      next
+    }
+    dsl <- subset(data, algId == algname)
+    saveRDS(dsl, file = filename)
+  }
+  nr_success <- length(get_algId(data)) - nr_skipped
+  shinyjs::alert(paste0("Successfully added ", nr_success, " algorithms to the public repository.",
+                        "A total of ", nr_skipped, " algorithms were not uploaded because an algorithm",
+                        "of the same name already exists, and overwriting data in the public repository is not yet",
+                        "supported."))
+})
+
 # remove all uploaded data set
 observeEvent(input$upload.remove_data, {
   if (length(DataList$data) != 0) {

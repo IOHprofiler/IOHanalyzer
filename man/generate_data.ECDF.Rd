@@ -4,7 +4,8 @@
 \alias{generate_data.ECDF}
 \title{Generate dataframe of a single function/dimension pair}
 \usage{
-generate_data.ECDF(dsList, targets, scale_log = F, which = "by_RT")
+generate_data.ECDF(dsList, targets, scale_log = F, which = "by_RT",
+  use_full_range = TRUE)
 }
 \arguments{
 \item{dsList}{The DataSetList object}
@@ -15,6 +16,9 @@ a data.table, it needs columns 'target', 'DIM' and 'funcId'}
 \item{scale_log}{Wheterh to use logarithmic scaling or not}
 
 \item{which}{Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'}
+
+\item{use_full_range}{Whether or not to use the full range of the x-axis or cut it off as soon as 
+all algorithms reach 98\% success (+10\% buffer). Only supported in the case of one function and dimension}
 }
 \description{
 This function generates a dataframe which can be easily plotted using the `plot_general_data`-function

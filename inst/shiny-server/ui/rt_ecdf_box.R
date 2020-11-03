@@ -31,7 +31,9 @@ rt_ecdf_single_target_box <- function(width = 12, collapsible = T, collapsed = T
                     The displayed curves can be selected by clicking on the legend on the right. A <b>tooltip</b>
                     and <b>toolbar</b> appears when hovering over the figure.
                     This also includes the option to download the plot as png file.'),
-            plotlyOutput.IOHanalyzer("RT_ECDF")
+            plotlyOutput.IOHanalyzer("RT_ECDF"),
+            HTML_P('The approximated Area Under the Curve of this displayed single-target ECDF is:'),
+            DT::dataTableOutput('AUC_GRID_GENERATED_SINGLE')
           )
         )
       )
@@ -86,7 +88,9 @@ rt_ecdf_agg_targets_box <- function(width = 12, collapsible = T, collapsed = T) 
               \\(v\\) is plotted against the available budget \\(t\\). The displayed elements can be switched
               on and off by clicking on the legend on the right. A <b>tooltip</b>
               and <b>toolbar</b> appears when hovering over the figure.'),
-       plotlyOutput.IOHanalyzer('RT_ECDF_AGGR')
+       plotlyOutput.IOHanalyzer('RT_ECDF_AGGR'),
+       HTML_P('The approximated Area Under the Curve of this displayed single-function ECDF is:'),
+       DT::dataTableOutput('AUC_GRID_GENERATED_FUNC')
       )
     )
   )
@@ -175,7 +179,9 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
       selectInput('RTECDF.Aggr.Format', label = 'figure format to download',
                   choices = supported_fig_format, selected = 'pdf'),
 
-      downloadButton('RTECDF.Aggr.Download', label = 'Download the figure')
+      downloadButton('RTECDF.Aggr.Download', label = 'Download the figure'),
+      hr(),
+      downloadButton('RTECDF.AUC.Table.Download', label = 'Download the AUC table')
     ),
 
     mainPanel(
@@ -195,6 +201,8 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
                 the left; when aggregation is off the selected function / dimension
                 is chosen according the the value in the bottom-left selection-box.'),
         plotlyOutput.IOHanalyzer('RT_ECDF_MULT'),
+        HTML_P('The approximated Area Under the Curve of this displayed ECDF is:'),
+        DT::dataTableOutput('AUC_GRID_GENERATED'),
         HTML_P('The selected targets are:'),
         DT::dataTableOutput('RT_GRID_GENERATED')
       )
@@ -202,46 +210,46 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
   )
 }
 
-rt_ecdf_auc_box <- function(width = 12, collapsible = T, collapsed = T) {
-  box(
-    title = HTML('<p style="font-size:120%;">Area Under the ECDF</p>'),
-    width = width, collapsible = collapsible, collapsed = collapsed,
-    solidHeader = T, status = "primary",
-    sidebarPanel(
-      width = 3,
-      selectInput('RTECDF.AUC.Algs', label = 'Select which algorithms to plot:',
-                  multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
-                    custom_icon() %>%
-                      bs_embed_popover(
-                        title = "Algorithm selection", content = alg_select_info, 
-                        placement = "auto"
-                      )
-                  ),     
-      HTML('<p align="justify">Set the range and the granularity of
-           the evenly spaced quality targets taken into account in the plot.</p>'),
-      textInput('RTECDF.AUC.Min', label = F_MIN_LABEL, value = ''),
-      textInput('RTECDF.AUC.Max', label = F_MAX_LABEL, value = ''),
-      textInput('RTECDF.AUC.Step', label = F_STEP_LABEL, value = ''),
-
-      hr(),
-      selectInput('RTECDF.AUC.Format', label = 'Select the figure format',
-                  choices = supported_fig_format, selected = 'pdf'),
-      downloadButton('RTECDF.AUC.Download', label = 'Download the figure')
-      ),
-
-    mainPanel(
-      width = 9,
-      column(
-        width = 12, align = "center",
-        HTML_P('The <b>area under the ECDF</b> is
-               caculated for the sequence of target values specified on the left. The displayed
-               values are normalized against the maximal number of function evaluations for
-               each algorithm. Intuitively, the larger the area, the better the algorithm.
-               The displayed algorithms can be selected by clicking on the legend on the right.
-               A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.
-               This also includes the option to download the plot as png file.'),
-        plotlyOutput.IOHanalyzer("RT_AUC")
-      )
-    )
-  )
-}
+# rt_ecdf_auc_box <- function(width = 12, collapsible = T, collapsed = T) {
+#   box(
+#     title = HTML('<p style="font-size:120%;">Area Under the ECDF</p>'),
+#     width = width, collapsible = collapsible, collapsed = collapsed,
+#     solidHeader = T, status = "primary",
+#     sidebarPanel(
+#       width = 3,
+#       selectInput('RTECDF.AUC.Algs', label = 'Select which algorithms to plot:',
+#                   multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
+#                     custom_icon() %>%
+#                       bs_embed_popover(
+#                         title = "Algorithm selection", content = alg_select_info, 
+#                         placement = "auto"
+#                       )
+#                   ),     
+#       HTML('<p align="justify">Set the range and the granularity of
+#            the evenly spaced quality targets taken into account in the plot.</p>'),
+#       textInput('RTECDF.AUC.Min', label = F_MIN_LABEL, value = ''),
+#       textInput('RTECDF.AUC.Max', label = F_MAX_LABEL, value = ''),
+#       textInput('RTECDF.AUC.Step', label = F_STEP_LABEL, value = ''),
+# 
+#       hr(),
+#       selectInput('RTECDF.AUC.Format', label = 'Select the figure format',
+#                   choices = supported_fig_format, selected = 'pdf'),
+#       downloadButton('RTECDF.AUC.Download', label = 'Download the figure')
+#       ),
+# 
+#     mainPanel(
+#       width = 9,
+#       column(
+#         width = 12, align = "center",
+#         HTML_P('The <b>area under the ECDF</b> is
+#                caculated for the sequence of target values specified on the left. The displayed
+#                values are normalized against the maximal number of function evaluations for
+#                each algorithm. Intuitively, the larger the area, the better the algorithm.
+#                The displayed algorithms can be selected by clicking on the legend on the right.
+#                A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.
+#                This also includes the option to download the plot as png file.'),
+#         plotlyOutput.IOHanalyzer("RT_AUC")
+#       )
+#     )
+#   )
+# }

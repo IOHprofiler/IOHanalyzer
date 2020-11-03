@@ -8,7 +8,7 @@
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom colorRamps primary.colors
 #' @importFrom data.table as.data.table rbindlist data.table fread := melt is.data.table 
-#' @importFrom data.table setorderv frank setnames rbindlist
+#' @importFrom data.table setorderv frank setnames rbindlist copy
 #' @importFrom plotly add_annotations add_trace orca plot_ly rename_ subplot layout
 #' @importFrom ggplot2 aes geom_jitter geom_line geom_ribbon geom_violin ggplot element_text
 #' @importFrom ggplot2 guides scale_color_manual scale_colour_manual scale_fill_manual

@@ -613,9 +613,9 @@ Plot.RT.ECDF_AUC.DataSetList <- function(dsList, fstart = NULL,
   targets <- seq_FV(get_funvals(dsList), fstart, fstop, fstep, length.out = 10)
   req(targets)
   
-  data <- generate_data.AUC(dsList, targets)
+  data <- generate_data.AUC(dsList, targets, multiple_x = TRUE)
   
-  plot_general_data(data, 'x', 'AUC', 'radar')
+  plot_general_data(data, 'x', 'auc', 'radar')
 }
 
 #' @rdname Plot.FV.PDF
@@ -682,9 +682,9 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
 Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, rt_step = NULL) {
   targets <- seq_RT(get_runtimes(dsList), rt_min, rt_max, rt_step, length.out = 10)
   req(targets)
-  data <- generate_data.AUC(dsList, targets, which = 'by_FV')
+  data <- generate_data.AUC(dsList, targets, which = 'by_FV', multiple_x = TRUE)
   
-  plot_general_data(data, 'x', 'AUC', 'radar')
+  plot_general_data(data, 'x', 'auc', 'radar')
 }
 
 #' @rdname Plot.RT.Parameters

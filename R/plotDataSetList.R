@@ -613,9 +613,9 @@ Plot.RT.ECDF_AUC.DataSetList <- function(dsList, fstart = NULL,
   targets <- seq_FV(get_funvals(dsList), fstart, fstop, fstep, length.out = 10)
   req(targets)
   
-  data <- generate_data.AUC(dsList, targets)
+  data <- generate_data.AUC(dsList, targets, multiple_x = TRUE)
   
-  plot_general_data(data, 'x', 'AUC', 'radar')
+  plot_general_data(data, 'x', 'auc', 'radar')
 }
 
 #' @rdname Plot.FV.PDF
@@ -682,9 +682,9 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
 Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, rt_step = NULL) {
   targets <- seq_RT(get_runtimes(dsList), rt_min, rt_max, rt_step, length.out = 10)
   req(targets)
-  data <- generate_data.AUC(dsList, targets, which = 'by_FV')
+  data <- generate_data.AUC(dsList, targets, which = 'by_FV', multiple_x = TRUE)
   
-  plot_general_data(data, 'x', 'AUC', 'radar')
+  plot_general_data(data, 'x', 'auc', 'radar')
 }
 
 #' @rdname Plot.RT.Parameters
@@ -953,7 +953,8 @@ add_transparancy <- function(colors, percentage){
 #' @param x_attr The column to specify the x_axis. Default is 'algId'
 #' @param legend_attr Default is 'algId' This is also used for the selection of colorschemes
 #' @param y_attr The column to specify the y_axis
-#' @param type The type of plot to use. Currently available: 'violin', 'line', 'radar', 'hist' and 'ribbon'
+#' @param type The type of plot to use. Currently available: 'violin', 'line', 'radar', 
+#' 'bar', hist' and 'ribbon'
 #' @param upper_attr When using ribbon-plot, this can be used to create a shaded area. 
 #' Only works in combination with`lower_attr` and `type` == 'ribbon' 
 #' @param lower_attr When using ribbon-plot, this can be used to create a shaded area. 
@@ -1320,22 +1321,90 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                            yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
            }
          },
-         'bar' = {
-           if (legend_attr != x_attr) {
-             warning("Inconsistent attribute selected for x-axis and legend. Using x_attr as name")
-           }
-           p %<>%
-             add_trace(data = df, x = ~x, y = ~y, type = 'bar',
-                       name = ~x,
-                       colors = add_transparancy(colors, 0.6), color = ~x,
-                       marker = list(line = list(color = 'rgb(8,48,107)')),
-                       ...)
-           
-           if (is_new_plot) {
-             p %<>% layout(xaxis = list(tickfont = f3(), ticklen = 3),
-                           yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
-           }
-         }
+        'bar' = {
+          if (legend_attr != x_attr) {
+            warning("Inconsistent attribute selected for x-axis and legend. Using x_attr as name")
+          }
+          p %<>%
+            add_trace(data = df, x = ~x, y = ~y, type = 'bar',
+                      name = ~x,
+                      colors = add_transparancy(colors, 0.6), color = ~x,
+                      marker = list(line = list(color = 'rgb(8,48,107)')),
+                      ...)
+          
+          if (is_new_plot) {
+            p %<>% layout(xaxis = list(tickfont = f3(), ticklen = 3),
+                          yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
+          }
+        }
   )
   return(p)
+}
+
+
+#' Create the PerformViz plot
+#' 
+#' From the paper: 
+#' 
+#' @param DSC_rank_result The result from a call to DSCtool rank service (`get_dsc_rank`)
+#' 
+#' @return A performviz plot
+#' @export
+#' @examples
+#' \dontrun{
+#' Plot.Performviz(get_dsc_rank(dsl))
+#' }
+Plot.Performviz <- function(DSC_rank_result) {
+  if (!requireNamespace("ComplexHeatmap", quietly = TRUE)) {
+    stop("Package \"pkg\" needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
+  if (!requireNamespace("reshape2", quietly = TRUE)) {
+    stop("Package \"pkg\" needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
+  if (!requireNamespace("grid", quietly = TRUE)) {
+    stop("Package \"pkg\" needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
+  mlist <- DSC_rank_result$ranked_matrix
+  
+  problem <- NULL #Assign variable to remove warnings
+  # df_temp <- rbindlist(lapply(mlist[[problem_idx]]$result, 
+  #                             function(x) {
+  #                               list(algorithm = x$algorithm, rank =  x$rank)
+  #                             }))
+  # df_temp[, problem := mlist[[problem_idx]]$problem]
+  
+  df <- rbindlist(lapply(seq(length(mlist)), function(problem_idx) {
+    df_temp <- rbindlist(lapply(mlist[[problem_idx]]$result, 
+                                function(x) {
+                                  list(algorithm = x$algorithm, rank =  x$rank)
+                                }))
+    df_temp[, problem := mlist[[problem_idx]]$problem]
+  }))
+  
+  rank_matrix <- reshape2::acast(df, algorithm ~ problem, value.var = 'rank')
+  df <- rank_matrix
+  # colnames(df)<-index
+  # rownames(df)<-vector
+  # Define some graphics to display the distribution of columns
+  # library(ComplexHeatmap)
+  .hist = ComplexHeatmap::anno_histogram(df, gp = grid::gpar(fill = "lightblue"))
+  .density = ComplexHeatmap::anno_density(df, type = "line", gp = grid::gpar(col = "blue"))
+  ha_mix_top = ComplexHeatmap::HeatmapAnnotation(hist = .hist, density = .density)
+  # Define some graphics to display the distribution of rows
+  .violin = ComplexHeatmap::anno_density(df, type = "violin", 
+                         gp = grid::gpar(fill = "lightblue"), which = "row")
+  .boxplot = ComplexHeatmap::anno_boxplot(df, which = "row")
+  ha_mix_right = ComplexHeatmap::HeatmapAnnotation(violin = .violin, bxplt = .boxplot,
+                                   which = "row", width = grid::unit(4, "cm"))
+  # Combine annotation with heatmap
+  heatmap_main <- ComplexHeatmap::Heatmap(df, name = "Ranking", 
+          column_names_gp = grid::gpar(fontsize = 8),
+          top_annotation = ha_mix_top, 
+          top_annotation_height = grid::unit(3.8, "cm"))
+  return(ComplexHeatmap::draw(
+    ComplexHeatmap::`+.AdditiveUnit`(heatmap_main, ha_mix_right))
+  )
 }

@@ -401,8 +401,8 @@ body <- dashboardBody(
         column(
           width = 12,
           rt_ecdf_single_target_box(collapsed = F),
-          rt_ecdf_agg_targets_box(),
-          rt_ecdf_auc_box()
+          rt_ecdf_agg_targets_box()
+          # rt_ecdf_auc_box()
         )
       )
     ),
@@ -439,16 +439,25 @@ body <- dashboardBody(
         )
       )
     ),
-    tabItem(
-      tabName = 'RT_Statistics_aggr',
-      fluidRow(
-        column(
-          width = 12,
-          rt_glicko2_box(collapsed = F)
-        )
-      )
+    tabItem(tabName = 'RT_DSC',
+            fluidRow(
+              column(
+                width = 12,
+                rt_dsc_box_rank(),
+                rt_dsc_box_omni(),
+                rt_dsc_box_posthoc()
+              )
+            )
     ),    
+    tabItem(tabName = 'RT_Statistics_aggr',
+            fluidRow(
+              column(
+                width = 12,
+                rt_glicko2_box(collapsed = F)
+              )
+            )
 
+    ),    
     # FCE: Data Summary -----------------
     tabItem(
       tabName = 'FCE_DATA',
@@ -531,24 +540,32 @@ body <- dashboardBody(
       )
     ),
 
-    tabItem(
-      tabName = 'FCE_Statistics_aggr',
-      fluidRow(
-        column(
-          width = 12,
-          fv_glicko2_box(collapsed = F)
-        )
-      )
+    tabItem(tabName = 'FCE_DSC',
+            fluidRow(
+              column(
+                width = 12,
+                fv_dsc_box_rank(),
+                fv_dsc_box_omni(),
+                fv_dsc_box_posthoc()
+              )
+            )
     ),
     
-    tabItem(
-      tabName = 'Positions',
-      fluidRow(
-        column(
-          width = 12,
-          Par_coord_box()
-        )
-      )
+    tabItem(tabName = 'FCE_Statistics_aggr',
+            fluidRow(
+              column(
+                width = 12,
+                fv_glicko2_box(collapsed = F)
+              )
+            )
+    ),
+    tabItem(tabName = 'Positions',
+            fluidRow(
+              column(
+                width = 12,
+                Par_coord_box()
+              )
+            )
     ),
     
     tabItem(

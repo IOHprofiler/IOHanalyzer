@@ -94,8 +94,11 @@ NEVERGRAD <- 'NEVERGRAD'
 
 # directory where rds-data is stored
 get_repo_location <- function() {
-  user_repo <- file.path(Sys.getenv('HOME'), 'repository')
-  if (file.exists(user_repo)) user_repo else ''
+  repo_dir <- paste0(file.path(Sys.getenv('HOME'), 'repository'))
+  if (!is.null(getOption("IOHprofiler.repo_dir"))) {
+    repo_dir <- getOption("IOHprofiler.repo_dir")
+  }
+  if (file.exists(repo_dir)) repo_dir else ''
 }
 
 print_html <- function(s, widget_id = 'process_data_promt') 
@@ -134,6 +137,17 @@ FCE_multi_func_name <- parse(text = "paste0('MultiFCE-', paste0(input$Overall.Di
                              '.', input$FCEPlot.Aggr.TableFormat)")
 RT_Glicko2_table_name <- parse(text = "paste0('RT_Glicko2', '.', input$RT_Stats.Glicko.TableFormat)")
 RT_Glicko2_figure_name <- parse(text = "paste0('RT_Glicko2', '.', input$RT_Stats.Glicko.Format)")
+
+RT_DSC_table_name <- parse(text = "paste0('RT_DSC', '.', input$RT_Stats.DSC.TableFormat)")
+RT_DSC_figure_name <- parse(text = "paste0('RT_DSC', '.', input$RT_Stats.DSC.Format)")
+RT_DSC_figure_name_rank <- parse(text = "paste0('RT_DSC_PerformViz', '.', input$RT_Stats.DSC.Format_rank)")
+RT_DSC_table_name_rank <- parse(text = "paste0('RT_DSC_Rank', '.', input$RT_Stats.DSC.TableFormat_rank)")
+
+FV_DSC_table_name <- parse(text = "paste0('FV_DSC', '.', input$FV_Stats.DSC.TableFormat)")
+FV_DSC_figure_name <- parse(text = "paste0('FV_DSC', '.', input$FV_Stats.DSC.Format)")
+FV_DSC_figure_name_rank <- parse(text = "paste0('FV_DSC_PerformViz', '.', input$FV_Stats.DSC.Format_rank)")
+FV_DSC_table_name_rank <- parse(text = "paste0('FV_DSC_Rank', '.', input$FV_Stats.DSC.TableFormat_rank)")
+
 RT_Stats_table_name <- parse(text = "paste0('RT_Stat_Comp-', paste0(input$Overall.Dim, 'D'),
                              paste0('F', input$Overall.Funcid), '.', input$RT_Stats.Overview.TableFormat)")
 RT_Stats_heatmap_name <- parse(text = "paste0('RT_Stat_Heatmap-', paste0(input$Overall.Dim, 'D'),

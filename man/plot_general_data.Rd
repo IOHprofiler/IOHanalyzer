@@ -19,7 +19,8 @@ plot_general_data(df, x_attr = "algId", y_attr = "vals",
 
 \item{y_attr}{The column to specify the y_axis}
 
-\item{type}{The type of plot to use. Currently available: 'violin', 'line', 'radar', 'hist' and 'ribbon'}
+\item{type}{The type of plot to use. Currently available: 'violin', 'line', 'radar', 
+'bar', hist' and 'ribbon'}
 
 \item{legend_attr}{Default is 'algId' This is also used for the selection of colorschemes}
 

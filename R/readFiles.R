@@ -97,12 +97,21 @@ read_index_file__IOH <- function(fname) {
     # TODO: this must also be removed...
     if (record[2] == "") {
       warning(sprintf('File %s is incomplete!', fname))
-      res <- NULL
-      info <- NULL
+      finalFVs <- NULL
+      instances <- NULL
+      maxRTs <- NULL
     } else {
       res <- matrix(unlist(strsplit(record[-1], ':')), nrow = 2)
-      info <- matrix(unlist(strsplit(res[2, ], '\\|')), nrow = 2)
+      info <- matrix(unlist(strsplit(res[2, ], '\\|')), nrow = 2)  
+      #Check for incorrect usages of reset_problem and remove them
+      maxRTs <- as.numeric(info[1,])
+      idx_correct <- which(maxRTs > 0)
+      finalFVs <- as.numeric(info[2,])[idx_correct]
+      instances <- as.numeric(res[1,])[idx_correct]
+      maxRTs <- maxRTs[idx_correct]
     }
+    
+
 
     record[1] <- gsub("\\\\", "/", record[1])
     datafile <- file.path(path, record[1])
@@ -113,9 +122,9 @@ read_index_file__IOH <- function(fname) {
       list(
         comment = lines[2],
         datafile = datafile,
-        instance = as.numeric(res[1, ]),
-        maxRT = as.numeric(info[1, ]),
-        finalFV = as.numeric(info[2, ])
+        instance = instances,
+        maxRT = maxRTs,
+        finalFV = finalFVs
       )
     )
     i <- i + 1

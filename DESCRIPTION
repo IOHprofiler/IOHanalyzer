@@ -40,7 +40,8 @@ Imports:
   igraph,
   kableExtra,
   stringi,
-  httr
+  httr,
+  knitr
 LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 7.0.0
@@ -51,5 +52,6 @@ Suggests:
   ComplexHeatmap,
   grid,
   keyring,
-  PlayerRatings
+  PlayerRatings,
+  xtable
 Depends: R (>= 2.10)

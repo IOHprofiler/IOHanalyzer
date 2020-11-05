@@ -9,7 +9,7 @@ fv_overview_box <- function(width = 12, collapsible = T, collapsed = T) {
         selectInput('FCESummary.Overview.Algid', 'Algorithms', choices = NULL, selected = NULL),
         #TODO: implement this button
         hr(),
-        selectInput('FCESummary.Overview.Format', 'Format', choices = c('csv','tex'), selected = 'csv'),
+        selectInput('FCESummary.Overview.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
         downloadButton("FCESummary.Overview.Download", "Save this table")
       ),
 
@@ -36,7 +36,7 @@ fv_stats_box <- function(width = 12, collapsible = T, collapsed = T) {
                                                            used to generate the table on the right.</p>'), value = FALSE),
         selectInput('FCESummary.Statistics.Algid', 'Algorithms', choices = NULL, selected = NULL),
         hr(),
-        selectInput('FCESummary.Statistics.Format', 'Format', choices = c('csv','tex'), selected = 'csv'),
+        selectInput('FCESummary.Statistics.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
         downloadButton("FCESummary.Statistics.Download", "Save this table")
       ),
 
@@ -72,7 +72,7 @@ fv_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
       selectInput('FCESummary.Sample.Format', 'Format of the table',
                   choices = c('long', 'wide'), selected = 'wide'),
       hr(),
-      selectInput('FCESummary.Sample.FileFormat', 'File-Format', choices = c('csv','tex'), selected = 'csv'),
+      selectInput('FCESummary.Sample.FileFormat', 'File-Format', choices = supported_table_format, selected = supported_table_format[[1]]),
       downloadButton("FCESummary.Sample.Download", "Save the aligned runtime samples")
     ),
 

@@ -740,6 +740,36 @@ subset.DataSetList <- function(x, ...) {
   x[idx]
 }
 
+#' Save DataTable in multiple formats
+#' 
+#' @param df The DataTable to store
+#' @param file String. The name of the figure file, with the extension of the required file-format
+#' @param format Optional, string. Overwrites the extension of the `file` parameter. If not specified while
+#' file does not have an extension, it defaults to csv
+#' 
+#' @export
+#' @examples 
+#' df <- generate_data.Single_Function(subset(dsl, funcId == 1), which = 'by_RT')
+#' save_table(df, tempfile(fileext = ".md"))
+save_table <- function(df, file, format = NULL) {
+  if (is.null(format)) {
+    format <- tools::file_ext(file)
+  }
+  if (format == 'TeX' || format == 'tex') {
+    if (requireNamespace('xtable', quietly = T))
+      print(xtable::xtable(df), file = file)
+    else 
+      write(kable(df, format = 'latex'), file)
+  } else if (format == 'Markdown' || format == 'md') {
+    write(kable(df, format = 'markdown'), file)
+  } else if (format == 'html') {
+    write(kable(df, format = "html"), file)
+  }
+  else { #Default to csv
+    write.csv(df, file, row.names = F)
+  }
+}
+
 #' Generation of default ECDF-targets
 #' 
 #' @param dsList The DataSetList object for which to generate the targets

@@ -25,10 +25,7 @@ output$FCESummary.Overview.Download <- downloadHandler(
   content = function(file) {
     df <- FCE_runtime_summary_condensed()
     df <- df[input[["FCE_SAMPLE_rows_all"]]]
-    if (input$FCESummary.Overview.Format == 'csv')
-      write.csv(df, file, row.names = F)
-    else{
-      print(xtable(df), file = file)
+    save_table(df, file)
     }
   }
 )
@@ -84,10 +81,7 @@ output$FCESummary.Statistics.Download <- downloadHandler(
   content = function(file) {
     df <- get_FCE_summary()
     df <- df[input[["FCE_SAMPLE_rows_all"]]]
-    if (input$RTSummary.Overview.Format == 'csv')
-      write.csv(df, file, row.names = F)
-    else{
-      print(xtable(df), file = file)
+    save_table(df, file)
     }
   }
 )
@@ -141,10 +135,7 @@ output$FCESummary.Sample.Download <- downloadHandler(
   content = function(file) {
     df <- get_FCE()
     df <- df[input[["FCE_SAMPLE_rows_all"]]]
-    if (input$FCESummary.Sample.FileFormat == 'csv')
-      write.csv(df, file, row.names = F)
-    else
-      print(xtable(df), file = file)
+    save_table(df, file)
   }
 )
 

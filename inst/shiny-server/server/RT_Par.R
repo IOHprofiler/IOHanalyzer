@@ -164,12 +164,8 @@ output$RT_PAR.Sample.Download <- downloadHandler(
   content = function(file) {
     df <- parameter_sample()
     df <- df[input[["table_RT_PAR_SAMPLE_rows_all"]]]
-    if (input$RT_PAR.Sample.FileFormat == 'csv')
-      write.csv(df, file, row.names = F)
-    else
-      print(xtable(df), file = file)
-  },
-  contentType = "text/csv"
+    save_table(df, file)
+  }
 )
 
 output$RT_PAR.Summary.Download <- downloadHandler(
@@ -179,10 +175,6 @@ output$RT_PAR.Summary.Download <- downloadHandler(
   content = function(file) {
     df <- rt_parameter_summary()
     df <- df[input[["table_RT_PAR_summary_rows_all"]]]
-    if (input$RT_PAR.Summary.Format == 'csv')
-      write.csv(df, file, row.names = F)
-    else
-      print(xtable(df), file = file)
-  },
-  contentType = "text/csv"
+    save_table(df, file)
+  }
 )

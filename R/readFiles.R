@@ -111,8 +111,6 @@ read_index_file__IOH <- function(fname) {
       maxRTs <- maxRTs[idx_correct]
     }
     
-
-
     record[1] <- gsub("\\\\", "/", record[1])
     datafile <- file.path(path, record[1])
 

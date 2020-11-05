@@ -48,7 +48,7 @@ fv_par_expected_value_box <- function(width = 12, collapsible = T, collapsed = T
 
       hr(),
       selectInput('FV_PAR.Plot.Format', label = 'Select the figure format',
-                  choices = supported_fig_format, selected = 'pdf'),
+                  choices = supported_fig_format, selected = supported_fig_format[[1]]),
       downloadButton('FV_PAR.Plot.Download', label = 'Download the figure')
     ),
 
@@ -85,8 +85,8 @@ fv_par_summary_box <- function(width = 12, collapsible = T, collapsed = T) {
       selectInput('FV_PAR.Summary.Algid', 'Algorithms', choices = NULL, selected = NULL),
       selectInput('FV_PAR.Summary.Param', 'Parameters', choices = NULL, selected = NULL),
       hr(),
-      selectInput('FV_PAR.Summary.Format', 'Format', choices = c('csv','tex'), selected = 'csv'),
-      downloadButton("FV_PAR.Summary.Download", "Save this table as csv")
+      selectInput('FV_PAR.Summary.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
+      downloadButton("FV_PAR.Summary.Download", "Save this table")
       ),
 
     mainPanel(
@@ -119,7 +119,7 @@ fv_par_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
       hr(),
       selectInput('FV_PAR.Sample.Format', 'Format of the table',
                   choices = c('long', 'wide'), selected = 'wide'),
-      selectInput('FV_PAR.Sample.FileFormat', 'File-Format', choices = c('csv','tex'), selected = 'csv'),
+      selectInput('FV_PAR.Sample.FileFormat', 'File-Format', choices = supported_table_format, selected = supported_table_format[[1]]),
       downloadButton("FV_PAR.Sample.Download", "Save this table")
     ),
 

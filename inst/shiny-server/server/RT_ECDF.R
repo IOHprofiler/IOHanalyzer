@@ -83,11 +83,12 @@ observe({
 })
 
 output$RTECDF.AUC.Table.Download <- downloadHandler(
-  filename = 'AUC_ECDF_table.csv',
-  content = function(file) {
-    write.csv2(auc_grid_table(), file, row.names = F)
+  filename = function() {
+    eval(AUC_ECDF_aggr_name)
   },
-  contentType = "text/csv"
+  content = function(file) {
+    save_table(auc_grid_table(), file)
+  }
 )
 
 auc_grid_table <- reactive({

@@ -30,10 +30,7 @@ output$Overview.Single.Download <- downloadHandler(
   content = function(file) {
     df <- overview_table_single()
     df <- df[input[["Overview.Single.Table_rows_all"]]]
-    if (input$Overview.Single.Format == 'csv')
-      write.csv(df, file, row.names = F)
-    else{
-      print(xtable(df), file = file)
+    save_table(df, file)
     }
   }
 )
@@ -61,10 +58,7 @@ output$Overview.All.Download <- downloadHandler(
   content = function(file) {
     df <- overview_table_all()
     df <- df[input[["Overview.All.Table_rows_all"]]]
-    if (input$Overview.All.Format == 'csv')
-      write.csv(df, file, row.names = F)
-    else{
-      print(xtable(df), file = file)
+    save_table(df, file)
     }
   }
 )

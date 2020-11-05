@@ -50,10 +50,7 @@ output$FV_Stats.Overview.DownloadTable <- downloadHandler(
   },
   content = function(file) {
     df <- create_stats_table()
-    if (input$FV_Stats.Overview.TableFormat == 'csv')
-      write.csv(df, file, row.names = F)
-    else{
-      print(xtable(df), file = file)
+    save_table(df, file)
     }
   }
 )
@@ -107,10 +104,7 @@ output$FV_Stats.Glicko.DownloadTable <- downloadHandler(
   },
   content = function(file) {
     df <- fv_data_table_glicko2()
-    if (input$FV_Stats.Glicko.TableFormat == 'csv')
-      write.csv(df, file, row.names = F)
-    else{
-      print(xtable(df), file = file)
+    save_table(df, file)
     }
   }
 )

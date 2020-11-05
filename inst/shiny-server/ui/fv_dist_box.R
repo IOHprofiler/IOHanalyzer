@@ -24,7 +24,7 @@ fv_histgram_box <- function(width = 12, collapsible = T, collapsed = T) {
         
         hr(),
         selectInput('FCEPDF.Hist.Format', label = 'Select the figure format',
-                    choices = supported_fig_format, selected = 'pdf'),
+                    choices = supported_fig_format, selected = supported_fig_format[[1]]),
 
         downloadButton('FCEPDF.Hist.Download', label = 'Download the figure')
 
@@ -73,7 +73,7 @@ fv_pdf_box <- function(width = 12, collapsible = T, collapsed = T) {
         
         hr(),
         selectInput('FCEPDF.Bar.Format', label = 'Select the figure format',
-                    choices = supported_fig_format, selected = 'pdf'),
+                    choices = supported_fig_format, selected = supported_fig_format[[1]]),
 
         downloadButton('FCEPDF.Bar.Download', label = 'Download the figure')
       ),

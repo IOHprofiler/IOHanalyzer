@@ -159,7 +159,7 @@ options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T, digits =
 
 output$RT_PAR.Sample.Download <- downloadHandler(
   filename = function() {
-    eval(PARSample_csv_name)
+    eval(RT_PARSample_csv_name)
   },
   content = function(file) {
     df <- parameter_sample()

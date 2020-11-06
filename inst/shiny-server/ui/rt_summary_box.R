@@ -55,7 +55,7 @@ rt_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
                     choices = c('long', 'wide'), selected = 'wide'),
         selectInput('RTSummary.Sample.Format', 'File-format', choices = supported_table_format, selected = supported_table_format[[1]]),
         
-        downloadButton("RTSummary.Sample.Download", "Save the aligned runtime samples as csv")
+        downloadButton("RTSummary.Sample.Download", "Save this table")
                       ),
 
       mainPanel(

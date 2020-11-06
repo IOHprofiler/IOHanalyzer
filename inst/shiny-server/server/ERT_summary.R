@@ -31,7 +31,6 @@ output$RTSummary.Overview.Download <- downloadHandler(
     df <- runtime_summary_condensed()
     df <- df[input[["table_RT_overview_rows_all"]]]
     save_table(df, file)
-    }
   }
 )
 

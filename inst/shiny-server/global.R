@@ -105,7 +105,7 @@ print_html <- function(s, widget_id = 'process_data_promt')
   shinyjs::html(widget_id, s, add = TRUE)
 
 # download file names: csv, image ---------------------
-AUC_ECDF_aggr_name <- parse(text = "paste0('AUC_ECDF_MULTI.', input$RTECDF.AUC.Table.Format")
+AUC_ECDF_aggr_name <- parse(text = "paste0('AUC_ECDF_MULTI.', input$RTECDF.AUC.Table.Format)")
 overview_single_name <- parse(text = "paste0('Overview-', paste0(input$Overall.Dim, 'D'),
                              paste0('F', input$Overall.Funcid), '.', input$Overview.Single.Format)")
 overview_all_name <- parse(text = "paste0('Overview-All-', '.', input$Overview.All.Format)")
@@ -235,7 +235,7 @@ widget_id <- c('RTSummary.Statistics.Min',
 eventExpr <- parse(text = paste0('{', paste(paste0('input$', widget_id), collapse = "\n"), '}'))
 
 # Supported formats table
-supported_table_format <- c("csv", "tex", "md")
+supported_table_format <- c("csv", "tex", "md", "html")
 
 # token needed for mapbox, which is again needed for ocra... ------
 supported_fig_format <- c('pdf', 'png', 'eps', 'svg')

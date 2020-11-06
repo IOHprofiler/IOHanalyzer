@@ -31,7 +31,6 @@ output$Overview.Single.Download <- downloadHandler(
     df <- overview_table_single()
     df <- df[input[["Overview.Single.Table_rows_all"]]]
     save_table(df, file)
-    }
   }
 )
 
@@ -59,6 +58,5 @@ output$Overview.All.Download <- downloadHandler(
     df <- overview_table_all()
     df <- df[input[["Overview.All.Table_rows_all"]]]
     save_table(df, file)
-    }
   }
 )

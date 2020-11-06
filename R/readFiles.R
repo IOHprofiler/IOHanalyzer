@@ -1,5 +1,5 @@
-sourceCpp('src/align.cc')
-sourceCpp('src/read.cc')
+# sourceCpp('src/align.cc')
+# sourceCpp('src/read.cc')
 
 #' Reduce the size of the data set by evenly subsampling the records
 #'

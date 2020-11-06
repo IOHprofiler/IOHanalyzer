@@ -26,7 +26,6 @@ output$FCESummary.Overview.Download <- downloadHandler(
     df <- FCE_runtime_summary_condensed()
     df <- df[input[["FCE_SAMPLE_rows_all"]]]
     save_table(df, file)
-    }
   }
 )
 
@@ -82,7 +81,6 @@ output$FCESummary.Statistics.Download <- downloadHandler(
     df <- get_FCE_summary()
     df <- df[input[["FCE_SAMPLE_rows_all"]]]
     save_table(df, file)
-    }
   }
 )
 

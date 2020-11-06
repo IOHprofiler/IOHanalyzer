@@ -51,7 +51,6 @@ output$RT_Stats.Overview.DownloadTable <- downloadHandler(
   content = function(file) {
     df <- create_stats_table()
     save_table(df, file)
-    }
   }
 )
 
@@ -103,7 +102,6 @@ output$RT_Stats.Glicko.DownloadTable <- downloadHandler(
   content = function(file) {
     df <- data_table_glicko2()
     save_table(df, file)
-    }
   }
 )
 

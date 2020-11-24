@@ -168,7 +168,7 @@ Set3 <- function(n) colorspace::sequential_hcl(n, c(-88, 59), c. = c(60, 75, 55)
                                    power = c(0.1, 1.2), gamma = NULL,
                                    fixup = TRUE, alpha = 1)#, palette = NULL, rev = FALSE)
 
-IOHanalyzer_env$used_colorscheme <- Set3
+IOHanalyzer_env$used_colorscheme <- Set2
 IOHanalyzer_env$alg_colors <- NULL
 
 #' Set the colorScheme of the IOHanalyzer plots

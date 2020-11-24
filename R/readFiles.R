@@ -20,12 +20,14 @@ limit.data <- function(df, n) {
 #' @param folder The folder containing the .info files
 #' @return The paths to all found .info-files
 #' @export
+#' @note This automatically filetrs our files of size 0
 #' @examples
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
 #' scan_index_file(path)
 scan_index_file <- function(folder) {
   folder <- trimws(folder)
-  file.path(folder, list.files(folder, pattern = '.info$', recursive = T))
+  files <- list.files(folder, pattern = '.info$', recursive = T, full.names = T)
+  files[file.size(files) > 0]
 }
 
 #' Read .info files and extract information

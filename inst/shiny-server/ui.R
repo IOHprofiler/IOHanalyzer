@@ -458,6 +458,16 @@ body <- dashboardBody(
             )
 
     ),    
+    tabItem(tabName = 'RT_table_multi',
+            fluidRow(
+              column(
+                width = 12,
+                multi_function_ert_box(collapsed = F),
+                multi_function_sample_box(collapsed = T)
+              )
+            )
+            
+    ), 
     # FCE: Data Summary -----------------
     tabItem(
       tabName = 'FCE_DATA',

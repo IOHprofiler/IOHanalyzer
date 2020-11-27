@@ -14,6 +14,7 @@ sidebar_menu <- function() {
                             menuSubItem("Statistics", tabName = "RT_Statistics_single", icon = icon("file-text-o"), selected = F)
                        ),
                        menuItem("Multiple Functions", tabName = "RT_aggr", icon = icon("bar-chart"), selected = F,
+                            menuSubItem("Data Summary", tabName = "RT_table_multi", icon = icon("table"), selected = F),
                             menuSubItem("Expected Runtime", tabName = "ERT_convergence_aggr", icon = icon("line-chart"), selected = F),
                             menuSubItem("Cumulative Distribution", tabName = "RT_ECDF_aggr", icon = icon("line-chart"), selected = F),
                             menuSubItem("Deep Statistics", tabName = "RT_DSC", icon = icon("not-equal"), selected = F),

@@ -1020,8 +1020,6 @@ get_shapley_values <- function(dsList, targets, scale.log = T, group_size = 5, m
     temp
   })
   
-  names(shapleys) <- algs_full
-  
-  shapleys
+  data.table(algId = algs_full, shapley = shapleys)
 }
 

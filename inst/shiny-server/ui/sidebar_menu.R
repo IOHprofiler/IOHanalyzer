@@ -18,7 +18,8 @@ sidebar_menu <- function() {
                             menuSubItem("Expected Runtime", tabName = "ERT_convergence_aggr", icon = icon("line-chart"), selected = F),
                             menuSubItem("Cumulative Distribution", tabName = "RT_ECDF_aggr", icon = icon("line-chart"), selected = F),
                             menuSubItem("Deep Statistics", tabName = "RT_DSC", icon = icon("not-equal"), selected = F),
-                            menuSubItem("Ranking", tabName = "RT_Statistics_aggr", icon = icon("file-text-o"), selected = F)
+                            menuSubItem("Ranking", tabName = "RT_Statistics_aggr", icon = icon("file-text-o"), selected = F),
+                            menuSubItem("Portfolio", tabName = "RT_portfolio", icon = icon("bar-chart"), selected = F)
                        )
                        ),
 

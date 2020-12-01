@@ -468,6 +468,15 @@ body <- dashboardBody(
             )
             
     ), 
+    tabItem(tabName = 'RT_portfolio',
+            fluidRow(
+              column(
+                width = 12,
+                rt_shapleys_box(collapsed = F)
+              )
+            )
+            
+    ), 
     # FCE: Data Summary -----------------
     tabItem(
       tabName = 'FCE_DATA',

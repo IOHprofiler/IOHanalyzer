@@ -944,3 +944,84 @@ get_dsc_posthoc <- function(omni_res, nr_algs, nr_problems, base_algorithm = NUL
   
   return(content(result_json)$result)
 }
+
+
+#' Get the marginal contribution of an algorithm to a portfolio
+#' 
+#' Based on the contribution to the ECDF-curve of the VBS of the portfolio 
+#' 
+#' @param alg The result from a call to `get_dsc_omnibus`
+#' @param perm The permutation of algorithms to which is being contributed
+#' @param j At which point in the permutation the contribution should be measured
+#' @param dt The datatable in which the raw ecdf-values are stored (see `generate_data.ECDF_raw`)
+#' 
+#' @export
+#' @examples 
+#' dt <- generate_data.ECDF_raw(dsl, get_ECDF_targets(dsl))
+#' get_marg_contrib_ecdf(get_algId(dsl)[[1]], get_algId(dsl), 1, dt)
+get_marg_contrib_ecdf <- function(alg, perm, j, dt) {
+  hit <- NULL #Bind to avoid notes
+  algs <- perm[0:j]
+  v_pre <- sum(dt[algId %in% algs, list(hit = max(hit)), by = c('funcId', 'DIM', 'target', 'rt')][['hit']])
+  algs <- perm[0:(j - 1)]
+  if (j == 1) {
+    v_post <- 0
+  }
+  else
+    v_post <- sum(dt[algId %in% algs, list(hit = max(hit)), by = c('funcId', 'DIM', 'target', 'rt')][['hit']])
+  v_pre - v_post
+}
+
+
+#' Get the shapley-values of a portfolio of algorithms
+#' 
+#' Based on the contribution to the ECDF-curve of the VBS of the portfolio 
+#' 
+#' @param dsList The DataSetList object
+#' @param targets A list or data.table containing the targets per function / dimension. If this is 
+#' a data.table, it needs columns 'target', 'DIM' and 'funcId'
+#' @param scale.log Whether to use logarithmic scaling for the runtimes at which the ecdf will be sampled or not
+#' @param group_size How many permutation groups will be considered
+#' @param max_perm_size The maximum limit for permutations to be considered
+#' @param normalize Whether or not to ensure the resulting values will be in [0,1] 
+#' 
+#' @export
+#' @examples 
+#' get_shapley_values(dsl, get_ECDF_targets(dsl))
+get_shapley_values <- function(dsList, targets, scale.log = T, group_size = 5, max_perm_size = 10, normalize = T){
+  hit <- NULL #Bind to avoid notes
+  algs_full <- get_algId(dsList)
+  
+  dt <- generate_data.ECDF_raw(dsList, targets, scale_log = scale.log)
+  
+  nr_players <- length(algs_full)
+  
+  perms <- lapply(seq_len(nr_players * group_size), function(i) {sample(algs_full)})
+  
+  max_val <- sum(dt[, list(hit = max(hit)), by = c('funcId', 'DIM', 'target', 'rt')][['hit']])
+  ### For each algorithm, calculate shapley value
+  shapleys <- lapply(algs_full, function(alg) {
+    ### For each group of permutations
+    temp <- mean(unlist(
+      lapply(seq_len(max_perm_size), function(j) {
+        perm_sub <- perms[((group_size * (j - 1)) + 1):(group_size * (j))]
+        ###
+        mean(unlist(
+          lapply(perm_sub, function(perm) {
+            perm <- replace(perm, c(j, which(perm == alg)), c(alg,perm[[j]]))
+            get_marg_contrib_ecdf(alg, perm, j, dt)
+          })
+        ))
+        
+      })
+    )) 
+    if (normalize) 
+      temp <- temp / max_val #Scale so Shapleys always fall between 0 and 1
+    temp
+  })
+  
+  names(shapleys) <- algs_full
+  
+  shapleys
+}
+

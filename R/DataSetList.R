@@ -1234,3 +1234,57 @@ generate_data.Aggr <- function(dsList, aggr_on = 'funcId', targets = NULL, which
   return(dt)
 }
 
+
+
+#' Generate dataframe of a the unaggregated values of individual algorithms. Stripped-down version of 
+#' 
+#' This provides an unaggregated version of the function `generate_data.ECDF`. 
+#' 
+#' @param dsList The DataSetList object
+#' @param targets A list or data.table containing the targets per function / dimension. If this is 
+#' a data.table, it needs columns 'target', 'DIM' and 'funcId'
+#' @param scale_log Wheterh to use logarithmic scaling or not
+#' 
+#' @export
+#' @examples 
+#' generate_data.ECDF_raw(subset(dsl, funcId == 1), c(10, 15, 16))
+generate_data.ECDF_raw <- function(dsList, targets, scale_log = F) {
+  V1 <- NULL #Set local binding to remove warnings
+  
+  #Get the x-coordinates at which to calculate the ECDF
+  RT <- get_runtimes(dsList)
+  x <- unique(seq_RT(RT, length.out = 50, scale = ifelse(scale_log, 'log', 'linear')))
+  #TODO: Some scaling by dimension?
+  
+  #Get targets to use
+  if (!is.data.table(targets)) {
+    if (length(get_funcId(dsList)) > 1 || length(get_dim(dsList)) > 1 )
+      stop("Targets provided are not in data.table format, while multiple functions / dimensions
+           are present in provided DataSetList.")
+    targets <- data.table(
+      target = targets,
+      funcId = get_funcId(dsList),
+      DIM = get_dim(dsList)
+    )
+  }
+  
+  dt <- as.data.table(rbindlist(lapply(dsList, function(df) {
+    algId <- attr(df, 'algId')
+    temp <- targets[DIM == attr(df, 'DIM'), c('target', 'funcId')]
+    targets_ <- temp[funcId == attr(df, 'funcId')][['target']]
+    
+    m <- lapply(targets_, function(target) {
+      data <- fast_RT_samples(df$RT, target, attr(df, 'maximization'))
+      if (all(is.na(data)))
+        hit <- (rep(0, length(x)))
+      else {
+        fun <- ecdf(data)
+        hit <- if (is.function(fun)) fun(x) else NA
+      }
+      data.table(hit = hit, rt = x, target = target, funcId = attr(df, 'funcId'), DIM = attr(df, 'DIM'), algId = attr(df, 'algId'))
+    }) %>%
+      do.call(rbind, .)
+    m
+  })))
+  dt
+}

@@ -744,6 +744,22 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide', ...) {
   res
 }
 
+#' Function to get just the RT samples needed, without any formatting to improve speed
+#' @param RT_mat A matrix containing the RT-values of a dataset
+#' @param target Which target-value to use
+#' @param maximization Whether maximization is needed or not
+#' @export
+fast_RT_samples <- function(RT_mat, target, maximization = F) {
+  if (maximization) 
+    idxs <- seq_along(rownames(RT_mat))[as.double(rownames(RT_mat)) >= target]
+  else
+    idxs <- seq_along(rownames(RT_mat))[as.double(rownames(RT_mat)) <= target]
+  if (length(idxs) > 0) {
+    return(RT_mat[idxs[[1]], ])
+  }
+  return(rep(NA, 15))
+}
+
 #' @rdname get_FV_summary
 #' @export
 #'

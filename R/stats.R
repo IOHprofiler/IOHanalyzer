@@ -452,10 +452,10 @@ get_target_dt <- function(dsList, which = 'by_RT') {
   dims <- get_dim(dsList)
   dt <- as.data.table(expand.grid(funcs, dims))
   colnames(dt) <- c("funcId", "DIM")
-  if (which == 'by_RT') {
+  if (which == 'by_FV') {
     target_func <- get_target_FV
   }
-  else if (which == 'by_FV') {
+  else if (which == 'by_RT') {
     target_func <- get_target_RT
   }
   else stop("Invalid argument for `which`; can only be `by_FV` or `by_RT`.")

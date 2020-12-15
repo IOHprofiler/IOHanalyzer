@@ -461,10 +461,10 @@ observe({
   
   
   updateSelectInput(session, 'RT.MultiERT.AlgId', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'RT.MultiERT.FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'RT.MultiERT.FuncId', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RT.MultiERT.DIM', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'RT.Multisample.AlgId', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'RT.Multisample.FuncId', choices = funcIds, selected = selected_f)
+  updateSelectInput(session, 'RT.Multisample.FuncId', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RT.Multisample.DIM', choices = DIMs, selected = selected_dim)
   
   updateSelectInput(session, 'RT_Stats.Glicko.Algid', choices = algIds_, selected = algIds_)

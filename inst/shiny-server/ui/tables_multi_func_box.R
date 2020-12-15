@@ -25,7 +25,7 @@ multi_function_ert_box <- function(width = 12, collapsible = T, collapsed = T) {
 
 
 multi_function_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
-  box(title = HTML('<p style="font-size:120%;">Multi-Function Statistics</p>'),
+  box(title = HTML('<p style="font-size:120%;">Multi-Function Hitting Times</p>'),
       width = width, solidHeader = T, status = "primary",
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
@@ -38,6 +38,7 @@ multi_function_sample_box <- function(width = 12, collapsible = T, collapsed = T
         hr(),
         numericInput('RT.Multisample.Target', 'Target Value', value = 100, min = 1),
         hr(),
+        selectInput('RT.Multisample.mode', 'Table style', choices = c('long', 'wide'), selected = 'wide'),
         selectInput('RT.Multisample.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
         downloadButton("RT.Multisample.Download", "Save this table")
       ),

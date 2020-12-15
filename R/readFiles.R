@@ -635,6 +635,10 @@ align_function_value <- function(data, include_param = TRUE, format = IOHprofile
 read_nevergrad <- function(path){
   dt <- fread(path)
 
+  if (!'name' %in% colnames(dt)) {
+    dt[, name := function_class]
+  }
+  
   triplets <- unique(dt[, .(optimizer_name, dimension, name)])
   algIds <- unique(triplets$optimizer_name)
   DIMs <- unique(triplets$dimension)

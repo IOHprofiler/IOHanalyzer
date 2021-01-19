@@ -5,7 +5,7 @@ multi_function_data_summary <- reactive({
                    funcId %in% input$RT.MultiERT.FuncId & 
                    DIM %in% input$RT.MultiERT.DIM)
   
-  get_FV_summary(data, input$RT.MultiERT.Target)
+  get_RT_summary(data, as.numeric(input$RT.MultiERT.Target))
 })
 
 output$RT.MultiERT.Table <- DT::renderDataTable({
@@ -30,7 +30,7 @@ multi_function_data_sample <- reactive({
                    funcId %in% input$RT.Multisample.FuncId & 
                    DIM %in% input$RT.Multisample.DIM)
   
-  get_FV_sample(data, input$RT.Multisample.Target, output = input$RT.Multisample.mode)
+  get_RT_sample(data, as.numeric(input$RT.Multisample.Target), output = input$RT.Multisample.mode)
 })
 
 output$RT.Multisample.Table <- DT::renderDataTable({

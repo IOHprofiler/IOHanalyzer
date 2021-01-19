@@ -634,6 +634,8 @@ observe({
   setTextInput(session, 'RT_PAR.Sample.Max', name, alternative = format_FV(stop))
   setTextInput(session, 'RT_PAR.Sample.Step', name, alternative = format_FV(step))
   setTextInput(session, 'RT_Stats.Overview.Target', name, alternative = format_FV(stop))
+  setTextInput(session, 'RT.Multisample.Target', name, alternative = format_FV(median(v)))
+  setTextInput(session, 'RT.MultiERT.Target', name, alternative = format_FV(median(v)))
 })
 
 # update the values for the grid of running times

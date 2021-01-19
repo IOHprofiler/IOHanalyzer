@@ -10,7 +10,7 @@ multi_function_ert_box <- function(width = 12, collapsible = T, collapsed = T) {
         selectInput('RT.MultiERT.FuncId', 'Functions', choices = NULL, selected = NULL, multiple = T),
         selectInput('RT.MultiERT.DIM', 'Dimensions', choices = NULL, selected = NULL, multiple = T),
         hr(),
-        numericInput('RT.MultiERT.Target', 'Target Value', value = 100, min = 1),
+        textInput('RT.MultiERT.Target', 'Target Value', value = ''),
         hr(),
         selectInput('RT.MultiERT.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
         downloadButton("RT.MultiERT.Download", "Save this table")
@@ -36,7 +36,7 @@ multi_function_sample_box <- function(width = 12, collapsible = T, collapsed = T
         selectInput('RT.Multisample.FuncId', 'Functions', choices = NULL, selected = NULL, multiple = T),
         selectInput('RT.Multisample.DIM', 'Dimensions', choices = NULL, selected = NULL, multiple = T),
         hr(),
-        numericInput('RT.Multisample.Target', 'Target Value', value = 100, min = 1),
+        textInput('RT.Multisample.Target', 'Target Value', value = ''),
         hr(),
         selectInput('RT.Multisample.mode', 'Table style', choices = c('long', 'wide'), selected = 'wide'),
         selectInput('RT.Multisample.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),

@@ -154,8 +154,10 @@ RT_Stats_heatmap_name <- parse(text = "paste0('RT_Stat_Heatmap-', paste0(input$O
                              paste0('F', input$Overall.Funcid), '.', input$RT_Stats.Overview.Format)")
 RT_Stats_network_name <- parse(text = "paste0('RT_Stat_Network-', paste0(input$Overall.Dim, 'D'),
                              paste0('F', input$Overall.Funcid), '.', input$RT_Stats.Overview.Format)")
-RT_multifunc_ERT <- parse(text = "paste0('ERT_Table_Multi', input$RT.MultiERT.Format)")
-RT_multifunc_sample <- parse(text = "paste0('Sample_Table_Multi', input$RT.MultiSample.Format)")
+RT_multifunc_ERT <- parse(text = "paste0('ERT_Table_Multi', '.', input$RT.MultiERT.Format)")
+RT_multifunc_sample <- parse(text = "paste0('Sample_Table_Multi', '.', input$RT.MultiSample.Format)")
+FV_multifunc_FV <- parse(text = "paste0('FV_Table_Multi, '.'', input$FV.MultiFV.Format)")
+FV_multifunc_sample <- parse(text = "paste0('Sample_Table_Multi_FV', '.', input$FV.MultiSample.Format)")
 # max_samples <- 100
 
 FIG_NAME_ERT_PER_FUN <- parse(text = "paste0('ERT-', Sys.Date(), '.', input$ERTPlot.Format)")

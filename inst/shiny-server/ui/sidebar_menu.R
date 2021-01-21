@@ -33,6 +33,7 @@ sidebar_menu <- function() {
                            menuSubItem('Statistics', tabName = "FCE_Statistics_single", icon = icon('file-text-o'))
                        ),
                        menuItem("Multiple Functions", tabName = "RT_aggr", icon = icon("bar-chart"), selected = F,
+                           menuSubItem("Data Summary", tabName = "FV_table_multi", icon = icon("table"), selected = F),
                            menuSubItem("Expected Target Value", tabName = "FCE_convergence_aggr", icon = icon("bar-chart")),
                            menuSubItem('Deep Statistics', tabName = "FCE_DSC", icon = icon('not-equal')),
                            menuSubItem('Ranking', tabName = "FCE_Statistics_aggr", icon = icon('file-text-o'))

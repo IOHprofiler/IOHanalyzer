@@ -558,6 +558,16 @@ body <- dashboardBody(
         )
       )
     ),
+    tabItem(tabName = 'FV_table_multi',
+            fluidRow(
+              column(
+                width = 12,
+                multi_function_fv_box(collapsed = F),
+                multi_function_sample_box_fv(collapsed = T)
+              )
+            )
+            
+    ), 
 
     tabItem(tabName = 'FCE_DSC',
             fluidRow(

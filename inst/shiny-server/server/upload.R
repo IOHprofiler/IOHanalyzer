@@ -467,6 +467,13 @@ observe({
   updateSelectInput(session, 'RT.Multisample.FuncId', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RT.Multisample.DIM', choices = DIMs, selected = selected_dim)
   
+  updateSelectInput(session, 'FV.MultiFV.AlgId', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FV.MultiFV.FuncId', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'FV.MultiFV.DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'FV.Multisample.AlgId', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FV.Multisample.FuncId', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'FV.Multisample.DIM', choices = DIMs, selected = selected_dim)
+  
   updateSelectInput(session, 'RT_Stats.Glicko.Algid', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RT_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'RT_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
@@ -654,7 +661,8 @@ observe({
 
   start <- min(v)
   stop <- max(v)
-
+  setTextInput(session, 'FV.Multisample.Target', name, alternative = max(v))
+  setTextInput(session, 'FV.MultiFV.Target', name, alternative = max(v))
   setTextInput(session, 'FCESummary.Statistics.Min', name, alternative = min(v))
   setTextInput(session, 'FCESummary.Statistics.Max', name, alternative = max(v))
   setTextInput(session, 'FCESummary.Statistics.Step', name, alternative = step)

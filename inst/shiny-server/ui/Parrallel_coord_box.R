@@ -12,7 +12,7 @@ Par_coord_box <- function(width = 12, collapsible = T, collapsed = F) {
           hr(),
           
           selectInput('ParCoordPlot.Format', label = 'Select the figure format',
-                      choices = supported_fig_format, selected = 'pdf'),
+                      choices = supported_fig_format, selected = supported_fig_format[[1]]),
           
           downloadButton('ParCoordPlot.Download', label = 'Download the figure')
           

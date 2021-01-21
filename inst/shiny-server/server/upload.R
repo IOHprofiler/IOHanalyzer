@@ -453,6 +453,26 @@ observe({
   # updateSelectInput(session, 'Report.Param.Statistics-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.Param.Statistics-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.Param.Statistics-Alg', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RTportfolio.Shapley.Algs', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RTportfolio.Shapley.Funcs', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'RTportfolio.Shapley.Dims', choices = DIMs, selected = DIMs)  
+  updateNumericInput(session, 'RTportfolio.Shapley.Permsize', min = 2, max = length(algIds_), 
+                     value = min(10, length(algIds_)))  
+  
+  
+  updateSelectInput(session, 'RT.MultiERT.AlgId', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RT.MultiERT.FuncId', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'RT.MultiERT.DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'RT.Multisample.AlgId', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RT.Multisample.FuncId', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'RT.Multisample.DIM', choices = DIMs, selected = selected_dim)
+  
+  updateSelectInput(session, 'FV.MultiFV.AlgId', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FV.MultiFV.FuncId', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'FV.MultiFV.DIM', choices = DIMs, selected = selected_dim)
+  updateSelectInput(session, 'FV.Multisample.AlgId', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FV.Multisample.FuncId', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'FV.Multisample.DIM', choices = DIMs, selected = selected_dim)
   
   updateSelectInput(session, 'RT_Stats.Glicko.Algid', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RT_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
@@ -621,6 +641,8 @@ observe({
   setTextInput(session, 'RT_PAR.Sample.Max', name, alternative = format_FV(stop))
   setTextInput(session, 'RT_PAR.Sample.Step', name, alternative = format_FV(step))
   setTextInput(session, 'RT_Stats.Overview.Target', name, alternative = format_FV(stop))
+  setTextInput(session, 'RT.Multisample.Target', name, alternative = format_FV(median(v)))
+  setTextInput(session, 'RT.MultiERT.Target', name, alternative = format_FV(median(v)))
 })
 
 # update the values for the grid of running times
@@ -639,7 +661,8 @@ observe({
 
   start <- min(v)
   stop <- max(v)
-
+  setTextInput(session, 'FV.Multisample.Target', name, alternative = max(v))
+  setTextInput(session, 'FV.MultiFV.Target', name, alternative = max(v))
   setTextInput(session, 'FCESummary.Statistics.Min', name, alternative = min(v))
   setTextInput(session, 'FCESummary.Statistics.Max', name, alternative = max(v))
   setTextInput(session, 'FCESummary.Statistics.Step', name, alternative = step)

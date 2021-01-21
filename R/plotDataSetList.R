@@ -1325,12 +1325,15 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
           if (legend_attr != x_attr) {
             warning("Inconsistent attribute selected for x-axis and legend. Using x_attr as name")
           }
-          p %<>%
-            add_trace(data = df, x = ~x, y = ~y, type = 'bar',
-                      name = ~x,
-                      colors = add_transparancy(colors, 0.6), color = ~x,
-                      marker = list(line = list(color = 'rgb(8,48,107)')),
-                      ...)
+          colors = add_transparancy(colors, 0.6)
+          for (xv in xs) {
+            p %<>%
+              add_trace(x = xv, y = df[x == xv, y], type = 'bar',
+                        name = xv,
+                        color = colors[xv],
+                        marker = list(line = list(color = 'rgb(8,48,107)')),
+                        ...)
+          }
           
           if (is_new_plot) {
             p %<>% layout(xaxis = list(tickfont = f3(), ticklen = 3),

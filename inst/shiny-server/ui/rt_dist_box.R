@@ -30,7 +30,7 @@ rt_histogram_box <- function(width = 12, collapsed = T, collapsible = T) {
         checkboxInput("RTPMF.Hist.Equal", "Use equal bins for all algorithms", F),
         hr(),
         selectInput('RTPMF.Hist.Format', label = 'Select the figure format',
-                    choices = supported_fig_format, selected = 'pdf'),
+                    choices = supported_fig_format, selected = supported_fig_format[[1]]),
 
         downloadButton('RTPMF.Hist.Download', label = 'Download the figure')
       ),
@@ -83,7 +83,7 @@ rt_pmf_box <- function(width = 12, collapsed = T, collapsible = T) {
 
           hr(),
           selectInput('RTPMF.Bar.Format', label = 'Select the figure format',
-                      choices = supported_fig_format, selected = 'pdf'),
+                      choices = supported_fig_format, selected = supported_fig_format[[1]]),
 
           downloadButton('RTPMF.Bar.Download', label = 'Download the figure')
         ),

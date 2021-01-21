@@ -14,10 +14,12 @@ sidebar_menu <- function() {
                             menuSubItem("Statistics", tabName = "RT_Statistics_single", icon = icon("file-text-o"), selected = F)
                        ),
                        menuItem("Multiple Functions", tabName = "RT_aggr", icon = icon("bar-chart"), selected = F,
+                            menuSubItem("Data Summary", tabName = "RT_table_multi", icon = icon("table"), selected = F),
                             menuSubItem("Expected Runtime", tabName = "ERT_convergence_aggr", icon = icon("line-chart"), selected = F),
                             menuSubItem("Cumulative Distribution", tabName = "RT_ECDF_aggr", icon = icon("line-chart"), selected = F),
                             menuSubItem("Deep Statistics", tabName = "RT_DSC", icon = icon("not-equal"), selected = F),
-                            menuSubItem("Ranking", tabName = "RT_Statistics_aggr", icon = icon("file-text-o"), selected = F)
+                            menuSubItem("Ranking", tabName = "RT_Statistics_aggr", icon = icon("file-text-o"), selected = F),
+                            menuSubItem("Portfolio", tabName = "RT_portfolio", icon = icon("bar-chart"), selected = F)
                        )
                        ),
 
@@ -31,6 +33,7 @@ sidebar_menu <- function() {
                            menuSubItem('Statistics', tabName = "FCE_Statistics_single", icon = icon('file-text-o'))
                        ),
                        menuItem("Multiple Functions", tabName = "RT_aggr", icon = icon("bar-chart"), selected = F,
+                           menuSubItem("Data Summary", tabName = "FV_table_multi", icon = icon("table"), selected = F),
                            menuSubItem("Expected Target Value", tabName = "FCE_convergence_aggr", icon = icon("bar-chart")),
                            menuSubItem('Deep Statistics', tabName = "FCE_DSC", icon = icon('not-equal')),
                            menuSubItem('Ranking', tabName = "FCE_Statistics_aggr", icon = icon('file-text-o'))

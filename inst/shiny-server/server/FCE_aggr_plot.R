@@ -128,11 +128,7 @@ output$FCEPlot.Aggr.DownloadTable <- downloadHandler(
   },
   content = function(file) {
     df <- FCE_multi_function()
-    if (input$FCEPlot.Aggr.TableFormat == 'csv')
-      write.csv(df, file, row.names = F)
-    else{
-      print(xtable(df), file = file)
-    }
+    save_table(df, file)
   }
 )
 

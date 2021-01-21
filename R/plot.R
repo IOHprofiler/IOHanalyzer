@@ -43,11 +43,20 @@ legend_inside2 <- function() {
                   family = 'Old Standard TT, serif'))
 }
 
+#TODO: Make the y-value configurable
 legend_below <- function() { 
   list(y = -0.2, orientation = 'h',
        font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
                    family = 'Old Standard TT, serif'))
 }
+
+legend_custom <- function() {
+  list(x = getOption("IOHanalyzer.custom_legend_x", default = 0.5), 
+       y = getOption("IOHanalyzer.custom_legend_y", default = -0.2), orientation = 'h',
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
+                   family = 'Old Standard TT, serif'))
+}
+
 
 legend_location <- function(){
   opt <- getOption('IOHanalyzer.legend_location', default = 'below')
@@ -55,6 +64,7 @@ legend_location <- function(){
   else if (opt == 'inside_left') return(legend_inside())
   else if (opt == 'inside_right') return(legend_inside2())
   else if (opt == 'below') return(legend_below())
+  else if (opt == 'custom') return(legend_custom())
   # else if (opt == 'below2') return(legend_below2())
   else warning(paste0("The selected legend option (", opt, ") is not implemented"))
 }
@@ -168,7 +178,7 @@ Set3 <- function(n) colorspace::sequential_hcl(n, c(-88, 59), c. = c(60, 75, 55)
                                    power = c(0.1, 1.2), gamma = NULL,
                                    fixup = TRUE, alpha = 1)#, palette = NULL, rev = FALSE)
 
-IOHanalyzer_env$used_colorscheme <- Set3
+IOHanalyzer_env$used_colorscheme <- Set2
 IOHanalyzer_env$alg_colors <- NULL
 
 #' Set the colorScheme of the IOHanalyzer plots

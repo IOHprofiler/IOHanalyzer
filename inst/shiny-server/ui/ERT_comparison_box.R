@@ -31,12 +31,12 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
             hr(),
             
             selectInput('ERTPlot.Aggr.Format', label = 'Select the figure format',
-                        choices = supported_fig_format, selected = 'pdf'),
+                        choices = supported_fig_format, selected = supported_fig_format[[1]]),
             
             downloadButton('ERTPlot.Aggr.Download', label = 'Download the figure'),
             hr(),
             selectInput('ERTPlot.Aggr.TableFormat', label = 'Select the table format',
-                        choices = c('csv','tex'), selected = 'csv'),
+                        choices = supported_table_format, selected = supported_table_format[[1]]),
             downloadButton('ERTPlot.Aggr.DownloadTable', label = 'Download the table')
             
           ),
@@ -94,12 +94,12 @@ ERT_comparison_box_dim <- function(width = 12, collapsible = T, collapsed = T) {
           hr(),
           
           selectInput('ERTPlot.Aggr_Dim.Format', label = 'Select the figure format',
-                      choices = supported_fig_format, selected = 'pdf'),
+                      choices = supported_fig_format, selected = supported_fig_format[[1]]),
           
           downloadButton('ERTPlot.Aggr_Dim.Download', label = 'Download the figure'),
           hr(),
           selectInput('ERTPlot.Aggr_Dim.TableFormat', label = 'Select the table format',
-                      choices = c('csv','tex'), selected = 'csv'),
+                      choices = supported_table_format, selected = supported_table_format[[1]]),
           downloadButton('ERTPlot.Aggr_Dim.DownloadTable', label = 'Download the table')
           
         ),

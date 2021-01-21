@@ -18,28 +18,49 @@ render_FV_PER_FUN <- reactive({
     y_attrs <- c()
     if (input$FCEPlot.show.mean) y_attrs <- c(y_attrs, 'mean')
     if (input$FCEPlot.show.median) y_attrs <- c(y_attrs, 'median')
-    if (length(y_attrs) > 0)
+    show_legend <- T
+    if (length(y_attrs) > 0) {
       p <- plot_general_data(get_data_FCE_PER_FUN(), x_attr = 'runtime', y_attr = y_attrs, 
-                             type = 'line', legend_attr = 'algId', show.legend = T, 
+                             type = 'line', legend_attr = 'algId', show.legend = show_legend, 
                              scale.ylog = isolate(input$FCEPlot.semilogy),
-                             scale.xlog = input$FCEPlot.semilogx, x_title = "Runtime",
+                             scale.xlog = input$FCEPlot.semilogx, x_title = "Function Evaluations",
                              y_title = "Best-so-far f(x)-value")
+      show_legend <- F
+    }
     else
       p <- NULL
-    if (input$FCEPlot.show.CI)
+    if (input$FCEPlot.show.CI) {
       p <- plot_general_data(get_data_FCE_PER_FUN(), x_attr = 'runtime', y_attr = 'mean', 
                              type = 'ribbon', legend_attr = 'algId', lower_attr = 'lower', 
-                             upper_attr = 'upper', p = p)
+                             upper_attr = 'upper', p = p, show.legend = show_legend)
+      show_legend <- F
+    }
 
     else if (input$FCEPlot.show.IQR) {
       IOHanalyzer.quantiles.bk <- getOption("IOHanalyzer.quantiles")
       options(IOHanalyzer.quantiles = c(0.25, 0.75))
       p <- plot_general_data(get_data_FCE_PER_FUN(), x_attr = 'runtime', y_attr = 'mean', 
                                   type = 'ribbon', legend_attr = 'algId', lower_attr = '25%', 
-                                  upper_attr = '75%', p = p)
+                                  upper_attr = '75%', p = p, show.legend = show_legend)
+      show_legend <- F
       options(IOHanalyzer.quantiles = IOHanalyzer.quantiles.bk)
     }
-      
+    if (input$FCEPlot.show.runs) {
+      fstart <- isolate(input$FCEPlot.Min %>% as.numeric)
+      fstop <- isolate(input$FCEPlot.Max %>% as.numeric)
+      data <- isolate(subset(DATA(), algId %in% input$FCEPlot.Algs))
+      dt <- get_FV_sample(data, seq_RT(c(fstart, fstop), from = fstart, to = fstop, length.out = 50,
+                                       scale = ifelse(isolate(input$FCEPlot.semilogx), 'log', 'linear')))
+      nr_runs <- ncol(dt) - 4
+      for (i in seq_len(nr_runs)) {
+        p <- plot_general_data(dt, x_attr = 'runtime', y_attr = paste0('run.', i), type = 'line',
+                               legend_attr = 'algId', p = p, show.legend = show_legend, 
+                               scale.ylog = input$FCEPlot.semilogy,
+                               scale.xlog = input$FCEPlot.semilogx, x_title = "Function Evaluations",
+                               y_title = "Best-so-far f(x)-value")
+        show_legend <- F
+      }
+    }
     p
   },
   message = "Creating plot"

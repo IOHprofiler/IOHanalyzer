@@ -40,10 +40,21 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
       checkboxInput('FCEPlot.semilogy',
                     label = 'Scale y axis \\(\\log_{10}\\)',
                     value = T),
+      checkboxInput('FCEPlot.show.runs',
+                    label = 'Show individual runs',
+                    value = F) %>% 
+        shinyInput_label_embed(
+          custom_icon("exclamation-triangle") %>%
+            bs_embed_popover(
+              title = "Individual runs", content = "This procedure can be slow when many
+                              runs are present in the data. Please use with caution.", 
+              placement = "auto"
+            )
+        ), 
 
       hr(),
       selectInput('FCEPlot.Format', label = 'Select the figure format',
-                  choices = supported_fig_format, selected = 'pdf'),
+                  choices = supported_fig_format, selected = supported_fig_format[[1]]),
 
       downloadButton('FCEPlot.Download', label = 'Download the figure')
     ),
@@ -89,7 +100,7 @@ fv_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed 
           actionButton('FCEPlot.Multi.PlotButton', label = 'Refresh the figure'),
           hr(),
           selectInput('FCEPlot.Multi.Format', label = 'Select the figure format',
-                      choices = supported_fig_format, selected = 'pdf'),
+                      choices = supported_fig_format, selected = supported_fig_format[[1]]),
 
           downloadButton('FCEPlot.Multi.Download', label = 'Download the figure')
         ),
@@ -137,12 +148,12 @@ fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
           # textInput('FCEPlot.Aggr.Targets', label = 'Choose the runtimes (comma-separated)'),
           hr(),
           selectInput('FCEPlot.Aggr.Format', label = 'Select the figure format',
-                      choices = supported_fig_format, selected = 'pdf'),
+                      choices = supported_fig_format, selected = supported_fig_format[[1]]),
 
           downloadButton('FCEPlot.Aggr.Download', label = 'Download the figure'),
           hr(),
           selectInput('FCEPlot.Aggr.TableFormat', label = 'Select the table format',
-                      choices = c('csv','tex'), selected = 'csv'),
+                      choices = supported_table_format, selected = supported_table_format[[1]]),
           downloadButton('FCEPlot.Aggr.DownloadTable', label = 'Download the table')
         ),
 

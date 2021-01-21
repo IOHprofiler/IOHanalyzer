@@ -60,7 +60,7 @@ render_ert_per_fct <- reactive({
       fstart <- isolate(input$ERTPlot.Min %>% as.numeric)
       fstop <- isolate(input$ERTPlot.Max %>% as.numeric)
       data <- isolate(subset(DATA(), algId %in% input$ERTPlot.Algs))
-      dt <- get_RT_sample(data, seq_FV(get_funvals(data), from = fstart, to = fstop,
+      dt <- get_RT_sample(data, seq_FV(get_funvals(data), from = fstart, to = fstop, length.out = 50,
                                        scale = ifelse(isolate(input$ERTPlot.semilogx), 'log', 'linear')))
       nr_runs <- ncol(dt) - 4
       for (i in seq_len(nr_runs)) {

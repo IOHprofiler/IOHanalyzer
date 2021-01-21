@@ -52,13 +52,8 @@ output$FV_Stats.DSC.Download_rank_table <- downloadHandler(
       df_temp[, problem := mlist[[problem_idx]]$problem]
     }))
     df <- reshape2::acast(df, algorithm ~ problem, value.var = 'rank')
-    if (input$FV_Stats.DSC.TableFormat_rank == 'csv')
-      write.csv(df, file, row.names = T)
-    else{
-      print(xtable(df), file = file)
-    }
-  },
-  contentType = paste0('image/', input$FV_Stats.DSC.TableFormat_rank)
+    save_table(df, file)
+  }
 )
 
 output$FV_Stats.DSC.Download_rank <- downloadHandler(
@@ -172,11 +167,7 @@ output$FV_Stats.DSC.DownloadTable <- downloadHandler(
   },
   content = function(file) {
     df <- FV_DSC_posthoc_result()
-    if (input$FV_Stats.DSC.TableFormat == 'csv')
-      write.csv(df, file, row.names = F)
-    else{
-      print(xtable(df), file = file)
-    }
+    save_table(df, file)
   }
 )
 

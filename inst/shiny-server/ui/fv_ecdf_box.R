@@ -68,7 +68,7 @@ fv_ecdf_agg_budgets_box <- function(width = 12, collapsible = T, collapsed = T) 
                     value = F),
       hr(),
       selectInput('FCEECDF.Mult.Format', label = 'Select the figure format',
-                  choices = supported_fig_format, selected = 'pdf'),
+                  choices = supported_fig_format, selected = supported_fig_format[[1]]),
 
       downloadButton('FCEECDF.Mult.Download', label = 'Download the figure')
     ),
@@ -114,7 +114,7 @@ fv_ecdf_auc_box <- function(width = 12, collapsible = T, collapsed = T) {
 
       hr(),
       selectInput('FCEECDF.AUC.Format', label = 'select the figure format',
-                  choices = supported_fig_format, selected = 'pdf'),
+                  choices = supported_fig_format, selected = supported_fig_format[[1]]),
 
       downloadButton('FCEECDF.AUC.Download', label = 'download the figure')
     ),

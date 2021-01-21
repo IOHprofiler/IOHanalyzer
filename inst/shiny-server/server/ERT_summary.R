@@ -30,11 +30,7 @@ output$RTSummary.Overview.Download <- downloadHandler(
   content = function(file) {
     df <- runtime_summary_condensed()
     df <- df[input[["table_RT_overview_rows_all"]]]
-    if (input$RTSummary.Overview.Format == 'csv')
-      write.csv(df, file, row.names = F)
-    else{
-      print(xtable(df), file = file)
-    }
+    save_table(df, file)
   }
 )
 
@@ -89,11 +85,7 @@ output$RTSummary.Statistics.Download <- downloadHandler(
   content = function(file) {
     df <- runtime_summary()
     df <- df[input[["table_RT_summary_rows_all"]]]
-    if (input$RTSummary.Statistics.Format == 'csv')
-      write.csv(df, file, row.names = F)
-    else{
-      print(xtable(df), file = file)
-    }
+    save_table(df, file)
   }
 )
 
@@ -131,10 +123,7 @@ output$RTSummary.Sample.Download <- downloadHandler(
   content = function(file) {
     df <- get_RT()
     df <- df[input[["table_RT_sample_rows_all"]]]
-    if (input$RTSummary.Sample.Format == 'csv')
-      write.csv(df, file, row.names = F)
-    else
-      print(xtable(df), file = file)
+    save_table(df, file)
     }
 )
 

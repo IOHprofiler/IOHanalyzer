@@ -104,8 +104,8 @@ get_repo_location <- function() {
 print_html <- function(s, widget_id = 'process_data_promt') 
   shinyjs::html(widget_id, s, add = TRUE)
 
-
 # download file names: csv, image ---------------------
+AUC_ECDF_aggr_name <- parse(text = "paste0('AUC_ECDF_MULTI.', input$RTECDF.AUC.Table.Format)")
 overview_single_name <- parse(text = "paste0('Overview-', paste0(input$Overall.Dim, 'D'),
                              paste0('F', input$Overall.Funcid), '.', input$Overview.Single.Format)")
 overview_all_name <- parse(text = "paste0('Overview-All-', '.', input$Overview.All.Format)")
@@ -154,6 +154,10 @@ RT_Stats_heatmap_name <- parse(text = "paste0('RT_Stat_Heatmap-', paste0(input$O
                              paste0('F', input$Overall.Funcid), '.', input$RT_Stats.Overview.Format)")
 RT_Stats_network_name <- parse(text = "paste0('RT_Stat_Network-', paste0(input$Overall.Dim, 'D'),
                              paste0('F', input$Overall.Funcid), '.', input$RT_Stats.Overview.Format)")
+RT_multifunc_ERT <- parse(text = "paste0('ERT_Table_Multi', '.', input$RT.MultiERT.Format)")
+RT_multifunc_sample <- parse(text = "paste0('Sample_Table_Multi', '.', input$RT.MultiSample.Format)")
+FV_multifunc_FV <- parse(text = "paste0('FV_Table_Multi, '.'', input$FV.MultiFV.Format)")
+FV_multifunc_sample <- parse(text = "paste0('Sample_Table_Multi_FV', '.', input$FV.MultiSample.Format)")
 # max_samples <- 100
 
 FIG_NAME_ERT_PER_FUN <- parse(text = "paste0('ERT-', Sys.Date(), '.', input$ERTPlot.Format)")
@@ -234,8 +238,11 @@ widget_id <- c('RTSummary.Statistics.Min',
 
 eventExpr <- parse(text = paste0('{', paste(paste0('input$', widget_id), collapse = "\n"), '}'))
 
+# Supported formats table
+supported_table_format <- c("csv", "tex", "md", "html")
+
 # token needed for mapbox, which is again needed for ocra... ------
-supported_fig_format <- c('png', 'eps', 'svg', 'pdf')
+supported_fig_format <- c('pdf', 'png', 'eps', 'svg')
 Sys.setenv('MAPBOX_TOKEN' = 'pk.eyJ1Ijoid2FuZ3JvbmluIiwiYSI6ImNqcmIzemhvMDBudnYzeWxoejh5c2Y5cXkifQ.9XGMWTDOsgi3-b5qG594kQ')
 
 sanity_check_id <- function(input) {

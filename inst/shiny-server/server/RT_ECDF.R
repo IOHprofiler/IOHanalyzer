@@ -203,6 +203,7 @@ output$AUC_GRID_GENERATED_SINGLE <- DT::renderDataTable({
 
 output$AUC_GRID_GENERATED_FUNC <- DT::renderDataTable({
   req(length(DATA_RAW()) > 0)
+  input$RTECDF.Aggr.Refresh
   generate_data.AUC(NULL, NULL, dt_ecdf = get_data_RT_ECDF_AGGR())
 })
 

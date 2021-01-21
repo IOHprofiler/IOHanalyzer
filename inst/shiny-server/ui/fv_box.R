@@ -40,6 +40,17 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
       checkboxInput('FCEPlot.semilogy',
                     label = 'Scale y axis \\(\\log_{10}\\)',
                     value = T),
+      checkboxInput('FCEPlot.show.runs',
+                    label = 'Show individual runs',
+                    value = F) %>% 
+        shinyInput_label_embed(
+          custom_icon("exclamation-triangle") %>%
+            bs_embed_popover(
+              title = "Individual runs", content = "This procedure can be slow when many
+                              runs are present in the data. Please use with caution.", 
+              placement = "auto"
+            )
+        ), 
 
       hr(),
       selectInput('FCEPlot.Format', label = 'Select the figure format',

@@ -50,11 +50,7 @@ output$RT_Stats.Overview.DownloadTable <- downloadHandler(
   },
   content = function(file) {
     df <- create_stats_table()
-    if (input$RT_Stats.Overview.TableFormat == 'csv')
-      write.csv(df, file, row.names = F)
-    else{
-      print(xtable(df), file = file)
-    }
+    save_table(df, file)
   }
 )
 
@@ -74,7 +70,7 @@ data_table_glicko2 <- reactive({
     withProgress({
       data <- RT_glicko_data()
       nr_games <- as.numeric(input$RT_Stats.Glicko.Nrgames)
-      df <- glicko2_ranking(data, nr_games, target_dt = RT_stats_glicko_targets_obj)$ratings
+      df <- glicko2_ranking(data, nr_games, target_dt = RT_stats_glicko_targets_obj, which = 'by_FV')$ratings
       format(df, digits = 3)
     }, message = "Creating Ranking, this might take a while")
   })
@@ -91,7 +87,7 @@ render_glico2_plot <- reactive({
     data <- RT_glicko_data()
     nr_games <- as.numeric(input$RT_Stats.Glicko.Nrgames)
   })
-  Plot.Stats.Glicko2_Candlestick(data, nr_games, data_table_glicko2(), 
+  Plot.Stats.Glicko2_Candlestick(data, nr_games, data_table_glicko2(), which = 'by_FV', 
                                  target_dt = RT_stats_glicko_targets_obj)
 })
 
@@ -105,11 +101,7 @@ output$RT_Stats.Glicko.DownloadTable <- downloadHandler(
   },
   content = function(file) {
     df <- data_table_glicko2()
-    if (input$RT_Stats.Glicko.TableFormat == 'csv')
-      write.csv(df, file, row.names = F)
-    else{
-      print(xtable(df), file = file)
-    }
+    save_table(df, file)
   }
 )
 

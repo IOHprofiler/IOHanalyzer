@@ -14,10 +14,10 @@ output$Settings.Color.Example <- downloadHandler(
 )
 
 output$Settings.Color.Plot <- renderPlotly({
-  plot_color_example(DATA())
+  plot_color_example()
 })
 
-plot_color_example <- function(ds){
+plot_color_example <- function(){
   curr_settings <- c(input$Settings.Color.Bg,
                      input$Settings.Color.Grid,
                      input$Settings.Color.Tick,
@@ -27,11 +27,13 @@ plot_color_example <- function(ds){
                      input$Settings.Font.Label,
                      input$Settings.Font.Tick,
                      input$Settings.Color.Linewidth,
-                     input$Settings.Color.Markersize
+                     input$Settings.Color.Markersize,
+                     input$IOHanalyzer.custom_legend_x,
+                     input$IOHanalyzer.custom_legend_y
                      )
   if (any(is.null(curr_settings))) return(NULL)
-  if (length(ds) > 0) {
-    algnames <- get_algId(ds)
+  if (length(DATA_RAW()) > 0) {
+    algnames <- get_algId(DATA_RAW())
   }
   else algnames <- c("Alg 1", "Alg 2", "Alg 3", "Alg 4", "Alg 5")
   colors <- get_color_scheme(algnames)
@@ -109,11 +111,20 @@ observe({
 })
 
 observe({
+  options("IOHanalyzer.custom_legend_x" = input$Settings.Legend.LocationX)
+})
+
+observe({
+  options("IOHanalyzer.custom_legend_y" = input$Settings.Legend.LocationY)
+})
+
+observe({
   legend_loc <- input$Settings.Legend.Location
   if (legend_loc == "Outside, right") legend_loc_str <- "outside_right"
   else if (legend_loc == "Inside, right") legend_loc_str <- "inside_right"
   else if (legend_loc == "Inside, left") legend_loc_str <- "inside_left"
   else if (legend_loc == "Below") legend_loc_str <- "below"
+  else if (legend_loc == "Custom") legend_loc_str <- "custom"
   options("IOHanalyzer.legend_location" = legend_loc_str)
 })
 
@@ -186,7 +197,7 @@ observe({
 output$Settings.Plot.Download <- downloadHandler(
   filename = "Sample_plot.pdf",
   content = function(file) {
-    save_plotly(plot_color_example(DATA()), file)
+    save_plotly(plot_color_example(), file)
   },
   contentType = 'image/pdf'
 )

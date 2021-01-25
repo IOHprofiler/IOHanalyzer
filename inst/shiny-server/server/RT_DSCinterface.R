@@ -50,13 +50,8 @@ output$RT_Stats.DSC.Download_rank_table <- downloadHandler(
       df_temp[, problem := mlist[[problem_idx]]$problem]
     }))
     df2 <- reshape2::acast(df, algorithm ~ problem, value.var = 'rank')
-    if (input$RT_Stats.DSC.TableFormat_rank == 'csv')
-      write.csv(df, file, row.names = T)
-    else{
-      print(xtable(df), file = file)
-    }
-  },
-  contentType = paste0('image/', input$RT_Stats.DSC.TableFormat_rank)
+    save_table(df, file)
+  }
 )
 
 output$RT_Stats.DSC.Download_rank <- downloadHandler(
@@ -171,11 +166,7 @@ output$RT_Stats.DSC.DownloadTable <- downloadHandler(
   },
   content = function(file) {
     df <- RT_DSC_posthoc_result()
-    if (input$RT_Stats.DSC.TableFormat == 'csv')
-      write.csv(df, file, row.names = F)
-    else{
-      print(xtable(df), file = file)
-    }
+    save_table(df, file)
   }
 )
 

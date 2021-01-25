@@ -17,8 +17,12 @@ color_settings_box <- function(width = 12, collapsible = T, collapsed = F) {
           numericInput("Settings.Color.Linewidth", "Line Width", value = 2),
           numericInput("Settings.Color.Markersize", "Marker Size", value = 4),
           selectInput("Settings.Legend.Location", "Legend location", 
-                      c("Outside, right", "Inside, right", "Inside, left", "Below"), "Below"),
-          downloadButton("Settings.Plot.Download", "Label = Download sample plot")
+                      c("Outside, right", "Inside, right", "Inside, left", "Below", "Custom"), "Below"),
+          conditionalPanel(condition = 'input["Settings.Legend.Location"] == "Custom"',
+                           numericInput("Settings.Legend.LocationX", "X-position of Legend", value = 0.5, step = 0.05),
+                           numericInput("Settings.Legend.LocationY", "Y-position of Legend", value = -0.2, step = 0.05)
+          ),
+          downloadButton("Settings.Plot.Download", label = "Download sample plot")
         ),
 
         mainPanel(

@@ -15,6 +15,9 @@ The paths to all found .info-files
 \description{
 Scan *.info files for IOHProfiler or COCO
 }
+\note{
+This automatically filetrs our files of size 0
+}
 \examples{
 path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
 scan_index_file(path)

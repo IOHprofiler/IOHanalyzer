@@ -27,7 +27,7 @@ ERT_agg_box <- function(width = 12, height = '600px', collapsible = T,
         actionButton('ERTPlot.Multi.PlotButton', label = 'Refresh the figure'),
         hr(),
         selectInput('ERTPlot.Multi.Format', label = 'Select the figure format',
-                    choices = supported_fig_format, selected = 'pdf'),
+                    choices = supported_fig_format, selected = supported_fig_format[[1]]),
         
         downloadButton('ERTPlot.Multi.Download', label = 'Download the figure')
       ),

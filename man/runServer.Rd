@@ -4,16 +4,20 @@
 \alias{runServer}
 \title{Create a shiny-server GUI to interactively use the IOHanalyzer}
 \usage{
-runServer(port = getOption("shiny.port"))
+runServer(port = getOption("shiny.port"), open_browser = TRUE)
 }
 \arguments{
-\item{port}{Optional; which port the server should be opened at}
+\item{port}{Optional; which port the server should be opened at. Defaults 
+to the option set for 'shiny.port'}
+
+\item{open_browser}{Whether or not to open a browser tab with the 
+IOHanalyzer GUI. Defaults to TRUE.}
 }
 \description{
 Create a shiny-server GUI to interactively use the IOHanalyzer
 }
 \examples{
 \dontrun{
-runServer()
+runServer(6563, TRUE)
 }
 }

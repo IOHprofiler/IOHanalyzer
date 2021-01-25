@@ -8,7 +8,7 @@ general_overview_box_single <- function(width = 12, collapsible = T, collapsed =
         
         selectInput('Overview.Single.Algid', 'Algorithms', choices = NULL, selected = NULL, multiple = T),
         hr(),
-        selectInput('Overview.Single.Format', 'Format', choices = c('csv','tex'), selected = 'csv'),
+        selectInput('Overview.Single.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
         downloadButton("Overview.Single.Download", "Save this table")
       ),
       
@@ -25,7 +25,7 @@ general_overview_box_all <- function(width = 12, collapsible = T, collapsed = T)
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        selectInput('Overview.All.Format', 'Format', choices = c('csv','tex'), selected = 'csv'),
+        selectInput('Overview.All.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
         downloadButton("Overview.All.Download", "Save this table")
       ),
       

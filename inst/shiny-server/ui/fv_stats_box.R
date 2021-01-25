@@ -15,11 +15,11 @@ fv_heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
         #              min = 1, max = 1000, step = 1, value = 0),
         hr(),
         selectInput('FV_Stats.Overview.TableFormat', label = 'Select the table format',
-                    choices = c('csv','tex'), selected = 'csv'),
+                    choices = supported_table_format, selected = supported_table_format[[1]]),
         downloadButton('FV_Stats.Overview.DownloadTable', label = 'Download the table'),
         hr(),
         selectInput('FV_Stats.Overview.Format', label = 'Select the figure format',
-                    choices = supported_fig_format, selected = 'pdf'),
+                    choices = supported_fig_format, selected = supported_fig_format[[1]]),
         downloadButton('FV_Stats.Overview.DownloadHeatmap', 
                        label = 'Download the heatmap')
         # downloadButton('FV_Stats.Overview.DownloadNetwork', 
@@ -90,12 +90,12 @@ fv_glicko2_box <- function(width = 12, collapsible = T, collapsed = T) {
         actionButton('FV_Stats.Glicko.Create', 'Create / Update Ranking'),
         hr(),
         selectInput('FV_Stats.Glicko.Format', label = 'Select the figure format',
-                    choices = supported_fig_format, selected = 'pdf'),
+                    choices = supported_fig_format, selected = supported_fig_format[[1]]),
         
         downloadButton('FV_Stats.Glicko.Download', label = 'Download the figure'),
         hr(),
         selectInput('FV_Stats.Glicko.TableFormat', label = 'Select the table format',
-                    choices = c('csv','tex'), selected = 'csv'),
+                    choices = supported_table_format, selected = supported_table_format[[1]]),
         downloadButton('FV_Stats.Glicko.DownloadTable', label = 'Download the table')
       ),
       

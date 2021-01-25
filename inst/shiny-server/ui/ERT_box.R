@@ -98,7 +98,7 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
           hr(),
           
           selectInput('ERTPlot.Format', label = 'Select the figure format',
-                      choices = supported_fig_format, selected = 'pdf'),
+                      choices = supported_fig_format, selected = supported_fig_format[[1]]),
 
           downloadButton('ERTPlot.Download', label = 'Download the figure')
 

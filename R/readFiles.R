@@ -1,5 +1,5 @@
-sourceCpp('src/align.cc')
-sourceCpp('src/read.cc')
+# sourceCpp('src/align.cc')
+# sourceCpp('src/read.cc')
 
 #' Reduce the size of the data set by evenly subsampling the records
 #'
@@ -20,12 +20,14 @@ limit.data <- function(df, n) {
 #' @param folder The folder containing the .info files
 #' @return The paths to all found .info-files
 #' @export
+#' @note This automatically filetrs our files of size 0
 #' @examples
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
 #' scan_index_file(path)
 scan_index_file <- function(folder) {
   folder <- trimws(folder)
-  file.path(folder, list.files(folder, pattern = '.info$', recursive = T))
+  files <- list.files(folder, pattern = '.info$', recursive = T, full.names = T)
+  files[file.size(files) > 0]
 }
 
 #' Read .info files and extract information
@@ -97,13 +99,20 @@ read_index_file__IOH <- function(fname) {
     # TODO: this must also be removed...
     if (record[2] == "") {
       warning(sprintf('File %s is incomplete!', fname))
-      res <- NULL
-      info <- NULL
+      finalFVs <- NULL
+      instances <- NULL
+      maxRTs <- NULL
     } else {
       res <- matrix(unlist(strsplit(record[-1], ':')), nrow = 2)
-      info <- matrix(unlist(strsplit(res[2, ], '\\|')), nrow = 2)
+      info <- matrix(unlist(strsplit(res[2, ], '\\|')), nrow = 2)  
+      #Check for incorrect usages of reset_problem and remove them
+      maxRTs <- as.numeric(info[1,])
+      idx_correct <- which(maxRTs > 0)
+      finalFVs <- as.numeric(info[2,])[idx_correct]
+      instances <- as.numeric(res[1,])[idx_correct]
+      maxRTs <- maxRTs[idx_correct]
     }
-
+    
     record[1] <- gsub("\\\\", "/", record[1])
     datafile <- file.path(path, record[1])
 
@@ -113,9 +122,9 @@ read_index_file__IOH <- function(fname) {
       list(
         comment = lines[2],
         datafile = datafile,
-        instance = as.numeric(res[1, ]),
-        maxRT = as.numeric(info[1, ]),
-        finalFV = as.numeric(info[2, ])
+        instance = instances,
+        maxRT = maxRTs,
+        finalFV = finalFVs
       )
     )
     i <- i + 1
@@ -629,6 +638,10 @@ align_function_value <- function(data, include_param = TRUE, format = IOHprofile
 read_nevergrad <- function(path){
   dt <- fread(path)
 
+  if (!'name' %in% colnames(dt)) {
+    dt[, name := function_class]
+  }
+  
   triplets <- unique(dt[, .(optimizer_name, dimension, name)])
   algIds <- unique(triplets$optimizer_name)
   DIMs <- unique(triplets$dimension)

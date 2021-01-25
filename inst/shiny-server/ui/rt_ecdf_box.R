@@ -71,7 +71,7 @@ rt_ecdf_agg_targets_box <- function(width = 12, collapsible = T, collapsed = T) 
 
       hr(),
       selectInput('RTECDF.Multi.Format', label = 'Select the figure format',
-                  choices = supported_fig_format, selected = 'pdf'),
+                  choices = supported_fig_format, selected = supported_fig_format[[1]]),
 
       downloadButton('RTECDF.Multi.Download', label = 'download the figure')
       ),
@@ -177,10 +177,11 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
       
       hr(),
       selectInput('RTECDF.Aggr.Format', label = 'figure format to download',
-                  choices = supported_fig_format, selected = 'pdf'),
+                  choices = supported_fig_format, selected = supported_fig_format[[1]]),
 
       downloadButton('RTECDF.Aggr.Download', label = 'Download the figure'),
       hr(),
+      selectInput('RTECDF.AUC.Table.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
       downloadButton('RTECDF.AUC.Table.Download', label = 'Download the AUC table')
     ),
 

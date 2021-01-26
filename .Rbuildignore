@@ -7,4 +7,4 @@
 ^\.vs*$
 ^_config\.yml$
 ^LICENSE\.md$
-^misc$
+^misc*$

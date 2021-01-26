@@ -33,63 +33,9 @@ observe({
   }
 })
 
-# observeEvent(input$repository.type, {
-#   req(input$repository.type)
-#   if (input$repository.type == 'PBO') {
-#     names <- list.files(repo_dir, pattern = '.rds') %>% sub('\\.rds$', '', .)
-#     names <- c(names, "Example_small", "Example_large")
-#   }
-#   else if (input$repository.type == 'NEVERGRAD') {
-#     names <- list.files(paste0(repo_dir, "/nevergrad"), pattern = '.rds') %>% sub('\\.rds$', '', .)
-#   }
-#   else if (input$repository.type == 'BBOB') {
-#     names <- list.files(paste0(repo_dir, "/bbob"), pattern = '.rds') %>% sub('\\.rds$', '', .)
-#   }
-#   updateSelectInput(session, 'repository.dataset', choices = names, selected = NULL)
-# })
-
 # load repository that is selected
 observeEvent(input$repository.dataset, {
   req(input$repository.dataset)
-  # if (input$repository.type == 'PBO') {
-  #   if (input$repository.dataset  == "Example_small") {
-  #     repo_data <<- IOHanalyzer::dsl
-  #   }
-  #   else if (input$repository.dataset == "Example_large") {
-  #     repo_data <<- IOHanalyzer::dsl_large
-  #   }
-  #   else{
-  #     rds_file <- file.path(repo_dir, paste0(input$repository.dataset, ".rds"))
-  #   
-  #     repo_data <<- readRDS(rds_file)
-  #   }
-  #   if ( is.null(attr(repo_data, 'maximization'))) {
-  #     attr(repo_data, 'maximization') <<- T
-  #   } 
-  #   if ( is.null(attr(repo_data, 'suite'))) {
-  #     attr(repo_data, 'suite') <<- 'PBO'
-  #   } 
-  # }
-  # else if (input$repository.type == 'NEVERGRAD') {
-  #   if (!dir.exists(paste0(repo_dir, "/nevergrad"))) {
-  #     updateSelectInput(session, 'repository.type', choices = 'PBO', selected = 'PBO')
-  #     shinyjs::alert("No nevergrad data available in repository. Please make sure a folder named
-  #                    'nevergrad' exists in the repository-folder.")
-  #     return(NULL)
-  #   }
-  #   rds_file <- file.path(paste0(repo_dir, "/nevergrad"), paste0(input$repository.dataset, ".rds"))
-  #   repo_data <<- readRDS(rds_file)
-  # }
-  # else if (input$repository.type == 'BBOB') {
-  #   if (!dir.exists(paste0(repo_dir, "/bbob"))) {
-  #     updateSelectInput(session, 'repository.type', choices = 'PBO', selected = 'PBO')
-  #     shinyjs::alert("No bbob data available in repository. Please make sure a folder named
-  #                    'bbob' exists in the repository-folder.")
-  #     return(NULL)
-  #   }
-  #   rds_file <- file.path(paste0(repo_dir, "/bbob"), paste0(input$repository.dataset, ".rds"))
-  #   repo_data <<- readRDS(rds_file)
-  # }
   repo_dir <- get_repo_location()
   algs <- c()
   dims <- c()
@@ -200,7 +146,7 @@ selected_folders <- reactive({
         `[`(1)
       
       print_html(paste0('<p style="color:blue;">Handling ', filetype, '-data.<br>'))
-      if (filetype == 'csv') {
+      if (filetype == 'csv' || filetype == 'rds') {
         # add the data path to the folders list direct
         folders <- c(folders, datapath[[i]])
         next
@@ -219,7 +165,7 @@ observeEvent(selected_folders(), {
   withProgress({
     folders <- selected_folders()
     req(length(folders) != 0)
-
+    
     format_selected <- input$upload.data_format
     maximization <- input$upload.maximization
     
@@ -233,7 +179,7 @@ observeEvent(selected_folders(), {
     req(length(folder_new) != 0)
     format_detected <- lapply(folder_new, check_format) %>% unique
   
-    if (length(format_detected) != 1)
+    if (length(format_detected) > 1)
       print_html(paste('<p style="color:red;">more than one format: <br>',
                        format_detected,
                        'is detected in the uploaded data set... skip the uploaded data'))
@@ -245,26 +191,32 @@ observeEvent(selected_folders(), {
     for (folder in folder_new) {
       indexFiles <- scan_index_file(folder)
   
-      if (length(indexFiles) == 0 && format_detected != NEVERGRAD && format_detected != "SOS")
+      if (length(indexFiles) == 0 && !(format_detected %in% c(NEVERGRAD, "SOS", "RDS")))
         print_html(paste('<p style="color:red;">No .info-files detected in the
                          uploaded folder, while they were expected:</p>', folder))
       else {
         folderList$data <- c(folderList$data, folder)
-  
-        # read the data set and handle potential errors
-        new_data <- tryCatch(
-          DataSetList(folder, print_fun = print_html,
-                      maximization = maximization,
-                      format = format_detected,
-                      subsampling = input$upload.subsampling),
-          error = function(e) {
-            print_html(paste('<p style="color:red;">The following error happened
-                             when processing the data set:</p>'))
-            print_html(paste('<p style="color:red;">', e, '</p>'))
+        
+        if (format_detected == "RDS") {
+          new_data <- readRDS(folder)
+          if (!("DataSetList" %in% class(new_data)))
             DataSetList()
-          }
-        )
-  
+        }
+        else {
+          # read the data set and handle potential errors
+          new_data <- tryCatch(
+            DataSetList(folder, print_fun = print_html,
+                        maximization = maximization,
+                        format = format_detected,
+                        subsampling = input$upload.subsampling),
+            error = function(e) {
+              print_html(paste('<p style="color:red;">The following error happened
+                               when processing the data set:</p>'))
+              print_html(paste('<p style="color:red;">', e, '</p>'))
+              DataSetList()
+            }
+          )
+        }
         tryCatch(
           DataList$data <- c(DataList$data, new_data),
           error = function(e) {
@@ -315,6 +267,28 @@ update_menu_visibility <- function(suite){
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "Positions"))
   }
 }
+
+observeEvent(input$Upload.Add_to_repo, {
+  data <- DATA_RAW()
+  repo_dir <- get_repo_location()
+  if (!file.exists(file.path(repo_dir, "public_repo"))) return(NULL)
+  nr_skipped <- 0
+  public_dir <- file.path(repo_dir, "public_repo")
+  for (algname in get_algId(data)) {
+    filename <- file.path(public_dir, paste0(algname, '.rds'))
+    if (file.exists(filename)) {
+      nr_skipped <- nr_skipped + 1
+      next
+    }
+    dsl <- subset(data, algId == algname)
+    saveRDS(dsl, file = filename)
+  }
+  nr_success <- length(get_algId(data)) - nr_skipped
+  shinyjs::alert(paste0("Successfully added ", nr_success, " algorithms to the public repository.",
+                        "A total of ", nr_skipped, " algorithms were not uploaded because an algorithm",
+                        "of the same name already exists, and overwriting data in the public repository is not yet",
+                        "supported."))
+})
 
 # remove all uploaded data set
 observeEvent(input$upload.remove_data, {
@@ -453,26 +427,26 @@ observe({
   # updateSelectInput(session, 'Report.Param.Statistics-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.Param.Statistics-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.Param.Statistics-Alg', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'RTportfolio.Shapley.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'RTportfolio.Shapley.Funcs', choices = funcIds, selected = funcIds)
-  updateSelectInput(session, 'RTportfolio.Shapley.Dims', choices = DIMs, selected = DIMs)  
-  updateNumericInput(session, 'RTportfolio.Shapley.Permsize', min = 2, max = length(algIds_), 
-                     value = min(10, length(algIds_)))  
+#   updateSelectInput(session, 'RTportfolio.Shapley.Algs', choices = algIds_, selected = algIds_)
+#   updateSelectInput(session, 'RTportfolio.Shapley.Funcs', choices = funcIds, selected = funcIds)
+#   updateSelectInput(session, 'RTportfolio.Shapley.Dims', choices = DIMs, selected = DIMs)  
+#   updateNumericInput(session, 'RTportfolio.Shapley.Permsize', min = 2, max = length(algIds_), 
+#                      value = min(10, length(algIds_)))  
   
   
-  updateSelectInput(session, 'RT.MultiERT.AlgId', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'RT.MultiERT.FuncId', choices = funcIds, selected = funcIds)
-  updateSelectInput(session, 'RT.MultiERT.DIM', choices = DIMs, selected = selected_dim)
-  updateSelectInput(session, 'RT.Multisample.AlgId', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'RT.Multisample.FuncId', choices = funcIds, selected = funcIds)
-  updateSelectInput(session, 'RT.Multisample.DIM', choices = DIMs, selected = selected_dim)
+#   updateSelectInput(session, 'RT.MultiERT.AlgId', choices = algIds_, selected = algIds_)
+#   updateSelectInput(session, 'RT.MultiERT.FuncId', choices = funcIds, selected = funcIds)
+#   updateSelectInput(session, 'RT.MultiERT.DIM', choices = DIMs, selected = selected_dim)
+#   updateSelectInput(session, 'RT.Multisample.AlgId', choices = algIds_, selected = algIds_)
+#   updateSelectInput(session, 'RT.Multisample.FuncId', choices = funcIds, selected = funcIds)
+#   updateSelectInput(session, 'RT.Multisample.DIM', choices = DIMs, selected = selected_dim)
   
-  updateSelectInput(session, 'FV.MultiFV.AlgId', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'FV.MultiFV.FuncId', choices = funcIds, selected = funcIds)
-  updateSelectInput(session, 'FV.MultiFV.DIM', choices = DIMs, selected = selected_dim)
-  updateSelectInput(session, 'FV.Multisample.AlgId', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'FV.Multisample.FuncId', choices = funcIds, selected = funcIds)
-  updateSelectInput(session, 'FV.Multisample.DIM', choices = DIMs, selected = selected_dim)
+#   updateSelectInput(session, 'FV.MultiFV.AlgId', choices = algIds_, selected = algIds_)
+#   updateSelectInput(session, 'FV.MultiFV.FuncId', choices = funcIds, selected = funcIds)
+#   updateSelectInput(session, 'FV.MultiFV.DIM', choices = DIMs, selected = selected_dim)
+#   updateSelectInput(session, 'FV.Multisample.AlgId', choices = algIds_, selected = algIds_)
+#   updateSelectInput(session, 'FV.Multisample.FuncId', choices = funcIds, selected = funcIds)
+#   updateSelectInput(session, 'FV.Multisample.DIM', choices = DIMs, selected = selected_dim)
   
   updateSelectInput(session, 'RT_Stats.Glicko.Algid', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RT_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
@@ -691,3 +665,11 @@ observe({
   #TODO: remove q and replace by single number
   setTextInput(session, 'FCEECDF.Single.Target', name, alternative = q[2])
 })
+
+output$upload.Download_processed <- downloadHandler(
+  filename = "DataSetList.rds",
+  content = function(file) {
+    saveRDS(DATA_RAW(), file = file)
+  }
+)
+

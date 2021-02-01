@@ -1091,7 +1091,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
   
   #Get color and based on legend-attribute
   colors <- get_color_scheme(xs)
-  names(colors) <- xs
+  if (is.null(names(colors)) || !all(names(colors) %in% xs) ) names(colors) <- xs
   
   xscale <- if (scale.xlog) 'log' else 'linear'
   yscale <- if (scale.ylog) 'log' else 'linear'

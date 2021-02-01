@@ -261,6 +261,7 @@ get_color_scheme <- function(algnames_in){
   if (is.null(colors) || length(colors) != length(algnames_in)) {
     return(color_palettes(length(algnames_in)))
   }
+  names(colors) <- algnames_in
   return(colors)
 }
 

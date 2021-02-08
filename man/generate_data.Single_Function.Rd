@@ -5,7 +5,7 @@
 \title{Generate dataframe of a single function/dimension pair}
 \usage{
 generate_data.Single_Function(dsList, start = NULL, stop = NULL,
-  scale_log = F, which = "by_RT", include_opts = F)
+  scale_log = F, which = "by_RT", include_opts = F, budget = NULL)
 }
 \arguments{
 \item{dsList}{The DataSetList object}
@@ -20,6 +20,9 @@ generate_data.Single_Function(dsList, start = NULL, stop = NULL,
 
 \item{include_opts}{Whether or not to also include the best value hit by each algorithm to
 the generated datapoints}
+
+\item{budget}{Optional; overwrites the budget of each individual algorithm when doing ERT calculations. Only works
+in fixed_target mode.}
 }
 \description{
 This function generates a dataframe which can be easily plotted using the `plot_general_data`-function

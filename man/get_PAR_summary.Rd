@@ -29,7 +29,7 @@ Such a value type is signified by `which` parameter.}
 retrieved are aligned against the running time (RT) or function value (FV). `'by_FV'`
 is the default value.}
 
-\item{algorithm}{Which algorithms in the DataSetList to consider.}
+\item{algorithm}{DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.}
 }
 \value{
 A data.table object containing basic statistics of parameter values aligned at each given target value

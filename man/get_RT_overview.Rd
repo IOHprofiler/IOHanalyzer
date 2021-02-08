@@ -17,7 +17,7 @@ get_RT_overview(ds, ...)
 
 \item{...}{Arguments passed to other methods}
 
-\item{algorithm}{Which algorithms in the DataSetList to consider.}
+\item{algorithm}{DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.}
 }
 \value{
 A data.table containing the algorithm ID, minimum and maximum used evaluations,

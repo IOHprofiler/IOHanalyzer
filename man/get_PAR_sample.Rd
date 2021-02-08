@@ -31,7 +31,7 @@ is the default value.}
 
 \item{output}{A character. The format of the output data: 'wide' or 'long'}
 
-\item{algorithm}{Which algorithms in the DataSetList to consider.}
+\item{algorithm}{DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.}
 }
 \value{
 A data.table object containing parameter values aligned at each given target value

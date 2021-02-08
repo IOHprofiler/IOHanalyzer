@@ -10,7 +10,7 @@ SP(data, max_runtime)
 \item{data}{A dataframe or matrix. Each row stores the runtime sample points from
 several runs}
 
-\item{max_runtime}{A Numerical vector. Should have the same size as columns of data}
+\item{max_runtime}{The budget to use for calculating ERT. If this is a vector, the largest value is taken}
 }
 \value{
 A list containing ERTs, number of succesfull runs and the succes rate

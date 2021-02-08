@@ -310,7 +310,7 @@ Plot.FV.Parameters <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' @param dsList A DataSetList.
 #' @param targets The target function values. Specified in a data.frame, as can be generated
 #' @param scale.xlog Whether or not to scale the x-axis logaritmically
-#' by the function 'get_default_ECDF_targets'
+#' by the function 'get_ECDF_targets'
 #'
 #' @return A plot of the empirical cumulative distriburtion as a function of
 #' the running times of the DataSetList

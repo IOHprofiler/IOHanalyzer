@@ -19,7 +19,7 @@ get_FV_summary(ds, ...)
 
 \item{runtime}{A Numerical vector. Runtimes at which function values are reached}
 
-\item{algorithm}{Which algorithms in the DataSetList to consider.}
+\item{algorithm}{DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.}
 }
 \value{
 A data.table containing the function value statistics for each provided

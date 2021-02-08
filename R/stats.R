@@ -2,7 +2,7 @@
 #'
 #' @param data A dataframe or matrix. Each row stores the runtime sample points from
 #' several runs
-#' @param max_runtime A Numerical vector. Should have the same size as columns of data
+#' @param max_runtime The budget to use for calculating ERT. If this is a vector, the largest value is taken
 #'
 #' @return A list containing ERTs, number of succesfull runs and the succes rate
 #' @export
@@ -10,16 +10,13 @@
 #' SP(dsl[[1]]$RT, max(dsl[[1]]$RT))
 SP <- function(data, max_runtime) {
   N <- ncol(data)
-  M <- nrow(data)
-
-  succ <- apply(data, 1, function(x) sum(!is.na(x)))
+  if (length(max_runtime) > 1) max_runtime <- max(max_runtime)
+  
+  idx <- is.na(data) | data > max_runtime
+  succ <- N - rowSums(idx)
   succ_rate <- succ / N
-  idx <- is.na(data)
-
-  for (i in seq(M)) {
-    data[i, idx[i, ]] <- max_runtime[idx[i, ]]
-  }
-
+  data[idx] <- max_runtime
+  
   list(ERT = rowSums(data) / succ, runs = succ, succ_rate = succ_rate)
 }
 

@@ -139,8 +139,11 @@ welcome_bar <- function(width = 12, collapsible = T, collapsed = F) {
         '<font size="4">',
         includeMarkdown('markdown/welcome.md'),
         '</font>')
+      )),
+      fluidRow(valueBoxOutput("VersionBox"),
+               valueBoxOutput("WikiBox"),
+               valueBoxOutput("ContactBox")
       )
-    )
   )
 }
 

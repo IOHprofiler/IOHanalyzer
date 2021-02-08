@@ -48,4 +48,18 @@ shinyServer(function(input, output, session) {
   for (f in list.files('server', pattern = '.R', full.names = T)) {
     source(f, local = TRUE)
   }
+  
+  output$VersionBox <- renderValueBox({
+    infoBox(title = "IOHanalyzer version:", value = paste0('v', packageVersion("IOHanalyzer")), icon = icon("code-branch"),
+      color = "blue", width = 12, fill = T, href = "https://github.com/IOHprofiler/IOHanalyzer", subtitle = "View source on Github"
+    )})
+  output$WikiBox <- renderValueBox({
+    infoBox(title = "Wiki Page", value = "For full documentation of IOHprofiler", icon = icon("wikipedia-w"),
+            color = "blue", width = 12, fill = T, href = "https://iohprofiler.github.io/"
+    )})
+  output$ContactBox <- renderValueBox({
+    infoBox(title = "Contact us by email:", value = "iohprofiler@liacs.leidenuniv.nl", icon = icon("envelope"),
+            color = "blue", width = 14, fill = T, href = "mailto:iohprofiler@liacs.leidenuniv.nl"
+    )
+  })
 })

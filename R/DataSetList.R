@@ -399,8 +399,7 @@ arrange.DataSetList <- function(dsl, ...) {
 #' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #' @export
 #'
-get_ERT.DataSetList <-
-  function(ds, ftarget, budget = NULL, algorithm = 'all', ...) {
+get_ERT.DataSetList <- function(ds, ftarget, budget = NULL, algorithm = 'all', ...) {
     if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
@@ -417,8 +416,7 @@ get_ERT.DataSetList <-
 #' @rdname get_RT_summary
 #' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #' @export
-get_RT_summary.DataSetList <-
-  function(ds, ftarget, budget = NULL, algorithm = 'all', ...) {
+get_RT_summary.DataSetList <- function(ds, ftarget, budget = NULL, algorithm = 'all', ...) {
     if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
@@ -438,8 +436,7 @@ get_RT_summary.DataSetList <-
 #' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #'
 #' @export
-get_RT_sample.DataSetList <-
-  function(ds, ftarget, algorithm = 'all', ...) {
+get_RT_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
     if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
@@ -479,8 +476,7 @@ get_maxRT.DataSetList <- function(ds, algorithm = 'all', ...) {
 #' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #' @export
 #'
-get_FV_summary.DataSetList <-
-  function(ds, runtime, algorithm = 'all', ...) {
+get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
     if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
@@ -500,8 +496,7 @@ get_FV_summary.DataSetList <-
 #' @export
 #' @rdname get_FV_overview
 #'
-get_FV_overview.DataSetList <-
-  function(ds, algorithm = 'all', ...) {
+get_FV_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
     if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
@@ -514,8 +509,7 @@ get_FV_overview.DataSetList <-
 #' @rdname get_RT_overview
 #' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #' @export
-get_RT_overview.DataSetList <-
-  function(ds, algorithm = 'all', ...) {
+get_RT_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
     if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
@@ -526,8 +520,7 @@ get_RT_overview.DataSetList <-
 
 #' @rdname get_overview
 #' @export
-get_overview.DataSetList <-
-  function(ds, ...) {
+get_overview.DataSetList <- function(ds, ...) {
     df <- rbindlist(lapply(ds, function(ds)
       get_overview(ds)))
     if (length(get_funcId(ds)) > 1 || length(get_dim(ds)) > 1) {
@@ -551,8 +544,7 @@ get_overview.DataSetList <-
 #' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #' @export
 #'
-get_FV_sample.DataSetList <-
-  function(ds, runtime, algorithm = 'all', ...) {
+get_FV_sample.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
     if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)

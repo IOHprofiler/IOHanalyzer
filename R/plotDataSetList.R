@@ -969,6 +969,8 @@ add_transparancy <- function(colors, percentage){
 #' @param p A previously existing plot on which to add traces. If NULL, a new canvas is created
 #' @param show.legend Whether or not to include a legend
 #' @param inf.action How to deal with infinite values. Can be 'none', 'overlap' or 'jitter'
+#' @param frame_attr When using anim_scatter plot, which variable to use to determine the frame
+#' @param symbol_attr When using a scatterplot, which variable identifies the symbol
 #' @param ... Additional parameters for the add_trace function
 #' 
 #' @export
@@ -977,12 +979,12 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
                               scale.reverse = F, p = NULL, x_title = NULL,
                               y_title = NULL, plot_title = NULL, upper_attr = NULL,
                               lower_attr = NULL, subplot_attr = NULL, show.legend = F,
-                              inf.action = 'none', ...) {
+                              inf.action = 'none', frame_attr = 'frame', symbol_attr = 'run_nr', ...) {
   
   l <- x <- isinf <- y <- text <- l_orig <- NULL #Set local binding to remove warnings
   
   #Only allow valid plot types
-  if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon', 'bar'))) {
+  if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon', 'bar', 'anim_scatter'))) {
     stop(paste0("Provided plot type ('", type, "') is not supported"))
   }
   
@@ -1339,6 +1341,16 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
             p %<>% layout(xaxis = list(tickfont = f3(), ticklen = 3),
                           yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
           }
+        },
+        'anim_scatter' = {
+          colnames(df)[colnames(df) == frame_attr] <- "frame"
+          colnames(df)[colnames(df) == symbol_attr] <- "s"
+          
+          df = df[order(frame), ]
+          p %<>% add_trace(data = df, x = ~x, y = ~y, type = 'scatter',
+                          mode = 'markers', marker = list(color = ~l, 
+                                                          symbol = ~s), colors = add_transparancy(colors, 0.6),
+                          legendgroup = ~l, opacity = 0.9, frame = ~frame, showlegend = F) 
         }
   )
   return(p)

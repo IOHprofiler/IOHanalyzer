@@ -9,7 +9,8 @@ plot_general_data(df, x_attr = "algId", y_attr = "vals",
   scale.ylog = F, scale.reverse = F, p = NULL, x_title = NULL,
   y_title = NULL, plot_title = NULL, upper_attr = NULL,
   lower_attr = NULL, subplot_attr = NULL, show.legend = F,
-  inf.action = "none", ...)
+  inf.action = "none", frame_attr = "frame", symbol_attr = "run_nr",
+  ...)
 }
 \arguments{
 \item{df}{The dataframe containing the data to plot. It should contain at least two columns:
@@ -49,6 +50,10 @@ Only works in combination with`upper_attr` and `type` == 'ribbon'}
 \item{show.legend}{Whether or not to include a legend}
 
 \item{inf.action}{How to deal with infinite values. Can be 'none', 'overlap' or 'jitter'}
+
+\item{frame_attr}{When using anim_scatter plot, which variable to use to determine the frame}
+
+\item{symbol_attr}{When using a scatterplot, which variable identifies the symbol}
 
 \item{...}{Additional parameters for the add_trace function}
 }

@@ -592,6 +592,7 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
+                coord_box(),
                 Par_coord_box()
               )
             )

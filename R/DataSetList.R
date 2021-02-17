@@ -1288,3 +1288,37 @@ generate_data.ECDF_raw <- function(dsList, targets, scale_log = F) {
   })))
   dt
 }
+
+#' Extract the position information from a datasetlist object 
+#' 
+#' @param dsList The DataSetList object
+#' @param iid the Instance Id from which to get the position history
+#' 
+#' @export
+#' @examples 
+#' get_position_dsl(subset(dsl, funcId == 1), 1)
+get_position_dsl <- function(dsList, iid) {
+  if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1) return(NULL)
+  dim <- get_dim(dsList)
+  
+  dt <- rbindlist(lapply(dsList, function(ds) {
+    if (!attr(ds, 'contains_position')) return(NULL)
+    instance_idxs <- which(attr(ds, 'instance') == iid)
+    dt_sub <- rbindlist(lapply(instance_idxs, function(idx) {
+      temp <- lapply(seq(0, dim-1), function(x_idx) {
+        ds$PAR$by_RT[[paste0('x', x_idx)]][, idx]
+      })
+      names(temp) <- paste0('x', seq(0, dim-1))
+      if ('generation' %in% get_PAR_name(ds)) {
+        temp$generation <- ds$PAR$by_RT[['generation']][, idx]
+      }
+      dt_subsub <- data.table('runtime' = rownames(ds$PAR$by_RT$x0), setDT(temp))
+      dt_subsub[, 'run_nr' := idx]
+      dt_subsub
+    }))
+    dt_sub[, 'algId' := attr(ds, 'algId')]
+    dt_sub    
+  }))
+  dt[, runtime := as.numeric(runtime)]
+  return(dt)
+}

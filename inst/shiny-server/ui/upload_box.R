@@ -1,5 +1,5 @@
 upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: find a way to include all potential arguments
-                       height = '600px') {  
+                       height = '900px') {  
   box(
     title = HTML('<p style="font-size:120%;">Upload Data</p>'), 
     width = width, height = height, collapsed = collapsed, collapsible = collapsible, 
@@ -94,7 +94,7 @@ data_list_box <- function(width = 12, collapsible = T, collapsed = T) {
 }
 
 repository_box <- function(width = 12, collapsible = F, collapsed = T, 
-                           height = '600px') {
+                           height = '900px') {
   box(
     title = HTML('<p style="font-size:120%;">Load Data from Repository</p>'), 
     width = width, height = height, collapsed = collapsed, collapsible = collapsible,

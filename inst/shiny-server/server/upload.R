@@ -260,11 +260,11 @@ update_menu_visibility <- function(suite){
   else {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "FCE_ECDF"))
   }
-  if (any(suite == "SOS")) {
+  if (any(suite == "SOS")) { #TODO: regulate this better
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "Positions"))
   }
   else {
-    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "Positions"))
+    session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "show", tabName = "Positions"))
   }
 }
 
@@ -502,6 +502,7 @@ observe({
   updateSelectInput(session, 'FCEECDF.Mult.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCEECDF.AUC.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'ParCoordPlot.Algs', choices = algIds_, selected = algIds_[[1]])
+  updateSelectInput(session, 'CoordPlot.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FV_PAR.Plot.Params', choices = parIds_, selected = parIds_)
   updateSelectInput(session, 'RT_PAR.Plot.Params', choices = parIds_, selected = parIds_)
 })

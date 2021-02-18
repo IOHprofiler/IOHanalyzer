@@ -1302,13 +1302,13 @@ get_position_dsl <- function(dsList, iid) {
   dim <- get_dim(dsList)
   
   dt <- rbindlist(lapply(dsList, function(ds) {
-    if (!attr(ds, 'contains_position')) return(NULL)
+    if (!isTRUE(attr(ds, 'contains_position'))) return(NULL)
     instance_idxs <- which(attr(ds, 'instance') == iid)
     dt_sub <- rbindlist(lapply(instance_idxs, function(idx) {
-      temp <- lapply(seq(0, dim-1), function(x_idx) {
+      temp <- lapply(seq(0, dim - 1), function(x_idx) {
         ds$PAR$by_RT[[paste0('x', x_idx)]][, idx]
       })
-      names(temp) <- paste0('x', seq(0, dim-1))
+      names(temp) <- paste0('x', seq(0, dim - 1))
       if ('generation' %in% get_PAR_name(ds)) {
         temp$generation <- ds$PAR$by_RT[['generation']][, idx]
       }
@@ -1319,6 +1319,7 @@ get_position_dsl <- function(dsList, iid) {
     dt_sub[, 'algId' := attr(ds, 'algId')]
     dt_sub    
   }))
+  if (nrow(dt) == 0) return(NULL)
   dt[, runtime := as.numeric(runtime)]
   return(dt)
 }

@@ -32,7 +32,7 @@ render_RT_SHAPLEY <- reactive({
   message = "Creating plot")
 })
 
-output$RTECDF.Aggr.Download <- downloadHandler(
+output$RTportfolio.Shapley.Download <- downloadHandler(
   filename = function() {
     eval(FIG_NAME_RT_SHAPLEY)
   },

@@ -21,7 +21,7 @@ get_FV_sample(ds, ...)
 
 \item{output}{A String. The format of the output data: 'wide' or 'long'}
 
-\item{algorithm}{Which algorithms in the DataSetList to consider.}
+\item{algorithm}{DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.}
 }
 \value{
 A data.table containing the function value samples for each provided

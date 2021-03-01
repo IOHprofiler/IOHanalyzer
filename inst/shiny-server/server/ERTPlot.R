@@ -12,8 +12,9 @@ get_data_ERT_PER_FUN <- reactive({
   data <- subset(DATA(), algId %in% input$ERTPlot.Algs)
   fstart <- input$ERTPlot.Min %>% as.numeric
   fstop <- input$ERTPlot.Max %>% as.numeric
+  budget <- input$ERTPlot.Additional.Budget %>% as.numeric
   generate_data.Single_Function(data, fstart, fstop, input$ERTPlot.semilogx, 
-                                'by_RT', include_opts = input$ERTPlot.inclueOpts)
+                                'by_RT', include_opts = input$ERTPlot.inclueOpts, budget = budget)
 })
 
 render_ert_per_fct <- reactive({

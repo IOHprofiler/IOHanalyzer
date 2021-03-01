@@ -17,7 +17,7 @@ Plot.RT.ECDF_Multi_Func(dsList, targets = NULL, scale.xlog = F)
 \item{targets}{The target function values. Specified in a data.frame, as can be generated}
 
 \item{scale.xlog}{Whether or not to scale the x-axis logaritmically
-by the function 'get_default_ECDF_targets'}
+by the function 'get_ECDF_targets'}
 }
 \value{
 A plot of the empirical cumulative distriburtion as a function of

@@ -21,7 +21,7 @@ get_RT_sample(ds, ftarget, ...)
 
 \item{output}{A character determining the format of output data.table: 'wide' or 'long'}
 
-\item{algorithm}{Which algorithms in the DataSetList to consider.}
+\item{algorithm}{DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.}
 }
 \value{
 A data.table containing the runtime samples for each provided target

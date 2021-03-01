@@ -19,7 +19,7 @@ get_maxRT(ds, ...)
 
 \item{output}{The format of the outputted table: 'wide' or 'long'}
 
-\item{algorithm}{Which algorithms in the DataSetList to consider.}
+\item{algorithm}{DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.}
 }
 \value{
 A data.table object containing the algorithm ID and the running time

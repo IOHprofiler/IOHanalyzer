@@ -6,20 +6,23 @@
 \alias{get_ERT.DataSetList}
 \title{Get Expected RunTime}
 \usage{
-get_ERT(ds, ftarget, ...)
+get_ERT(ds, ftarget, budget, ...)
 
-\method{get_ERT}{DataSet}(ds, ftarget, ...)
+\method{get_ERT}{DataSet}(ds, ftarget, budget = NULL, ...)
 
-\method{get_ERT}{DataSetList}(ds, ftarget, algorithm = "all", ...)
+\method{get_ERT}{DataSetList}(ds, ftarget, budget = NULL,
+  algorithm = "all", ...)
 }
 \arguments{
 \item{ds}{A DataSet or DataSetList object}
 
 \item{ftarget}{The function target(s) for which to get the ERT}
 
+\item{budget}{Optional; overwrites the budget found in ds for ERT-calculation}
+
 \item{...}{Arguments passed to other methods}
 
-\item{algorithm}{Which algorithms in the DataSetList to consider.}
+\item{algorithm}{DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.}
 }
 \value{
 A data.table containing the runtime samples for each provided target

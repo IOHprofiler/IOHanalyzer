@@ -396,17 +396,17 @@ arrange.DataSetList <- function(dsl, ...) {
 }
 
 #' @rdname get_ERT
-#' @param algorithm Which algorithms in the DataSetList to consider.
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #' @export
 #'
-get_ERT.DataSetList <-
-  function(ds, ftarget, algorithm = 'all', ...) {
+get_ERT.DataSetList <- function(ds, ftarget, budget = NULL, algorithm = 'all', ...) {
+    if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
-
+    
     rbindlist(lapply(ds, function(ds) {
       res <-
-        cbind(attr(ds, 'DIM'), attr(ds, 'funcId'), get_ERT(ds, ftarget))
+        cbind(attr(ds, 'DIM'), attr(ds, 'funcId'), get_ERT(ds, ftarget, budget))
       colnames(res)[1] <- 'DIM'
       colnames(res)[2] <- 'funcId'
       res
@@ -414,18 +414,18 @@ get_ERT.DataSetList <-
   }
 
 #' @rdname get_RT_summary
-#' @param algorithm Which algorithms in the DataSetList to consider.
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #' @export
-get_RT_summary.DataSetList <-
-  function(ds, ftarget, algorithm = 'all', ...) {
+get_RT_summary.DataSetList <- function(ds, ftarget, budget = NULL, algorithm = 'all', ...) {
+    if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
-
+    
     rbindlist(lapply(ds, function(ds) {
       res <-
         cbind(attr(ds, 'DIM'),
               attr(ds, 'funcId'),
-              get_RT_summary(ds, ftarget))
+              get_RT_summary(ds, ftarget, budget))
       colnames(res)[1] <- 'DIM'
       colnames(res)[2] <- 'funcId'
       res
@@ -433,11 +433,11 @@ get_RT_summary.DataSetList <-
   }
 
 #' @rdname get_RT_sample
-#' @param algorithm Which algorithms in the DataSetList to consider.
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #'
 #' @export
-get_RT_sample.DataSetList <-
-  function(ds, ftarget, algorithm = 'all', ...) {
+get_RT_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
+    if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
 
@@ -454,10 +454,11 @@ get_RT_sample.DataSetList <-
   }
 
 #' @rdname get_maxRT
-#' @param algorithm Which algorithms in the DataSetList to consider.
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #'
 #' @export
 get_maxRT.DataSetList <- function(ds, algorithm = 'all', ...) {
+  if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
 
@@ -472,11 +473,11 @@ get_maxRT.DataSetList <- function(ds, algorithm = 'all', ...) {
 }
 
 #' @rdname get_FV_summary
-#' @param algorithm Which algorithms in the DataSetList to consider.
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #' @export
 #'
-get_FV_summary.DataSetList <-
-  function(ds, runtime, algorithm = 'all', ...) {
+get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
+    if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
 
@@ -491,12 +492,12 @@ get_FV_summary.DataSetList <-
     }))
 }
 
-#' @param algorithm Which algorithms in the DataSetList to consider.
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #' @export
 #' @rdname get_FV_overview
 #'
-get_FV_overview.DataSetList <-
-  function(ds, algorithm = 'all', ...) {
+get_FV_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
+    if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
 
@@ -506,10 +507,10 @@ get_FV_overview.DataSetList <-
 }
 
 #' @rdname get_RT_overview
-#' @param algorithm Which algorithms in the DataSetList to consider.
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #' @export
-get_RT_overview.DataSetList <-
-  function(ds, algorithm = 'all', ...) {
+get_RT_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
+    if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
 
@@ -519,8 +520,7 @@ get_RT_overview.DataSetList <-
 
 #' @rdname get_overview
 #' @export
-get_overview.DataSetList <-
-  function(ds, ...) {
+get_overview.DataSetList <- function(ds, ...) {
     df <- rbindlist(lapply(ds, function(ds)
       get_overview(ds)))
     if (length(get_funcId(ds)) > 1 || length(get_dim(ds)) > 1) {
@@ -541,11 +541,11 @@ get_overview.DataSetList <-
 }
 
 #' @rdname get_FV_sample
-#' @param algorithm Which algorithms in the DataSetList to consider.
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #' @export
 #'
-get_FV_sample.DataSetList <-
-  function(ds, runtime, algorithm = 'all', ...) {
+get_FV_sample.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
+    if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
 
@@ -562,9 +562,10 @@ get_FV_sample.DataSetList <-
   }
 
 #' @rdname get_PAR_summary
-#' @param algorithm Which algorithms in the DataSetList to consider.
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #' @export
 get_PAR_summary.DataSetList <- function(ds, idxValue, algorithm = 'all', ...) {
+  if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
 
@@ -572,9 +573,10 @@ get_PAR_summary.DataSetList <- function(ds, idxValue, algorithm = 'all', ...) {
 }
 
 #' @rdname get_PAR_sample
-#' @param algorithm Which algorithms in the DataSetList to consider.
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #' @export
 get_PAR_sample.DataSetList <- function(ds, idxValue, algorithm = 'all', ...) {
+  if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
   if (algorithm != 'all')
     ds <- subset(ds, algId == algorithm)
 
@@ -816,12 +818,14 @@ get_ECDF_targets <- function(dsList, type = "log-linear", number_targets = 10) {
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
 #' @param include_opts Whether or not to also include the best value hit by each algorithm to
 #' the generated datapoints
+#' @param budget Optional; overwrites the budget of each individual algorithm when doing ERT calculations. Only works
+#' in fixed_target mode.
 #' 
 #' @export
 #' @examples 
 #' generate_data.Single_Function(subset(dsl, funcId == 1), which = 'by_RT')
 generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL, 
-                                          scale_log = F, which = 'by_RT', include_opts = F) {
+                                          scale_log = F, which = 'by_RT', include_opts = F, budget = NULL) {
   
   if (length(get_funcId(dsList)) != 1 || length(get_dim(dsList)) != 1 ) {
     #Required because target generation is included in this function, 
@@ -855,7 +859,7 @@ generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL,
       }
       Xseq <- unique(sort(Xseq))
     }
-    dt <- get_RT_summary(dsList, ftarget = Xseq)
+    dt <- get_RT_summary(dsList, ftarget = Xseq, budget = budget)
   }
   else {
     Xseq <- seq_RT(all, start, stop, length.out = 60,

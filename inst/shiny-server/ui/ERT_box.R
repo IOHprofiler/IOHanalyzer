@@ -80,21 +80,32 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
           checkboxInput('ERTPlot.semilogy',
                         label = 'Scale y axis \\(\\log_{10}\\)',
                         value = T),
-          
-          checkboxInput('ERTPlot.inclueOpts',
-                        label = "Include optimal points found by each algorithm",
-                        value = F),
-          checkboxInput('ERTPlot.show.runs',
-                        label = 'Show individual runs',
-                        value = F) %>% 
-            shinyInput_label_embed(
-                          custom_icon("exclamation-triangle") %>%
-                            bs_embed_popover(
-                              title = "Individual runs", content = "This procedure can be slow when many
-                              runs are present in the data. Please use with caution.", 
-                              placement = "auto"
-                            )
-                        ), 
+          box(title = HTML('<p style="font-size:120%;color:black;">Additional Options</p>'), collapsible = T, collapsed = T, width = width, solidHeader = T, status = 'info',
+            checkboxInput('ERTPlot.inclueOpts',
+                          label = "Include optimal points found by each algorithm",
+                          value = F),
+            checkboxInput('ERTPlot.show.runs',
+                          label = 'Show individual runs',
+                          value = F) %>% 
+              shinyInput_label_embed(
+                            custom_icon("exclamation-triangle") %>%
+                              bs_embed_popover(
+                                title = "Individual runs", content = "This procedure can be slow when many
+                                runs are present in the data. Please use with caution.", 
+                                placement = "auto"
+                              )
+                          ), 
+            numericInput("ERTPlot.Additional.Budget", "Choose Custom Budget for ERT calculation", value = NA) %>% 
+              shinyInput_label_embed(
+                custom_icon("info") %>%
+                  bs_embed_popover(
+                    title = "Custom Budget", content = "This will use this budget value instead of the ones in the 
+                    data for the ERT calculation. Any hitting times larger than this value are treated as unfinished runs.
+                    Please use with caution.", 
+                    placement = "auto"
+                  )
+              ) 
+          ),
           hr(),
           
           selectInput('ERTPlot.Format', label = 'Select the figure format',

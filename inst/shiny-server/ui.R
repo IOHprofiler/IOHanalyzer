@@ -308,7 +308,7 @@ body <- dashboardBody(
     tabItem(
       tabName = 'upload',
       fluidRow(
-        column(width = 12, welcome_bar())
+        welcome_bar(width = 12)
       ),
       
       fluidRow(

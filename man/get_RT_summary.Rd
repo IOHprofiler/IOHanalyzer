@@ -6,20 +6,23 @@
 \alias{get_RT_summary.DataSetList}
 \title{Get RunTime Summary}
 \usage{
-get_RT_summary(ds, ftarget, ...)
+get_RT_summary(ds, ftarget, budget, ...)
 
-\method{get_RT_summary}{DataSet}(ds, ftarget, ...)
+\method{get_RT_summary}{DataSet}(ds, ftarget, budget = NULL, ...)
 
-\method{get_RT_summary}{DataSetList}(ds, ftarget, algorithm = "all", ...)
+\method{get_RT_summary}{DataSetList}(ds, ftarget, budget = NULL,
+  algorithm = "all", ...)
 }
 \arguments{
 \item{ds}{A DataSet or DataSetList object}
 
 \item{ftarget}{The function target(s) for which to get the runtime summary}
 
+\item{budget}{Optional; overwrites the budget found in ds for ERT-calculation}
+
 \item{...}{Arguments passed to other methods}
 
-\item{algorithm}{Which algorithms in the DataSetList to consider.}
+\item{algorithm}{DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.}
 }
 \value{
 A data.table containing the runtime statistics for each provided target

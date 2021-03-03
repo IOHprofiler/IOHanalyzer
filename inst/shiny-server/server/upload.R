@@ -245,6 +245,7 @@ observeEvent(selected_folders(), {
     
     update_menu_visibility(attr(DataList$data, 'suite'))
     # set_format_func(attr(DataList$data, 'suite'))
+    algids <- get_algId(DataList$data)
     if (!all(algids %in% get_color_scheme_dt()[['algnames']])) {
       set_color_scheme("Default", algids)
     }

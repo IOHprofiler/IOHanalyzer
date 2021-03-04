@@ -84,12 +84,18 @@ read_index_file__IOH <- function(fname) {
           value <- ans[[name]]
           ans[[name]] <- gsub("'", '', value)
           
-          if (name == 'maximization')
-            value <- as.logical(value)
-          else
-            value <- suppressWarnings(as.numeric(value)) # convert quoted numeric values to numeric
-          
+          #Conversion to logical / numeric values when applicable (1 / 0 are seen as numeric)
+          val_orig <- value
+          value <- suppressWarnings(as.numeric(val_orig))
+          if (is.na(value)) value <- as.logical(val_orig)
           if (!is.na(value)) ans[[name]] <- value
+          
+          # if (name == 'maximization')
+          #   value <- as.logical(value)
+          # else
+          #   value <- suppressWarnings(as.numeric(value)) # convert quoted numeric values to numeric
+          # 
+          # if (!is.na(value)) ans[[name]] <- value
         }
         ans
       }

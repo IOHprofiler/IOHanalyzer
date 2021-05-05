@@ -154,7 +154,7 @@ observeEvent(input$RT_GRID_GENERATED_cell_edit, {
 
 observeEvent(input$RTECDF.Aggr.Table.Upload, {
   if (!is.null(input$RTECDF.Aggr.Table.Upload)) {
-    df <- read.csv2(input$RTECDF.Aggr.Table.Upload$datapath, header = T, row.names = F) %>% 
+    df <- read.csv2(input$RTECDF.Aggr.Table.Upload$datapath, header = T) %>% 
       as.data.table
     
     if (ncol(df) == ncol(RT_ECDF_MULTI_TABLE())) {

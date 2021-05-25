@@ -6,7 +6,10 @@ language: r
 r:
   - 3.5
   - 3.6
+  - 4.0
+  - 4.1
   - release
+  - devel
 
 bioc_packages: ComplexHeatmap
 

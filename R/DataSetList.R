@@ -295,7 +295,7 @@ print.DataSetList <- function(x, ...) {
     idx <- seq_along(x)
   else 
     idx <- c(1:5, '---', (N-4):N)
-  idx <- format(idx, digits = 0, justify = 'right')
+  idx <- format(idx, justify = 'right')
     
   for (i in idx) {
     if (trimws(i) == '---')

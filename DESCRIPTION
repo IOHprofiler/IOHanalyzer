@@ -21,7 +21,6 @@ LazyData: true
 URL: http://iohprofiler.liacs.nl, https://github.com/IOHprofiler/IOHAnalyzer
 BugReports: https://github.com/IOHprofiler/IOHAnalyzer/issues
 Imports: 
-  Rcpp,
   magrittr,
   dplyr,
   data.table,
@@ -37,7 +36,6 @@ Imports:
   colourpicker,
   bsplus,
   DT,
-  igraph,
   kableExtra,
   stringi,
   httr,
@@ -46,6 +44,7 @@ LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 7.0.0
 Suggests: 
+  Rcpp,
   testthat,
   withr,
   shinydashboard,
@@ -53,5 +52,6 @@ Suggests:
   grid,
   keyring,
   PlayerRatings,
-  xtable
+  xtable,
+  igraph
 Depends: R (>= 2.10)

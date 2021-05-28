@@ -876,14 +876,18 @@ radian.rescale <- function(x, start=0, direction=1) {
 #' @export
 Plot.Stats.Significance_Graph.DataSetList <- function(dsList, ftarget, alpha = 0.01,
                                                       bootstrap.size = 30, which = 'by_FV'){
+  if (!requireNamespace("igraph", quietly = TRUE)) {
+    stop("Package \"pkg\" needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
   if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1 || length(get_algId(dsList)) < 2) {
     return(NULL)
   }
   p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size, which)
-  g <- graph_from_adjacency_matrix(p_matrix <= alpha, mode = 'directed', diag = F)
+  g <- igraph::graph_from_adjacency_matrix(p_matrix <= alpha, mode = 'directed', diag = F)
   lab.locs <- radian.rescale(x = 1:nrow(p_matrix), direction = -1, start = 0)
 
-  plot.igraph(g, layout = layout.circle(g), vertex.size = 10, edge.arrow.size = 1,
+  igraph::plot.igraph(g, layout = igraph::layout.circle(g), vertex.size = 10, edge.arrow.size = 1,
               vertex.label.color = 'black',
               vertex.label.dist = 2,
               vertex.label.cex = 1,

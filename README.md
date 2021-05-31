@@ -28,7 +28,7 @@ It _provides_:
 
 It is _built mainly on_:
 
-* `R` packages [Shiny](https://shiny.rstudio.com/), [Plotly](https://plot.ly/) and [Rcpp](http://www.rcpp.org/).
+* `R` packages [Shiny](https://shiny.rstudio.com/), [Plotly](https://https://plotly.com/) and [Rcpp](http://www.rcpp.org/).
 <!-- * [scmacp](https://github.com/b0rxa/scmamp) package for Bayesian analysis. -->
 
 It is _available through_:
@@ -111,7 +111,7 @@ then you just need to compress the data folder obtained from the experiment into
 * [Hao Wang](https://www.lip6.fr/actualite/personnes-fiche.php?ident=D2381), Sorbonne Université, LIP6, France.
 * [Diederick Vermetten](https://www.universiteitleiden.nl/en/staffmembers/diederick-vermetten), Leiden Institute of Advanced Computer Science, The Netherlands.
 * [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye), Leiden Institute of Advanced Computer Science, The Netherlands.
-* [Ofer M. Shir](https://ofersh.github.io/telhai), Tel-Hai College, Israel.
+* [Ofer M. Shir](https://ofersh.github.io/telhai/), Tel-Hai College, Israel.
 * [Carola Doerr](http://www-desir.lip6.fr/~doerr/), Sorbonne Université, CNRS, LIP6, France.
 * [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back), Leiden Institute of Advanced Computer Science, The Netherlands.
 

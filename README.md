@@ -28,7 +28,7 @@ It _provides_:
 
 It is _built mainly on_:
 
-* `R` packages [Shiny](https://shiny.rstudio.com/), [Plotly](https://https://plotly.com/) and [Rcpp](http://www.rcpp.org/).
+* `R` packages [Shiny](https://shiny.rstudio.com/), [Plotly](https://plotly.com/) and [Rcpp](http://www.rcpp.org/).
 <!-- * [scmacp](https://github.com/b0rxa/scmamp) package for Bayesian analysis. -->
 
 It is _available through_:

@@ -9,8 +9,9 @@
 \arguments{
 \item{x}{The DataSetList}
 
-\item{...}{The condition to filter on. Can be any expression which assigns True or False
-to a DataSet object, such as DIM == 625 or funcId == 2}
+\item{...}{The conditions to filter on. Can be any expression which assigns True or False
+to a DataSet object, such as DIM == 625 or funcId == 2. Multiple conditions should be seperated by commas and will
+be treated as AND. Support for custom conditions using AND and OR are not supported as of version 0.1.6.0}
 }
 \value{
 The filtered DataSetList

@@ -740,8 +740,9 @@ get_static_attribute_values <- function(dsl, attribute) {
 #' Filter a DataSetList by some criteria
 #'
 #' @param x The DataSetList
-#' @param ... The condition to filter on. Can be any expression which assigns True or False
-#' to a DataSet object, such as DIM == 625 or funcId == 2
+#' @param ... The conditions to filter on. Can be any expression which assigns True or False
+#' to a DataSet object, such as DIM == 625 or funcId == 2. Multiple conditions should be seperated by commas and will
+#' be treated as AND. Support for custom conditions using AND and OR are not supported as of version 0.1.6.0
 #'
 #' @return The filtered DataSetList
 #' @export
@@ -752,24 +753,28 @@ subset.DataSetList <- function(x, ...) {
   enclos <- parent.frame()
   obj <- lapply(x,
                 function(ds){
-                  tryCatch({
-                  mask <- unlist(
-                    eval(condition_call, attributes(ds), enclos)
-                  )}, error = return(NULL))
-                  if (length(mask) == 1) return(ds)
-                  return(subset(ds, mask))
+                  mask <- tryCatch(expr = {
+                    unlist(
+                      eval(condition_call, attributes(ds), enclos = enclos)
+                    )
+                  }, error = function(e) {F})
                   
+                  if (length(mask) == 1 && mask) return(ds)
+                  else if (length(mask) == 1) return(NULL)
+                  return(subset(ds, mask))
                 })
+  
   class(obj) <- c('DataSetList', class(obj))
+  obj <- Filter(Negate(is.null), obj) 
   
   # also slice the attributes accordingly
   attr(obj, 'suite') <- attr(x, 'suite')
   attr(obj, 'maximization') <- attr(x, 'maximization')
-  attr(obj, 'DIM') <- sapply(x, function(ds) attr(ds, 'DIM'))
-  attr(obj, 'funcId') <- sapply(x, function(ds) attr(ds, 'funcId'))
-  attr(obj, 'algId') <- sapply(x, function(ds) attr(ds, 'algId'))
+  attr(obj, 'DIM') <- sapply(obj, function(ds) attr(ds, 'DIM'))
+  attr(obj, 'funcId') <- sapply(obj, function(ds) attr(ds, 'funcId'))
+  attr(obj, 'algId') <- sapply(obj, function(ds) attr(ds, 'algId'))
   
-  obj
+  return(obj)
 }
 
 

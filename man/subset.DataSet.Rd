@@ -22,5 +22,5 @@ Subset for DataSets. Based on the provided mask, the relevant data is taken from
 and turned into a new DataSet object.
 }
 \examples{
-subset(ds, [0,1,1,1])
+subset(dsl[[1]], c(0,1,1,1,0,0,0,0,0,0,0))
 }

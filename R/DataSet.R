@@ -268,7 +268,7 @@ c.DataSet <- function(...) {
 #' @return A new DataSet
 #' @export
 #' @examples 
-#' subset(ds, [0,1,1,1])
+#' subset(dsl[[1]], c(0,1,1,1,0,0,0,0,0,0,0))
 subset.DataSet <- function(x, mask, ...) {
   
   if (length(mask) != ncol(x$FV))

@@ -45,6 +45,9 @@ read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
 #'  These formats are specified in more detail in our github wiki.
 #' @param subsampling Logical. Whether *.cdat files are subsampled?
 #' @param print_fun Function used to print output when in verbose mode
+#' @param full_aggregation If True, individual DataSets are aggregated as much as possible: all DataSets
+#' with the same algorithmname, function id and dimension are combined together. This leads to information loss
+#' related to static variables, so only use if that information is not required. 
 #'
 #' @return A DataSetList object
 #' @export
@@ -52,7 +55,7 @@ read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package = "IOHanalyzer")
 #' DataSetList(path)
 DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization = NULL,
-                        format = IOHprofiler, subsampling = FALSE) {
+                        format = IOHprofiler, subsampling = FALSE, full_aggregation = TRUE) {
   if (is.null(path))
     return(structure(list(), class = c('DataSetList', 'list')))
   
@@ -164,7 +167,10 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
   
   attr(object, 'suite') <- suite
   attr(object, 'maximization') <- maximization
-  clean_DataSetList(object)
+  if (full_aggregation)
+    clean_DataSetList(object)
+  else
+    object
 }
 
 
@@ -700,30 +706,40 @@ get_runtimes <- function(dsList) {
   ))))
 }
 
-# #' Get the best function value reached in a DataSetList
-# #'
-# #' @param dsList The DataSetLsit
-# #'
-# #' @return A list matrices of all runtime values which occur in the DataSetList
-# #' @export
-# get_best_targets <- function(dsList, by = 'funcId', maximize = T) {
-#   targets <- c()
-#   funcIds <- get_funcId(dsList)
+#' Get all attributes which can be used to subset a DataSetList
+#'
+#' @param dsl The DataSetList
+#'
+#' @return The list of available attributes
+#' @export
+#' @examples
+#' get_static_attributes(dsl)
+get_static_attributes <- function(dsl) {
+  full_names <- unique(unlist(lapply(dsl, function(ds) {names(attributes(ds))})))
+  
+  reserved_attributes <- c("names", "class", "suite", "maximization", "algInfo", "comment", 
+                           "datafile", "maxRT", "finalFV", "format")
+  setdiff(full_names, reserved_attributes)
+}
 
-#   for (i in seq_along(aggr_attr)) {
-#     data <- subset(dsList, funcId == funcIds[i])
+#' Get all options for a specific attribute which can be used to subset a DataSetList
+#' 
+#' This is a more generic version of the existing `get_dim`, `get_funcId` and `get_algId` functions.
+#' Note the only attributes returned by `get_static_attributes` are supported in this funcion
+#'
+#' @param dsl The DataSetList
+#' @param attribute the name of the attribute for which to get the available options in dsl
+#' @return The list of options for the specified attribute
+#' @export
+#' @examples
+#' get_static_attribute_values(dsl, 'funcId')
+get_static_attribute_values <- function(dsl, attribute) {
+  unique(unlist(lapply(dsl, function(ds) {attr(ds, attribute)})))
+}
 
-#     Fall <- get_funvals(data)
-#     Fval <- ifelse(maximize, max(Fall), min(Fall))
-#     targets <- c(targets, Fval)
-#   }
-#   targets
-# }
-
-# TODO: the attribute list should als be sliced here...
 #' Filter a DataSetList by some criteria
 #'
-#' @param x The DataSetLsit
+#' @param x The DataSetList
 #' @param ... The condition to filter on. Can be any expression which assigns True or False
 #' to a DataSet object, such as DIM == 625 or funcId == 2
 #'
@@ -734,13 +750,28 @@ get_runtimes <- function(dsList) {
 subset.DataSetList <- function(x, ...) {
   condition_call <- substitute(list(...))
   enclos <- parent.frame()
-  idx <- sapply(x,
-                function(ds)
-                  all(unlist(
+  obj <- lapply(x,
+                function(ds){
+                  tryCatch({
+                  mask <- unlist(
                     eval(condition_call, attributes(ds), enclos)
-                  )))
-  x[idx]
+                  )}, error = return(NULL))
+                  if (length(mask) == 1) return(ds)
+                  return(subset(ds, mask))
+                  
+                })
+  class(obj) <- c('DataSetList', class(obj))
+  
+  # also slice the attributes accordingly
+  attr(obj, 'suite') <- attr(x, 'suite')
+  attr(obj, 'maximization') <- attr(x, 'maximization')
+  attr(obj, 'DIM') <- sapply(x, function(ds) attr(ds, 'DIM'))
+  attr(obj, 'funcId') <- sapply(x, function(ds) attr(ds, 'funcId'))
+  attr(obj, 'algId') <- sapply(x, function(ds) attr(ds, 'algId'))
+  
+  obj
 }
+
 
 #' Save DataTable in multiple formats
 #' 

@@ -194,7 +194,7 @@ c.DataSet <- function(...) {
     if (!any((class(ds)) == 'DataSet'))
       stop("Operation only possible when all arguments are DataSets")
   }
-
+  
   fixed_attrs <- c('suite', 'maximization', 'DIM', 'funcId', 'algId', 'format')
   info <- list()
   for (attr_str in fixed_attrs) {
@@ -206,20 +206,26 @@ c.DataSet <- function(...) {
     info <- c(info,temp)
   }
   names(info) <- fixed_attrs
-
+  
+  #Record number of runs to make masks of static attributes
+  nr_runs <- unlist(lapply(dsl, function(x) ncol(x$FV)))
   for (attr_str in names(attributes(dsl[[1]]))) {
     if (attr_str %in% fixed_attrs || attr_str %in% c("names", "class")) next
     temp  <- unlist(lapply(dsl, function(x) attr(x, attr_str)))
     if (length(unique(temp)) == 1) 
       temp <- unique(temp)
-    else 
-      temp <- list(temp_name = temp)
+    else {
+      if (length(temp) == length(nr_runs))
+        temp <- list(temp_name = rep(temp, nr_runs))
+      else
+        temp <- list(temp_name = temp)
+    }
     names(temp) <- attr_str
     info <- c(info, temp)
   }
-
+  
   format <- info[['format']] #attr(dsl[[1]], "format")
-
+  
   RT_raw <- unlist(lapply(dsl, function(ds) {
     lapply(seq_len(ncol(ds$RT)), function(cnr) {
       rt_temp <- as.matrix(ds$RT[, cnr])
@@ -229,7 +235,7 @@ c.DataSet <- function(...) {
   
   RT <- align_running_time(RT_raw, format = "TWO_COL", maximization = info$maximization)$RT
   FV <- align_function_value(RT_raw, format = "TWO_COL")$FV
-
+  
   # TODO: to deal with cases where aligned parameters are present in original DataSets
   PAR <- list(
     'by_FV' = RT[names(RT) != 'RT'],
@@ -241,7 +247,61 @@ c.DataSet <- function(...) {
     if (!par_name %in% c('by_FV', 'by_RT'))
       PAR[[par_name]] <- unlist(lapply(dsl, function(x) {x$PAR[[par_name]]}), recursive = F)
   }
+  
+  do.call(
+    function(...)
+      structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
+    c(info)
+  )
+}
 
+#' S3 subset function for DataSet
+#'
+#' @description Subset for DataSets. Based on the provided mask, the relevant data is taken from the given DataSet
+#' and turned into a new DataSet object. 
+#'
+#' @param x The DataSet from which to get a subset
+#' @param mask The mask to use when subsetting. The length should be equal to the number of runs present in the 
+#' provided dataset object x.
+#' @param ... Arguments passed to underlying subset method (not yet supported)
+#' 
+#' @return A new DataSet
+#' @export
+#' @examples 
+#' subset(ds, [0,1,1,1])
+subset.DataSet <- function(x, mask, ...) {
+  
+  if (length(mask) != ncol(x$FV))
+    stop("Operation only possible when maks is the same length as the number of runs in the DataSet")
+  
+  info <- list()
+  for (attr_str in names(attributes(x))) {
+    if (attr_str %in% c('names', 'class')) next
+    temp  <- attr(x, attr_str)
+    if (length(unique(temp)) == 1) 
+      temp <- unique(temp)
+    else {
+      if (length(temp) == length(mask))
+        temp <- list(temp[mask])
+      else{
+        warning(paste0("Attribute detected (", attr_str, ") with incorrect length for the mask-based subsetting!"))
+        next
+      }
+    }
+    names(temp) <- attr_str
+    info <- c(info, temp)
+  }
+  
+  format <- info[['format']] 
+  
+  RT <- x$RT[, mask]
+  FV <- x$FV[, mask]
+  
+  PAR <- list(
+    'by_FV' = ifelse(ncol(x$PAR$by_FV) == length(mask), x$PAR$by_FV[, mask], NULL),
+    'by_RT' = ifelse(ncol(x$PAR$by_RT) == length(mask), x$PAR$by_RT[, mask], NULL)
+  )
+  
   do.call(
     function(...)
       structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),

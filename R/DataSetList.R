@@ -756,11 +756,29 @@ get_static_attribute_values <- function(dsl, attribute) {
 subset.DataSetList <- function(x, ...) {
   condition_call <- substitute(list(...))
   enclos <- parent.frame()
+  
+  condition_call <- tryCatch({
+    temp <- eval(condition_call, enclos = enclos)
+    if (class(temp) == "list") {
+      temp <- lapply(unlist(temp), function(x) {
+        if (class(x) == 'character') {
+          parse(text = x)
+        }
+        else x
+      })
+      unlist(temp)
+    } else if (class(temp) == "call") {
+      list(temp)
+    } else {
+      NULL
+    }
+  }, error = function(e) {condition_call[2:length(condition_call)]})
+  
   obj <- lapply(x,
                 function(ds){
                   mask <- tryCatch(expr = {
                     mask <- NULL
-                    for (idx in seq(2,length(condition_call))) {
+                    for (idx in seq(length(condition_call))) {
                       mask_temp <- unlist(
                         eval(condition_call[[idx]], attributes(ds), enclos = enclos)
                       )
@@ -787,7 +805,7 @@ subset.DataSetList <- function(x, ...) {
                 })
   
   class(obj) <- c('DataSetList', class(obj))
-  obj <- Filter(Negate(is.null), obj) 
+  obj <- Filter(Negate(is.null), obj)
   
   # also slice the attributes accordingly
   attr(obj, 'suite') <- attr(x, 'suite')
@@ -797,6 +815,63 @@ subset.DataSetList <- function(x, ...) {
   attr(obj, 'algId') <- sapply(obj, function(ds) attr(ds, 'algId'))
   
   return(obj)
+}
+
+#' Add unique identifiers to each DataSet in the provided DataSetList based on static attributes
+#' 
+#' Note that this function returns a new DataSetList object, since a split into new datasetlist has to be done to
+#' ensure each dataset has exactly one unique identifier.
+#' Note that only static attributes (see `get_static_attributes`) can be used to create unique identifiers. 
+#'
+#' @param dsl The DataSetList
+#' @param attrs The list of attributes to combine into a unique identifier
+#' @return A new DataSetList object where the split has been done based on the provided attributes, and the unique
+#' identifier has been added. 
+#' @export
+#' @examples
+#' add_unique_id(dsl, c('instance'))
+add_unique_id <- function(dsl, attrs) {
+  if (!all(attrs %in% get_static_attributes(dsl))) stop("Selected attributes are not usable to create unique ids")
+  grid <- expand.grid(lapply(attrs, function(x){get_static_attribute_values(ds1, x)}))
+  colnames(grid) <- attrs
+  
+  dsl_new <- DataSetList()
+  attr_vals <- c()
+  for (x in transpose(grid)) {
+    conditions <- unlist(lapply(seq(length(attrs)), function(idx) {
+      parse(text = paste0(attrs[[idx]], ' == ', x[[idx]]))
+    }))
+    dsl_temp <- subset2(dsl, conditions)
+    if (length(attrs) == 1) 
+      attr_val <- x
+    else
+      attr_val <- paste0(x, collapse = "_")
+    
+    attr_vals <- c(attr_vals, rep(attr_val, length(dsl_temp)))
+    dsl_new <- c(dsl_new, dsl_temp)
+  }
+  attr(dsl_new, 'identifying_variables') <- attrs
+  attr(dsl_new, 'unique_ids') <- attr_vals
+  for (idx in seq(length(dsl_temp))) {
+    attr(dsl_new[[idx]], 'unique_id') <- attr_vals[[idx]]
+  }
+  dsl_new
+}
+
+#' Get the unique identifiers for each DataSet in the provided DataSetList
+#' 
+#' If no unique identifier is set (using `add_unique_id`), this function falls back on returning the algorith id
+#' (from `get_aldId`)to ensure backwards compatibility
+#'
+#' @param dsl The DataSetList
+#' @return The list of unique identiefiers present in dsl
+#' @export
+#' @examples
+#' get_unique_id(dsl)
+get_unique_id <- function(dsl) {
+  temp <- attr(dsl, 'unique_id')
+  if (is.null(temp)) return(get_algId(dsl))
+  return(unique(temp))
 }
 
 

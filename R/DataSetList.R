@@ -741,26 +741,48 @@ get_static_attribute_values <- function(dsl, attribute) {
 #'
 #' @param x The DataSetList
 #' @param ... The conditions to filter on. Can be any expression which assigns True or False
-#' to a DataSet object, such as DIM == 625 or funcId == 2. Multiple conditions should be seperated by commas and will
-#' be treated as AND. Support for custom conditions using AND and OR are not supported as of version 0.1.6.0
+#' to a DataSet object, such as DIM == 625 or funcId == 2. Usage of && and || is only supported on default attributes 
+#' (funcId, algId, DIM), not on combinations of with other attributes (e.g. instance). In those cases, & and | should 
+#' be used respectively
 #'
 #' @return The filtered DataSetList
 #' @export
 #' @examples
 #' subset(dsl, funcId == 1)
+#' subset(dsl, funcId == 1 && DIM == 16) # Can use && and || for default attributes
+#' subset(dsl, instance == 1)
+#' subset(dsl, instance == 1 & funcId == 1) # Can use & and | for all attributes
+#' subset(dsl, instance == 1, funcId == 1) # Comma-seperated conditions are treated as AND
 subset.DataSetList <- function(x, ...) {
   condition_call <- substitute(list(...))
   enclos <- parent.frame()
   obj <- lapply(x,
                 function(ds){
                   mask <- tryCatch(expr = {
-                    unlist(
-                      eval(condition_call, attributes(ds), enclos = enclos)
-                    )
+                    mask <- NULL
+                    for (idx in seq(2,length(condition_call))) {
+                      mask_temp <- unlist(
+                        eval(condition_call[[idx]], attributes(ds))
+                      )
+                      if (is.null(mask)) mask <- mask_temp
+                      else {
+                        if (length(mask_temp) == 1 && !mask_temp) {
+                          mask <- F
+                        } else if (length(mask_temp) == 1) {
+                          mask <- mask
+                        } else if (length(mask_temp) == length(mask) || length(mask) == 1) {
+                          mask <- mask & mask_temp
+                        } else {
+                          stop("Error creating mask")
+                        }
+                        
+                      }
+                    }
+                    mask
                   }, error = function(e) {F})
                   
                   if (length(mask) == 1 && mask) return(ds)
-                  else if (length(mask) == 1) return(NULL)
+                  else if (length(mask) == 1 || !any(mask)) return(NULL)
                   return(subset(ds, mask))
                 })
   

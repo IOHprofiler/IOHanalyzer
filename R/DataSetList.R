@@ -762,7 +762,7 @@ subset.DataSetList <- function(x, ...) {
                     mask <- NULL
                     for (idx in seq(2,length(condition_call))) {
                       mask_temp <- unlist(
-                        eval(condition_call[[idx]], attributes(ds))
+                        eval(condition_call[[idx]], attributes(ds), enclos = enclos)
                       )
                       if (is.null(mask)) mask <- mask_temp
                       else {

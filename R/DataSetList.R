@@ -832,7 +832,7 @@ subset.DataSetList <- function(x, ...) {
 #' add_unique_id(dsl, c('instance'))
 add_unique_id <- function(dsl, attrs) {
   if (!all(attrs %in% get_static_attributes(dsl))) stop("Selected attributes are not usable to create unique ids")
-  grid <- expand.grid(lapply(attrs, function(x){get_static_attribute_values(ds1, x)}))
+  grid <- expand.grid(lapply(attrs, function(x){get_static_attribute_values(dsl, x)}))
   colnames(grid) <- attrs
   
   dsl_new <- DataSetList()
@@ -841,7 +841,7 @@ add_unique_id <- function(dsl, attrs) {
     conditions <- unlist(lapply(seq(length(attrs)), function(idx) {
       parse(text = paste0(attrs[[idx]], ' == ', x[[idx]]))
     }))
-    dsl_temp <- subset2(dsl, conditions)
+    dsl_temp <- subset(dsl, conditions)
     if (length(attrs) == 1) 
       attr_val <- x
     else

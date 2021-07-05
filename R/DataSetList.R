@@ -420,13 +420,8 @@ get_ERT.DataSetList <- function(ds, ftarget, budget = NULL, algorithm = 'all', .
   }
 
 #' @rdname get_RT_summary
-#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #' @export
-get_RT_summary.DataSetList <- function(ds, ftarget, budget = NULL, algorithm = 'all', ...) {
-    if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
-    if (algorithm != 'all')
-      ds <- subset(ds, algId == algorithm)
-    
+get_RT_summary.DataSetList <- function(ds, ftarget, budget = NULL, ...) {
     rbindlist(lapply(ds, function(ds) {
       res <-
         cbind(attr(ds, 'DIM'),
@@ -743,7 +738,8 @@ get_static_attribute_values <- function(dsl, attribute) {
 #' @param ... The conditions to filter on. Can be any expression which assigns True or False
 #' to a DataSet object, such as DIM == 625 or funcId == 2. Usage of && and || is only supported on default attributes 
 #' (funcId, algId, DIM), not on combinations of with other attributes (e.g. instance). In those cases, & and | should 
-#' be used respectively
+#' be used respectively. Alternatively, this can be used as a keyword argument named 'text', with the condition as a 
+#' string to be parsed. This allows exectution of subset commands on arbitrary variables in code. 
 #'
 #' @return The filtered DataSetList
 #' @export
@@ -754,25 +750,14 @@ get_static_attribute_values <- function(dsl, attribute) {
 #' subset(dsl, instance == 1 & funcId == 1) # Can use & and | for all attributes
 #' subset(dsl, instance == 1, funcId == 1) # Comma-seperated conditions are treated as AND
 subset.DataSetList <- function(x, ...) {
-  condition_call <- substitute(list(...))
   enclos <- parent.frame()
-  
-  condition_call <- tryCatch({
-    temp <- eval(condition_call, enclos = enclos)
-    if (class(temp) == "list") {
-      temp <- lapply(unlist(temp), function(x) {
-        if (class(x) == 'character') {
-          parse(text = x)
-        }
-        else x
-      })
-      unlist(temp)
-    } else if (class(temp) == "call") {
-      list(temp)
-    } else {
-      NULL
-    }
-  }, error = function(e) {condition_call[2:length(condition_call)]})
+  if (hasArg('text')) {
+    text <- list(...)$text
+    condition_call <- parse(text = text)
+  } else {
+    condition_call <- substitute(list(...))
+    condition_call <- condition_call[2:length(condition_call)]
+  }
   
   obj <- lapply(x,
                 function(ds){
@@ -813,7 +798,10 @@ subset.DataSetList <- function(x, ...) {
   attr(obj, 'DIM') <- sapply(obj, function(ds) attr(ds, 'DIM'))
   attr(obj, 'funcId') <- sapply(obj, function(ds) attr(ds, 'funcId'))
   attr(obj, 'algId') <- sapply(obj, function(ds) attr(ds, 'algId'))
-  
+  unique_ids <- unlist(sapply(obj, function(ds) attr(ds, 'unique_id')))
+  if (!any(is.null(unique_ids))) {
+    attr(obj, 'unique_ids') <- unique_ids
+  }
   return(obj)
 }
 
@@ -838,10 +826,13 @@ add_unique_id <- function(dsl, attrs) {
   dsl_new <- DataSetList()
   attr_vals <- c()
   for (x in transpose(grid)) {
-    conditions <- unlist(lapply(seq(length(attrs)), function(idx) {
-      parse(text = paste0(attrs[[idx]], ' == ', x[[idx]]))
-    }))
-    dsl_temp <- subset(dsl, conditions)
+    # conditions <- unlist(lapply(seq(length(attrs)), function(idx) {
+    #   parse(text = paste0(attrs[[idx]], ' == ', x[[idx]]))
+    # }))
+    conditions <- paste0(unlist(lapply(seq(length(attrs)), function(idx) {
+      paste0(attrs[[idx]], ' == ', x[[idx]])
+    })), collapse = " & ")
+    dsl_temp <- subset(dsl, text=conditions)
     if (length(attrs) == 1) 
       attr_val <- x
     else
@@ -852,7 +843,7 @@ add_unique_id <- function(dsl, attrs) {
   }
   attr(dsl_new, 'identifying_variables') <- attrs
   attr(dsl_new, 'unique_ids') <- attr_vals
-  for (idx in seq(length(dsl_temp))) {
+  for (idx in seq(length(dsl_new))) {
     attr(dsl_new[[idx]], 'unique_id') <- attr_vals[[idx]]
   }
   dsl_new
@@ -984,11 +975,11 @@ generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL,
     Xseq <- seq_FV(all, start, stop, length.out = 60,
                    scale = ifelse(scale_log, 'log', 'linear'))
     if (include_opts) {
-      for (algid in get_algId(dsList)) {
+      for (uid in get_unique_id(dsList)) {
         if (maximization)
-          Xseq <- c(Xseq, max(get_funvals(subset(dsList, algId == algid))))
+          Xseq <- c(Xseq, max(get_funvals(subset(dsList, unique_id == uid))))
         else
-          Xseq <- c(Xseq, min(get_funvals(subset(dsList, algId == algid))))
+          Xseq <- c(Xseq, min(get_funvals(subset(dsList, unique_id == uid))))
       }
       Xseq <- unique(sort(Xseq))
     }
@@ -998,8 +989,8 @@ generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL,
     Xseq <- seq_RT(all, start, stop, length.out = 60,
                    scale = ifelse(scale_log, 'log', 'linear'))
     if (include_opts) {
-      for (algid in get_algId(dsList)) {
-        Xseq <- c(Xseq, max(get_funvals(subset(dsList, algId == algid))))
+      for (uid in get_unique_id(dsList)) {
+        Xseq <- c(Xseq, max(get_funvals(subset(dsList, algId == uid))))
       }
       Xseq <- unique(sort(Xseq))
     }

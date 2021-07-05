@@ -709,6 +709,7 @@ get_RT_summary.DataSet <- function(ds, ftarget, budget = NULL, ...) {
   if (is.null(budget) || is.na(budget)) maxRT <- attr(ds, 'maxRT')
   else maxRT <- as.numeric(budget)
   algId <- attr(ds, 'algId')
+  unique_id <- attr(ds, 'unique_id')
   maximization <- attr(ds, 'maximization')
 
   ftarget <- sort(as.double(unique(c(ftarget))), decreasing = !maximization)
@@ -728,7 +729,7 @@ get_RT_summary.DataSet <- function(ds, ftarget, budget = NULL, ...) {
   }
 
   data <- data[matched, , drop = FALSE]
-  apply(data, 1, IOHanalyzer_env$D_quantile) %>%
+  dt_temp <- apply(data, 1, IOHanalyzer_env$D_quantile) %>%
     t %>%
     as.data.table %>%
     cbind(as.data.table(SP(data, maxRT))) %>%
@@ -739,6 +740,10 @@ get_RT_summary.DataSet <- function(ds, ftarget, budget = NULL, ...) {
     set_colnames(c('algId', 'target', 'mean', 'median',
                    'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%'),
                    'ERT', 'runs', 'ps'))
+  if (!is.null(unique_id)) {
+    dt_temp[, 'unique_id' := unique_id]
+  }
+  dt_temp
 }
 
 #' Get the maximal running time

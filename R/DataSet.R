@@ -163,7 +163,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
       function(...)
         structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
       c(info, list(maxRT = maxRT, finalFV = finalFV, format = format,
-                   maximization = maximization, suite = suite))
+                   maximization = maximization, suite = suite, ID = info$algId))
     )
   }
   else
@@ -709,7 +709,7 @@ get_RT_summary.DataSet <- function(ds, ftarget, budget = NULL, ...) {
   if (is.null(budget) || is.na(budget)) maxRT <- attr(ds, 'maxRT')
   else maxRT <- as.numeric(budget)
   algId <- attr(ds, 'algId')
-  unique_id <- attr(ds, 'unique_id')
+  unique_id <- attr(ds, 'ID')
   maximization <- attr(ds, 'maximization')
 
   ftarget <- sort(as.double(unique(c(ftarget))), decreasing = !maximization)
@@ -741,7 +741,7 @@ get_RT_summary.DataSet <- function(ds, ftarget, budget = NULL, ...) {
                    'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%'),
                    'ERT', 'runs', 'ps'))
   if (!is.null(unique_id)) {
-    dt_temp[, 'unique_id' := unique_id]
+    dt_temp[, 'ID' := unique_id]
   }
   dt_temp
 }

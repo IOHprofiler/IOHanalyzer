@@ -167,6 +167,8 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
   
   attr(object, 'suite') <- suite
   attr(object, 'maximization') <- maximization
+  attr(object, 'ID') <- attr(object, 'algId')
+  attr(object, 'ID_attributes') <- c('algId')
   if (full_aggregation)
     clean_DataSetList(object)
   else
@@ -817,8 +819,8 @@ subset.DataSetList <- function(x, ...) {
 #' identifier has been added. 
 #' @export
 #' @examples
-#' add_unique_id(dsl, c('instance'))
-add_unique_id <- function(dsl, attrs) {
+#' change_id(dsl, c('instance'))
+change_id <- function(dsl, attrs) {
   if (!all(attrs %in% get_static_attributes(dsl))) stop("Selected attributes are not usable to create unique ids")
   grid <- expand.grid(lapply(attrs, function(x){get_static_attribute_values(dsl, x)}))
   colnames(grid) <- attrs
@@ -832,7 +834,7 @@ add_unique_id <- function(dsl, attrs) {
     conditions <- paste0(unlist(lapply(seq(length(attrs)), function(idx) {
       paste0(attrs[[idx]], ' == ', x[[idx]])
     })), collapse = " & ")
-    dsl_temp <- subset(dsl, text=conditions)
+    dsl_temp <- subset(dsl, text = conditions)
     if (length(attrs) == 1) 
       attr_val <- x
     else
@@ -841,27 +843,31 @@ add_unique_id <- function(dsl, attrs) {
     attr_vals <- c(attr_vals, rep(attr_val, length(dsl_temp)))
     dsl_new <- c(dsl_new, dsl_temp)
   }
-  attr(dsl_new, 'identifying_variables') <- attrs
-  attr(dsl_new, 'unique_ids') <- attr_vals
+  attr(dsl_new, 'ID_attributes') <- attrs
+  attr(dsl_new, 'ID') <- attr_vals
   for (idx in seq(length(dsl_new))) {
-    attr(dsl_new[[idx]], 'unique_id') <- attr_vals[[idx]]
+    attr(dsl_new[[idx]], 'ID') <- attr_vals[[idx]]
   }
   dsl_new
 }
 
 #' Get the unique identifiers for each DataSet in the provided DataSetList
 #' 
-#' If no unique identifier is set (using `add_unique_id`), this function falls back on returning the algorith id
-#' (from `get_aldId`)to ensure backwards compatibility
+#' If no unique identifier is set (using `change_id` or done in DataSet construction from 1.6.0 onwards), 
+#' this function falls back on returning the algorith id (from `get_aldId`)to ensure backwards compatibility
 #'
 #' @param dsl The DataSetList
 #' @return The list of unique identiefiers present in dsl
 #' @export
 #' @examples
-#' get_unique_id(dsl)
-get_unique_id <- function(dsl) {
-  temp <- attr(dsl, 'unique_id')
-  if (is.null(temp)) return(get_algId(dsl))
+#' get_id(dsl)
+get_id <- function(dsl) {
+  temp <- attr(dsl, 'ID')
+  if (is.null(temp)) {
+    warning("No ID attribute set, returning the algId's instead. (from 1.6.0 onwards, ID attributes are always added
+            to new datasets, see the 'add_ID' function.")
+    return(get_algId(dsl))
+  }
   return(unique(temp))
 }
 
@@ -975,11 +981,11 @@ generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL,
     Xseq <- seq_FV(all, start, stop, length.out = 60,
                    scale = ifelse(scale_log, 'log', 'linear'))
     if (include_opts) {
-      for (uid in get_unique_id(dsList)) {
+      for (uid in get_id(dsList)) {
         if (maximization)
-          Xseq <- c(Xseq, max(get_funvals(subset(dsList, unique_id == uid))))
+          Xseq <- c(Xseq, max(get_funvals(subset(dsList, ID == uid))))
         else
-          Xseq <- c(Xseq, min(get_funvals(subset(dsList, unique_id == uid))))
+          Xseq <- c(Xseq, min(get_funvals(subset(dsList, ID == uid))))
       }
       Xseq <- unique(sort(Xseq))
     }
@@ -989,8 +995,8 @@ generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL,
     Xseq <- seq_RT(all, start, stop, length.out = 60,
                    scale = ifelse(scale_log, 'log', 'linear'))
     if (include_opts) {
-      for (uid in get_unique_id(dsList)) {
-        Xseq <- c(Xseq, max(get_funvals(subset(dsList, algId == uid))))
+      for (uid in get_id(dsList)) {
+        Xseq <- c(Xseq, max(get_funvals(subset(dsList, ID == uid))))
       }
       Xseq <- unique(sort(Xseq))
     }

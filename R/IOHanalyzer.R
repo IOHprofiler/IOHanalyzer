@@ -19,6 +19,7 @@
 #' @importFrom httr POST add_headers content authenticate
 #' @importFrom reshape2 acast
 #' @importFrom knitr kable
+#' @importFrom methods hasArg
 #' @useDynLib IOHanalyzer
 NULL
 # Ugly hack, but appears to be required to appease CRAN
@@ -26,7 +27,7 @@ utils::globalVariables(c(".", "algId", "run", "ERT", "RT", "group",
                          "DIM", "Fvalue", "lower", "upper", "target", "format",
                          "runtime", "parId", "instance", "input", "funcId",
                          "budget", "dimension", "loss", "name", "optimizer_name",
-                         "rescale", "maxRT", "algnames", ".SD", "function_class"))
+                         "rescale", "maxRT", "algnames", ".SD", "function_class", "ID"))
 
 options(shiny.port = 4242)
 

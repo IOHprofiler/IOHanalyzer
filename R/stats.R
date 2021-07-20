@@ -1023,3 +1023,85 @@ get_shapley_values <- function(dsList, targets, scale.log = T, group_size = 5, m
   data.table(algId = algs_full, shapley = shapleys)
 }
 
+
+#' Get the list of available options for data from the OPTION ontology
+#' 
+#' 
+#' @param varname The variable for which to get the options. Restricted to [Fid, Iid, DIM, AlgId, Suite]
+#' @param datasource The datasource for which to get the attributes. Either BBOB or Nevergrad
+
+#' 
+#' @return the options of varname given the specified datasource
+#' 
+#' @export
+#' @examples 
+#' get_ontology_var("Fid", "BBOB")
+get_ontology_var <- function(varname, datasource) {
+  
+  url_base <- "http://semanticannotations.ijs.si:8080/"
+  
+  if (datasource == "BBOB")
+    parameters_list <- list(testbed = "COCO-BBOB")
+  else
+    parameters_list <- list(testbed = "Nevergrad")
+  
+  url_appendix <- switch(varname,
+    "Fid" = "functions",
+    "DIM" = "dimensions",
+    "Iid" = "instance",
+    "Suite" = "nevergrad_testbeds",
+    "AlgId" = "algorithms"
+  )
+    
+  url <- paste0(url_base, url_appendix)
+    
+  tryCatch({
+    resp <- GET(url, query = parameters_list)  
+    return(unlist(content(resp))) 
+  },
+  error = function(e) { 
+    warning(e)
+    return(NULL)}
+  )
+}
+
+#' Get the list of available options for data from the OPTION ontology
+#' 
+#' 
+#' @param varname The variable for which to get the options. Restricted to [Fid, Iid, DIM, AlgId, Suite]
+#' @param datasource The datasource for which to get the attributes. Either BBOB or Nevergrad
+
+#' 
+#' @return the options of varname given the specified datasource
+#' 
+#' @export
+#' @examples 
+#' get_ontology_data("BBOB", 5, 5, "IPOP400D", 1)
+get_ontology_data <- function(datasource, fids, dims, algs, iids = NULL, funcsuites = NULL) {
+  
+  url_base <- "http://semanticannotations.ijs.si:8080/query"
+  
+  if (datasource == "BBOB")
+    parameters_list <- list(testbed = "COCO-BBOB")
+  else
+    parameters_list <- list(testbed = "Nevergrad")
+  
+  parameters_list$functions <- fids
+  parameters_list$dimensions  <- dims
+  parameters_list$algorithms  <- algs
+  if (!is.null(iids))
+    parameters_list$instances  <- iids
+  if (!is.null(funcsuites))
+    parameters_list$nevergradTestbed  <- funcsuites
+  
+
+  tryCatch({
+    resp <- POST(url, body = parameters_list)
+    results <- content(resp)
+  },
+  error = function(e) { 
+    warning(e)
+    return(NULL)}
+  )
+  results
+}

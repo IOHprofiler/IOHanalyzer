@@ -887,3 +887,138 @@ locate_corrections_files <- function(path) {
   files <- list.files(path, recursive = T, pattern = "*.txt", full.names = T)
   files[stri_detect_fixed(files, 'corrections')]
 }
+
+#' Read DataSetList of OPTION-based data
+#' 
+#' Processes the data.table object created from the OPTION response into a DataSetList object
+#'
+#' @param dt The data.table object created from the OPTION request
+#' @param source The type of data which is loaded, currently either BBOB or Nevergrad
+#' @param ... Additional parameters to add to each DataSet object (e.g. function suite of nevergrad data)
+#' 
+#' @return The DataSetList extracted from the data.table provided
+#' @noRd
+convert_from_OPTION <- function(dt, source, ...) {
+  
+  triplets <- unique(dt[, .(algorithm_name, dimensionality, benchmark_problem )])
+  # algIds <- unique(triplets$algorithm_name)
+  # DIMs <- unique(triplets$dimensionality)
+  # funcIds <- unique(triplets$benchmark_problem)
+  algIds <- list()
+  DIMs <- list()
+  funcIds <- list()
+  
+  res <- list()
+  
+  idx <- 1
+  
+  for (i in seq(nrow(triplets))) {
+    algId <- triplets$algorithm_name[i]
+    DIM <- as.numeric(triplets$dimensionality[i])
+    funcId <- triplets$benchmark_problem[i]
+    
+    
+    # rescale_name <- 'rescale'
+    # if ( !('rescale' %in% colnames(dt))) {
+    #   if ( 'transform' %in% colnames(dt))
+    #     colnames(dt)[colnames(dt) == "transform"] <- "rescale"
+    #   else{
+    #     dt$rescale <- NA
+    #   }
+    # }
+    
+    if (source == "BBOB") {
+      data <- dt[algorithm_name == algId & dimensionality == DIM & benchmark_problem == funcId,
+                 .(instance_id, num_experiment_run, num_function_run, precision_value)]
+      
+      funcId_no_f <- as.numeric(stri_sub(funcId, 2))
+      
+      for (iid in unique(data$instance_id)) {
+        for (rep in unique(data$num_experiment_run)) {
+          data_reduced <- data[instance_id == iid & num_experiment_run == rep, 
+                               .(num_function_run = as.numeric(num_function_run), 
+                                 precision_value =  as.numeric(precision_value))]
+
+          rows <- unique(data_reduced$num_function_run) %>% sort
+          FV <- lapply(rows,
+                       function(b) {
+                         data_reduced[num_function_run == b, precision_value]
+                       }
+          ) %>%
+            do.call(rbind, .) %>%
+            set_rownames(rows)
+          
+          data_twocol <- as.matrix(data_reduced[order(num_function_run)])
+          RT <- align_running_time(list(data_twocol), TWO_COL, maximization = F, include_param = F)
+          
+          ds <-  structure(list(RT = RT$RT, FV = FV),
+                           class = c('DataSet', 'list'),
+                           maxRT = max(rows),
+                           finalFV = min(FV),
+                           format = 'OPTION',
+                           suite = source,
+                           maximization = FALSE,
+                           algId = algId,
+                           instance = iid,
+                           funcId = funcId_no_f,
+                           DIM = DIM,
+                           ID = algId)
+          res[[idx]] <- ds
+          idx <- idx + 1
+          algIds <- c(algIds, algId)
+          funcIds <- c(funcIds, funcId_no_f)
+          DIMs <- c(DIMs, DIM)
+        }
+      }
+    }
+    else {
+      data <- dt[algorithm_name == algId & dimensionality == DIM & benchmark_problem == funcId,
+                 .(num_experiment_run, num_function_run, precision_value)]
+    
+      for (rep in unique(data$num_experiment_run)) {
+        data_reduced <- data[num_experiment_run == rep,
+                             .(num_function_run = as.numeric(num_function_run), 
+                               precision_value =  as.numeric(precision_value))]
+        
+        rows <- unique(data_reduced$num_function_run) %>% sort
+        FV <- lapply(rows,
+                     function(b) {
+                       data_reduced[num_function_run == b, precision_value]
+                     }
+        ) %>%
+          do.call(rbind, .) %>%
+          set_rownames(rows)
+        
+        data_twocol <- as.matrix(data_reduced[order(num_function_run)])
+        RT <- align_running_time(c(data_twocol), TWO_COL, maximization = F)
+        
+        ds <-  structure(list(RT = RT$RT, FV = FV),
+                         class = c('DataSet', 'list'),
+                         maxRT = max(rows),
+                         finalFV = min(FV),
+                         format = 'OPTION',
+                         suite = source,
+                         maximization = FALSE,
+                         algId = algId,
+                         funcId = funcId,
+                         DIM = DIM,
+                         ID = algId)
+        res[[idx]] <- ds
+        idx <- idx + 1
+        algIds <- c(algIds, algId)
+        funcIds <- c(funcIds, funcId)
+        DIMs <- c(DIMs, DIM)
+        }
+    }
+  }
+  class(res) %<>% c('DataSetList')
+  attr(res, 'DIM') <- DIMs
+  attr(res, 'funcId') <- funcIds
+  attr(res, 'algId') <- algIds
+  #To be enabled when merged with version 1.6
+  # attr(res, 'ID') <- algIds
+  # attr(res, 'ID_attributes') <- c('algId')
+  attr(res, 'suite') <- source
+  attr(res, 'maximization') <- F
+  clean_DataSetList(res)
+}

@@ -1076,7 +1076,7 @@ get_ontology_var <- function(varname, datasource) {
 #' 
 #' @export
 #' @examples 
-#' get_ontology_data("BBOB", 5, 5, "IPOP400D", 1)
+#' get_ontology_data("BBOB", "f5", 5, "IPOP400D", 1)
 get_ontology_data <- function(datasource, fids, dims, algs, iids = NULL, funcsuites = NULL) {
   
   url_base <- "http://semanticannotations.ijs.si:8080/query"
@@ -1086,22 +1086,23 @@ get_ontology_data <- function(datasource, fids, dims, algs, iids = NULL, funcsui
   else
     parameters_list <- list(testbed = "Nevergrad")
   
-  parameters_list$functions <- fids
-  parameters_list$dimensions  <- dims
-  parameters_list$algorithms  <- algs
+  parameters_list$functions <- paste0(fids, collapse = ',')
+  parameters_list$dimensions  <- paste0(dims, collapse = ',')
+  parameters_list$algorithms  <- paste0(algs, collapse = ',')
   if (!is.null(iids))
-    parameters_list$instances  <- iids
+    parameters_list$instances  <- paste0(iids, collapse = ',')
   if (!is.null(funcsuites))
     parameters_list$nevergradTestbed  <- funcsuites
   
 
   tryCatch({
-    resp <- POST(url, body = parameters_list)
+    resp <- POST(url_base, body = parameters_list, encode = "form")
     results <- content(resp)
   },
   error = function(e) { 
     warning(e)
     return(NULL)}
   )
-  results
+  dt_temp <- rbindlist(results$results)
+  convert_from_OPTION(dt_temp, datasource)
 }

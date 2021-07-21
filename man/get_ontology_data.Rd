@@ -19,5 +19,5 @@ the options of varname given the specified datasource
 Get the list of available options for data from the OPTION ontology
 }
 \examples{
-get_ontology_data("BBOB", 5, 5, "IPOP400D", 1)
+get_ontology_data("BBOB", "f5", 5, "IPOP400D", 1)
 }

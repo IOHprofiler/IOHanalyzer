@@ -17,8 +17,8 @@
 #' @importFrom Rcpp sourceCpp
 #' @importFrom igraph graph_from_adjacency_matrix layout.circle plot.igraph 
 #' @importFrom stringi stri_detect_regex stri_detect_fixed stri_locate_all stri_replace
-#' @importFrom stringi stri_rand_strings
-#' @importFrom httr POST add_headers content authenticate
+#' @importFrom stringi stri_rand_strings stri_sub
+#' @importFrom httr POST GET add_headers content authenticate
 #' @importFrom reshape2 acast
 #' @importFrom knitr kable
 #' @useDynLib IOHanalyzer

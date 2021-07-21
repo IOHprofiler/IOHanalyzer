@@ -27,6 +27,13 @@ observe({
 observeEvent(input$Ontology.Load, {
   req(input$Ontology.Source)
   
+  data <- get_ontology_data(input$Ontology.Source, 
+                            input$Ontology.Functions,
+                            input$Ontology.Dimensions,
+                            input$Ontology.Algorithms,
+                            input$Ontology.Iids,
+                            input$Ontology.NG_Suite)
+  
   
   if (length(DataList$data) > 0 && attr(data, 'maximization') != attr(DataList$data, 'maximization')) {
     shinyjs::alert(paste0("Attempting to add data from a different optimization type to the currently",

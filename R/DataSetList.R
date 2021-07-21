@@ -178,7 +178,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
 
 #' Clean DataSetList object by concatenating DataSets
 #' 
-#' Concatenates all DataSets with the same algorith name, function id and dimension
+#' Concatenates all DataSets with the same ID, function id and dimension
 #'  
 #' @param dsList The DataSetList object to clean
 #' @export
@@ -192,6 +192,7 @@ clean_DataSetList <- function(dsList) {
     attr(dsList, 'funcId'), 
     attr(dsList, 'DIM'),
     attr(dsList, 'algId'),
+    attr(dsList, 'ID'),
     SIMPLIFY = T,
     USE.NAMES = F
   )
@@ -211,6 +212,7 @@ clean_DataSetList <- function(dsList) {
     attr(dsList, 'DIM') <- sapply(dsList, function(ds) attr(ds, 'DIM'))
     attr(dsList, 'funcId') <- sapply(dsList, function(ds) attr(ds, 'funcId'))
     attr(dsList, 'algId') <- sapply(dsList, function(ds) attr(ds, 'algId'))
+    attr(dsList, 'ID') <- sapply(dsList, function(ds) attr(ds, 'ID'))
   }
   dsList
 }
@@ -235,7 +237,7 @@ c.DataSetList <- function(...) {
   if (!any((class(object)) == 'DataSetList'))
     class(object) <- c('DataSetList', class(object))
 
-  for (attr_str in c('DIM', 'funcId', 'algId')) {
+  for (attr_str in c('DIM', 'funcId', 'algId', 'ID')) {
     attr(object, attr_str) <- unlist(lapply(dsl, function(x) attr(x, attr_str)))
   }
 
@@ -247,7 +249,7 @@ c.DataSetList <- function(...) {
   )
   
   # These attributes NEED to be the same across the datasetlist
-  for (attr_str in c('maximization')) {
+  for (attr_str in c('maximization', 'ID_attributes')) {
     temp <- unique(
         unlist(lapply(dsl, function(x) attr(x, attr_str)))
     )
@@ -278,6 +280,7 @@ c.DataSetList <- function(...) {
 
   # also slice the attributes accordingly
   attr(obj, 'DIM') <- attr(x, 'DIM')[i]
+  attr(obj, 'ID') <- attr(x, 'ID')[i]
   attr(obj, 'funcId') <- attr(x, 'funcId')[i]
   attr(obj, 'algId') <- attr(x, 'algId')[i]
   attr(obj, 'suite') <- attr(x, 'suite')
@@ -337,7 +340,7 @@ summary.DataSetList <- function(object, ...) {
             suite = attr(d, 'suite'),
             funcId = attr(d, 'funcId'),
             DIM = attr(d, 'DIM'),
-            algId = attr(d, 'algId'),
+            ID = attr(d, 'ID'),
             datafile = attr(d, 'datafile'),
             comment = attr(d, 'comment')
           )
@@ -379,7 +382,7 @@ arrange.DataSetList <- function(dsl, ...) {
     }
 
     v <- as.character(v)
-    if (v %in% c('DIM', 'funcId', 'algId'))
+    if (v %in% c('DIM', 'funcId', 'ID'))
       cols[[i]] <- v
     else {
       cols[[i]] <- NULL
@@ -398,7 +401,7 @@ arrange.DataSetList <- function(dsl, ...) {
   dsl <- dsl[idx]
 
   # TODO: perhaps we do not need those attributes at all...
-  for (v in c('DIM', 'funcId', 'algId'))
+  for (v in c('DIM', 'funcId', 'ID'))
     attr(dsl, v) <- sapply(dsl, function(d) attr(d, v))
   dsl
 }
@@ -584,6 +587,18 @@ get_PAR_sample.DataSetList <- function(ds, idxValue, algorithm = 'all', ...) {
     ds <- subset(ds, algId == algorithm)
 
   rbindlist(lapply(ds, function(ds) get_PAR_sample(ds, idxValue, ...)), fill = T)
+}
+
+#' @rdname get_id
+#' @export
+get_id.DataSetList <- function(ds, ...) {
+  temp <- attr(ds, 'ID')
+  if (is.null(temp)) {
+    warning("No ID attribute set, returning the algId's instead. (from 1.6.0 onwards, ID attributes are always added
+            to new datasets, see the 'change_id' function.")
+    return(get_algId(ds))
+  }
+  return(unique(temp))
 }
 
 #' Get all dimensions present in a DataSetList
@@ -851,25 +866,7 @@ change_id <- function(dsl, attrs) {
   dsl_new
 }
 
-#' Get the unique identifiers for each DataSet in the provided DataSetList
-#' 
-#' If no unique identifier is set (using `change_id` or done in DataSet construction from 1.6.0 onwards), 
-#' this function falls back on returning the algorith id (from `get_aldId`)to ensure backwards compatibility
-#'
-#' @param dsl The DataSetList
-#' @return The list of unique identiefiers present in dsl
-#' @export
-#' @examples
-#' get_id(dsl)
-get_id <- function(dsl) {
-  temp <- attr(dsl, 'ID')
-  if (is.null(temp)) {
-    warning("No ID attribute set, returning the algId's instead. (from 1.6.0 onwards, ID attributes are always added
-            to new datasets, see the 'add_ID' function.")
-    return(get_algId(dsl))
-  }
-  return(unique(temp))
-}
+
 
 
 #' Save DataTable in multiple formats
@@ -1063,7 +1060,7 @@ generate_data.hist <- function(dsList, target, use.equal.bins = F, which = 'by_R
       lapply(
         dsList, 
         function(ds) {
-          algId <- attr(ds, 'algId')
+          ID <- get_id(ds)
           
           if (which == 'by_RT') 
             data <- get_RT_sample(ds, target, output = 'long')$RT
@@ -1091,7 +1088,7 @@ generate_data.hist <- function(dsList, target, use.equal.bins = F, which = 'by_R
           plot_data <- data.frame(
             x = res$mids, 
             y = res$counts, 
-            algId = algId,
+            ID = ID,
             width = breaks[2] - breaks[1],
             text =  plot_text
           )
@@ -1154,7 +1151,7 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', 
   }
   
   dt <- as.data.table(rbindlist(lapply(dsList, function(df) {
-    algId <- attr(df, 'algId')
+    ID <- get_id(df)
     if (by_rt) {
       temp <- targets[DIM == attr(df, 'DIM'), c('target', 'funcId')]
       targets_ <- temp[funcId == attr(df, 'funcId')][['target']]
@@ -1177,9 +1174,9 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', 
     data.frame(x = x,
                mean = apply(m, 2, . %>% mean(na.rm = T)),
                sd = apply(m, 2, . %>% sd(na.rm = T))) %>%
-      mutate(upper = mean + sd, lower = mean - sd, algId = algId)
+      mutate(upper = mean + sd, lower = mean - sd, ID = ID)
   })))
-  dt[, mean(mean), by = .(x, algId)][, .(mean = V1, algId = algId, x = x)]
+  dt[, mean(mean), by = .(x, ID)][, .(mean = V1, ID = ID, x = x)]
 }
 
 
@@ -1209,17 +1206,17 @@ generate_data.AUC <- function(dsList, targets, scale_log = F, which = 'by_RT', d
     dt_ecdf <- generate_data.ECDF(dsList, targets, scale_log, which)
   }
   max_idx <- nrow(unique(dt_ecdf[,'x']))
-  dt_ecdf[, idx := seq(max_idx), by = 'algId']
+  dt_ecdf[, idx := seq(max_idx), by = 'ID']
   dt3 = copy(dt_ecdf)
   dt3[, idx := idx - 1]
-  dt_merged = merge(dt_ecdf, dt3, by = c('algId', 'idx'))
-  colnames(dt_merged) <- c("algId", "idx", "mean_pre", "x_pre", "mean_post", "x")
+  dt_merged = merge(dt_ecdf, dt3, by = c('ID', 'idx'))
+  colnames(dt_merged) <- c("ID", "idx", "mean_pre", "x_pre", "mean_post", "x")
   dt_merged[, auc_contrib := ((mean_pre + mean_post)/2)*(x - x_pre)]
-  dt_merged[, auc := cumsum(auc_contrib)/x, by = 'algId']
+  dt_merged[, auc := cumsum(auc_contrib)/x, by = 'ID']
   #TODO: just for max x
   if (multiple_x)
-    return(dt_merged[, c('algId','x','auc') ])
-  return(dt_merged[idx == (max_idx - 1), c('algId','x','auc') ])
+    return(dt_merged[, c('ID','x','auc') ])
+  return(dt_merged[idx == (max_idx - 1), c('ID','x','auc') ])
 }
   
   
@@ -1340,7 +1337,7 @@ generate_data.Aggr <- function(dsList, aggr_on = 'funcId', targets = NULL, which
   }
  
   aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
-  N <- length(get_algId(dsList))
+  N <- length(get_id(dsList))
 
   dt <- rbindlist(lapply(aggr_attr, function(agg_val) {
     if (by_rt) {
@@ -1348,7 +1345,7 @@ generate_data.Aggr <- function(dsList, aggr_on = 'funcId', targets = NULL, which
         dt <- get_RT_summary(subset(dsList, funcId == agg_val), targets[funcId == agg_val][['target']])
       else
         dt <- get_RT_summary(subset(dsList, DIM == agg_val), targets[DIM == agg_val][['target']])
-      dt[, c('algId', value = 'ERT', 'funcId', 'DIM')]
+      dt[, c('ID', value = 'ERT', 'funcId', 'DIM')]
       setnames(dt, 'ERT', 'value')
     }
     else{
@@ -1356,7 +1353,7 @@ generate_data.Aggr <- function(dsList, aggr_on = 'funcId', targets = NULL, which
         dt <- get_FV_summary(subset(dsList, funcId == agg_val), targets[funcId == agg_val][['target']])
       else
         dt <- get_FV_summary(subset(dsList, DIM == agg_val), targets[DIM == agg_val][['target']])
-      dt[, c('algId', value = 'mean', 'funcId', 'DIM')]
+      dt[, c('ID', value = 'mean', 'funcId', 'DIM')]
       setnames(dt, 'mean', 'value')
     }
   }))
@@ -1403,7 +1400,7 @@ generate_data.ECDF_raw <- function(dsList, targets, scale_log = F) {
   }
   
   dt <- as.data.table(rbindlist(lapply(dsList, function(df) {
-    algId <- attr(df, 'algId')
+    ID <- get_id(df)
     temp <- targets[DIM == attr(df, 'DIM'), c('target', 'funcId')]
     targets_ <- temp[funcId == attr(df, 'funcId')][['target']]
     
@@ -1415,7 +1412,7 @@ generate_data.ECDF_raw <- function(dsList, targets, scale_log = F) {
         fun <- ecdf(data)
         hit <- if (is.function(fun)) fun(x) else NA
       }
-      data.table(hit = hit, rt = x, target = target, funcId = attr(df, 'funcId'), DIM = attr(df, 'DIM'), algId = attr(df, 'algId'))
+      data.table(hit = hit, rt = x, target = target, funcId = attr(df, 'funcId'), DIM = attr(df, 'DIM'), ID = ID)
     }) %>%
       do.call(rbind, .)
     m

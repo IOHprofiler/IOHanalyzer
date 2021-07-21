@@ -4,10 +4,10 @@
 \alias{get_color_scheme}
 \title{Get colors according to the current colorScheme of the IOHanalyzer}
 \usage{
-get_color_scheme(algnames_in)
+get_color_scheme(ids_in)
 }
 \arguments{
-\item{algnames_in}{List of algorithms for which to get colors}
+\item{ids_in}{List of algorithms (or custom ids, see `change_id`) for which to get colors}
 }
 \description{
 Get colors according to the current colorScheme of the IOHanalyzer

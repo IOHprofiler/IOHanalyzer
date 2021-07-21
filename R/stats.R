@@ -139,8 +139,8 @@ pairwise.test.DataSetList <- function(x, ftarget, bootstrap.size = 0, which = 'b
   if (which == 'by_FV') {
     dt <- get_RT_sample(x, ftarget, output = 'long')
     maxRT <- get_maxRT(x, output = 'long')
-    maxRT <- split(maxRT$maxRT, maxRT$algId)
-    s <- split(dt$RT, dt$algId)
+    maxRT <- split(maxRT$maxRT, maxRT$ID)
+    s <- split(dt$RT, dt$ID)
   }
   else if (which == 'by_RT') {
     dt <- get_FV_sample(x, ftarget, output = 'long')
@@ -148,7 +148,7 @@ pairwise.test.DataSetList <- function(x, ftarget, bootstrap.size = 0, which = 'b
     if (bootstrap.size > 0) warning("Bootstrapping is currently not supported for
                                     fixed-budget statistics.")
     bootstrap.size = 0
-    s <- split(dt$`f(x)`, dt$algId)
+    s <- split(dt$`f(x)`, dt$ID)
   }
   else stop("Unsupported argument 'which'. Available options are 'by_FV' and 'by_RT'")
   
@@ -514,7 +514,7 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = N
     stop("Package \"pkg\" needed for this function to work. Please install it.",
          call. = FALSE)
   }
-  req(length(get_algId(dsl)) > 1)
+  req(length(get_id(dsl)) > 1)
 
   if (!is.null(target_dt) && !('data.table' %in% class(target_dt))) {
     warning("Provided `target_dt` argument is not a data.table")
@@ -544,7 +544,7 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = N
     }
     funcs
   }
-  n_algs = length(get_algId(dsl))
+  n_algs = length(get_id(dsl))
   alg_names <- NULL
   for (k in seq(1,nr_rounds)) {
     for (dim in get_dims()) {
@@ -776,8 +776,8 @@ convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT',
     targets <- get_target_dt(dsList, which)
   }
   
-  final_list <- lapply(get_algId(dsList), function(algname) {
-    dsl_sub <- subset(dsList, algId == algname)
+  final_list <- lapply(get_id(dsList), function(id) {
+    dsl_sub <- subset(dsList, ID == id)
     problems <- lapply(dsl_sub, function(ds) {
       target <- targets[funcId == attr(ds, 'funcId') & DIM == attr(ds, 'DIM'), 'target']
       if (!is.numeric(target)) { #TODO: more robust solution
@@ -820,7 +820,7 @@ convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT',
       return(list(name = paste0("F", attr(ds, 'funcId'), "_", attr(ds, 'DIM'),"D"),
                   data = data))
     })
-    return(list(algorithm = algname, problems = problems))
+    return(list(ID = id, problems = problems))
   })
   
   
@@ -950,7 +950,7 @@ get_dsc_posthoc <- function(omni_res, nr_algs, nr_problems, base_algorithm = NUL
 #' 
 #' Based on the contribution to the ECDF-curve of the VBS of the portfolio 
 #' 
-#' @param alg The result from a call to `get_dsc_omnibus`
+#' @param id The id for which to get the contribution
 #' @param perm The permutation of algorithms to which is being contributed
 #' @param j At which point in the permutation the contribution should be measured
 #' @param dt The datatable in which the raw ecdf-values are stored (see `generate_data.ECDF_raw`)
@@ -958,17 +958,17 @@ get_dsc_posthoc <- function(omni_res, nr_algs, nr_problems, base_algorithm = NUL
 #' @export
 #' @examples 
 #' dt <- generate_data.ECDF_raw(dsl, get_ECDF_targets(dsl))
-#' get_marg_contrib_ecdf(get_algId(dsl)[[1]], get_algId(dsl), 1, dt)
-get_marg_contrib_ecdf <- function(alg, perm, j, dt) {
+#' get_marg_contrib_ecdf(get_id(dsl)[[1]], get_id(dsl), 1, dt)
+get_marg_contrib_ecdf <- function(id, perm, j, dt) {
   hit <- NULL #Bind to avoid notes
-  algs <- perm[0:j]
-  v_pre <- sum(dt[algId %in% algs, list(hit = max(hit)), by = c('funcId', 'DIM', 'target', 'rt')][['hit']])
-  algs <- perm[0:(j - 1)]
+  ids <- perm[0:j]
+  v_pre <- sum(dt[ID %in% ids, list(hit = max(hit)), by = c('funcId', 'DIM', 'target', 'rt')][['hit']])
+  ids <- perm[0:(j - 1)]
   if (j == 1) {
     v_post <- 0
   }
   else
-    v_post <- sum(dt[algId %in% algs, list(hit = max(hit)), by = c('funcId', 'DIM', 'target', 'rt')][['hit']])
+    v_post <- sum(dt[ID %in% ids, list(hit = max(hit)), by = c('funcId', 'DIM', 'target', 'rt')][['hit']])
   v_pre - v_post
 }
 
@@ -990,17 +990,17 @@ get_marg_contrib_ecdf <- function(alg, perm, j, dt) {
 #' get_shapley_values(dsl, get_ECDF_targets(dsl))
 get_shapley_values <- function(dsList, targets, scale.log = T, group_size = 5, max_perm_size = 10, normalize = T){
   hit <- NULL #Bind to avoid notes
-  algs_full <- get_algId(dsList)
+  ids_full <- get_id(dsList)
   
   dt <- generate_data.ECDF_raw(dsList, targets, scale_log = scale.log)
   
-  nr_players <- length(algs_full)
+  nr_players <- length(ids_full)
   
-  perms <- lapply(seq_len(nr_players * group_size), function(i) {sample(algs_full)})
+  perms <- lapply(seq_len(nr_players * group_size), function(i) {sample(ids_full)})
   
   max_val <- sum(dt[, list(hit = max(hit)), by = c('funcId', 'DIM', 'target', 'rt')][['hit']])
   ### For each algorithm, calculate shapley value
-  shapleys <- lapply(algs_full, function(alg) {
+  shapleys <- lapply(ids_full, function(id) {
     ### For each group of permutations
     temp <- mean(unlist(
       lapply(seq_len(max_perm_size), function(j) {
@@ -1008,8 +1008,8 @@ get_shapley_values <- function(dsList, targets, scale.log = T, group_size = 5, m
         ###
         mean(unlist(
           lapply(perm_sub, function(perm) {
-            perm <- replace(perm, c(j, which(perm == alg)), c(alg,perm[[j]]))
-            get_marg_contrib_ecdf(alg, perm, j, dt)
+            perm <- replace(perm, c(j, which(perm == id)), c(id,perm[[j]]))
+            get_marg_contrib_ecdf(id, perm, j, dt)
           })
         ))
         
@@ -1020,6 +1020,6 @@ get_shapley_values <- function(dsList, targets, scale.log = T, group_size = 5, m
     temp
   })
   
-  data.table(algId = algs_full, shapley = shapleys)
+  data.table(ID = ids_full, shapley = shapleys)
 }
 

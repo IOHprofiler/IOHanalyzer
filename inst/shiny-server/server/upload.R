@@ -85,11 +85,12 @@ observeEvent(input$repository.load_button, {
   }
   
   DataList$data <- c(DataList$data, data)
+  DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
   update_menu_visibility(attr(DataList$data, 'suite'))
   # set_format_func(attr(DataList$data, 'suite'))
-  algids <- get_algId(DataList$data)
-  if (!all(algids %in% get_color_scheme_dt()[['algnames']])) {
-    set_color_scheme("Default", algids)
+  IDs <- get_id(DataList$data)
+  if (!all(IDs %in% get_color_scheme_dt()[['ids']])) {
+    set_color_scheme("Default", IDs)
   }
 })
 
@@ -237,6 +238,7 @@ observeEvent(selected_folders(), {
     }
     
     DataList$data <- clean_DataSetList(DataList$data)
+    DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
     if (is.null(DataList$data)) {
       shinyjs::alert("An error occurred when processing the uploaded data.
                      Please ensure the data is not corrupted.")
@@ -245,9 +247,9 @@ observeEvent(selected_folders(), {
     
     update_menu_visibility(attr(DataList$data, 'suite'))
     # set_format_func(attr(DataList$data, 'suite'))
-    algids <- get_algId(DataList$data)
-    if (!all(algids %in% get_color_scheme_dt()[['algnames']])) {
-      set_color_scheme("Default", algids)
+    IDs <- get_id(DataList$data)
+    if (!all(IDs %in% get_color_scheme_dt()[['ids']])) {
+      set_color_scheme("Default", IDs)
     }
   }, message = "Processing data, this might take some time")
 })
@@ -328,8 +330,8 @@ observe({
     return()
 
   # TODO: create reactive values for them
-  algIds_ <- get_algId(data)
-  algIds <- c(algIds_, 'all')
+  algIds_ <- get_id(data)
+  # algIds <- c(algIds_, 'all')
   parIds_ <- get_parId(data)
   parIds <- c(parIds_, 'all')
   funcIds <- get_funcId(data)
@@ -338,7 +340,7 @@ observe({
   selected_ds <- data[[1]]
   selected_f <- attr(selected_ds,'funcId')
   selected_dim <- attr(selected_ds, 'DIM')
-  selected_alg <- attr(selected_ds, 'algId')
+  selected_alg <- get_id(selected_ds)
 
   updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = selected_f)
@@ -474,18 +476,18 @@ observe({
   updateSelectInput(session, 'FV_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
 
   updateSelectInput(session, 'FV_Stats.Overview.Algid', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'FCESummary.Overview.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'RTSummary.Sample.Algid', choices = algIds, selected = 'all')
+  updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FCESummary.Overview.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RTSummary.Sample.Algid', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FV_PAR.Plot.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'RT_PAR.Plot.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'FCESummary.Statistics.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'FCESummary.Sample.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'FV_PAR.Summary.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'FV_PAR.Sample.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'RT_PAR.Summary.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'RT_PAR.Sample.Algid', choices = algIds, selected = 'all')
+  updateSelectInput(session, 'FCESummary.Statistics.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FCESummary.Sample.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FV_PAR.Summary.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FV_PAR.Sample.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RT_PAR.Summary.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RT_PAR.Sample.Algid', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = algIds_, selected = selected_alg)
   updateSelectInput(session, 'ERTPlot.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'ERTPlot.Aggr.Algs', choices = algIds_, selected = algIds_)

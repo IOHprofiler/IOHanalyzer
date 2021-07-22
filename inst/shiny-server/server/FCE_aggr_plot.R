@@ -27,7 +27,7 @@ render_FCEPlot_aggr_plot <- reactive({
 
 ### Gather relevant datasetlist 
 FCEPlot.Aggr.data <- function() {
-  data <- subset(DATA_RAW(), algId %in% isolate(input$FCEPlot.Aggr.Algs))
+  data <- subset(DATA_RAW(), ID %in% isolate(input$FCEPlot.Aggr.Algs))
   if (length(data) == 0) return(NULL)
   if (input$FCEPlot.Aggr.Aggregator == 'Functions') {
     data <- subset(data, DIM == input$Overall.Dim)
@@ -43,7 +43,7 @@ FCEPlot.Aggr.data <- function() {
       return(NULL)
     }
   }
-  if (length(unique(get_algId(data))) == 1) {
+  if (length(unique(get_id(data))) == 1) {
     shinyjs::alert("This plot is only available when the dataset contains multiple algorithms for the selected dimension.")
     return(NULL)
   }
@@ -55,9 +55,9 @@ FCEPlot.Aggr.data <- function() {
 FCE_multi_function <- function() {
   dt <- FCEPlot.Aggr.FCEs_obj()
   if (input$FCEPlot.Aggr.Aggregator == 'Functions')
-    dt <- dcast(dt, funcId~algId, value.var = 'value')
+    dt <- dcast(dt, funcId~ID, value.var = 'value')
   else
-    dt <- dcast(dt, DIM~algId, value.var = 'value')
+    dt <- dcast(dt, DIM~ID, value.var = 'value')
   dt 
 }
 

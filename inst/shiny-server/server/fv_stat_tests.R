@@ -2,7 +2,7 @@ fv_render_heatmap <- reactive({
   req(length(DATA()) > 0)
   withProgress({
     target <- as.numeric(input$FV_Stats.Overview.Target)
-    data <- subset(DATA(), algId %in% input$FV_Stats.Overview.Algid)
+    data <- subset(DATA(), ID %in% input$FV_Stats.Overview.Algid)
     Plot.Stats.Significance_Heatmap(data, target, alpha = as.numeric(input$FV_Stats.Overview.Alpha),
                                     bootstrap.size = 0, which = 'by_RT')
   },
@@ -16,8 +16,8 @@ output$FV_Stats.Overview.Heatmap <- renderPlotly(
 
 fv_create_stats_table <- reactive({
   req(length(DATA()) > 0)
-  req(length(get_algId(DATA())) > 1)
-  data <- subset(DATA(), algId %in% input$FV_Stats.Overview.Algid)
+  req(length(get_id(DATA())) > 1)
+  data <- subset(DATA(), ID %in% input$FV_Stats.Overview.Algid)
   target <- as.numeric(input$FV_Stats.Overview.Target)
   df <- pairwise.test(data, target, bootstrap.size = 0, which = 'by_RT')
   df <- format(df, digits = 3)
@@ -36,7 +36,7 @@ fv_render_graph <- reactive({
   req(length(DATA()) > 0)
   withProgress({
     target <- as.numeric(input$FV_Stats.Overview.Target)
-    data <- subset(DATA(), algId %in% input$FV_Stats.Overview.Algid)
+    data <- subset(DATA(), ID %in% input$FV_Stats.Overview.Algid)
     Plot.Stats.Significance_Graph(data, target, alpha = as.numeric(input$FV_Stats.Overview.Alpha),
                                   bootstrap.size = 0, which = 'by_RT')
   },
@@ -69,7 +69,7 @@ fv_data_table_glicko2 <- reactive({
   isolate({
     withProgress({
       data <- FV_glicko_data()
-      req(length(data) > 0 && length(get_algId(data)) > 0)
+      req(length(data) > 0 && length(get_id(data)) > 0)
       nr_games <- as.numeric(input$FV_Stats.Glicko.Nrgames)
       df <- glicko2_ranking(data, nr_games, which = 'by_RT', 
                             target_dt = FV_stats_glicko_targets_obj)$ratings
@@ -119,11 +119,11 @@ output$FV_Stats.Glicko.Download <- downloadHandler(
 
 
 FV_glicko_data <- function() {
-  data <- subset(DATA_RAW(), algId %in% isolate(input$FV_Stats.Glicko.Algid))
+  data <- subset(DATA_RAW(), ID %in% isolate(input$FV_Stats.Glicko.Algid))
   if (length(data) == 0) return(NULL)
   data <- subset(data, DIM %in% input$FV_Stats.Glicko.Dim)
   data <- subset(data, funcId %in% input$FV_Stats.Glicko.Funcid)
-  if (length(unique(get_algId(data))) < 2) {
+  if (length(unique(get_id(data))) < 2) {
     shinyjs::alert("This plot is only available when the dataset contains
                    multiple algorithms for the selected functions and dimensions.")
     return(NULL)

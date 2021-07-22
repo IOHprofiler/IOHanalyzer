@@ -1,13 +1,13 @@
 # empirical p.d.f. of the target value
 get_data_FV_PMF <- reactive({
   ftarget <- input$FCEPDF.Bar.Runtime %>% as.numeric
-  data <- subset(DATA(), algId %in% input$FCEPDF.Bar.Algs)
+  data <- subset(DATA(), ID %in% input$FCEPDF.Bar.Algs)
   generate_data.PMF(data, ftarget, 'by_FV')
 })
 
 render_FV_PDF <- reactive({
   withProgress({
-    plot_general_data(get_data_FV_PMF(), 'algId', 'f(x)', scale.ylog = input$FCEPDF.Bar.Logy,
+    plot_general_data(get_data_FV_PMF(), 'ID', 'f(x)', scale.ylog = input$FCEPDF.Bar.Logy,
                       x_title = "Algorithm", y_title = "Target Value")
     # ftarget <- input$RTPMF.Bar.Target %>% as.numeric
     # data <- subset(DATA(), algId %in% input$RTPMF.Bar.Algs)
@@ -36,7 +36,7 @@ output$FCE_PDF <- renderPlotly({
 
 get_data_FV_HIST <- reactive({
   ftarget <- input$FCEPDF.Hist.Runtime %>% as.numeric
-  data <- subset(DATA(), algId %in% input$FCEPDF.Hist.Algs)
+  data <- subset(DATA(), ID %in% input$FCEPDF.Hist.Algs)
   generate_data.hist(data, ftarget, input$FCEPDF.Hist.Equal, 'by_FV')
 })
 
@@ -44,7 +44,7 @@ get_data_FV_HIST <- reactive({
 render_FV_HIST <- reactive({
   req(input$FCEPDF.Hist.Runtime != "", length(DATA()) > 0)   # require non-empty input
   withProgress({
-    subplot_attr <- if (input$FCEPDF.Hist.Mode == 'subplot') 'algId' else NULL
+    subplot_attr <- if (input$FCEPDF.Hist.Mode == 'subplot') 'ID' else NULL
     plot_general_data(get_data_FV_HIST(), 'x', 'y', width = 'width', type = 'hist', 
                       subplot_attr = subplot_attr, x_title = "Target Values",
                       y_title = "Runs")

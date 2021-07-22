@@ -29,7 +29,7 @@ render_ERTPlot_aggr_plot_dim <- reactive({
 
 ### Gather relevant datasetlist
 ERTPlot.Aggr_Dim.data <- function() {
-  data <- subset(DATA_RAW(), algId %in% isolate(input$ERTPlot.Aggr_Dim.Algs))
+  data <- subset(DATA_RAW(), ID %in% isolate(input$ERTPlot.Aggr_Dim.Algs))
   if (length(data) == 0) return(NULL)
   data <- subset(data, funcId == input$Overall.Funcid)
   
@@ -39,7 +39,7 @@ ERTPlot.Aggr_Dim.data <- function() {
     return(NULL)
   }
   
-  if (length(unique(get_algId(data))) <= 1) {
+  if (length(unique(get_id(data))) <= 1) {
     shinyjs::alert("This plot is only available when the dataset contains
                    multiple algorithms for the selected function")
     return(NULL)
@@ -50,7 +50,7 @@ ERTPlot.Aggr_Dim.data <- function() {
 ### format table for display
 ert_multi_dim <- function(){
   dt <- get_data_ERT_aggr_dim()
-  dt <- dcast(dt, DIM~algId, value.var = 'value')
+  dt <- dcast(dt, DIM~ID, value.var = 'value')
   format(dt, digits = 4) 
 }
 

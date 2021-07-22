@@ -836,6 +836,7 @@ subset.DataSetList <- function(x, ...) {
 #' @examples
 #' change_id(dsl, c('instance'))
 change_id <- function(dsl, attrs) {
+  if (length(dsl) == 0) return(dsl)
   if (!all(attrs %in% get_static_attributes(dsl))) stop("Selected attributes are not usable to create unique ids")
   grid <- expand.grid(lapply(attrs, function(x){get_static_attribute_values(dsl, x)}))
   colnames(grid) <- attrs
@@ -843,11 +844,11 @@ change_id <- function(dsl, attrs) {
   dsl_new <- DataSetList()
   attr_vals <- c()
   for (x in transpose(grid)) {
-    # conditions <- unlist(lapply(seq(length(attrs)), function(idx) {
-    #   parse(text = paste0(attrs[[idx]], ' == ', x[[idx]]))
-    # }))
+    #TODO: on Windows, UTF-8 Characters get converted into <U+XXXX> characters, which then 
+    #don't interact correctly with the parse used in 'subset' function, leading to empty datasetlist objects.
+    #I'm not aware of any way to fix this, so UFT-8 characters should be avoided in ID for now.
     conditions <- paste0(unlist(lapply(seq(length(attrs)), function(idx) {
-      paste0(attrs[[idx]], ' == ', x[[idx]])
+      paste0(attrs[[idx]], ' == "', x[[idx]], '"')
     })), collapse = " & ")
     dsl_temp <- subset(dsl, text = conditions)
     if (length(attrs) == 1) 
@@ -863,6 +864,13 @@ change_id <- function(dsl, attrs) {
   for (idx in seq(length(dsl_new))) {
     attr(dsl_new[[idx]], 'ID') <- attr_vals[[idx]]
   }
+  class(dsl_new) <- c("DataSetList", "list")
+  attr(dsl_new, 'suite') <- attr(dsl, 'suite')
+  attr(dsl_new, 'maximization') <- attr(dsl, 'maximization')
+  
+  attr(dsl_new, 'DIM') <- lapply(dsl_new, function(x) attr(x, 'DIM'))
+  attr(dsl_new, 'funcId') <- lapply(dsl_new, function(x) attr(x, 'funcId'))
+  attr(dsl_new, 'algId') <- lapply(dsl_new, function(x) attr(x, 'algId'))
   dsl_new
 }
 

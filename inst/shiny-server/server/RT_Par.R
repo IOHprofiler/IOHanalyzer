@@ -1,6 +1,6 @@
 
 get_data_RT_PAR_PER_FUN <- reactive({
-  data <- subset(DATA(), algId %in% input$RT_PAR.Plot.Algs)
+  data <- subset(DATA(), ID %in% input$RT_PAR.Plot.Algs)
   generate_data.Parameters(data, scale_log = input$RT_PAR.Plot.Logx, which = 'by_FV')
 })
 

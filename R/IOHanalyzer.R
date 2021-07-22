@@ -34,6 +34,7 @@ options(shiny.port = 4242)
 .onLoad <- function(libname, pkgname) {
   op <- options()
   op.IOHanalyzer <- list(
+    IOHanalyzer.ID_vars = c("algId"),
     IOHanalyzer.quantiles = c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.,
     IOHanalyzer.max_samples = 100,
     IOHanalyzer.backend = 'plotly',

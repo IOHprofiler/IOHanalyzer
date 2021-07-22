@@ -1,7 +1,7 @@
 multi_function_data_summary <- reactive({
   data <- DATA_RAW()
   req(length(data) > 0)
-  data <- subset(data, algId %in% input$RT.MultiERT.AlgId & 
+  data <- subset(data, ID %in% input$RT.MultiERT.AlgId & 
                    funcId %in% input$RT.MultiERT.FuncId & 
                    DIM %in% input$RT.MultiERT.DIM)
   
@@ -26,7 +26,7 @@ output$RT.MultiERT.Download <- downloadHandler(
 multi_function_data_sample <- reactive({
   data <- DATA_RAW()
   req(length(data) > 0)
-  data <- subset(data, algId %in% input$RT.Multisample.AlgId & 
+  data <- subset(data, ID %in% input$RT.Multisample.AlgId & 
                    funcId %in% input$RT.Multisample.FuncId & 
                    DIM %in% input$RT.Multisample.DIM)
   
@@ -53,7 +53,7 @@ multi_function_data_summary_FV <- reactive({
   data <- DATA_RAW()
   req(length(data) > 0)
   req(as.numeric(input$FV.MultiFV.Target) > 0)
-  data <- subset(data, algId %in% input$FV.MultiFV.AlgId & 
+  data <- subset(data, ID %in% input$FV.MultiFV.AlgId & 
                    funcId %in% input$FV.MultiFV.FuncId & 
                    DIM %in% input$FV.MultiFV.DIM)
   
@@ -78,7 +78,7 @@ output$FV.MultiFV.Download <- downloadHandler(
 multi_function_data_sample_FV <- reactive({
   data <- DATA_RAW()
   req(length(data) > 0)
-  data <- subset(data, algId %in% input$FV.Multisample.AlgId & 
+  data <- subset(data, ID %in% input$FV.Multisample.AlgId & 
                    funcId %in% input$FV.Multisample.FuncId & 
                    DIM %in% input$FV.Multisample.DIM)
   

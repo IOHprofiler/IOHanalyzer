@@ -1,7 +1,7 @@
 overview_table_single <- reactive({
   data <- DATA()
   req(length(data) > 0)
-  df <- get_overview(subset(data, algId %in% input$Overview.Single.Algid))
+  df <- get_overview(subset(data, ID %in% input$Overview.Single.Algid))
                      
   df$budget %<>% as.numeric
   df$runs %<>% as.integer

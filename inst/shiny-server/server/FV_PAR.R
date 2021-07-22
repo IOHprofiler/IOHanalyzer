@@ -1,6 +1,6 @@
 # Expected Evolution of parameters in the algorithm
 get_data_FV_PAR_PER_FUN <- reactive({
-  data <- subset(DATA(), algId %in% input$FV_PAR.Plot.Algs)
+  data <- subset(DATA(), ID %in% input$FV_PAR.Plot.Algs)
   generate_data.Parameters(data, scale_log = input$FV_PAR.Plot.Logx, which = 'by_RT')
 })
 

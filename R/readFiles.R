@@ -899,11 +899,13 @@ locate_corrections_files <- function(path) {
 #' @return The DataSetList extracted from the data.table provided
 #' @noRd
 convert_from_OPTION <- function(dt, source, ...) {
+  #Initialize variables used in data.table to avoid CRAN-check notes.
+  algorithm_name <- dimensionality <- benchmark_problem <- NULL
+  instance_id <- num_experiment_run <- num_function_run <- NULL
+  precision_value <- NULL
+  
   
   triplets <- unique(dt[, .(algorithm_name, dimensionality, benchmark_problem )])
-  # algIds <- unique(triplets$algorithm_name)
-  # DIMs <- unique(triplets$dimensionality)
-  # funcIds <- unique(triplets$benchmark_problem)
   algIds <- list()
   DIMs <- list()
   funcIds <- list()
@@ -916,16 +918,6 @@ convert_from_OPTION <- function(dt, source, ...) {
     algId <- triplets$algorithm_name[i]
     DIM <- as.numeric(triplets$dimensionality[i])
     funcId <- triplets$benchmark_problem[i]
-    
-    
-    # rescale_name <- 'rescale'
-    # if ( !('rescale' %in% colnames(dt))) {
-    #   if ( 'transform' %in% colnames(dt))
-    #     colnames(dt)[colnames(dt) == "transform"] <- "rescale"
-    #   else{
-    #     dt$rescale <- NA
-    #   }
-    # }
     
     if (source == "BBOB") {
       data <- dt[algorithm_name == algId & dimensionality == DIM & benchmark_problem == funcId,

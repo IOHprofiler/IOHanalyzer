@@ -31,6 +31,11 @@ ontology_box <- function(width = 12, collapsible = T, collapsed = F,
       # ),
 
 
+      conditionalPanel(condition = 'input["Ontology.Source"] == "Nevergrad"',
+                       selectInput('Ontology.NG_Suite',
+                                   label = "Please choose the Function Suite",
+                                   choices = NULL, selected = NULL, width = '50%', multiple = F)),
+      
       selectInput('Ontology.Functions',
                   label = "Please choose the functions",
                   choices = NULL, selected = NULL, width = '50%', multiple = T),
@@ -41,10 +46,7 @@ ontology_box <- function(width = 12, collapsible = T, collapsed = F,
                   label = "Please choose the algorithms",
                   choices = NULL, selected = NULL, width = '50%', multiple = T),
       
-      conditionalPanel(condition = 'input["Ontology.Source"] == "Nevergrad"',
-                       selectInput('Ontology.NG_Suite',
-                                   label = "Please choose the Function Suite",
-                                   choices = NULL, selected = NULL, width = '50%', multiple = F)),
+
       
       conditionalPanel(condition = 'input["Ontology.Source"] == "BBOB"',
                        selectInput('Ontology.Iids',

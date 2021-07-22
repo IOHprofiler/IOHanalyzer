@@ -8,12 +8,20 @@ get_ontology_data(datasource, fids, dims, algs, iids = NULL,
   funcsuites = NULL)
 }
 \arguments{
-\item{datasource}{The datasource for which to get the attributes. Either BBOB or Nevergrad}
+\item{datasource}{The datasource: either BBOB or Nevergrad}
 
-\item{varname}{The variable for which to get the options. Restricted to [Fid, Iid, DIM, AlgId, Suite]}
+\item{fids}{The function names as given by `get_ontology_var`}
+
+\item{dims}{The dimensionalities as given by `get_ontology_var`}
+
+\item{algs}{The algorithm names as given by `get_ontology_var`}
+
+\item{iids}{The instances as given by `get_ontology_var` (only for BBOB data)}
+
+\item{funcsuites}{The function suite as given by `get_ontology_var` (only for Nevergrad data)}
 }
 \value{
-the options of varname given the specified datasource
+a DataSetList object matching the selected attributes.
 }
 \description{
 Get the list of available options for data from the OPTION ontology

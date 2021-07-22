@@ -1029,22 +1029,23 @@ get_shapley_values <- function(dsList, targets, scale.log = T, group_size = 5, m
 #' 
 #' @param varname The variable for which to get the options. Restricted to [Fid, Iid, DIM, AlgId, Suite]
 #' @param datasource The datasource for which to get the attributes. Either BBOB or Nevergrad
-
+#' @param ... Additional arguments to the OPTION call. Currently only supports 'Suite' for nevergrad.
 #' 
 #' @return the options of varname given the specified datasource
 #' 
 #' @export
 #' @examples 
 #' get_ontology_var("Fid", "BBOB")
-get_ontology_var <- function(varname, datasource) {
+get_ontology_var <- function(varname, datasource, ...) {
   
   url_base <- "http://semanticannotations.ijs.si:8080/"
   
   if (datasource == "BBOB")
     parameters_list <- list(testbed = "COCO-BBOB")
-  else
-    parameters_list <- list(testbed = "Nevergrad")
-  
+  else{
+    dot_args = list(...)
+    parameters_list <- list(testbed = "Nevergrad", nevergradTestbed = dot_args[['suite']])
+  }
   url_appendix <- switch(varname,
     "Fid" = "functions",
     "DIM" = "dimensions",
@@ -1068,11 +1069,14 @@ get_ontology_var <- function(varname, datasource) {
 #' Get the list of available options for data from the OPTION ontology
 #' 
 #' 
-#' @param varname The variable for which to get the options. Restricted to [Fid, Iid, DIM, AlgId, Suite]
-#' @param datasource The datasource for which to get the attributes. Either BBOB or Nevergrad
-
+#' @param datasource The datasource: either BBOB or Nevergrad
+#' @param fids The function names as given by `get_ontology_var`
+#' @param dims The dimensionalities as given by `get_ontology_var`
+#' @param algs The algorithm names as given by `get_ontology_var`
+#' @param iids The instances as given by `get_ontology_var` (only for BBOB data)
+#' @param funcsuites The function suite as given by `get_ontology_var` (only for Nevergrad data)
 #' 
-#' @return the options of varname given the specified datasource
+#' @return a DataSetList object matching the selected attributes.
 #' 
 #' @export
 #' @examples 

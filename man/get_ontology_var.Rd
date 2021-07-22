@@ -4,12 +4,14 @@
 \alias{get_ontology_var}
 \title{Get the list of available options for data from the OPTION ontology}
 \usage{
-get_ontology_var(varname, datasource)
+get_ontology_var(varname, datasource, ...)
 }
 \arguments{
 \item{varname}{The variable for which to get the options. Restricted to [Fid, Iid, DIM, AlgId, Suite]}
 
 \item{datasource}{The datasource for which to get the attributes. Either BBOB or Nevergrad}
+
+\item{...}{Additional arguments to the OPTION call. Currently only supports 'Suite' for nevergrad.}
 }
 \value{
 the options of varname given the specified datasource

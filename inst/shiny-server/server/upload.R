@@ -513,6 +513,10 @@ observe({
   updateSelectInput(session, 'ParCoordPlot.Algs', choices = algIds_, selected = algIds_[[1]])
   updateSelectInput(session, 'FV_PAR.Plot.Params', choices = parIds_, selected = parIds_)
   updateSelectInput(session, 'RT_PAR.Plot.Params', choices = parIds_, selected = parIds_)
+  
+  
+  updateSelectInput(session, 'Settings.ID.Variables', choices = get_static_attributes(data), 
+                    selected = attr(data, 'ID_attributes'))
 })
 
 # update (filter) according to users selection DataSets

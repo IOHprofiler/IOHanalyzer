@@ -294,8 +294,8 @@ subset.DataSet <- function(x, mask, ...) {
   
   format <- info[['format']] 
   
-  RT <- x$RT[, mask]
-  FV <- x$FV[, mask]
+  RT <- as.matrix(x$RT[, mask])
+  FV <- as.matrix(x$FV[, mask])
   
   PAR <- list(
     'by_FV' = ifelse(ncol(x$PAR$by_FV) == length(mask), x$PAR$by_FV[, mask], NULL),

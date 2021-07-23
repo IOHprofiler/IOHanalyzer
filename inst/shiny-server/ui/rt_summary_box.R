@@ -76,7 +76,7 @@ rt_overview_box <- function(width = 12, collapsible = T, collapsed = T) {
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        HTML('<p align="justify">Select which algorithms to show.</p>'),
+        HTML('<p align="justify">Select which IDs to include:</p>'),
 
         selectInput('RTSummary.Overview.Algid', 'Algorithms', choices = NULL, selected = NULL),
         hr(),

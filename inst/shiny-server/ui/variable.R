@@ -27,9 +27,10 @@ Pdsc_mc_info <- "Practical Deep Comparison uses this
 
 HTML_P <- function(s) HTML(paste0('<p align="left" style="font-size:120%;">', s, '</p>'))
 
-alg_select_info <- "Use this option to select which algorithms to plot. 
+alg_select_info <- "Use this option to select which IDs to plot. 
       This will hava an effect the dowloaded plot, 
-      as opposed to using the legend-entries to show or hide algorithms "
+      as opposed to using the legend-entries to show or hide algorithms. 
+      The attributes which define the ID can be changed in the settings."
 
 custom_icon <- function(name = NULL){
   if (is.null(name)) name <- "info-circle"

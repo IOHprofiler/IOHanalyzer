@@ -7,11 +7,11 @@ fv_ecdf_single_budget_box <- function(width = 12, collapsible = T, collapsed = T
     sidebarLayout(
       sidebarPanel(
         width = 3,
-        selectInput('FCEECDF.Single.Algs', label = 'Select which algorithms to plot:',
+        selectInput('FCEECDF.Single.Algs', label = 'Select which IDs to include:',
                     multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                       custom_icon() %>%
                         bs_embed_popover(
-                          title = "Algorithm selection", content = alg_select_info, 
+                          title = "ID selection", content = alg_select_info, 
                           placement = "auto"
                         )
                     ),
@@ -44,11 +44,11 @@ fv_ecdf_agg_budgets_box <- function(width = 12, collapsible = T, collapsed = T) 
     solidHeader = T, status = "primary",
     sidebarPanel(
       width = 3,
-      selectInput('FCEECDF.Mult.Algs', label = 'Select which algorithms to plot:',
+      selectInput('FCEECDF.Mult.Algs', label = 'Select which IDs to include:',
                   multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                     custom_icon() %>%
                       bs_embed_popover(
-                        title = "Algorithm selection", content = alg_select_info, 
+                        title = "ID selection", content = alg_select_info, 
                         placement = "auto"
                       )
                   ),
@@ -99,11 +99,11 @@ fv_ecdf_auc_box <- function(width = 12, collapsible = T, collapsed = T) {
     solidHeader = T, status = "primary",
     sidebarPanel(
       width = 3,
-      selectInput('FCEECDF.AUC.Algs', label = 'Select which algorithms to plot:',
+      selectInput('FCEECDF.AUC.Algs', label = 'Select which IDs to include:',
                   multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                     custom_icon() %>%
                       bs_embed_popover(
-                        title = "Algorithm selection", content = alg_select_info, 
+                        title = "ID selection", content = alg_select_info, 
                         placement = "auto"
                       )
                   ),      

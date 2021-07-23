@@ -4,7 +4,7 @@ multi_function_ert_box <- function(width = 12, collapsible = T, collapsed = T) {
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        HTML('<p align="justify">Select which algorithms to show.</p>'),
+        HTML('<p align="justify">Select which IDs to include:</p>'),
         
         selectInput('RT.MultiERT.AlgId', 'Algorithms', choices = NULL, selected = NULL, multiple = T),
         selectInput('RT.MultiERT.FuncId', 'Functions', choices = NULL, selected = NULL, multiple = T),
@@ -30,7 +30,7 @@ multi_function_sample_box <- function(width = 12, collapsible = T, collapsed = T
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        HTML('<p align="justify">Select which algorithms to show.</p>'),
+        HTML('<p align="justify">Select which IDs to include:</p>'),
         
         selectInput('RT.Multisample.AlgId', 'Algorithms', choices = NULL, selected = NULL, multiple = T),
         selectInput('RT.Multisample.FuncId', 'Functions', choices = NULL, selected = NULL, multiple = T),
@@ -57,7 +57,7 @@ multi_function_fv_box <- function(width = 12, collapsible = T, collapsed = T) {
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        HTML('<p align="justify">Select which algorithms to show.</p>'),
+        HTML('<p align="justify">Select which IDs to include:</p>'),
         
         selectInput('FV.MultiFV.AlgId', 'Algorithms', choices = NULL, selected = NULL, multiple = T),
         selectInput('FV.MultiFV.FuncId', 'Functions', choices = NULL, selected = NULL, multiple = T),
@@ -83,7 +83,7 @@ multi_function_sample_box_fv <- function(width = 12, collapsible = T, collapsed 
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        HTML('<p align="justify">Select which algorithms to show.</p>'),
+        HTML('<p align="justify">Select which IDs to include:</p>'),
         
         selectInput('FV.Multisample.AlgId', 'Algorithms', choices = NULL, selected = NULL, multiple = T),
         selectInput('FV.Multisample.FuncId', 'Functions', choices = NULL, selected = NULL, multiple = T),

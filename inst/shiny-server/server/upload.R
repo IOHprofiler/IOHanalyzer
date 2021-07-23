@@ -530,13 +530,16 @@ DATA <- reactive({
   dim <- input$Overall.Dim
   id <- input$Overall.Funcid
   req(dim, id)
-
-  algid <- input$Overall.AlgId
   
-  if (length(DataList$data) == 0) return(NULL)
-
   d <- subset(DataList$data, DIM == dim, funcId == id)
-  if (!is.null(algid)) d <- subset(d, algId == algid)
+  
+  if (!'algId' %in% input$Settings.ID.Variables) {
+    algid <- input$Overall.AlgId
+    if (!is.null(algid)) d <- subset(d, algId == algid)
+  }
+
+  if (length(DataList$data) == 0) return(NULL)
+  
   if (length(d) == 0 && dim != "" && id != "") {
     showNotification("There is no data available for this (dimension,function)-pair")
   }

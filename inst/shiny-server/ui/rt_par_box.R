@@ -11,10 +11,10 @@ rt_par_expected_value_box <- function(width = 12, collapsible = T, collapsed = T
       textInput('RT_PAR.Plot.Max', label = F_MAX_LABEL, value = ''),
       selectInput('RT_PAR.Plot.Params', 'Parameters', choices = NULL, selected = NULL, multiple = T),
       
-      selectInput('RT_PAR.Plot.Algs', 'Select which algorithms to plot:', choices = NULL, selected = NULL, multiple = T) %>% shinyInput_label_embed(
+      selectInput('RT_PAR.Plot.Algs', 'Select which IDs to include:', choices = NULL, selected = NULL, multiple = T) %>% shinyInput_label_embed(
         custom_icon() %>%
           bs_embed_popover(
-            title = "Algorithm selection", content = alg_select_info, 
+            title = "ID selection", content = alg_select_info, 
             placement = "auto"
           )
       ),

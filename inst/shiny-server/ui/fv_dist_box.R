@@ -7,11 +7,11 @@ fv_histgram_box <- function(width = 12, collapsible = T, collapsed = T) {
         width = 2,
         textInput('FCEPDF.Hist.Runtime', label = HTML('Select the budget value'),
                   value = ''),
-        selectInput('FCEPDF.Hist.Algs', label = 'Select which algorithms to plot:',
+        selectInput('FCEPDF.Hist.Algs', label = 'Select which IDs to include:',
                     multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                       custom_icon() %>%
                         bs_embed_popover(
-                          title = "Algorithm selection", content = alg_select_info, 
+                          title = "ID selection", content = alg_select_info, 
                           placement = "auto"
                         )
                     ),
@@ -60,11 +60,11 @@ fv_pdf_box <- function(width = 12, collapsible = T, collapsed = T) {
         HTML('Select the budget for which the distribution of best-so-far function values is shown'),
 
         textInput('FCEPDF.Bar.Runtime', label = '', value = ''),
-        selectInput('FCEPDF.Bar.Algs', label = 'Select which algorithms to plot:',
+        selectInput('FCEPDF.Bar.Algs', label = 'Select which IDs to include:',
                     multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                       custom_icon() %>%
                         bs_embed_popover(
-                          title = "Algorithm selection", content = alg_select_info, 
+                          title = "ID selection", content = alg_select_info, 
                           placement = "auto"
                         )
                     ),

@@ -9,7 +9,7 @@ DIM_fID_panel <- function() {
             width = 11,
             selectInput(
               "Overall.Funcid",
-              label = HTML('<p style="font-size:90%;">Select the function ID</p>'),
+              label = HTML('<p style="font-size:90%;">Function ID:</p>'),
               choices = NULL, selected = NULL)
           )
         )
@@ -21,11 +21,22 @@ DIM_fID_panel <- function() {
             width = 11,
             selectInput(
               "Overall.Dim",
-              label = HTML('<p style="font-size:90%;">Select the dimension</p>'),
+              label = HTML('<p style="font-size:90%;">Dimension:</p>'),
               choices = NULL, selected = NULL)
           )
         )
-      )
+      ),
+      div(id = 'overall_algid_box',
+        fluidRow(
+          column(
+            width = 11,
+            selectInput(
+              "Overall.AlgId",
+              label = HTML('<p style="font-size:90%;">Algorithm:</p>'),
+              choices = NULL, selected = NULL)
+          )
+        )
+      )#,
     )
   )
 }

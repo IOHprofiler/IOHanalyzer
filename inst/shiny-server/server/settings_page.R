@@ -150,11 +150,17 @@ observe({
 
 observe({
   req(input$Settings.ID.Variables)
+  withProgress({
   id_vars <- input$Settings.ID.Variables
   if (!setequal(id_vars,getOption('IOHanalyzer.ID_vars', c('algId')))) {
     options("IOHanalyzer.ID_vars" = input$Settings.ID.Variables)
     DataList$data <- change_id(DataList$data, input$Settings.ID.Variables)
   }
+  if ('algId' %in% id_vars) 
+    shinyjs::hide(id = "overall_algid_box")
+  else
+    shinyjs::show(id = "overall_algid_box")
+}, message = "Processing IDs")
 })
 
 observe({

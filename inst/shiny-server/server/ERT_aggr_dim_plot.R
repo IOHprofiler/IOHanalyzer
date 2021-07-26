@@ -41,7 +41,7 @@ ERTPlot.Aggr_Dim.data <- function() {
   
   if (length(unique(get_id(data))) <= 1) {
     shinyjs::alert("This plot is only available when the dataset contains
-                   multiple algorithms for the selected function")
+                   multiple IDs for the selected function")
     return(NULL)
   }
   data
@@ -58,7 +58,7 @@ ert_multi_dim <- function(){
 default_targets_table_dim <- reactive({
   data <- ERTPlot.Aggr_Dim.data()
   if (is.null(data)) return(NULL)
-  targets <- get_target_dt(data)
+  targets <- get_target_dt(data, 'by_FV')
   targets <- targets[, c('DIM','target')] 
 })
 

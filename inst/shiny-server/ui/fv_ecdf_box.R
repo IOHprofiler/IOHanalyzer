@@ -127,7 +127,7 @@ fv_ecdf_auc_box <- function(width = 12, collapsible = T, collapsed = T) {
                 caculated for the sequence of budget values specified on the left. The displayed
                 values are normalized against the maximal target value recorded for
                 each algorithm. Intuitively, the <b>smaller</b> the area, the <b>better</b> the algorithm.
-                The displayed algorithms can be selected by clicking on the legend on the right.
+                The displayed IDs can be selected by clicking on the legend on the right.
                 A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.'),
         plotlyOutput.IOHanalyzer("FCE_AUC")
       )

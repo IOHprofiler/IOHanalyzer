@@ -12,7 +12,7 @@ get_data_RT_SHAPLEY <- reactive({
   
   if (length(get_id(dsList)) <= 1) {
     shinyjs::alert("This is an invalid configuration for this plot. \n
-                     Please ensure that the dataset contains multiple algorithms.")
+                     Please ensure that the dataset contains multiple IDs.")
     return(NULL)
   }
   

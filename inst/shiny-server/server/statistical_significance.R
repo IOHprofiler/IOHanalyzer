@@ -123,7 +123,7 @@ RT_glicko_data <- function() {
   data <- subset(data, funcId %in% input$RT_Stats.Glicko.Funcid)
   if (length(unique(get_id(data))) < 2) {
     shinyjs::alert("This plot is only available when the dataset contains
-                   multiple algorithms for the selected functions and dimensions.")
+                   multiple IDs for the selected functions and dimensions.")
     return(NULL)
   }
   data

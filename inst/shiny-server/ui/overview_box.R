@@ -6,7 +6,7 @@ general_overview_box_single <- function(width = 12, collapsible = T, collapsed =
         width = 3,
         HTML('<p align="justify">Select which IDs to include:</p>'),
         
-        selectInput('Overview.Single.Algid', 'Algorithms', choices = NULL, selected = NULL, multiple = T),
+        selectInput('Overview.Single.Algid', 'IDs:', choices = NULL, selected = NULL, multiple = T),
         hr(),
         selectInput('Overview.Single.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
         downloadButton("Overview.Single.Download", "Save this table")

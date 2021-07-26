@@ -87,6 +87,7 @@ rt_parameter_summary <- reactive({
   fstop <- format_FV(input$RT_PAR.Summary.Max) %>% as.numeric
   fstep <- format_FV(input$RT_PAR.Summary.Step) %>% as.numeric
   data <- DATA()
+  data <- subset(data, ID %in% input$RT_PAR.Summary.Algid)
   
   if (!input$RT_PAR.Summary.Single) {
     req(fstart <= fstop, fstep <= fstop - fstart)
@@ -97,7 +98,7 @@ rt_parameter_summary <- reactive({
   else 
     fseq <- fstart
   
-  dt <- get_PAR_summary(data, fseq, input$RT_PAR.Summary.Algid, input$RT_PAR.Summary.Param)
+  dt <- get_PAR_summary(data, fseq, parId = input$RT_PAR.Summary.Param)
   req(length(dt) != 0)
   
   dt$runs %<>% as.integer
@@ -123,6 +124,7 @@ rt_parameter_sample <- reactive({
   fstop <- format_FV(input$RT_PAR.Sample.Max) %>% as.numeric
   fstep <- format_FV(input$RT_PAR.Sample.Step) %>% as.numeric
   data <- DATA()
+  data <- subset(data, ID %in% input$RT_PAR.Sample.Algid)
   
   if (!input$RT_PAR.Sample.Single) {
     req(fstart <= fstop, fstep <= fstop - fstart)
@@ -134,7 +136,6 @@ rt_parameter_sample <- reactive({
     fseq <- fstart
   
   df <- get_PAR_sample(data, idxValue = fseq, 
-                       algorithm = input$RT_PAR.Sample.Algid,
                        parId = input$RT_PAR.Sample.Param,
                        output = input$RT_PAR.Sample.Format)
   

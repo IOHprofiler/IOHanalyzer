@@ -44,7 +44,7 @@ FCEPlot.Aggr.data <- function() {
     }
   }
   if (length(unique(get_id(data))) == 1) {
-    shinyjs::alert("This plot is only available when the dataset contains multiple algorithms for the selected dimension.")
+    shinyjs::alert("This plot is only available when the dataset contains multiple IDs for the selected dimension.")
     return(NULL)
   }
   data

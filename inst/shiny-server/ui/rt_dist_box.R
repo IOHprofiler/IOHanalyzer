@@ -8,7 +8,7 @@ rt_histogram_box <- function(width = 12, collapsed = T, collapsible = T) {
                   value = ''),
         selectInput(
           'RTPMF.Hist.Algs',
-          label = 'Select which algorithms to plot',
+          label = 'Select which IDs to include:',
           multiple = T, 
           selected = NULL, 
           choices = NULL

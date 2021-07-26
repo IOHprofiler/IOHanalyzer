@@ -2,8 +2,9 @@
 runtime_summary_condensed <- reactive({
   data <- DATA()
   req(length(data) > 0)
-  fall <- get_funvals(data)
-  df <- get_FV_overview(data, algorithm = input$RTSummary.Overview.Algid)
+  # fall <- get_funvals(data)
+  data <- subset(data, ID %in% input$RTSummary.Overview.Algid)
+  df <- get_FV_overview(data)
   df$budget %<>% as.numeric
   df$runs %<>% as.integer
   df$funcId %<>% as.integer
@@ -44,7 +45,7 @@ runtime_summary <- reactive({
   fstop <- format_FV(input$RTSummary.Statistics.Max)
   fstep <- format_FV(input$RTSummary.Statistics.Step)
   data <- DATA()
-  
+  data <- subset(data, ID %in% input$RTSummary.Statistics.Algid)
   if (!input$RTSummary.Statistics.Single) {
     req(fstart <= fstop, fstep <= fstop - fstart, length(data) > 0)
     fall <- get_funvals(data)
@@ -54,7 +55,7 @@ runtime_summary <- reactive({
     fseq <- fstart
   }
 
-  df <- get_RT_summary(data, fseq, algorithm = input$RTSummary.Statistics.Algid)
+  df <- get_RT_summary(data, fseq)
   df <- df[, c('DIM', 'funcId') := NULL]
   df$target <- format_FV(df$target) %>% as.numeric
 
@@ -98,7 +99,7 @@ get_RT <- reactive({
   fstop <- format_FV(input$RTSummary.Sample.Max)
   fstep <- format_FV(input$RTSummary.Sample.Step)
   data <- DATA()
-
+  data <- subset(data, ID %in% input$RTSummary.Sample.Algid)
   if (!input$RTSummary.Sample.Single) {
     req(fstart <= fstop, fstep <= fstop - fstart, length(data) > 0)
     fall <- get_funvals(data)
@@ -109,7 +110,7 @@ get_RT <- reactive({
     fseq <- fstart
   }
 
-  df <- get_RT_sample(data, ftarget = fseq, algorithm = input$RTSummary.Sample.Algid,
+  df <- get_RT_sample(data, ftarget = fseq,
                 output = input$RTSummary.Sample.DownloadFormat)
   df$target <- format_FV(df$target)
   df[is.na(df)] <- 'NA'

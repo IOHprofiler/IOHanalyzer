@@ -12,7 +12,6 @@
 SP <- function(data, max_runtime) {
   N <- ncol(data)
   if (length(max_runtime) > 1) {
-    warning("Argument 'max_runtime' will only be available to use as a single numeric value in the next release of IOHanalyzer.")
     max_runtime <- max(max_runtime)
   }
   idx <- is.na(data) | data > max_runtime

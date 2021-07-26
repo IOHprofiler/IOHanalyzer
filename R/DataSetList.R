@@ -637,6 +637,18 @@ get_funcId <- function(dsList) {
   sort(lli)
 }
 
+#' Get all function names present in a DataSetList
+#'
+#' @param dsList The DataSetLsit
+#'
+#' @return A list of all unique function names which occur in the DataSetList
+#' @export
+#' @examples
+#' get_funcName(dsl)
+get_funcName <- function(dsList) {
+  unique(unname(unlist(sapply(dsList, function(d) attr(d, 'funcName')))))
+}
+
 #' Get all algorithm ids present in a DataSetList
 #'
 #' @param dsList The DataSetLsit

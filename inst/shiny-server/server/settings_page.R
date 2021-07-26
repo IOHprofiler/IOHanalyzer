@@ -164,6 +164,19 @@ observe({
 })
 
 observe({
+  if (input$Settings.Use_Funcname) {
+    shinyjs::show(id = "overall_funcname_box")
+    shinyjs::hide(id = "overall_funcid_box")
+    options('IOHanalyzer.function_representation' = 'funcname')
+  }
+  else {
+    shinyjs::hide(id = "overall_funcname_box")
+    shinyjs::show(id = "overall_funcid_box")
+    options('IOHanalyzer.function_representation' = 'funcId')
+  }
+})
+
+observe({
   setting_preset <- input$Settings.Download.Preset
   if (setting_preset == "Default") {
     updateNumericInput(session, 'Settings.Download.Width', value = 1000)

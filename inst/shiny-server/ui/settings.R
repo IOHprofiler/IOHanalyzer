@@ -62,6 +62,7 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
           HTML_P("ID variables"),
           selectInput("Settings.ID.Variables", label = "Attributes used to create IDs",
                       multiple = T, selected = NULL, choices = NULL),
+          checkboxInput("Settings.Use_Funcname", "Use function names instead of IDs"),
           hr(),
           downloadButton("Settings.Download", "Download current general settings file"),
           fileInput("Settings.Upload", "Upload a settings file", accept = "rds")

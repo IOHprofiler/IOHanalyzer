@@ -274,6 +274,10 @@ update_menu_visibility <- function(suite){
   else {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "Positions"))
   }
+  if (!is.null(get_funcName(DataList$data))) 
+    shinyjs::enable("Settings.Use_Funcname")
+  else 
+    shinyjs::disable("Settings.Use_Funcname")
 }
 
 observeEvent(input$Upload.Add_to_repo, {
@@ -307,7 +311,9 @@ observeEvent(input$upload.remove_data, {
 
     updateSelectInput(session, 'Overall.Dim', choices = c(), selected = '')
     updateSelectInput(session, 'Overall.Funcid', choices = c(), selected = '')
-
+    updateSelectInput(session, 'Overall.Funcname', choices = c(), selected = '')
+    updateSelectInput(session, 'Overall.Algid', choices = c(), selected = '')
+    
     print_html('<p style="color:red;">all data are removed!</p>')
     print_html('', 'upload_data_promt')
   }
@@ -346,6 +352,9 @@ observe({
   
   updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = selected_f)
+  if (input$Settings.Use_Funcname)
+    updateSelectInput(session, 'Overall.Funcname', choices = get_funcName(data), selected = get_funcName(data[1]))
+  
   if ('algId' %in% input$Settings.ID.Variables) 
     updateSelectInput(session, 'Overall.AlgId', choices = NULL, selected = NULL)
   else
@@ -525,22 +534,32 @@ observe({
                     selected = attr(data, 'ID_attributes'))
 })
 
+
+
 # update (filter) according to users selection DataSets
 DATA <- reactive({
   dim <- input$Overall.Dim
-  id <- input$Overall.Funcid
-  req(dim, id)
+  req(dim)
   
-  d <- subset(DataList$data, DIM == dim, funcId == id)
+  d <- subset(DataList$data, DIM == dim)
   
   if (!'algId' %in% input$Settings.ID.Variables) {
     algid <- input$Overall.AlgId
     if (!is.null(algid)) d <- subset(d, algId == algid)
   }
+  
+  if (input$Settings.Use_Funcname) {
+    fname <- input$Overall.Funcname
+    if (!is.null(fname)) d <- subset(d, funcname == fname)
+  }
+  else {
+    fid <- input$Overall.Funcid
+    if (!is.null(fid)) d <- subset(d, funcId == fid)  
+  }
 
   if (length(DataList$data) == 0) return(NULL)
   
-  if (length(d) == 0 && dim != "" && id != "") {
+  if (length(d) == 0 && dim != "") {
     showNotification("There is no data available for this (dimension,function)-pair")
   }
   d
@@ -549,6 +568,17 @@ DATA <- reactive({
 # TODO: give a different name for DATA and DATA_RAW
 DATA_RAW <- reactive({
   DataList$data
+})
+
+# This observe statement tries to match funcid and funcname seletions so funcId can still be used internally.
+# TODO: think of a better solution to ensure this matching doesn't break.
+observe({
+  fname <- input$Overall.Funcname
+  dsl_sub <- subset(DATA_RAW(), funcName == fname)
+  fids <- get_funcId(dsl_sub)
+  if (length(fids) == 1) {
+    updateSelectInput(session, 'Overall.Funcid', selected = fids)
+  }
 })
 
 MAX_ERTS_FUNC <- reactive({

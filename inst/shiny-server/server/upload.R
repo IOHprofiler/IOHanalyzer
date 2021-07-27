@@ -529,8 +529,9 @@ observe({
   updateSelectInput(session, 'FV_PAR.Plot.Params', choices = parIds_, selected = parIds_)
   updateSelectInput(session, 'RT_PAR.Plot.Params', choices = parIds_, selected = parIds_)
   
-  
-  updateSelectInput(session, 'Settings.ID.Variables', choices = get_static_attributes(data), 
+  attr_choices <- get_static_attributes(data)
+  invalid_choices <- c('funcId', 'DIM', 'ID')
+  updateSelectInput(session, 'Settings.ID.Variables', choices = attr_choices[!attr_choices %in% invalid_choices], 
                     selected = attr(data, 'ID_attributes'))
 })
 

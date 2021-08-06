@@ -5,7 +5,8 @@
 \title{Get the list of available options for data from the OPTION ontology}
 \usage{
 get_ontology_data(datasource, fids, dims, algs, iids = NULL,
-  funcsuites = NULL)
+  funcsuites = NULL, min_target = NULL, max_target = NULL,
+  min_budget = NULL, max_budget = NULL)
 }
 \arguments{
 \item{datasource}{The datasource: either BBOB or Nevergrad}
@@ -19,6 +20,14 @@ get_ontology_data(datasource, fids, dims, algs, iids = NULL,
 \item{iids}{The instances as given by `get_ontology_var` (only for BBOB data)}
 
 \item{funcsuites}{The function suite as given by `get_ontology_var` (only for Nevergrad data)}
+
+\item{min_target}{The minimum target value for which to return data}
+
+\item{max_target}{The maximum target value for which to return data}
+
+\item{min_budget}{The minimum budget value for which to return data}
+
+\item{max_budget}{The maximum budget value for which to return data}
 }
 \value{
 a DataSetList object matching the selected attributes.

@@ -1075,13 +1075,19 @@ get_ontology_var <- function(varname, datasource, ...) {
 #' @param algs The algorithm names as given by `get_ontology_var`
 #' @param iids The instances as given by `get_ontology_var` (only for BBOB data)
 #' @param funcsuites The function suite as given by `get_ontology_var` (only for Nevergrad data)
+#' @param min_target The minimum target value for which to return data
+#' @param max_target The maximum target value for which to return data
+#' @param min_budget The minimum budget value for which to return data
+#' @param max_budget The maximum budget value for which to return data
 #' 
 #' @return a DataSetList object matching the selected attributes.
 #' 
 #' @export
 #' @examples 
 #' get_ontology_data("BBOB", "f5", 5, "IPOP400D", 1)
-get_ontology_data <- function(datasource, fids, dims, algs, iids = NULL, funcsuites = NULL) {
+get_ontology_data <- function(datasource, fids, dims, algs, iids = NULL, funcsuites = NULL,
+                              min_target = NULL, max_target = NULL,
+                              min_budget = NULL, max_budget = NULL) {
   
   url_base <- "http://semanticannotations.ijs.si:8080/query"
   
@@ -1098,7 +1104,22 @@ get_ontology_data <- function(datasource, fids, dims, algs, iids = NULL, funcsui
   if (!is.null(funcsuites))
     parameters_list$nevergradTestbed  <- funcsuites
   
+  if (!is.null(min_target) & !is.null(max_target)) {
+    parameters_list$target <- paste0(min_target, '-', max_target)
+  } else if (!is.null(min_target)) {
+    parameters_list$target <- paste0('>=', min_target)
+  } else if (!is.null(max_target)) {
+    parameters_list$target <- paste0('<=', max_target)
+  }
 
+  if (!is.null(min_budget) & !is.null(max_budget)) {
+    parameters_list$budget <- paste0(min_budget, '-', max_budget)
+  } else if (!is.null(min_budget)) {
+    parameters_list$budget <- paste0('>=', min_budget)
+  } else if (!is.null(max_budget)) {
+    parameters_list$budget <- paste0('<=', max_budget)
+  }
+  
   tryCatch({
     resp <- POST(url_base, body = parameters_list, encode = "form")
     results <- content(resp)

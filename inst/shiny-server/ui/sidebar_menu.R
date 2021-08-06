@@ -1,7 +1,7 @@
 sidebar_menu <- function() {
   sidebarMenu(id = "tabs",
               menuItem("Upload Data", tabName = "upload", icon = icon('upload', lib = 'glyphicon'),
-                       selected = T),
+                       selected = F),
               menuItem("OPTION Data", tabName = "ontology", icon = icon('upload', lib = 'glyphicon'),
                        selected = T),              
               menuItem("General Overview", tabName = "overview", icon = icon("table")),

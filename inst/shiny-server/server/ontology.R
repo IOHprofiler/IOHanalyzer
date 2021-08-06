@@ -55,14 +55,30 @@ observe({
 
 # load data from ontology according to selected options
 observeEvent(input$Ontology.Load, {
+  withProgress({
   req(input$Ontology.Source)
+  
+    
+  min_target <- max_target <- NULL
+  min_budget <- max_budget <- NULL
+  
+  if (input$Ontology.Limit_Targets) {
+    min_target <- input$Ontology.Min_Target
+    max_target <- input$Ontology.Max_Target
+  }
+  if (input$Ontology.Limit_Targets) {
+    min_budget <- input$Ontology.Min_Budget
+    max_budget <- input$Ontology.Max_Budget
+  }
   
   data <- get_ontology_data(input$Ontology.Source, 
                             input$Ontology.Functions,
                             input$Ontology.Dimensions,
                             input$Ontology.Algorithms,
                             input$Ontology.Iids,
-                            input$Ontology.NG_Suite)
+                            input$Ontology.NG_Suite,
+                            min_target, max_target,
+                            min_budget, max_budget)
   
   
   if (length(DataList$data) > 0 && attr(data, 'maximization') != attr(DataList$data, 'maximization')) {
@@ -79,5 +95,7 @@ observeEvent(input$Ontology.Load, {
   if (!all(algids %in% get_color_scheme_dt()[['algnames']])) {
     set_color_scheme("Default", algids)
   }
+  
+  }, message = "Processing data from OPTION ontology. This might take a moment.")
 })
 

@@ -340,7 +340,7 @@ body <- dashboardBody(
       fluidRow(
         column(
           width = 12,
-          filler_box(collapsed = T),
+          # filler_box(collapsed = T),
           ontology_box(collapsed = F)
         )
       )

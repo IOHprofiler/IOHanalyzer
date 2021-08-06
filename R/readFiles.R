@@ -902,7 +902,7 @@ convert_from_OPTION <- function(dt, source, ...) {
   #Initialize variables used in data.table to avoid CRAN-check notes.
   algorithm_name <- dimensionality <- benchmark_problem <- NULL
   instance_id <- num_experiment_run <- num_function_run <- NULL
-  precision_value <- NULL
+  precision_value <- elapsed_budget <- rotated <- NULL
   
   
   triplets <- unique(dt[, .(algorithm_name, dimensionality, benchmark_problem )])

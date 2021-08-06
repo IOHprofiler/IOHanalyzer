@@ -965,42 +965,46 @@ convert_from_OPTION <- function(dt, source, ...) {
     }
     else {
       data <- dt[algorithm_name == algId & dimensionality == DIM & benchmark_problem == funcId,
-                 .(num_experiment_run, num_function_run, precision_value)]
-    
-      for (rep in unique(data$num_experiment_run)) {
-        data_reduced <- data[num_experiment_run == rep,
-                             .(num_function_run = as.numeric(num_function_run), 
-                               precision_value =  as.numeric(precision_value))]
-        
-        rows <- unique(data_reduced$num_function_run) %>% sort
-        FV <- lapply(rows,
-                     function(b) {
-                       data_reduced[num_function_run == b, precision_value]
-                     }
-        ) %>%
-          do.call(rbind, .) %>%
-          set_rownames(rows)
-        
-        data_twocol <- as.matrix(data_reduced[order(num_function_run)])
-        RT <- align_running_time(c(data_twocol), TWO_COL, maximization = F)
-        
-        ds <-  structure(list(RT = RT$RT, FV = FV),
-                         class = c('DataSet', 'list'),
-                         maxRT = max(rows),
-                         finalFV = min(FV),
-                         format = 'OPTION',
-                         suite = source,
-                         maximization = FALSE,
-                         algId = algId,
-                         funcId = funcId,
-                         DIM = DIM,
-                         ID = algId)
-        res[[idx]] <- ds
-        idx <- idx + 1
-        algIds <- c(algIds, algId)
-        funcIds <- c(funcIds, funcId)
-        DIMs <- c(DIMs, DIM)
+                 .(elapsed_budget, precision_value, rotated, noise_level)]
+      
+      for (rotation in unique(data$rotated)) {
+        for (noise_level in unique(data$noise_level)) {
+          data_reduced <- data[rotated == rotation & noise_level == noise_level,
+                               .(num_function_run = as.numeric(elapsed_budget), 
+                                 precision_value =  as.numeric(precision_value))]
+          
+          rows <- unique(data_reduced$num_function_run) %>% sort
+          FV <- lapply(rows,
+                       function(b) {
+                         data_reduced[num_function_run == b, precision_value]
+                       }
+          ) %>%
+            do.call(rbind, .) %>%
+            set_rownames(rows)
+          
+          data_twocol <- as.matrix(data_reduced[order(num_function_run)])
+          RT <- align_running_time(list(data_twocol), TWO_COL, maximization = F)
+          
+          ds <-  structure(list(RT = RT$RT, FV = FV),
+                           class = c('DataSet', 'list'),
+                           maxRT = max(rows),
+                           finalFV = min(FV),
+                           format = 'OPTION',
+                           suite = source,
+                           maximization = FALSE,
+                           algId = algId,
+                           funcId = as.character(funcId),
+                           DIM = DIM,
+                           ID = algId, 
+                           rotated = rotation, 
+                           noise_level = noise_level)
+          res[[idx]] <- ds
+          idx <- idx + 1
+          algIds <- c(algIds, algId)
+          funcIds <- c(funcIds, as.character(funcId))
+          DIMs <- c(DIMs, DIM)
         }
+      }
     }
   }
   class(res) %<>% c('DataSetList')

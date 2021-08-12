@@ -2,7 +2,7 @@ fv_render_heatmap <- reactive({
   req(length(DATA()) > 0)
   withProgress({
     target <- as.numeric(input$FV_Stats.Overview.Target)
-    data <- subset(DATA(), ID %in% input$FV_Stats.Overview.Algid)
+    data <- subset(DATA(), ID %in% input$FV_Stats.Overview.ID)
     Plot.Stats.Significance_Heatmap(data, target, alpha = as.numeric(input$FV_Stats.Overview.Alpha),
                                     bootstrap.size = 0, which = 'by_RT')
   },
@@ -17,7 +17,7 @@ output$FV_Stats.Overview.Heatmap <- renderPlotly(
 fv_create_stats_table <- reactive({
   req(length(DATA()) > 0)
   req(length(get_id(DATA())) > 1)
-  data <- subset(DATA(), ID %in% input$FV_Stats.Overview.Algid)
+  data <- subset(DATA(), ID %in% input$FV_Stats.Overview.ID)
   target <- as.numeric(input$FV_Stats.Overview.Target)
   df <- pairwise.test(data, target, bootstrap.size = 0, which = 'by_RT')
   df <- format(df, digits = 3)
@@ -36,7 +36,7 @@ fv_render_graph <- reactive({
   req(length(DATA()) > 0)
   withProgress({
     target <- as.numeric(input$FV_Stats.Overview.Target)
-    data <- subset(DATA(), ID %in% input$FV_Stats.Overview.Algid)
+    data <- subset(DATA(), ID %in% input$FV_Stats.Overview.ID)
     Plot.Stats.Significance_Graph(data, target, alpha = as.numeric(input$FV_Stats.Overview.Alpha),
                                   bootstrap.size = 0, which = 'by_RT')
   },
@@ -119,7 +119,7 @@ output$FV_Stats.Glicko.Download <- downloadHandler(
 
 
 FV_glicko_data <- function() {
-  data <- subset(DATA_RAW(), ID %in% isolate(input$FV_Stats.Glicko.Algid))
+  data <- subset(DATA_RAW(), ID %in% isolate(input$FV_Stats.Glicko.ID))
   if (length(data) == 0) return(NULL)
   data <- subset(data, DIM %in% input$FV_Stats.Glicko.Dim)
   data <- subset(data, funcId %in% input$FV_Stats.Glicko.Funcid)

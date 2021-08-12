@@ -1,7 +1,7 @@
 overview_table_single <- reactive({
   data <- DATA()
   req(length(data) > 0)
-  df <- get_overview(subset(data, ID %in% input$Overview.Single.Algid))
+  df <- get_overview(subset(data, ID %in% input$Overview.Single.ID))
                      
   df$budget %<>% as.numeric
   df$runs %<>% as.integer
@@ -18,7 +18,7 @@ overview_table_single <- reactive({
 })
 
 output$Overview.Single.Table <- DT::renderDataTable({
-  req(input$Overview.Single.Algid)
+  req(input$Overview.Single.ID)
   overview_table_single()
 }, filter = list(position = 'top', clear = FALSE),
 options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))

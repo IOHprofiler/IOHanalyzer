@@ -5,7 +5,7 @@ fv_dsc_box_rank <- function(width = 12, collapsible = T, collapsed = F) {
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        selectInput('FV_Stats.DSC.Algid', 'IDs to compare', choices = NULL, 
+        selectInput('FV_Stats.DSC.ID', 'IDs to compare', choices = NULL, 
                     selected = NULL, multiple = T),
         selectInput('FV_Stats.DSC.Funcid', 'Functions to use', choices = NULL, 
                     selected = NULL, multiple = T),
@@ -145,7 +145,7 @@ rt_dsc_box_rank <- function(width = 12, collapsible = T, collapsed = F) {
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        selectInput('RT_Stats.DSC.Algid', 'Algorithms to compare', choices = NULL, 
+        selectInput('RT_Stats.DSC.ID', 'Algorithms to compare', choices = NULL, 
                     selected = NULL, multiple = T),
         selectInput('RT_Stats.DSC.Funcid', 'Functions to use', choices = NULL, 
                     selected = NULL, multiple = T),

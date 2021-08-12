@@ -13,7 +13,7 @@ rt_stats_box <- function(width = 12, collapsible = T, collapsed = T) {
         checkboxInput('RTSummary.Statistics.Single', label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
                                                            Once toggled, only \\(f_{\\text{min}}\\) is
                                                            used to generate the table on the right.</p>'), value = FALSE),
-        selectInput('RTSummary.Statistics.Algid', 'Select which IDs to include:', choices = NULL, selected = NULL, multiple = T),
+        selectInput('RTSummary.Statistics.ID', 'Select which IDs to include:', choices = NULL, selected = NULL, multiple = T),
         hr(),
         selectInput('RTSummary.Statistics.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
         downloadButton("RTSummary.Statistics.Download", "Save this table")
@@ -47,7 +47,7 @@ rt_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
         # TODO: do we need this log scaling?
         # checkboxInput('F_LOGSPACE_DATA_SUMMARY',
         #               label = HTML('Evenly space target values in \\(log_{10}\\) space')),
-        selectInput('RTSummary.Sample.Algid', 'Select which IDs to include:',
+        selectInput('RTSummary.Sample.ID', 'Select which IDs to include:',
                     choices = NULL, selected = NULL, multiple = T),
 
         hr(),
@@ -76,7 +76,7 @@ rt_overview_box <- function(width = 12, collapsible = T, collapsed = T) {
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        selectInput('RTSummary.Overview.Algid', 'Select which IDs to include:', choices = NULL, selected = NULL, multiple = T),
+        selectInput('RTSummary.Overview.ID', 'Select which IDs to include:', choices = NULL, selected = NULL, multiple = T),
         hr(),
         selectInput('RTSummary.Overview.Format', 'File-format', choices = supported_table_format, selected = supported_table_format[[1]]),
         downloadButton("RTSummary.Overview.Download", "Save this table")

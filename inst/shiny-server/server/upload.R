@@ -59,7 +59,7 @@ observeEvent(input$repository.dataset, {
   dims <- unique(dims)
   funcs <- unique(funcs)
 
-  updateSelectInput(session, 'repository.algId', choices = algs, selected = algs)
+  updateSelectInput(session, 'repository.ID', choices = algs, selected = algs)
   updateSelectInput(session, 'repository.dim', choices = dims, selected = dims)
   updateSelectInput(session, 'repository.funcId', choices = funcs, selected = funcs)
   shinyjs::enable('repository.load_button')
@@ -75,7 +75,7 @@ observeEvent(input$repository.load_button, {
   }
   data <- subset(data, funcId %in% input$repository.funcId)
   data <- subset(data, DIM %in% input$repository.dim)
-  data <- subset(data, algId %in% input$repository.algId)
+  data <- subset(data, algId %in% input$repository.ID)
   
   if (length(DataList$data) > 0 && attr(data, 'maximization') != attr(DataList$data, 'maximization')) {
     shinyjs::alert(paste0("Attempting to add data from a different optimization type to the currently",
@@ -312,7 +312,7 @@ observeEvent(input$upload.remove_data, {
     updateSelectInput(session, 'Overall.Dim', choices = c(), selected = '')
     updateSelectInput(session, 'Overall.Funcid', choices = c(), selected = '')
     updateSelectInput(session, 'Overall.Funcname', choices = c(), selected = '')
-    updateSelectInput(session, 'Overall.Algid', choices = c(), selected = '')
+    updateSelectInput(session, 'Overall.ID', choices = c(), selected = '')
     
     print_html('<p style="color:red;">all data are removed!</p>')
     print_html('', 'upload_data_promt')
@@ -356,12 +356,12 @@ observe({
     updateSelectInput(session, 'Overall.Funcname', choices = get_funcName(data), selected = get_funcName(data[1]))
   
   if ('algId' %in% input$Settings.ID.Variables) 
-    updateSelectInput(session, 'Overall.AlgId', choices = NULL, selected = NULL)
+    updateSelectInput(session, 'Overall.ID', choices = NULL, selected = NULL)
   else
-    updateSelectInput(session, 'Overall.AlgId', choices = algIds, selected = selected_alg)
+    updateSelectInput(session, 'Overall.ID', choices = algIds, selected = selected_alg)
   
   updateSelectInput(session, 'ERTPlot.Aggr.Funcs', choices = funcIds, selected = funcIds)
-  updateSelectInput(session, 'Overview.Single.Algid', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'Overview.Single.ID', choices = IDs, selected = IDs)
   
   # updateSelectInput(session, 'Report.RT.Overview-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.Overview-DIM', choices = DIMs, selected = selected_dim)
@@ -458,51 +458,51 @@ observe({
                      value = min(10, length(IDs)))
 
 
-  updateSelectInput(session, 'RT.MultiERT.AlgId', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RT.MultiERT.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RT.MultiERT.FuncId', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RT.MultiERT.DIM', choices = DIMs, selected = selected_dim)
-  updateSelectInput(session, 'RT.Multisample.AlgId', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RT.Multisample.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RT.Multisample.FuncId', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RT.Multisample.DIM', choices = DIMs, selected = selected_dim)
 
-  updateSelectInput(session, 'FV.MultiFV.AlgId', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FV.MultiFV.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV.MultiFV.FuncId', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'FV.MultiFV.DIM', choices = DIMs, selected = selected_dim)
-  updateSelectInput(session, 'FV.Multisample.AlgId', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FV.Multisample.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV.Multisample.FuncId', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'FV.Multisample.DIM', choices = DIMs, selected = selected_dim)
 
-  updateSelectInput(session, 'RT_Stats.Glicko.Algid', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RT_Stats.Glicko.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RT_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'RT_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
   
-  updateSelectInput(session, 'RT_Stats.DSC.Algid', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RT_Stats.DSC.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RT_Stats.DSC.Funcid', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RT_Stats.DSC.Dim', choices = DIMs, selected = DIMs)
 
-  updateSelectInput(session, 'FV_Stats.DSC.Algid', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FV_Stats.DSC.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV_Stats.DSC.Funcid', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'FV_Stats.DSC.Dim', choices = DIMs, selected = DIMs)  
   
-  updateSelectInput(session, 'RT_Stats.Overview.Algid', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RT_Stats.Overview.ID', choices = IDs, selected = IDs)
 
-  updateSelectInput(session, 'FV_Stats.Glicko.Algid', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FV_Stats.Glicko.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'FV_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
 
-  updateSelectInput(session, 'FV_Stats.Overview.Algid', choices = IDs, selected = IDs)
-  updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = IDs, selected = IDs)
-  updateSelectInput(session, 'RTSummary.Overview.Algid', choices = IDs, selected = IDs)
-  updateSelectInput(session, 'FCESummary.Overview.Algid', choices = IDs, selected = IDs)
-  updateSelectInput(session, 'RTSummary.Sample.Algid', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FV_Stats.Overview.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RTSummary.Statistics.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RTSummary.Overview.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FCESummary.Overview.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RTSummary.Sample.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV_PAR.Plot.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RT_PAR.Plot.Algs', choices = IDs, selected = IDs)
-  updateSelectInput(session, 'FCESummary.Statistics.Algid', choices = IDs, selected = IDs)
-  updateSelectInput(session, 'FCESummary.Sample.Algid', choices = IDs, selected = IDs)
-  updateSelectInput(session, 'FV_PAR.Summary.Algid', choices = IDs, selected = IDs)
-  updateSelectInput(session, 'FV_PAR.Sample.Algid', choices = IDs, selected = IDs)
-  updateSelectInput(session, 'RT_PAR.Summary.Algid', choices = IDs, selected = IDs)
-  updateSelectInput(session, 'RT_PAR.Sample.Algid', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FCESummary.Statistics.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FCESummary.Sample.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FV_PAR.Summary.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FV_PAR.Sample.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RT_PAR.Summary.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RT_PAR.Sample.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = IDs, selected = selected_ID)
   updateSelectInput(session, 'ERTPlot.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'ERTPlot.Aggr.Algs', choices = IDs, selected = IDs)
@@ -545,7 +545,7 @@ DATA <- reactive({
   d <- subset(DataList$data, DIM == dim)
   
   if (!'algId' %in% input$Settings.ID.Variables) {
-    algid <- input$Overall.AlgId
+    algid <- input$Overall.ID
     if (!is.null(algid)) d <- subset(d, algId == algid)
   }
   
@@ -574,7 +574,10 @@ DATA_RAW <- reactive({
 # This observe statement tries to match funcid and funcname seletions so funcId can still be used internally.
 # TODO: think of a better solution to ensure this matching doesn't break.
 observe({
+  req(length(DATA_RAW()) > 0)
   fname <- input$Overall.Funcname
+  req(fname)
+  req(getOption('IOHanalyzer.function_representation', 'funcId') == 'funcname')
   dsl_sub <- subset(DATA_RAW(), funcName == fname)
   fids <- get_funcId(dsl_sub)
   if (length(fids) == 1) {

@@ -43,7 +43,7 @@ DIM_fID_panel <- function() {
           column(
             width = 11,
             selectInput(
-              "Overall.AlgId",
+              "Overall.ID",
               label = HTML('<p style="font-size:90%;">Algorithm:</p>'),
               choices = NULL, selected = NULL)
           )

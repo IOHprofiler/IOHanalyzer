@@ -182,7 +182,7 @@ output$RT_Stats.DSC.Download <- downloadHandler(
 
 
 RT_DSC_data <- function() {
-  data <- subset(DATA_RAW(), ID %in% isolate(input$RT_Stats.DSC.Algid))
+  data <- subset(DATA_RAW(), ID %in% isolate(input$RT_Stats.DSC.ID))
   if (length(data) == 0) return(NULL)
   data <- subset(data, DIM %in% input$RT_Stats.DSC.Dim)
   data <- subset(data, funcId %in% input$RT_Stats.DSC.Funcid)

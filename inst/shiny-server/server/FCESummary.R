@@ -2,7 +2,7 @@
 # Data summary for Fixed-Budget target (FCE)  --------------
 FCE_runtime_summary_condensed <- reactive({
   data <- DATA()
-  data <- subset(data, ID %in% input$FCESummary.Overview.Algid)
+  data <- subset(data, ID %in% input$FCESummary.Overview.ID)
   # fall <- get_funvals(data)
   df <- get_RT_overview(data)
   df$"runs" %<>% as.integer
@@ -14,7 +14,7 @@ FCE_runtime_summary_condensed <- reactive({
 })
 
 output$table_FV_overview <- DT::renderDataTable({
-  req(input$FCESummary.Overview.Algid)
+  req(input$FCESummary.Overview.ID)
   FCE_runtime_summary_condensed()
 }, filter = list(position = 'top', clear = FALSE),
 options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
@@ -38,7 +38,7 @@ get_FCE_summary <- reactive({
   rt_step <- input$FCESummary.Statistics.Step %>% as.numeric
 
   data <- DATA()
-  data <- subset(data, ID %in% input$FCESummary.Statistics.Algid)
+  data <- subset(data, ID %in% input$FCESummary.Statistics.ID)
   
   
   if (!input$FCESummary.Statistics.Single) {
@@ -93,7 +93,7 @@ get_FCE <- reactive({
   rt_step <- input$FCESummary.Sample.Step %>% as.numeric
 
   data <- DATA()
-  data <- subset(data, ID %in% input$FCESummary.Sample.Algid)
+  data <- subset(data, ID %in% input$FCESummary.Sample.ID)
   
   if (!input$FCESummary.Sample.Single) {
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)

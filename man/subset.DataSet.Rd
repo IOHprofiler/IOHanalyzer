@@ -9,8 +9,8 @@
 \arguments{
 \item{x}{The DataSet from which to get a subset}
 
-\item{mask}{The mask to use when subsetting. The length should be equal to the number of runs present in the 
-provided dataset object x.}
+\item{mask}{The mask (as boolean list) to use when subsetting. The length should be equal to the number of runs
+present in the provided dataset object x.}
 
 \item{...}{Arguments passed to underlying subset method (not yet supported)}
 }

@@ -87,7 +87,7 @@ fv_parameter_summary <- reactive({
   rtstop <- as.numeric(input$FV_PAR.Summary.Max)
   rtstep <- as.numeric(input$FV_PAR.Summary.Step)
   data <- DATA()
-  data <- subset(data, ID %in% input$FV_PAR.Summary.Algid)
+  data <- subset(data, ID %in% input$FV_PAR.Summary.ID)
   
   if (!input$FV_PAR.Summary.Single) {
     req(rtstart <= rtstop, rtstep <= rtstop - rtstart)
@@ -116,7 +116,7 @@ fv_parameter_summary <- reactive({
 })
 
 fv_parameter_sample <- reactive({
-  req(input$FV_PAR.Sample.Algid, input$FV_PAR.Sample.Max,
+  req(input$FV_PAR.Sample.ID, input$FV_PAR.Sample.Max,
       input$FV_PAR.Sample.Step, input$FV_PAR.Sample.Min,
       input$FV_PAR.Sample.Param)
   
@@ -124,7 +124,7 @@ fv_parameter_sample <- reactive({
   rtstop <- as.numeric(input$FV_PAR.Sample.Max)
   rtstep <- as.numeric(input$FV_PAR.Sample.Step)
   data <- DATA()
-  data <- subset(data, ID %in% input$FV_PAR.Sample.Algid)
+  data <- subset(data, ID %in% input$FV_PAR.Sample.ID)
   
   if (!input$FV_PAR.Sample.Single) {
     req(rtstart <= rtstop, rtstep <= rtstop - rtstart)

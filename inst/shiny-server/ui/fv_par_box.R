@@ -82,7 +82,7 @@ fv_par_summary_box <- function(width = 12, collapsible = T, collapsed = T) {
       checkboxInput('FV_PAR.Summary.Single', label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
                                                        Once toggled, only \\(f_{\\text{min}}\\) is
                                                        used to generate the table on the right.</p>'), value = FALSE),
-      selectInput('FV_PAR.Summary.Algid', 'Select which IDs to include:', choices = NULL, selected = NULL, multiple = T),
+      selectInput('FV_PAR.Summary.ID', 'Select which IDs to include:', choices = NULL, selected = NULL, multiple = T),
       selectInput('FV_PAR.Summary.Param', 'Parameters', choices = NULL, selected = NULL),
       hr(),
       selectInput('FV_PAR.Summary.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
@@ -114,7 +114,7 @@ fv_par_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
       checkboxInput('FV_PAR.Sample.Single', label = HTML('<p>\\(f_{\\text{min}} = f_{\\text{max}}\\)?
                                                                              Once toggled, only \\(f_{\\text{min}}\\) is
                                                                              used to generate the table on the right.</p>'), value = FALSE),
-      selectInput('FV_PAR.Sample.Algid', 'Select which IDs to include:', choices = NULL, selected = NULL, multiple = T),
+      selectInput('FV_PAR.Sample.ID', 'Select which IDs to include:', choices = NULL, selected = NULL, multiple = T),
       selectInput('FV_PAR.Sample.Param', 'Parameters', choices = NULL, selected = NULL),
       hr(),
       selectInput('FV_PAR.Sample.Format', 'Format of the table',

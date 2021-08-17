@@ -1023,3 +1023,111 @@ get_shapley_values <- function(dsList, targets, scale.log = T, group_size = 5, m
   data.table(algId = algs_full, shapley = shapleys)
 }
 
+
+#' Get the list of available options for data from the OPTION ontology
+#' 
+#' 
+#' @param varname The variable for which to get the options. Restricted to [Fid, Iid, DIM, AlgId, Suite]
+#' @param datasource The datasource for which to get the attributes. Either BBOB or Nevergrad
+#' @param ... Additional arguments to the OPTION call. Currently only supports 'Suite' for nevergrad.
+#' 
+#' @return the options of varname given the specified datasource
+#' 
+#' @export
+#' @examples 
+#' get_ontology_var("Fid", "BBOB")
+get_ontology_var <- function(varname, datasource, ...) {
+  
+  url_base <- "http://semanticannotations.ijs.si:8080/"
+  
+  if (datasource == "BBOB")
+    parameters_list <- list(testbed = "COCO-BBOB")
+  else{
+    dot_args = list(...)
+    parameters_list <- list(testbed = "Nevergrad", nevergradTestbed = dot_args[['suite']])
+  }
+  url_appendix <- switch(varname,
+    "Fid" = "functions",
+    "DIM" = "dimensions",
+    "Iid" = "instance",
+    "Suite" = "nevergrad_testbeds",
+    "AlgId" = "algorithms"
+  )
+    
+  url <- paste0(url_base, url_appendix)
+    
+  tryCatch({
+    resp <- GET(url, query = parameters_list)  
+    return(unlist(content(resp))) 
+  },
+  error = function(e) { 
+    warning(e)
+    return(NULL)}
+  )
+}
+
+#' Get the list of available options for data from the OPTION ontology
+#' 
+#' 
+#' @param datasource The datasource: either BBOB or Nevergrad
+#' @param fids The function names as given by `get_ontology_var`
+#' @param dims The dimensionalities as given by `get_ontology_var`
+#' @param algs The algorithm names as given by `get_ontology_var`
+#' @param iids The instances as given by `get_ontology_var` (only for BBOB data)
+#' @param funcsuites The function suite as given by `get_ontology_var` (only for Nevergrad data)
+#' @param min_target The minimum target value for which to return data
+#' @param max_target The maximum target value for which to return data
+#' @param min_budget The minimum budget value for which to return data
+#' @param max_budget The maximum budget value for which to return data
+#' 
+#' @return a DataSetList object matching the selected attributes.
+#' 
+#' @export
+#' @examples 
+#' get_ontology_data("BBOB", "f5", 5, "IPOP400D", 1)
+get_ontology_data <- function(datasource, fids, dims, algs, iids = NULL, funcsuites = NULL,
+                              min_target = NULL, max_target = NULL,
+                              min_budget = NULL, max_budget = NULL) {
+  
+  url_base <- "http://semanticannotations.ijs.si:8080/query"
+  
+  if (datasource == "BBOB")
+    parameters_list <- list(testbed = "COCO-BBOB")
+  else
+    parameters_list <- list(testbed = "Nevergrad")
+  
+  parameters_list$functions <- paste0(fids, collapse = ',')
+  parameters_list$dimensions  <- paste0(dims, collapse = ',')
+  parameters_list$algorithms  <- paste0(algs, collapse = ',')
+  if (!is.null(iids))
+    parameters_list$instances  <- paste0(iids, collapse = ',')
+  if (!is.null(funcsuites))
+    parameters_list$nevergradTestbed  <- funcsuites
+  
+  if (!is.null(min_target) & !is.null(max_target)) {
+    parameters_list$target <- paste0(min_target, '-', max_target)
+  } else if (!is.null(min_target)) {
+    parameters_list$target <- paste0('>=', min_target)
+  } else if (!is.null(max_target)) {
+    parameters_list$target <- paste0('<=', max_target)
+  }
+
+  if (!is.null(min_budget) & !is.null(max_budget)) {
+    parameters_list$budget <- paste0(min_budget, '-', max_budget)
+  } else if (!is.null(min_budget)) {
+    parameters_list$budget <- paste0('>=', min_budget)
+  } else if (!is.null(max_budget)) {
+    parameters_list$budget <- paste0('<=', max_budget)
+  }
+  
+  tryCatch({
+    resp <- POST(url_base, body = parameters_list, encode = "form")
+    results <- content(resp)
+  },
+  error = function(e) { 
+    warning(e)
+    return(NULL)}
+  )
+  dt_temp <- rbindlist(results$results)
+  convert_from_OPTION(dt_temp, datasource)
+}

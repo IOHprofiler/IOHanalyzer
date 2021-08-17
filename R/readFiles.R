@@ -39,7 +39,7 @@ scan_index_file <- function(folder) {
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
 #' info <- read_index_file(file.path(path,"IOHprofiler_f1_i1.info"))
 read_index_file <- function(fname) {
-  format <- tools::file_ext(file)
+  format <- tools::file_ext(fname)
   if (format == 'json') 
     read_index_file__json(fname)
   else {

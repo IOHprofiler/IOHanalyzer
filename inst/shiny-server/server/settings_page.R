@@ -1,6 +1,6 @@
 observe({
   if (input$Settings.Color.Scheme != "Custom") {
-    set_color_scheme(input$Settings.Color.Scheme, get_algId(DATA()), NULL)
+    set_color_scheme(input$Settings.Color.Scheme, get_id(DATA()), NULL)
   }
 })
 
@@ -33,7 +33,7 @@ plot_color_example <- function(){
                      )
   if (any(is.null(curr_settings))) return(NULL)
   if (length(DATA_RAW()) > 0) {
-    algnames <- get_algId(DATA_RAW())
+    algnames <- get_id(DATA_RAW())
   }
   else algnames <- c("Alg 1", "Alg 2", "Alg 3", "Alg 4", "Alg 5")
   colors <- get_color_scheme(algnames)
@@ -44,7 +44,7 @@ plot_color_example <- function(){
   
   x <- c(rep(1, length(algnames)),rep(2, length(algnames)))
   y <- seq_len(length(algnames))
-  dt <- data.table(algId = rep(algnames, 2), x, y)
+  dt <- data.table(ID = rep(algnames, 2), x, y)
   
   p <- plot_general_data(dt, 'x', 'y', 'line', show.legend = T,
                          x_title = 'X-title', y_title = 'Y-title', plot_title = 'Plot Title')
@@ -146,6 +146,34 @@ observe({
 
 observe({
   options("IOHanalyzer.precision" = input$Settings.General.Precision)
+})
+
+observe({
+  req(input$Settings.ID.Variables)
+  withProgress({
+  id_vars <- input$Settings.ID.Variables
+  if (!setequal(id_vars,getOption('IOHanalyzer.ID_vars', c('algId')))) {
+    options("IOHanalyzer.ID_vars" = input$Settings.ID.Variables)
+    DataList$data <- change_id(DataList$data, input$Settings.ID.Variables)
+  }
+  if ('algId' %in% id_vars) 
+    shinyjs::hide(id = "overall_algid_box")
+  else
+    shinyjs::show(id = "overall_algid_box")
+}, message = "Processing IDs")
+})
+
+observe({
+  if (input$Settings.Use_Funcname) {
+    shinyjs::show(id = "overall_funcname_box")
+    shinyjs::hide(id = "overall_funcid_box")
+    options('IOHanalyzer.function_representation' = 'funcname')
+  }
+  else {
+    shinyjs::hide(id = "overall_funcname_box")
+    shinyjs::show(id = "overall_funcid_box")
+    options('IOHanalyzer.function_representation' = 'funcId')
+  }
 })
 
 observe({

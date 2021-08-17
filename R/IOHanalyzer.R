@@ -8,7 +8,7 @@
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom colorRamps primary.colors
 #' @importFrom data.table as.data.table rbindlist data.table fread := melt is.data.table 
-#' @importFrom data.table setorderv frank setnames rbindlist copy
+#' @importFrom data.table setorderv frank setnames rbindlist copy transpose
 #' @importFrom plotly add_annotations add_trace orca plot_ly rename_ subplot layout
 #' @importFrom ggplot2 aes geom_jitter geom_line geom_ribbon geom_violin ggplot element_text
 #' @importFrom ggplot2 guides scale_color_manual scale_colour_manual scale_fill_manual
@@ -19,6 +19,8 @@
 #' @importFrom httr POST add_headers content authenticate
 #' @importFrom reshape2 acast
 #' @importFrom knitr kable
+#' @importFrom methods hasArg
+#' @importFrom rjson fromJSON
 #' @useDynLib IOHanalyzer
 NULL
 # Ugly hack, but appears to be required to appease CRAN
@@ -26,13 +28,14 @@ utils::globalVariables(c(".", "algId", "run", "ERT", "RT", "group",
                          "DIM", "Fvalue", "lower", "upper", "target", "format",
                          "runtime", "parId", "instance", "input", "funcId",
                          "budget", "dimension", "loss", "name", "optimizer_name",
-                         "rescale", "maxRT", "algnames", ".SD", "function_class"))
+                         "rescale", "maxRT", "algnames", ".SD", "function_class", "ID", "ids"))
 
 options(shiny.port = 4242)
 
 .onLoad <- function(libname, pkgname) {
   op <- options()
   op.IOHanalyzer <- list(
+    IOHanalyzer.ID_vars = c("algId"),
     IOHanalyzer.quantiles = c(2, 5, 10, 25, 50, 75, 90, 95, 98) / 100.,
     IOHanalyzer.max_samples = 100,
     IOHanalyzer.backend = 'plotly',

@@ -10,7 +10,7 @@ clean_DataSetList(dsList)
 \item{dsList}{The DataSetList object to clean}
 }
 \description{
-Concatenates all DataSets with the same algorith name, function id and dimension
+Concatenates all DataSets with the same ID, function id and dimension
 }
 \examples{
 clean_DataSetList(dsl)

@@ -179,7 +179,7 @@ Set3 <- function(n) colorspace::sequential_hcl(n, c(-88, 59), c. = c(60, 75, 55)
                                    fixup = TRUE, alpha = 1)#, palette = NULL, rev = FALSE)
 
 IOHanalyzer_env$used_colorscheme <- Set2
-IOHanalyzer_env$alg_colors <- NULL
+IOHanalyzer_env$id_colors <- NULL
 
 #' Set the colorScheme of the IOHanalyzer plots
 #' 
@@ -191,7 +191,7 @@ IOHanalyzer_env$alg_colors <- NULL
 #' \item Variant 3
 #' }
 #' And it is also possible to select "Custom", which allows uploading of a custom set of colors
-#' @param algnames The names of the algorithms for which to set the colors
+#' @param ids The names of the algorithms (or custom ids, see `change_id`) for which to set the colors
 #' @param path The path to the file containing the colors to use. Only used if 
 #' schemename is "Custom"
 #'  
@@ -199,14 +199,14 @@ IOHanalyzer_env$alg_colors <- NULL
 #' 
 #' @examples
 #' set_color_scheme("Default", get_algId(dsl))
-set_color_scheme <- function(schemename, algnames, path = NULL){
+set_color_scheme <- function(schemename, ids, path = NULL){
   if (schemename == "Custom" && !is.null(path)) {
     dt <- fread(path, header = T)
-    if (any(colnames(dt) != c("algnames", "colors", "linestyles"))) {
+    if (any(colnames(dt) != c("ids", "colors", "linestyles"))) {
       warning("Incorrect file-format has been uploaded.")
     }
     else
-      IOHanalyzer_env$alg_colors <- dt
+      IOHanalyzer_env$id_colors <- dt
     return()
   } 
   else {
@@ -217,71 +217,71 @@ set_color_scheme <- function(schemename, algnames, path = NULL){
       if (schemename == "Variant 1") IOHanalyzer_env$used_colorscheme <- Set1
       else if (schemename == "Variant 2") IOHanalyzer_env$used_colorscheme <- Set2
       else if (schemename == "Variant 3") IOHanalyzer_env$used_colorscheme <- Set3
-      options(IOHanalyzer.max_colors = length(algnames))
+      options(IOHanalyzer.max_colors = length(ids))
     }
-    create_color_scheme(algnames)
+    create_color_scheme(ids)
   }
 }
 
 #' Get datatable of current color (and linestyle) scheme to file
 #' 
-#' @return data.table object with 3 columns: algnames, colors, linestyles
+#' @return data.table object with 3 columns: ids, colors, linestyles
 #' @export
 #' @examples 
 #' get_color_scheme_dt()
 get_color_scheme_dt <- function(){
-  return(IOHanalyzer_env$alg_colors)
+  return(IOHanalyzer_env$id_colors)
 }
 
 #' Helper function to create default color scheme
 #' 
 #' @noRd
-create_color_scheme <- function(algnames) {
-  if (length(algnames) == 0) {
+create_color_scheme <- function(ids) {
+  if (length(ids) == 0) {
     return(NULL)
   }
-  colors <- color_palettes(length(algnames))
+  colors <- color_palettes(length(ids))
   linestyles <- rep(c("solid", "dash", "dot"), ceiling(length(colors)/3))[1:length(colors)]
-  IOHanalyzer_env$alg_colors <- data.table(algnames, colors, linestyles)
+  IOHanalyzer_env$id_colors <- data.table(ids, colors, linestyles)
 }
 
 #' Get colors according to the current colorScheme of the IOHanalyzer
 #' 
-#' @param algnames_in List of algorithms for which to get colors
+#' @param ids_in List of algorithms (or custom ids, see `change_id`) for which to get colors
 #' 
 #' @export
 #' 
 #' @examples
 #' get_color_scheme(get_algId(dsl))
-get_color_scheme <- function(algnames_in){
-  if (is.null(IOHanalyzer_env$alg_colors))
-    create_color_scheme(algnames_in)
-  cdt <- IOHanalyzer_env$alg_colors
-  colors <- subset(cdt, algnames %in% algnames_in)[['colors']]
-  if (is.null(colors) || length(colors) != length(algnames_in)) {
-    return(color_palettes(length(algnames_in)))
+get_color_scheme <- function(ids_in){
+  if (is.null(IOHanalyzer_env$id_colors))
+    create_color_scheme(ids_in)
+  cdt <- IOHanalyzer_env$id_colors
+  colors <- subset(cdt, ids %in% ids_in)[['colors']]
+  if (is.null(colors) || length(colors) != length(ids_in)) {
+    return(color_palettes(length(ids_in)))
   }
-  names(colors) <- algnames_in
+  names(colors) <- ids_in
   return(colors)
 }
 
 
 #' Get line styles according to the current styleScheme of the IOHanalyzer
 #' 
-#' @param algnames_in List of algorithms for which to get linestyles
+#' @param ids_in List of algorithms (or custom ids, see `change_id`) for which to get linestyles
 #' 
 #' @export
 #' 
 #' @examples
 #' get_line_style(get_algId(dsl))
-get_line_style <- function(algnames_in){
-  if (is.null(IOHanalyzer_env$alg_colors))
-    create_color_scheme(algnames_in)
-  cdt <- IOHanalyzer_env$alg_colors
-  linestyles <- subset(cdt, algnames %in% algnames_in)[['linestyles']]
-  if (is.null(linestyles) || length(linestyles) != length(algnames_in)) {
+get_line_style <- function(ids_in){
+  if (is.null(IOHanalyzer_env$id_colors))
+    create_color_scheme(ids_in)
+  cdt <- IOHanalyzer_env$id_colors
+  linestyles <- subset(cdt, ids %in% ids_in)[['linestyles']]
+  if (is.null(linestyles) || length(linestyles) != length(ids_in)) {
     return(rep(c("solid", "dot", "dash", "longdash", "dashdot", "longdashdot"), 
-               ceiling(length(algnames_in)/3))[1:length(algnames_in)])
+               ceiling(length(ids_in)/3))[1:length(ids_in)])
   }
   return(linestyles)
 }

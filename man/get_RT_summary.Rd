@@ -10,8 +10,7 @@ get_RT_summary(ds, ftarget, budget, ...)
 
 \method{get_RT_summary}{DataSet}(ds, ftarget, budget = NULL, ...)
 
-\method{get_RT_summary}{DataSetList}(ds, ftarget, budget = NULL,
-  algorithm = "all", ...)
+\method{get_RT_summary}{DataSetList}(ds, ftarget, budget = NULL, ...)
 }
 \arguments{
 \item{ds}{A DataSet or DataSetList object}
@@ -21,8 +20,6 @@ get_RT_summary(ds, ftarget, budget, ...)
 \item{budget}{Optional; overwrites the budget found in ds for ERT-calculation}
 
 \item{...}{Arguments passed to other methods}
-
-\item{algorithm}{DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.}
 }
 \value{
 A data.table containing the runtime statistics for each provided target

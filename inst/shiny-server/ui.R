@@ -93,24 +93,24 @@ tagAssert <- function(tag, type = NULL, class = NULL, allowUI = TRUE) {
       ),
              
       # select inputs for dimension and function/problem ID
-      HTML('
-       <div class="col-sm-1">
-       </div>
-       <table class=".table">
-         <tr>
-           <td>
-             <b>Dimension:</b>
-             <select id="Overall.Dim" style="width: 100px; margin: 7px 20px 5px 1px;">
-             </select>
-           </td>
-           <td>
-             <b>Problem ID:</b>
-             <select id="Overall.Funcid" style="width: 100px; margin: 7px 20px 5px 1px;">
-             </select>
-           </td>
-         </tr>
-       </table>'
-      ),
+      # HTML('
+      #  <div class="col-sm-1">
+      #  </div>
+      #  <table class=".table">
+      #    <tr>
+      #      <td>
+      #        <b>Dimension:</b>
+      #        <select id="Overall.Dim" style="width: 100px; margin: 7px 20px 5px 1px;">
+      #        </select>
+      #      </td>
+      #      <td>
+      #        <b>Problem ID:</b>
+      #        <select id="Overall.Funcid" style="width: 100px; margin: 7px 20px 5px 1px;">
+      #        </select>
+      #      </td>
+      #    </tr>
+      #  </table>'
+      # ),
                    
       div(
         class = "navbar-custom-menu",
@@ -126,8 +126,8 @@ header <- .dashboardHeader(title = HTML('<div align="center"><b>IOHanalyzer</b><
 sidebar <- dashboardSidebar(
   useShinyjs(),
   sidebar_menu(),
-  hr()
-  # DIM_fID_panel()
+  hr(),
+  DIM_fID_panel()
 )
 
 body <- dashboardBody(
@@ -376,8 +376,8 @@ body <- dashboardBody(
       fluidRow(
         column(
           width = 12,
-          ERT_comparison_box(collapsed = F),
-          ERT_agg_box(height = '800px')
+          ERT_agg_box(collapsed = F), 
+          ERT_comparison_box(collapsed = T)
         )
       )
     ),

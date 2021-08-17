@@ -4,10 +4,10 @@
 \alias{get_marg_contrib_ecdf}
 \title{Get the marginal contribution of an algorithm to a portfolio}
 \usage{
-get_marg_contrib_ecdf(alg, perm, j, dt)
+get_marg_contrib_ecdf(id, perm, j, dt)
 }
 \arguments{
-\item{alg}{The result from a call to `get_dsc_omnibus`}
+\item{id}{The id for which to get the contribution}
 
 \item{perm}{The permutation of algorithms to which is being contributed}
 
@@ -20,5 +20,5 @@ Based on the contribution to the ECDF-curve of the VBS of the portfolio
 }
 \examples{
 dt <- generate_data.ECDF_raw(dsl, get_ECDF_targets(dsl))
-get_marg_contrib_ecdf(get_algId(dsl)[[1]], get_algId(dsl), 1, dt)
+get_marg_contrib_ecdf(get_id(dsl)[[1]], get_id(dsl), 1, dt)
 }

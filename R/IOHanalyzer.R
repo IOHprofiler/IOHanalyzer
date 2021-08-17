@@ -20,6 +20,7 @@
 #' @importFrom reshape2 acast
 #' @importFrom knitr kable
 #' @importFrom methods hasArg
+#' @importFrom rjson fromJSON
 #' @useDynLib IOHanalyzer
 NULL
 # Ugly hack, but appears to be required to appease CRAN

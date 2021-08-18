@@ -60,12 +60,9 @@ read_index_file <- function(fname) {
 read_index_file__json <- function(fname) {
   
   json_data <- fromJSON(file = fname)
-  attribute_names <- attributes(json_data)
-  
-  exp_attrs <- json_data$experiment_attributes
+  exp_attrs <- sapply(json_data$experiment_attributes, function(x) {x})
   
   data <- list()
-  
   tryCatch({
     fid <- json_data$function_id
     fname <- json_data$function_name
@@ -74,12 +71,14 @@ read_index_file__json <- function(fname) {
     algid <- json_data$algorithm$name
   }, error = function(e) {return(NULL)})
   
-  data <- lapply(json_data$dimensions, function(scenario) {
+  data <- lapply(json_data$scenarios, function(scenario) {
+    
     run_attrs <- list()
     
     for (run_attr in json_data$run_attributes) {
       attr(run_attrs, run_attr) <- sapply(scenario$runs, function(x) x$run_attr)
     }
+
     
     temp <- c(list(
       funcId = fid,
@@ -93,8 +92,8 @@ read_index_file__json <- function(fname) {
       maxRT = sapply(scenario$runs, function(x) x$evals),
       finalFV = sapply(scenario$runs, function(x) x$best$y),
       final_pos = sapply(scenario$runs, function(x) x$best$x)
-    ), exp_attrs,
-    run_attrs)
+    ), run_attrs, 
+    exp_attrs)
     
   })
   data

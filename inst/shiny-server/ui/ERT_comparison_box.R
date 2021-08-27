@@ -5,11 +5,11 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
       sidebarLayout(
         sidebarPanel(
             width = 2,
-            selectInput('ERTPlot.Aggr.Algs', label = 'Select which algorithms to plot:',
+            selectInput('ERTPlot.Aggr.Algs', label = 'Select which IDs to include:',
                         multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                           custom_icon() %>%
                             bs_embed_popover(
-                              title = "Algorithm selection", content = alg_select_info, 
+                              title = "ID selection", content = alg_select_info, 
                               placement = "auto"
                             )
                         ),
@@ -72,11 +72,11 @@ ERT_comparison_box_dim <- function(width = 12, collapsible = T, collapsed = T) {
       sidebarLayout(
         sidebarPanel(
           width = 2,
-          selectInput('ERTPlot.Aggr_Dim.Algs', label = 'Select which algorithms to plot:',
+          selectInput('ERTPlot.Aggr_Dim.Algs', label = 'Select which IDs to include:',
                       multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                         custom_icon() %>%
                           bs_embed_popover(
-                            title = "Algorithm selection", content = alg_select_info, 
+                            title = "ID selection", content = alg_select_info, 
                             placement = "auto"
                           )
                       ),

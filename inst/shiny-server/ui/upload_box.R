@@ -117,7 +117,7 @@ repository_box <- function(width = 12, collapsible = F, collapsed = T,
                   label = "Please choose the dimension",
                   choices = NULL, selected = NULL, width = '50%', multiple = T),
       
-      selectInput('repository.algId', 
+      selectInput('repository.ID', 
                   label = "Please choose the algorithm",
                   choices = NULL, selected = NULL, width = '50%', multiple = T),
       

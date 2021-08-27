@@ -8,7 +8,7 @@ rt_histogram_box <- function(width = 12, collapsed = T, collapsible = T) {
                   value = ''),
         selectInput(
           'RTPMF.Hist.Algs',
-          label = 'Select which algorithms to plot',
+          label = 'Select which IDs to include:',
           multiple = T, 
           selected = NULL, 
           choices = NULL
@@ -16,7 +16,7 @@ rt_histogram_box <- function(width = 12, collapsed = T, collapsible = T) {
           shinyInput_label_embed(
             custom_icon() %>%
               bs_embed_popover(
-                title = "Algorithm selection", 
+                title = "ID selection", 
                 content = alg_select_info, 
                 placement = "auto"
                 )
@@ -64,7 +64,7 @@ rt_pmf_box <- function(width = 12, collapsed = T, collapsible = T) {
           
           selectInput(
             'RTPMF.Bar.Algs',
-            label = 'Select which algorithms to plot:',
+            label = 'Select which IDs to include:',
             multiple = T, 
             selected = NULL, 
             choices = NULL
@@ -72,13 +72,13 @@ rt_pmf_box <- function(width = 12, collapsed = T, collapsible = T) {
             shinyInput_label_embed(
               custom_icon() %>%
                 bs_embed_popover(
-                  title = "Algorithm selection", 
+                  title = "ID selection", 
                   content = alg_select_info, 
                   placement = "auto"
                   )
               ),
           
-          checkboxInput('RTPMF.Bar.Sample', label = 'Show runtime for each run', value = T),
+          # checkboxInput('RTPMF.Bar.Sample', label = 'Show runtime for each run', value = T),
           checkboxInput('RTPMF.Bar.Logy', label = 'Scale y axis \\(\\log_{10}\\)', value = F),
 
           hr(),

@@ -5,7 +5,8 @@
 \title{S3 constructor of the 'DataSetList'}
 \usage{
 DataSetList(path = NULL, verbose = T, print_fun = NULL,
-  maximization = NULL, format = IOHprofiler, subsampling = FALSE)
+  maximization = NULL, format = IOHprofiler, subsampling = FALSE,
+  full_aggregation = TRUE)
 }
 \arguments{
 \item{path}{Path to the data files. Will look for all .info-files in this directory and use
@@ -29,6 +30,10 @@ the corresponding datafiles to create the DataSetList}
 These formats are specified in more detail in our github wiki.}
 
 \item{subsampling}{Logical. Whether *.cdat files are subsampled?}
+
+\item{full_aggregation}{If True, individual DataSets are aggregated as much as possible: all DataSets
+with the same algorithmname, function id and dimension are combined together. This leads to information loss
+related to static variables, so only use if that information is not required.}
 }
 \value{
 A DataSetList object

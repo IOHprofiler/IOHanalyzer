@@ -1,7 +1,7 @@
 Package: IOHanalyzer
 Type: Package
 Title: Data Analysis Part of 'IOHprofiler'
-Version: 0.1.5.2
+Version: 0.1.6.0
 Author: Hao Wang [cre, aut], Diederick Vermetten [aut], Carola Doerr [aut], Thomas Bäck [aut]
 Maintainer: Hao Wang <h.wang@liacs.leidenuniv.nl>
 Authors@R: c(
@@ -39,7 +39,8 @@ Imports:
   kableExtra,
   stringi,
   httr,
-  knitr
+  knitr,
+  methods
 LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 7.0.0

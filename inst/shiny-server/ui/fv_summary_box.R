@@ -4,9 +4,7 @@ fv_overview_box <- function(width = 12, collapsible = T, collapsed = T) {
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        HTML('<p align="justify">Select which algorithms to show.</p>'),
-
-        selectInput('FCESummary.Overview.Algid', 'Algorithms', choices = NULL, selected = NULL),
+        selectInput('FCESummary.Overview.ID', 'Select which IDs to include:', choices = NULL, selected = NULL, multiple = T),
         #TODO: implement this button
         hr(),
         selectInput('FCESummary.Overview.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
@@ -34,7 +32,7 @@ fv_stats_box <- function(width = 12, collapsible = T, collapsed = T) {
         checkboxInput('FCESummary.Statistics.Single', label = HTML('<p>\\(B_{\\text{min}} = B_{\\text{max}}\\)?
                                                            Once toggled, only \\(B_{\\text{min}}\\) is
                                                            used to generate the table on the right.</p>'), value = FALSE),
-        selectInput('FCESummary.Statistics.Algid', 'Algorithms', choices = NULL, selected = NULL),
+        selectInput('FCESummary.Statistics.ID', 'Select which IDs to include:', choices = NULL, selected = NULL, multiple = T),
         hr(),
         selectInput('FCESummary.Statistics.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
         downloadButton("FCESummary.Statistics.Download", "Save this table")
@@ -66,8 +64,8 @@ fv_sample_box <- function(width = 12, collapsible = T, collapsed = T) {
                     label = HTML('<p>\\(B_{\\text{min}} = B_{\\text{max}}\\)?
                                                        Once toggled, only \\(B_{\\text{min}}\\) is
                                                        used to generate the table on the right.</p>'), value = FALSE),
-      selectInput('FCESummary.Sample.Algid', 'Algorithms',
-                  choices = NULL, selected = NULL),
+      selectInput('FCESummary.Sample.ID', 'Select which IDs to include:',
+                  choices = NULL, selected = NULL, multiple = T),
 
       selectInput('FCESummary.Sample.Format', 'Format of the table',
                   choices = c('long', 'wide'), selected = 'wide'),

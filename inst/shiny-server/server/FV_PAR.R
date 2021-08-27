@@ -1,6 +1,6 @@
 # Expected Evolution of parameters in the algorithm
 get_data_FV_PAR_PER_FUN <- reactive({
-  data <- subset(DATA(), algId %in% input$FV_PAR.Plot.Algs)
+  data <- subset(DATA(), ID %in% input$FV_PAR.Plot.Algs)
   generate_data.Parameters(data, scale_log = input$FV_PAR.Plot.Logx, which = 'by_RT')
 })
 
@@ -30,17 +30,20 @@ render_FV_PAR_PER_FUN <- reactive({
       p <- plot_general_data(dt, 'runtime', input$FV_PAR.Plot.show.mean, 'line',
                              subplot_attr = sub_attr, scale.xlog = input$FV_PAR.Plot.Logx,
                              scale.ylog = input$FV_PAR.Plot.Logy, 
-                             lower_attr = lower, upper_attr = upper, show.legend = T)
+                             lower_attr = lower, upper_attr = upper, show.legend = T, 
+                             x_title = 'Function Evaluations', y_title = "Mean Parameter Value")
       p <- plot_general_data(dt, 'runtime', input$FV_PAR.Plot.show.mean, 'ribbon',
                              subplot_attr = sub_attr, scale.xlog = input$FV_PAR.Plot.Logx,
                              scale.ylog = input$FV_PAR.Plot.Logy, 
-                             lower_attr = lower, upper_attr = upper, show.legend = F, p = p)
+                             lower_attr = lower, upper_attr = upper, show.legend = F, p = p, 
+                             x_title = 'Function Evaluations', y_title = "Mean Parameter Value")
     }
     else {
       p <- plot_general_data(dt, 'runtime', input$FV_PAR.Plot.show.mean, type,
                         subplot_attr = sub_attr, scale.xlog = input$FV_PAR.Plot.Logx,
                         scale.ylog = input$FV_PAR.Plot.Logy, 
-                        lower_attr = lower, upper_attr = upper)
+                        lower_attr = lower, upper_attr = upper, 
+                        x_title = 'Function Evaluations', y_title = "Mean Parameter Value")
     }
     p
   },
@@ -87,6 +90,7 @@ fv_parameter_summary <- reactive({
   rtstop <- as.numeric(input$FV_PAR.Summary.Max)
   rtstep <- as.numeric(input$FV_PAR.Summary.Step)
   data <- DATA()
+  data <- subset(data, ID %in% input$FV_PAR.Summary.ID)
   
   if (!input$FV_PAR.Summary.Single) {
     req(rtstart <= rtstop, rtstep <= rtstop - rtstart)
@@ -97,8 +101,7 @@ fv_parameter_summary <- reactive({
   else 
     rtseq <- rtstart
   
-  dt <- get_PAR_summary(data, rtseq, input$FV_PAR.Summary.Algid, 
-                        input$FV_PAR.Summary.Param, which = 'by_RT')
+  dt <- get_PAR_summary(data, rtseq, parId = input$FV_PAR.Summary.Param, which = 'by_RT')
   req(length(dt) != 0)
   
   dt$runs %<>% as.integer
@@ -116,7 +119,7 @@ fv_parameter_summary <- reactive({
 })
 
 fv_parameter_sample <- reactive({
-  req(input$FV_PAR.Sample.Algid, input$FV_PAR.Sample.Max,
+  req(input$FV_PAR.Sample.ID, input$FV_PAR.Sample.Max,
       input$FV_PAR.Sample.Step, input$FV_PAR.Sample.Min,
       input$FV_PAR.Sample.Param)
   
@@ -124,6 +127,7 @@ fv_parameter_sample <- reactive({
   rtstop <- as.numeric(input$FV_PAR.Sample.Max)
   rtstep <- as.numeric(input$FV_PAR.Sample.Step)
   data <- DATA()
+  data <- subset(data, ID %in% input$FV_PAR.Sample.ID)
   
   if (!input$FV_PAR.Sample.Single) {
     req(rtstart <= rtstop, rtstep <= rtstop - rtstart)
@@ -134,8 +138,7 @@ fv_parameter_sample <- reactive({
   else
     rtseq <- rtstart
   
-  df <- get_PAR_sample(data, idxValue = rtseq, 
-                       algorithm = input$FV_PAR.Sample.Algid,
+  df <- get_PAR_sample(data, idxValue = rtseq,
                        parId = input$FV_PAR.Sample.Param,
                        output = input$FV_PAR.Sample.Format,
                        which = 'by_RT')

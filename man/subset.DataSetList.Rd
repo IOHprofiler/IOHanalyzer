@@ -7,10 +7,13 @@
 \method{subset}{DataSetList}(x, ...)
 }
 \arguments{
-\item{x}{The DataSetLsit}
+\item{x}{The DataSetList}
 
-\item{...}{The condition to filter on. Can be any expression which assigns True or False
-to a DataSet object, such as DIM == 625 or funcId == 2}
+\item{...}{The conditions to filter on. Can be any expression which assigns True or False
+to a DataSet object, such as DIM == 625 or funcId == 2. Usage of && and || is only supported on default attributes 
+(funcId, algId, DIM), not on combinations of with other attributes (e.g. instance). In those cases, & and | should 
+be used respectively. Alternatively, this can be used as a keyword argument named 'text', with the condition as a 
+string to be parsed. This allows exectution of subset commands on arbitrary variables in code.}
 }
 \value{
 The filtered DataSetList
@@ -20,4 +23,8 @@ Filter a DataSetList by some criteria
 }
 \examples{
 subset(dsl, funcId == 1)
+subset(dsl, funcId == 1 && DIM == 16) # Can use && and || for default attributes
+subset(dsl, instance == 1)
+subset(dsl, instance == 1 & funcId == 1) # Can use & and | for all attributes
+subset(dsl, instance == 1, funcId == 1) # Comma-seperated conditions are treated as AND
 }

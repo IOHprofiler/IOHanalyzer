@@ -4,8 +4,8 @@
 \alias{plot_general_data}
 \title{General function for plotting within IOHanalyzer}
 \usage{
-plot_general_data(df, x_attr = "algId", y_attr = "vals",
-  type = "violin", legend_attr = "algId", scale.xlog = F,
+plot_general_data(df, x_attr = "ID", y_attr = "vals",
+  type = "violin", legend_attr = "ID", scale.xlog = F,
   scale.ylog = F, scale.reverse = F, p = NULL, x_title = NULL,
   y_title = NULL, plot_title = NULL, upper_attr = NULL,
   lower_attr = NULL, subplot_attr = NULL, show.legend = F,

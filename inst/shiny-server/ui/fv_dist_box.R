@@ -7,11 +7,11 @@ fv_histgram_box <- function(width = 12, collapsible = T, collapsed = T) {
         width = 2,
         textInput('FCEPDF.Hist.Runtime', label = HTML('Select the budget value'),
                   value = ''),
-        selectInput('FCEPDF.Hist.Algs', label = 'Select which algorithms to plot:',
+        selectInput('FCEPDF.Hist.Algs', label = 'Select which IDs to include:',
                     multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                       custom_icon() %>%
                         bs_embed_popover(
-                          title = "Algorithm selection", content = alg_select_info, 
+                          title = "ID selection", content = alg_select_info, 
                           placement = "auto"
                         )
                     ),
@@ -20,7 +20,7 @@ fv_histgram_box <- function(width = 12, collapsible = T, collapsed = T) {
         selectInput('FCEPDF.Hist.Mode', '',
                     choices = c("overlay", "subplot"),
                     selected = 'subplot'),
-        checkboxInput("FCEPDF.Hist.Equal", "Use equal bins for all algorithms", F),
+        checkboxInput("FCEPDF.Hist.Equal", "Use equal bins for all IDs", F),
         
         hr(),
         selectInput('FCEPDF.Hist.Format', label = 'Select the figure format',
@@ -41,7 +41,7 @@ fv_histgram_box <- function(width = 12, collapsible = T, collapsed = T) {
                according to the so-called <b>Freedman–Diaconis rule</b>: \\(\\text{Bin size}=
                2\\frac{Q_3 - Q_1}{\\sqrt[3]{n}}\\), where \\(Q_1, Q_3\\) are the \\(25\\%\\)
                and \\(75\\%\\) percentile of the runtime and \\(n\\) is the sample size.
-               The displayed algorithms can be selected by clicking on the legend on the right.
+               The displayed IDs can be selected by clicking on the legend on the right.
                A <b>tooltip</b> and <b>toolbar</b> appears when hovering over the figure.</p>'),
           plotlyOutput.IOHanalyzer('FCE_HIST')
         )
@@ -60,15 +60,15 @@ fv_pdf_box <- function(width = 12, collapsible = T, collapsed = T) {
         HTML('Select the budget for which the distribution of best-so-far function values is shown'),
 
         textInput('FCEPDF.Bar.Runtime', label = '', value = ''),
-        selectInput('FCEPDF.Bar.Algs', label = 'Select which algorithms to plot:',
+        selectInput('FCEPDF.Bar.Algs', label = 'Select which IDs to include:',
                     multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                       custom_icon() %>%
                         bs_embed_popover(
-                          title = "Algorithm selection", content = alg_select_info, 
+                          title = "ID selection", content = alg_select_info, 
                           placement = "auto"
                         )
                     ),
-        checkboxInput('FCEPDF.Bar.Samples', label = 'Show runtime samples', value = T),
+        # checkboxInput('FCEPDF.Bar.Samples', label = 'Show runtime samples', value = T),
         checkboxInput('FCEPDF.Bar.Logy', label = 'Scale y axis \\(\\log_{10}\\)', value = T),
         
         hr(),
@@ -85,7 +85,7 @@ fv_pdf_box <- function(width = 12, collapsible = T, collapsed = T) {
           HTML('<p align="left" style="font-size:120%;">
                 The plot shows, for the budget selected on the left, the distribution
                 of the best-so-far function values of the individual runs (dots), and an estimated distribution of the probability mass function.
-                The displayed algorithms can be selected by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b>
+                The displayed IDs can be selected by clicking on the legend on the right. A <b>tooltip</b> and <b>toolbar</b>
                 appear when hovering over the figure. A csv file with the runtime data can be downloaded from the
                 <a href="#shiny-tab-FCE_DATA", data-toggle="tab"> Data Summary tab</a>.'),
           plotlyOutput.IOHanalyzer('FCE_PDF')

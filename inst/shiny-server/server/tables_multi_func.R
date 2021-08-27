@@ -1,7 +1,7 @@
 multi_function_data_summary <- reactive({
   data <- DATA_RAW()
   req(length(data) > 0)
-  data <- subset(data, algId %in% input$RT.MultiERT.AlgId & 
+  data <- subset(data, ID %in% input$RT.MultiERT.ID & 
                    funcId %in% input$RT.MultiERT.FuncId & 
                    DIM %in% input$RT.MultiERT.DIM)
   
@@ -9,7 +9,7 @@ multi_function_data_summary <- reactive({
 })
 
 output$RT.MultiERT.Table <- DT::renderDataTable({
-  req(input$RT.MultiERT.AlgId)
+  req(input$RT.MultiERT.ID)
   multi_function_data_summary()
 }, filter = list(position = 'top', clear = FALSE),
 options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
@@ -26,7 +26,7 @@ output$RT.MultiERT.Download <- downloadHandler(
 multi_function_data_sample <- reactive({
   data <- DATA_RAW()
   req(length(data) > 0)
-  data <- subset(data, algId %in% input$RT.Multisample.AlgId & 
+  data <- subset(data, ID %in% input$RT.Multisample.ID & 
                    funcId %in% input$RT.Multisample.FuncId & 
                    DIM %in% input$RT.Multisample.DIM)
   
@@ -34,7 +34,7 @@ multi_function_data_sample <- reactive({
 })
 
 output$RT.Multisample.Table <- DT::renderDataTable({
-  req(input$RT.Multisample.AlgId)
+  req(input$RT.Multisample.ID)
   multi_function_data_sample()
 }, filter = list(position = 'top', clear = FALSE),
 options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
@@ -53,7 +53,7 @@ multi_function_data_summary_FV <- reactive({
   data <- DATA_RAW()
   req(length(data) > 0)
   req(as.numeric(input$FV.MultiFV.Target) > 0)
-  data <- subset(data, algId %in% input$FV.MultiFV.AlgId & 
+  data <- subset(data, ID %in% input$FV.MultiFV.ID & 
                    funcId %in% input$FV.MultiFV.FuncId & 
                    DIM %in% input$FV.MultiFV.DIM)
   
@@ -61,7 +61,7 @@ multi_function_data_summary_FV <- reactive({
 })
 
 output$FV.MultiFV.Table <- DT::renderDataTable({
-  req(input$FV.MultiFV.AlgId)
+  req(input$FV.MultiFV.ID)
   multi_function_data_summary_FV()
 }, filter = list(position = 'top', clear = FALSE),
 options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))
@@ -78,7 +78,7 @@ output$FV.MultiFV.Download <- downloadHandler(
 multi_function_data_sample_FV <- reactive({
   data <- DATA_RAW()
   req(length(data) > 0)
-  data <- subset(data, algId %in% input$FV.Multisample.AlgId & 
+  data <- subset(data, ID %in% input$FV.Multisample.ID & 
                    funcId %in% input$FV.Multisample.FuncId & 
                    DIM %in% input$FV.Multisample.DIM)
   
@@ -86,7 +86,7 @@ multi_function_data_sample_FV <- reactive({
 })
 
 output$FV.Multisample.Table <- DT::renderDataTable({
-  req(input$FV.Multisample.AlgId)
+  req(input$FV.Multisample.ID)
   multi_function_data_sample_FV()
 }, filter = list(position = 'top', clear = FALSE),
 options = list(dom = 'lrtip', pageLength = 15, scrollX = T, server = T))

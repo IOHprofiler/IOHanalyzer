@@ -4,10 +4,10 @@
 \alias{get_line_style}
 \title{Get line styles according to the current styleScheme of the IOHanalyzer}
 \usage{
-get_line_style(algnames_in)
+get_line_style(ids_in)
 }
 \arguments{
-\item{algnames_in}{List of algorithms for which to get linestyles}
+\item{ids_in}{List of algorithms (or custom ids, see `change_id`) for which to get linestyles}
 }
 \description{
 Get line styles according to the current styleScheme of the IOHanalyzer

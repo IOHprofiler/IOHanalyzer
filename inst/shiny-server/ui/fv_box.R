@@ -9,11 +9,11 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
 
       textInput('FCEPlot.Min', label = RT_MIN_LABEL, value = ''),
       textInput('FCEPlot.Max', label = RT_MAX_LABEL, value = ''),
-      selectInput('FCEPlot.Algs', label = 'Select which algorithms to plot:',
+      selectInput('FCEPlot.Algs', label = 'Select which IDs to include:',
                   multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                     custom_icon() %>%
                       bs_embed_popover(
-                        title = "Algorithm selection", content = alg_select_info, 
+                        title = "ID selection", content = alg_select_info, 
                         placement = "auto"
                       )
                   ),
@@ -80,11 +80,11 @@ fv_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed 
       sidebarLayout(
         sidebarPanel(
           width = 2,
-          selectInput('FCEPlot.Multi.Algs', label = 'Select which algorithms to plot:',
+          selectInput('FCEPlot.Multi.Algs', label = 'Select which IDs to include:',
                       multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                         custom_icon() %>%
                           bs_embed_popover(
-                            title = "Algorithm selection", content = alg_select_info, 
+                            title = "ID selection", content = alg_select_info, 
                             placement = "auto"
                           )
                       ),
@@ -123,11 +123,11 @@ fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
       sidebarLayout(
         sidebarPanel(
           width = 3,
-          selectInput('FCEPlot.Aggr.Algs', label = 'Select which algorithms to plot:',
+          selectInput('FCEPlot.Aggr.Algs', label = 'Select which IDs to include:',
                       multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                         custom_icon() %>%
                           bs_embed_popover(
-                            title = "Algorithm selection", content = alg_select_info, 
+                            title = "ID selection", content = alg_select_info, 
                             placement = "auto"
                           )
                       ),

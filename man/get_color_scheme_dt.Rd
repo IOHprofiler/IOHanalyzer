@@ -7,7 +7,7 @@
 get_color_scheme_dt()
 }
 \value{
-data.table object with 3 columns: algnames, colors, linestyles
+data.table object with 3 columns: ids, colors, linestyles
 }
 \description{
 Get datatable of current color (and linestyle) scheme to file

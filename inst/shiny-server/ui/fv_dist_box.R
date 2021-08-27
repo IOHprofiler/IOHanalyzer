@@ -68,7 +68,7 @@ fv_pdf_box <- function(width = 12, collapsible = T, collapsed = T) {
                           placement = "auto"
                         )
                     ),
-        checkboxInput('FCEPDF.Bar.Samples', label = 'Show runtime samples', value = T),
+        # checkboxInput('FCEPDF.Bar.Samples', label = 'Show runtime samples', value = T),
         checkboxInput('FCEPDF.Bar.Logy', label = 'Scale y axis \\(\\log_{10}\\)', value = T),
         
         hr(),

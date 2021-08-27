@@ -58,7 +58,7 @@ ert_multi_function <- function() {
 default_targets_table <- reactive({
   data <- ERTPlot.Aggr.data()
   if (is.null(data)) return(NULL)
-  targets <- get_target_dt(data)
+  targets <- get_target_dt(data, which = 'by_FV')
   targets <- targets[, c('funcId','target')] 
   # %>% melt(id.vars = 'funcId') %>% dcast(variable ~ funcId)
   # targets <- targets[, 'variable' = NULL]

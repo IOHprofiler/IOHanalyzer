@@ -30,17 +30,20 @@ render_FV_PAR_PER_FUN <- reactive({
       p <- plot_general_data(dt, 'runtime', input$FV_PAR.Plot.show.mean, 'line',
                              subplot_attr = sub_attr, scale.xlog = input$FV_PAR.Plot.Logx,
                              scale.ylog = input$FV_PAR.Plot.Logy, 
-                             lower_attr = lower, upper_attr = upper, show.legend = T)
+                             lower_attr = lower, upper_attr = upper, show.legend = T, 
+                             x_title = 'Function Evaluations', y_title = "Mean Parameter Value")
       p <- plot_general_data(dt, 'runtime', input$FV_PAR.Plot.show.mean, 'ribbon',
                              subplot_attr = sub_attr, scale.xlog = input$FV_PAR.Plot.Logx,
                              scale.ylog = input$FV_PAR.Plot.Logy, 
-                             lower_attr = lower, upper_attr = upper, show.legend = F, p = p)
+                             lower_attr = lower, upper_attr = upper, show.legend = F, p = p, 
+                             x_title = 'Function Evaluations', y_title = "Mean Parameter Value")
     }
     else {
       p <- plot_general_data(dt, 'runtime', input$FV_PAR.Plot.show.mean, type,
                         subplot_attr = sub_attr, scale.xlog = input$FV_PAR.Plot.Logx,
                         scale.ylog = input$FV_PAR.Plot.Logy, 
-                        lower_attr = lower, upper_attr = upper)
+                        lower_attr = lower, upper_attr = upper, 
+                        x_title = 'Function Evaluations', y_title = "Mean Parameter Value")
     }
     p
   },

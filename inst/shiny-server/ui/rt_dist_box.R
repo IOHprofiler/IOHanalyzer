@@ -78,7 +78,7 @@ rt_pmf_box <- function(width = 12, collapsed = T, collapsible = T) {
                   )
               ),
           
-          checkboxInput('RTPMF.Bar.Sample', label = 'Show runtime for each run', value = T),
+          # checkboxInput('RTPMF.Bar.Sample', label = 'Show runtime for each run', value = T),
           checkboxInput('RTPMF.Bar.Logy', label = 'Scale y axis \\(\\log_{10}\\)', value = F),
 
           hr(),

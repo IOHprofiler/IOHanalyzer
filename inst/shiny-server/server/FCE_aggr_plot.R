@@ -65,7 +65,7 @@ FCE_multi_function <- function() {
 default_runtimes_table <- reactive({
   data <- FCEPlot.Aggr.data()
   if (is.null(data)) return(NULL)
-  targets <- get_target_dt(data, 'by_FV')
+  targets <- get_target_dt(data)
   if (input$FCEPlot.Aggr.Aggregator == 'Functions')
     targets <- targets[, c('funcId', 'target')] 
   else   

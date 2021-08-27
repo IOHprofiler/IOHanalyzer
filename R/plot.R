@@ -350,11 +350,16 @@ save_plotly <- function(p, file, width = NULL, height = NULL, ...) {
   if (is.null(width)) width <- getOption("IOHanalyzer.figure_width", default = NULL)
   if (is.null(height)) height <- getOption("IOHanalyzer.figure_height", default = NULL)
   
+  more_args <- NULL
+  if (!getOption("IOHanalyzer.orca_use_gpu", TRUE)) {
+    more_args <- c('--disable-gpu')
+  }
+  
   if (format %in% c('svg', 'png', 'jpeg', 'webp', 'pdf', 'eps'))
-    withr::with_dir(pwd, orca(p, file, format = format, width = width, height = height, ...))
+    withr::with_dir(pwd, orca(p, file, format = format, width = width, height = height, more_args = more_args, ...))
   else {
     file_svg <- paste0(file, '.svg')
-    withr::with_dir(pwd, orca(p, file_svg, format = 'svg', width = width, height = height, ...))
+    withr::with_dir(pwd, orca(p, file_svg, format = 'svg', width = width, height = height, more_args = more_args, ...))
     invisible(
       system(
         paste(

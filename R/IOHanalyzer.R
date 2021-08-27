@@ -52,7 +52,8 @@ options(shiny.port = 4242)
     IOHanalyzer.tick_fontsize = 12,
     IOHanalyzer.linewidth = 2,
     IOHanalyzer.markersize = 4,
-    IOHanalyzer.max_colors = 2 #Set to 2 since colorbrewer only works with >= 3 colors
+    IOHanalyzer.max_colors = 2, #Set to 2 since colorbrewer only works with >= 3 colors
+    IOHanalyzer.orca_use_gpu = TRUE #Can be disabled to stop orca using gpu-accelleration
   )
   toset <- !(names(op.IOHanalyzer) %in% names(op))
   if (any(toset)) options(op.IOHanalyzer[toset])

@@ -23,6 +23,10 @@ render_ert_per_fct <- reactive({
     if (input$ERTPlot.show.ERT) y_attrs <- c(y_attrs, 'ERT')
     if (input$ERTPlot.show.mean) y_attrs <- c(y_attrs, 'mean')
     if (input$ERTPlot.show.median) y_attrs <- c(y_attrs, 'median')
+    if (input$ERTPlot.show.fixed_prob) {
+      y_attrs <- c(y_attrs, paste0(input$ERTPlot.Fixed_Prob * 100, '%'))
+      options('IOHanalyzer.quantile' = unique(c(getOption('IOHanalyzer.quantile'), input$ERTPlot.Fixed_Prob)))
+    }
     show_legend <- T
     if (length(y_attrs) > 0) {
       p <- plot_general_data(get_data_ERT_PER_FUN(), x_attr = 'target', y_attr = y_attrs, 

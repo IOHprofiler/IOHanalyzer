@@ -72,7 +72,15 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
           checkboxInput('ERTPlot.show.median',
                         label = 'Show/hide median',
                         value = F),
-
+          
+          checkboxInput('ERTPlot.show.fixed_prob',
+                        label = "Show/hide fixed-probability line",
+                        value = F),
+          conditionalPanel(condition = 'input["ERTPlot.show.fixed_prob"]', 
+                           numericInput('ERTPlot.Fixed_Prob', label = "Fixed Probability",
+                                        value = 0.9, min = 0, max = 1, step = 0.01)
+          ),
+          
           checkboxInput('ERTPlot.semilogx',
                         label = 'Scale x axis \\(\\log_{10}\\)',
                         value = T),

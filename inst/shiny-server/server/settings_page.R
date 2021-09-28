@@ -1,4 +1,5 @@
 observe({
+  req(length(DATA()) > 0)
   if (input$Settings.Color.Scheme != "Custom") {
     set_color_scheme(input$Settings.Color.Scheme, get_id(DATA()), NULL)
   }

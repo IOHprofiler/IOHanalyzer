@@ -80,7 +80,7 @@ rt_pmf_box <- function(width = 12, collapsed = T, collapsible = T) {
           
           # checkboxInput('RTPMF.Bar.Sample', label = 'Show runtime for each run', value = T),
           checkboxInput('RTPMF.Bar.Logy', label = 'Scale y axis \\(\\log_{10}\\)', value = F),
-
+          checkboxInput('RTPDF.Bar.Points', label = 'Show individual points', value = F),
           hr(),
           selectInput('RTPMF.Bar.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = supported_fig_format[[1]]),

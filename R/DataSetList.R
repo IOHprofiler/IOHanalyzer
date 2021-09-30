@@ -178,7 +178,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
 
 #' Clean DataSetList object by concatenating DataSets
 #' 
-#' Concatenates all DataSets with the same ID, function id and dimension
+#' Concatenates all DataSets with the same ID, algid, function id and dimension
 #'  
 #' @param dsList The DataSetList object to clean
 #' @export
@@ -187,6 +187,11 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
 clean_DataSetList <- function(dsList) {
   #To ensure no uninitialized variables are present
   .I <- NULL
+  
+  if (is.null(attr(dsList, 'ID'))) {
+    dsList <- change_id(dsList, getOption("IOHanalyzer.ID_vars", c("algId")))
+  }
+  
   cases <- mapply(
     function(...) paste0(list(...), collapse = ','),
     attr(dsList, 'funcId'), 

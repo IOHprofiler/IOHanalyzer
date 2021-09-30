@@ -154,6 +154,10 @@ get_data_ERT_multi_func <- reactive({
   input$ERTPlot.Multi.PlotButton
   data <- subset(DATA_RAW(),
                  DIM == input$Overall.Dim)
+  if (length(get_funcId(data)) < 2) {
+    shinyjs::alert("This functionality is only available when 2 or more functions
+                   are present in the dataset")
+  }
   if (length(get_id(data)) < 20) {
     get_data_ERT_multi_func_bulk()[ID %in% isolate(input$ERTPlot.Multi.Algs), ]
   }

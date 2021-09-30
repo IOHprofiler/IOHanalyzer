@@ -877,7 +877,7 @@ radian.rescale <- function(x, start=0, direction=1) {
 Plot.Stats.Significance_Graph.DataSetList <- function(dsList, ftarget, alpha = 0.01,
                                                       bootstrap.size = 30, which = 'by_FV'){
   if (!requireNamespace("igraph", quietly = TRUE)) {
-    stop("Package \"pkg\" needed for this function to work. Please install it.",
+    stop("Package \"igraph\" needed for this function to work. Please install it.",
          call. = FALSE)
   }
   if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1 || length(get_id(dsList)) < 2) {
@@ -981,7 +981,7 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                               scale.reverse = F, p = NULL, x_title = NULL,
                               y_title = NULL, plot_title = NULL, upper_attr = NULL,
                               lower_attr = NULL, subplot_attr = NULL, show.legend = F,
-                              inf.action = 'none', ...) {
+                              inf.action = 'none', violin.showpoints = F,...) {
   
   l <- x <- isinf <- y <- text <- l_orig <- NULL #Set local binding to remove warnings
   
@@ -1040,12 +1040,12 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
         type1 <- substr(type, 0, stri_locate_all(type, fixed = '+')[[1]][[1]] - 1)
         p <- plot_general_data(df_sub, x_attr, y_attr, type1, legend_attr, scale.xlog, scale.ylog, 
                                scale.reverse, NULL, x.title, y.title, plot_title, upper_attr, lower_attr, 
-                               show.legend = legends_show[[attr_val]], subplot_attr = NULL, ...)
+                               show.legend = legends_show[[as.character(attr_val)]], subplot_attr = NULL, ...)
         type <- substr(type, stri_locate_all(type, fixed = '+')[[1]][[1]] + 1, nchar(type))
       }
       plot_general_data(df_sub, x_attr, y_attr, type, legend_attr, scale.xlog, scale.ylog, 
                         scale.reverse, p, x.title, y.title, plot_title, upper_attr, lower_attr, 
-                        show.legend = legends_show[[attr_val]], subplot_attr = NULL, ...) %>%
+                        show.legend = legends_show[[as.character(attr_val)]], subplot_attr = NULL, ...) %>%
         layout(
           annotations = list(
             text = sub_title, 
@@ -1130,7 +1130,7 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
              add_trace(data = df,
                        x = ~x, y = ~y, type = 'violin',
                        hoveron = "points+kde",
-                       points = F,
+                       points = violin.showpoints,
                        pointpos = 1.5,
                        jitter = 0,
                        scalemode = 'count',
@@ -1363,15 +1363,15 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
 #' }
 Plot.Performviz <- function(DSC_rank_result) {
   if (!requireNamespace("ComplexHeatmap", quietly = TRUE)) {
-    stop("Package \"pkg\" needed for this function to work. Please install it.",
+    stop("Package \"ComplexHeatmap\" needed for this function to work. Please install it.",
          call. = FALSE)
   }
   if (!requireNamespace("reshape2", quietly = TRUE)) {
-    stop("Package \"pkg\" needed for this function to work. Please install it.",
+    stop("Package \"reshape2\" needed for this function to work. Please install it.",
          call. = FALSE)
   }
   if (!requireNamespace("grid", quietly = TRUE)) {
-    stop("Package \"pkg\" needed for this function to work. Please install it.",
+    stop("Package \"grid\" needed for this function to work. Please install it.",
          call. = FALSE)
   }
   mlist <- DSC_rank_result$ranked_matrix

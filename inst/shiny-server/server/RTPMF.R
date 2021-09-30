@@ -22,7 +22,8 @@ get_data_RT_PMF <- reactive({
 render_RT_PMF <- reactive({
   withProgress({
     plot_general_data(get_data_RT_PMF(), 'ID', 'RT', scale.ylog = input$RTPMF.Bar.Logy,
-                      x_title = "Algorithm", y_title = "Function Evaluations")
+                      x_title = "Algorithm", y_title = "Function Evaluations",
+                      violin.showpoints = input$RTPMF.Bar.Points)
   # ftarget <- input$RTPMF.Bar.Target %>% as.numeric
   # data <- subset(DATA(), algId %in% input$RTPMF.Bar.Algs)
   # Plot.RT.PMF(data, ftarget, show.sample = input$RTPMF.Bar.Sample,

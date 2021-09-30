@@ -85,7 +85,8 @@ observeEvent(input$repository.load_button, {
   }
   
   DataList$data <- c(DataList$data, data)
-  DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
+  DataList$data <- clean_DataSetList(DataList$data)
+  # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
   update_menu_visibility(attr(DataList$data, 'suite'))
   # set_format_func(attr(DataList$data, 'suite'))
   IDs <- get_id(DataList$data)
@@ -181,8 +182,13 @@ observeEvent(selected_folders(), {
       folder_new <- setdiff(folders, intersect(folderList$data, folders))
   
     req(length(folder_new) != 0)
+    tryCatch(
     format_detected <- lapply(folder_new, check_format) %>% unique
-  
+    , error = function(e) {
+    print_html(paste('<p style="color:red;">The data verification 
+                     failed, please check that the uploaded files are complete 
+                     and not corrupted.</p>'))
+      })
     if (length(format_detected) > 1)
       print_html(paste('<p style="color:red;">more than one format: <br>',
                        format_detected,
@@ -238,7 +244,7 @@ observeEvent(selected_folders(), {
     }
     
     DataList$data <- clean_DataSetList(DataList$data)
-    DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
+    # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
     if (is.null(DataList$data)) {
       shinyjs::alert("An error occurred when processing the uploaded data.
                      Please ensure the data is not corrupted.")

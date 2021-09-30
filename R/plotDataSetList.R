@@ -973,6 +973,7 @@ add_transparancy <- function(colors, percentage){
 #' @param p A previously existing plot on which to add traces. If NULL, a new canvas is created
 #' @param show.legend Whether or not to include a legend
 #' @param inf.action How to deal with infinite values. Can be 'none', 'overlap' or 'jitter'
+#' @param violin.showpoints Wheteher or not to show individual points when making a violinplot
 #' @param ... Additional parameters for the add_trace function
 #' 
 #' @export

@@ -4,12 +4,27 @@
 \alias{plot_general_data}
 \title{General function for plotting within IOHanalyzer}
 \usage{
-plot_general_data(df, x_attr = "ID", y_attr = "vals",
-  type = "violin", legend_attr = "ID", scale.xlog = F,
-  scale.ylog = F, scale.reverse = F, p = NULL, x_title = NULL,
-  y_title = NULL, plot_title = NULL, upper_attr = NULL,
-  lower_attr = NULL, subplot_attr = NULL, show.legend = F,
-  inf.action = "none", ...)
+plot_general_data(
+  df,
+  x_attr = "ID",
+  y_attr = "vals",
+  type = "violin",
+  legend_attr = "ID",
+  scale.xlog = F,
+  scale.ylog = F,
+  scale.reverse = F,
+  p = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  plot_title = NULL,
+  upper_attr = NULL,
+  lower_attr = NULL,
+  subplot_attr = NULL,
+  show.legend = F,
+  inf.action = "none",
+  violin.showpoints = F,
+  ...
+)
 }
 \arguments{
 \item{df}{The dataframe containing the data to plot. It should contain at least two columns:
@@ -49,6 +64,8 @@ Only works in combination with`upper_attr` and `type` == 'ribbon'}
 \item{show.legend}{Whether or not to include a legend}
 
 \item{inf.action}{How to deal with infinite values. Can be 'none', 'overlap' or 'jitter'}
+
+\item{violin.showpoints}{Wheteher or not to show individual points when making a violinplot}
 
 \item{...}{Additional parameters for the add_trace function}
 }

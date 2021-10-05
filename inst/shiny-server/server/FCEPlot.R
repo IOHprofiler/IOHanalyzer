@@ -89,7 +89,7 @@ output$FCEPlot.Multi.Plot <- renderPlotly(
 )
 
 get_data_FCE_multi_func_bulk <- reactive({
-  data <- subset(DATA_RAW(),
+  data <- subset(DATA_RAW(), 
                  DIM == input$Overall.Dim)
   if (length(get_id(data)) < 20) { #Arbitrary limit for the time being
     rbindlist(lapply(get_funcId(data), function(fid) {
@@ -106,12 +106,14 @@ get_data_FCEPlot_multi <- reactive({
   input$FCEPlot.Multi.PlotButton
   data <- subset(DATA_RAW(),
                  DIM == input$Overall.Dim)
-  if (length(get_id(data)) < 20) {
-    get_data_FCE_multi_func_bulk()[ID %in% isolate(input$FCEPlot.Multi.Algs), ]
+  if (length(get_id(data)) < 20 & length(get_funcId(data)) < 30) {
+    get_data_ERT_multi_func_bulk()[(ID %in% isolate(input$FCEPlot.Multi.Algs)) &
+                                     (funcId %in% isolate(input$FCEPlot.Multi.Funcs)), ]
   }
   else {
     data <- subset(DATA_RAW(),
                    ID %in% isolate(input$FCEPlot.Multi.Algs),
+                   funcId %in% isolate(input$FCEPlot.Multi.Funcs),
                    DIM == input$Overall.Dim)
     rbindlist(lapply(get_funcId(data), function(fid) {
       generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$FCEPlot.Multi.Logx, 

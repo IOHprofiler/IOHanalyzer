@@ -88,7 +88,8 @@ fv_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed 
                             placement = "auto"
                           )
                       ),
-
+          selectInput('FCEPlot.Multi.Funcs', label = 'Select which Functions to include:', 
+                      multiple = T, selected = NULL, choices = NULL),
           checkboxInput('FCEPlot.Multi.Logx',
                         label = 'Scale x axis \\(\\log_{10}\\)',
                         value = T),

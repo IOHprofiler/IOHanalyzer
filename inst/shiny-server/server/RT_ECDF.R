@@ -10,9 +10,13 @@ get_data_RT_ECDF_MULT <- reactive({
   
   if (!input$RTECDF.Aggr.Func) 
     dsList <- subset(dsList, funcId == input$Overall.Funcid)
+  else 
+    dsList <- subset(dsList, funcId %in% RTECDF.Aggr.FuncIds)
   
   if (!input$RTECDF.Aggr.Dim) 
     dsList <- subset(dsList, DIM == input$Overall.Dim)
+  else 
+    dsList <- subset(dsList, DIM %in% RTECDF.Aggr.DIMS)
   
   if (length(dsList) <= 1) {
     shinyjs::alert("This is an invalid configuration for this plot. \n

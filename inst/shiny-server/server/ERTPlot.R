@@ -139,7 +139,7 @@ output$ERTPlot.Multi.Plot <- renderPlotly(
 )
 
 get_data_ERT_multi_func_bulk <- reactive({
-  data <- subset(DATA_RAW(),
+  data <- subset(DATA_RAW(), 
                  DIM == input$Overall.Dim)
   if (length(get_id(data)) < 20) { #Arbitrary limit for the time being
     rbindlist(lapply(get_funcId(data), function(fid) {
@@ -160,13 +160,15 @@ get_data_ERT_multi_func <- reactive({
     shinyjs::alert("This functionality is only available when 2 or more functions
                    are present in the dataset")
   }
-  if (length(get_id(data)) < 20) {
-    get_data_ERT_multi_func_bulk()[ID %in% isolate(input$ERTPlot.Multi.Algs), ]
+  if (length(get_id(data)) < 20 & length(get_funcId(data)) < 30) {
+    get_data_ERT_multi_func_bulk()[(ID %in% isolate(input$ERTPlot.Multi.Algs)) &
+                                     (funcId %in% isolate(input$ERTPlot.Multi.Funcs)), ]
   }
   else {
     selected_algs <- isolate(input$ERTPlot.Multi.Algs)
     data <- subset(DATA_RAW(),
                    ID %in% selected_algs,
+                   funcId %in% isolate(input$ERTPlot.Multi.Funcs),
                    DIM == input$Overall.Dim)
     rbindlist(lapply(get_funcId(data), function(fid) {
     generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$ERTPlot.Multi.Logx, 

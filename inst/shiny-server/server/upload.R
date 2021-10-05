@@ -470,7 +470,12 @@ observe({
   updateSelectInput(session, 'RT.Multisample.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RT.Multisample.FuncId', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RT.Multisample.DIM', choices = DIMs, selected = selected_dim)
-
+  
+  updateSelectInput(session, 'ERTPlot.Multi.Funcs', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'FCEPlot.Multi.Funcs', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'RTECDF.Aggr.FuncIds', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'RTECDF.Aggr.DIMS', choices = DIMs, selected = DIMs)
+  
   updateSelectInput(session, 'FV.MultiFV.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV.MultiFV.FuncId', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'FV.MultiFV.DIM', choices = DIMs, selected = selected_dim)

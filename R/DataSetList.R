@@ -977,7 +977,8 @@ get_ECDF_targets <- function(dsList, type = "log-linear", number_targets = 10) {
 #' @examples 
 #' generate_data.Single_Function(subset(dsl, funcId == 1), which = 'by_RT')
 generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL, 
-                                          scale_log = F, which = 'by_RT', include_opts = F, budget = NULL) {
+                                          scale_log = F, which = 'by_RT', 
+                                          include_opts = F, budget = NULL) {
   
   if (length(get_funcId(dsList)) != 1 || length(get_dim(dsList)) != 1 ) {
     #Required because target generation is included in this function, 

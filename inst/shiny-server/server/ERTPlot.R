@@ -13,15 +13,17 @@ get_data_ERT_PER_FUN <- reactive({
   fstart <- input$ERTPlot.Min %>% as.numeric
   fstop <- input$ERTPlot.Max %>% as.numeric
   budget <- input$ERTPlot.Additional.Budget %>% as.numeric
+  options('IOHanalyzer.PAR_penalty' = input$ERTPlot.ParX)
   generate_data.Single_Function(data, fstart, fstop, input$ERTPlot.semilogx, 
-                                'by_RT', include_opts = input$ERTPlot.inclueOpts, budget = budget)
+                                'by_RT', include_opts = input$ERTPlot.inclueOpts, 
+                                budget = budget)
 })
 
 render_ert_per_fct <- reactive({
   withProgress({
     y_attrs <- c()
     if (input$ERTPlot.show.ERT) y_attrs <- c(y_attrs, 'ERT')
-    if (input$ERTPlot.show.mean) y_attrs <- c(y_attrs, 'mean')
+    if (input$ERTPlot.show.Par) y_attrs <- c(y_attrs, paste0('PAR-', input$ERTPlot.ParX))
     if (input$ERTPlot.show.median) y_attrs <- c(y_attrs, 'median')
     if (input$ERTPlot.show.fixed_prob) {
       y_attrs <- c(y_attrs, paste0(input$ERTPlot.Fixed_Prob * 100, '%'))

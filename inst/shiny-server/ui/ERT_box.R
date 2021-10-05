@@ -40,18 +40,22 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
                         value = T),
 
           checkboxInput(
-            'ERTPlot.show.mean',
-            label = 'Show/hide PAR-1',
+            'ERTPlot.show.Par',
+            label = 'Show/hide PAR-X',
             value = F
           ) %>% 
             shinyInput_label_embed(
               custom_icon() %>%
                 bs_embed_popover(
-                  title = "Penalized Average Runtime", content = "PAR-1 score is ther average of running time values, 
-                    where non-successful runs are counted as evaluation budget B.", 
+                  title = "Penalized Average Runtime", content = "PAR-X score is ther average of running time values, 
+                    where non-successful runs are counted as X times the evaluation budget B.", 
                   placement = "auto"
                 )
             ),
+          conditionalPanel(condition = 'input["ERTPlot.show.Par"]', 
+                           numericInput('ERTPlot.ParX', label = "X",
+                                        value = 1, min = 1, max = 500, step = 1)
+          ),
 
           checkboxInput('ERTPlot.show.CI',
                         label = 'Show/hide mean +/- sd',

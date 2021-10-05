@@ -53,7 +53,7 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
                 )
             ),
           conditionalPanel(condition = 'input["ERTPlot.show.Par"]', 
-                           numericInput('ERTPlot.ParX', label = "X",
+                           numericInput('ERTPlot.ParX', label = "Choose the used penaltiy factor:",
                                         value = 1, min = 1, max = 500, step = 1)
           ),
 
@@ -112,7 +112,7 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
                 custom_icon("info") %>%
                   bs_embed_popover(
                     title = "Custom Budget", content = "This will use this budget value instead of the ones in the 
-                    data for the ERT calculation. Any hitting times larger than this value are treated as unfinished runs.
+                    data for the ERT and PAR-X calculation. Any hitting times larger than this value are treated as unfinished runs.
                     Please use with caution.", 
                     placement = "auto"
                   )

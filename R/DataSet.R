@@ -747,7 +747,7 @@ get_ERT.DataSet <- function(ds, ftarget, budget = NULL, ...) {
 #'
 get_RT_summary.DataSet <- function(ds, ftarget, budget = NULL, ...) {
   data <- ds$RT
-  if (is.null(budget) || is.na(budget)) maxRT <- attr(ds, 'maxRT')
+  if (is.null(budget) || is.na(budget)) maxRT <- max(attr(ds, 'maxRT'))
   else maxRT <- as.numeric(budget)
   ID <- get_id(ds)
   maximization <- attr(ds, 'maximization')

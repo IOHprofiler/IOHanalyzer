@@ -95,6 +95,8 @@ read_index_file__IOH <- function(fname) {
       }
 
     record <- trimws(strsplit(lines[3], ',')[[1]])
+    
+    has_dynattr <- !is.null(header$dynamicAttribute)
 
     # TODO: this must also be removed...
     if (record[2] == "") {
@@ -108,25 +110,39 @@ read_index_file__IOH <- function(fname) {
       #Check for incorrect usages of reset_problem and remove them
       maxRTs <- as.numeric(info[1,])
       idx_correct <- which(maxRTs > 0)
-      finalFVs <- as.numeric(info[2,])[idx_correct]
+      info_split <- strsplit(info[2,], ';')
+      finalFVs <- as.numeric(info_split[[1]][[1]])[idx_correct]
       instances <- as.numeric(res[1,])[idx_correct]
+      if (has_dynattr){
+        dynamic_attrs <- info_split[[1]][[2]]
+        dynamic_attrs <- dynamic_attrs[idx_correct]
+      }
       maxRTs <- maxRTs[idx_correct]
     }
     
     record[1] <- gsub("\\\\", "/", record[1])
     datafile <- file.path(path, record[1])
+    
+    attr_list = list(
+      comment = lines[2],
+      datafile = datafile,
+      instance = instances,
+      maxRT = maxRTs,
+      finalFV = finalFVs
+    )
+    
+    
+    
+    if (has_dynattr){
+      attr_list[header$dynamicAttribute] = dynamic_attrs
+    }
 
-    # TODO: check the name of the attributes and fix them!
+    # TODO: Make this code more readable
     data[[i]] <- c(
       header,
-      list(
-        comment = lines[2],
-        datafile = datafile,
-        instance = instances,
-        maxRT = maxRTs,
-        finalFV = finalFVs
-      )
+      attr_list
     )
+    
     i <- i + 1
   }
   close(f)

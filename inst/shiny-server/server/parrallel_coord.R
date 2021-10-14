@@ -20,7 +20,7 @@ render_parallel_coord <- reactive({
                                                     colorbar = list(title = 'Log best f(x)'),
                                                     symbol = 'cross'),
                     legendgroup = ~ID, opacity = 0.9, showlegend = F) %>%
-      layout(yaxis = list(range = c(-0.02,1.02)), xaxis = list(range = c(-0.5, get_dim(dsl) + 0.5)))
+      layout(yaxis = list(range = c(-0.02,1.02)), xaxis = list(range = c(-0.5, get_dim(data) + 0.5)))
   })
 })
 

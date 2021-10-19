@@ -89,8 +89,7 @@ output$FCEPlot.Multi.Plot <- renderPlotly(
 )
 
 get_data_FCE_multi_func_bulk <- reactive({
-  data <- subset(DATA_RAW(), 
-                 DIM == input$Overall.Dim)
+  data <- subset(DATA_RAW(), DIM == input$Overall.Dim)
   if (length(get_id(data)) < 20) { #Arbitrary limit for the time being
     rbindlist(lapply(get_funcId(data), function(fid) {
       generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$FCEPlot.Multi.Logx, 

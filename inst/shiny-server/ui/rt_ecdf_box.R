@@ -119,8 +119,15 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
           ),
         
       checkboxInput("RTECDF.Aggr.Func", "Aggregate functions", value = T),
+      conditionalPanel(condition = 'input["RTECDF.Aggr.Func"]', 
+                       selectInput('RTECDF.Aggr.FuncIds', label = "Functions to include:",
+                                    selected = NULL, choices = NULL, multiple = T)
+      ),
       checkboxInput("RTECDF.Aggr.Dim", "Aggregate dimensions", value = F),
-      checkboxInput("RTECDF.Aggr.Logx", "Scale x axis \\(\\log_{10}\\)", value = T),
+      conditionalPanel(condition = 'input["RTECDF.Aggr.Dim"]', 
+                       selectInput('RTECDF.Aggr.DIMS', label = "Dimsensions to include:",
+                                   selected = NULL, choices = NULL, multiple = T)
+      ),      checkboxInput("RTECDF.Aggr.Logx", "Scale x axis \\(\\log_{10}\\)", value = T),
       checkboxInput("RTECDF.Aggr.Logy", "Scale y axis \\(\\log_{10}\\)", value = F) %>% 
         shinyInput_label_embed(
           custom_icon() %>%

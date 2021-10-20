@@ -8,7 +8,8 @@ get_data_FV_PMF <- reactive({
 render_FV_PDF <- reactive({
   withProgress({
     plot_general_data(get_data_FV_PMF(), 'ID', 'f(x)', scale.ylog = input$FCEPDF.Bar.Logy,
-                      x_title = "Algorithm", y_title = "Target Value")
+                      x_title = "Algorithm", y_title = "Target Value",
+                      violin.showpoints = input$FCEPDF.Bar.Points)
     # ftarget <- input$RTPMF.Bar.Target %>% as.numeric
     # data <- subset(DATA(), algId %in% input$RTPMF.Bar.Algs)
     # Plot.RT.PMF(data, ftarget, show.sample = input$RTPMF.Bar.Sample,

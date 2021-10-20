@@ -4,7 +4,9 @@
 \name{dsl}
 \alias{dsl}
 \title{Example DataSetList used in tests / examples}
-\format{DataSetList}
+\format{
+DataSetList
+}
 \usage{
 dsl
 }

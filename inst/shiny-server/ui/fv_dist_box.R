@@ -70,6 +70,7 @@ fv_pdf_box <- function(width = 12, collapsible = T, collapsed = T) {
                     ),
         # checkboxInput('FCEPDF.Bar.Samples', label = 'Show runtime samples', value = T),
         checkboxInput('FCEPDF.Bar.Logy', label = 'Scale y axis \\(\\log_{10}\\)', value = T),
+        checkboxInput('FCEPDF.Bar.Points', label = 'Show individual points', value = F),
         
         hr(),
         selectInput('FCEPDF.Bar.Format', label = 'Select the figure format',

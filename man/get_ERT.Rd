@@ -10,8 +10,7 @@ get_ERT(ds, ftarget, budget, ...)
 
 \method{get_ERT}{DataSet}(ds, ftarget, budget = NULL, ...)
 
-\method{get_ERT}{DataSetList}(ds, ftarget, budget = NULL,
-  algorithm = "all", ...)
+\method{get_ERT}{DataSetList}(ds, ftarget, budget = NULL, algorithm = "all", ...)
 }
 \arguments{
 \item{ds}{A DataSet or DataSetList object}

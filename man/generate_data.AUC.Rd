@@ -4,8 +4,14 @@
 \alias{generate_data.AUC}
 \title{Generate dataframe containing the AUC for any ECDF-curves}
 \usage{
-generate_data.AUC(dsList, targets, scale_log = F, which = "by_RT",
-  dt_ecdf = NULL, multiple_x = FALSE)
+generate_data.AUC(
+  dsList,
+  targets,
+  scale_log = F,
+  which = "by_RT",
+  dt_ecdf = NULL,
+  multiple_x = FALSE
+)
 }
 \arguments{
 \item{dsList}{The DataSetList object}

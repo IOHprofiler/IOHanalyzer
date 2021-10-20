@@ -1,4 +1,5 @@
 DIM_fID_panel <- function() {
+
   conditionalPanel(
     "input.tabs!='Report' && input.tabs!='upload' && input.tabs!='readme' && input.tabs!='about' && input.tabs!='Settings'",
     column(12, offset = 0,

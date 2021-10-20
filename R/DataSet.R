@@ -747,7 +747,7 @@ get_ERT.DataSet <- function(ds, ftarget, budget = NULL, ...) {
 #'
 get_RT_summary.DataSet <- function(ds, ftarget, budget = NULL, ...) {
   data <- ds$RT
-  if (is.null(budget) || is.na(budget)) maxRT <- attr(ds, 'maxRT')
+  if (is.null(budget) || is.na(budget)) maxRT <- max(attr(ds, 'maxRT'))
   else maxRT <- as.numeric(budget)
   ID <- get_id(ds)
   maximization <- attr(ds, 'maximization')
@@ -769,6 +769,9 @@ get_RT_summary.DataSet <- function(ds, ftarget, budget = NULL, ...) {
   }
 
   data <- data[matched, , drop = FALSE]
+  pen_data <- data
+  pen_data[is.na(pen_data)] = maxRT * getOption("IOHanalyzer.PAR_penalty", 1)
+  pen_data[pen_data > maxRT] = maxRT * getOption("IOHanalyzer.PAR_penalty", 1)
   dt_temp <- apply(data, 1, IOHanalyzer_env$D_quantile) %>%
     t %>%
     as.data.table %>%
@@ -776,9 +779,11 @@ get_RT_summary.DataSet <- function(ds, ftarget, budget = NULL, ...) {
     cbind(ID, ftarget,
           apply(data, 1, .mean),
           apply(data, 1, .median),
-          apply(data, 1, .sd), .) %>%
+          apply(data, 1, .sd), 
+          apply(pen_data, 1, .mean), .) %>%
     set_colnames(c('ID', 'target', 'mean', 'median',
-                   'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%'),
+                   'sd', paste0('PAR-', getOption("IOHanalyzer.PAR_penalty", 1)),
+                   paste0(getOption("IOHanalyzer.quantiles") * 100, '%'),
                    'ERT', 'runs', 'ps'))
   dt_temp
 }

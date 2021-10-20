@@ -48,8 +48,8 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
           HTML_P('The <b><i>ERT</i></b> of the runtime samples across all functions. 
                   ERT is decided based on the target values in the table below,
                   with the default being the <b>best reached f(x) by any of the 
-                  selected algorithms</b>. <i>Infinite ERTS</i> are shown as 
-                  seperate dots on the graph.'),
+                  selected algorithms</b>. When using a lineplot, <i>Infinite ERTS</i> are shown as 
+                  non-connected dots on the graph.'),
           plotlyOutput.IOHanalyzer('ERTPlot.Aggr.Plot'),
           hr(),
           HTML_P("The chosen <b>target values</b> per function are as follows 

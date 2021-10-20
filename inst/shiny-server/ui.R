@@ -124,6 +124,12 @@ header <- .dashboardHeader(title = HTML('<div align="center"><b>IOHanalyzer</b><
 
 # The side bar layout ---------------------------------------------
 sidebar <- dashboardSidebar(
+  tags$style(
+    "#sidebarItemExpanded {
+            overflow: auto;
+            max-height: 100vh;
+        }"
+  ),
   useShinyjs(),
   sidebar_menu(),
   hr(),

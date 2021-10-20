@@ -510,7 +510,7 @@ get_target_RT <- function(dsList){
 #' glicko2_ranking(dsl, nr_round = 25, which = 'by_RT')
 glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = NULL){
   if (!requireNamespace("PlayerRatings", quietly = TRUE)) {
-    stop("Package \"pkg\" needed for this function to work. Please install it.",
+    stop("Package \"PlayerRatings\" is needed for this function to work. Please install it.",
          call. = FALSE)
   }
   req(length(get_id(dsl)) > 1)

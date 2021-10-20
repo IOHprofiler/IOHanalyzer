@@ -178,7 +178,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
 
 #' Clean DataSetList object by concatenating DataSets
 #' 
-#' Concatenates all DataSets with the same ID, function id and dimension
+#' Concatenates all DataSets with the same ID, algid, function id and dimension
 #'  
 #' @param dsList The DataSetList object to clean
 #' @export
@@ -187,6 +187,11 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
 clean_DataSetList <- function(dsList) {
   #To ensure no uninitialized variables are present
   .I <- NULL
+  
+  if (is.null(attr(dsList, 'ID'))) {
+    dsList <- change_id(dsList, getOption("IOHanalyzer.ID_vars", c("algId")))
+  }
+  
   cases <- mapply(
     function(...) paste0(list(...), collapse = ','),
     attr(dsList, 'funcId'), 
@@ -972,7 +977,8 @@ get_ECDF_targets <- function(dsList, type = "log-linear", number_targets = 10) {
 #' @examples 
 #' generate_data.Single_Function(subset(dsl, funcId == 1), which = 'by_RT')
 generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL, 
-                                          scale_log = F, which = 'by_RT', include_opts = F, budget = NULL) {
+                                          scale_log = F, which = 'by_RT', 
+                                          include_opts = F, budget = NULL) {
   
   if (length(get_funcId(dsList)) != 1 || length(get_dim(dsList)) != 1 ) {
     #Required because target generation is included in this function, 

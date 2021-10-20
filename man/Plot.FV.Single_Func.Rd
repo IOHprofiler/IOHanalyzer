@@ -5,14 +5,31 @@
 \alias{Plot.FV.Single_Func.DataSetList}
 \title{Plot lineplot of the expected function values of a DataSetList}
 \usage{
-Plot.FV.Single_Func(dsList, RTstart = NULL, RTstop = NULL,
-  show.CI = F, show.mean = T, show.median = F, backend = NULL,
-  scale.xlog = F, scale.ylog = F, scale.reverse = F)
+Plot.FV.Single_Func(
+  dsList,
+  RTstart = NULL,
+  RTstop = NULL,
+  show.CI = F,
+  show.mean = T,
+  show.median = F,
+  backend = NULL,
+  scale.xlog = F,
+  scale.ylog = F,
+  scale.reverse = F
+)
 
-\method{Plot.FV.Single_Func}{DataSetList}(dsList, RTstart = NULL,
-  RTstop = NULL, show.CI = F, show.mean = T, show.median = F,
-  backend = NULL, scale.xlog = F, scale.ylog = F,
-  scale.reverse = F)
+\method{Plot.FV.Single_Func}{DataSetList}(
+  dsList,
+  RTstart = NULL,
+  RTstop = NULL,
+  show.CI = F,
+  show.mean = T,
+  show.median = F,
+  backend = NULL,
+  scale.xlog = F,
+  scale.ylog = F,
+  scale.reverse = F
+)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

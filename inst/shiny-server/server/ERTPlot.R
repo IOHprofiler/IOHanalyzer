@@ -13,16 +13,22 @@ get_data_ERT_PER_FUN <- reactive({
   fstart <- input$ERTPlot.Min %>% as.numeric
   fstop <- input$ERTPlot.Max %>% as.numeric
   budget <- input$ERTPlot.Additional.Budget %>% as.numeric
+  options('IOHanalyzer.PAR_penalty' = input$ERTPlot.ParX)
   generate_data.Single_Function(data, fstart, fstop, input$ERTPlot.semilogx, 
-                                'by_RT', include_opts = input$ERTPlot.inclueOpts, budget = budget)
+                                'by_RT', include_opts = input$ERTPlot.inclueOpts, 
+                                budget = budget)
 })
 
 render_ert_per_fct <- reactive({
   withProgress({
     y_attrs <- c()
     if (input$ERTPlot.show.ERT) y_attrs <- c(y_attrs, 'ERT')
-    if (input$ERTPlot.show.mean) y_attrs <- c(y_attrs, 'mean')
+    if (input$ERTPlot.show.Par) y_attrs <- c(y_attrs, paste0('PAR-', input$ERTPlot.ParX))
     if (input$ERTPlot.show.median) y_attrs <- c(y_attrs, 'median')
+    if (input$ERTPlot.show.fixed_prob) {
+      y_attrs <- c(y_attrs, paste0(input$ERTPlot.Fixed_Prob * 100, '%'))
+      options('IOHanalyzer.quantile' = unique(c(getOption('IOHanalyzer.quantile'), input$ERTPlot.Fixed_Prob)))
+    }
     show_legend <- T
     if (length(y_attrs) > 0) {
       p <- plot_general_data(get_data_ERT_PER_FUN(), x_attr = 'target', y_attr = y_attrs, 
@@ -133,7 +139,7 @@ output$ERTPlot.Multi.Plot <- renderPlotly(
 )
 
 get_data_ERT_multi_func_bulk <- reactive({
-  data <- subset(DATA_RAW(),
+  data <- subset(DATA_RAW(), 
                  DIM == input$Overall.Dim)
   if (length(get_id(data)) < 20) { #Arbitrary limit for the time being
     rbindlist(lapply(get_funcId(data), function(fid) {
@@ -150,13 +156,19 @@ get_data_ERT_multi_func <- reactive({
   input$ERTPlot.Multi.PlotButton
   data <- subset(DATA_RAW(),
                  DIM == input$Overall.Dim)
-  if (length(get_id(data)) < 20) {
-    get_data_ERT_multi_func_bulk()[ID %in% isolate(input$ERTPlot.Multi.Algs), ]
+  if (length(get_funcId(data)) < 2) {
+    shinyjs::alert("This functionality is only available when 2 or more functions
+                   are present in the dataset")
+  }
+  if (length(get_id(data)) < 20 & length(get_funcId(data)) < 30) {
+    get_data_ERT_multi_func_bulk()[(ID %in% isolate(input$ERTPlot.Multi.Algs)) &
+                                     (funcId %in% isolate(input$ERTPlot.Multi.Funcs)), ]
   }
   else {
     selected_algs <- isolate(input$ERTPlot.Multi.Algs)
     data <- subset(DATA_RAW(),
                    ID %in% selected_algs,
+                   funcId %in% isolate(input$ERTPlot.Multi.Funcs),
                    DIM == input$Overall.Dim)
     rbindlist(lapply(get_funcId(data), function(fid) {
     generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$ERTPlot.Multi.Logx, 

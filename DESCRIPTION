@@ -1,7 +1,7 @@
 Package: IOHanalyzer
 Type: Package
 Title: Data Analysis Part of 'IOHprofiler'
-Version: 0.1.6.0
+Version: 0.1.6.1
 Author: Hao Wang [cre, aut], Diederick Vermetten [aut], Carola Doerr [aut], Thomas Bäck [aut]
 Maintainer: Hao Wang <h.wang@liacs.leidenuniv.nl>
 Authors@R: c(
@@ -40,15 +40,15 @@ Imports:
   stringi,
   httr,
   knitr,
-  methods
+  methods,
+  shinydashboard
 LinkingTo: Rcpp
 SystemRequirements: C++11
-RoxygenNote: 7.0.0
+RoxygenNote: 7.1.2
 Suggests: 
   Rcpp,
   testthat,
   withr,
-  shinydashboard,
   ComplexHeatmap,
   grid,
   keyring,

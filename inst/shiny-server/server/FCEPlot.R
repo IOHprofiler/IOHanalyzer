@@ -106,7 +106,7 @@ get_data_FCEPlot_multi <- reactive({
   data <- subset(DATA_RAW(),
                  DIM == input$Overall.Dim)
   if (length(get_id(data)) < 20 & length(get_funcId(data)) < 30) {
-    get_data_ERT_multi_func_bulk()[(ID %in% isolate(input$FCEPlot.Multi.Algs)) &
+    get_data_FCE_multi_func_bulk()[(ID %in% isolate(input$FCEPlot.Multi.Algs)) &
                                      (funcId %in% isolate(input$FCEPlot.Multi.Funcs)), ]
   }
   else {

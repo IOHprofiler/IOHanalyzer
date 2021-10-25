@@ -95,7 +95,10 @@ read_index_file__IOH <- function(fname) {
       }
 
     record <- trimws(strsplit(lines[3], ',')[[1]])
-    
+    if (length(record) == 1){
+      next
+    }
+      
     has_dynattr <- !is.null(header$dynamicAttribute)
 
     # TODO: this must also be removed...

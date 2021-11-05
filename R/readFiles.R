@@ -113,13 +113,17 @@ read_index_file__IOH <- function(fname) {
       #Check for incorrect usages of reset_problem and remove them
       maxRTs <- as.numeric(info[1,])
       idx_correct <- which(maxRTs > 0)
-      info_split <- strsplit(info[2,], ';')
-      finalFVs <- as.numeric(info_split[[1]][[1]])[idx_correct]
-      instances <- as.numeric(res[1,])[idx_correct]
       if (has_dynattr){
+        info_split <- strsplit(info[2,], ';')
+        finalFVs <- as.numeric(info_split[[1]][[1]])[idx_correct]
+        
         dynamic_attrs <- info_split[[1]][[2]]
         dynamic_attrs <- dynamic_attrs[idx_correct]
       }
+      else {
+        finalFVs <- as.numeric(info[2,])[idx_correct]
+      }
+      instances <- as.numeric(res[1,])[idx_correct]
       maxRTs <- maxRTs[idx_correct]
     }
     

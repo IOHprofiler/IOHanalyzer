@@ -11,8 +11,7 @@ pairwise.test(x, ...)
 
 \method{pairwise.test}{list}(x, max_eval, bootstrap.size = 30, ...)
 
-\method{pairwise.test}{DataSetList}(x, ftarget, bootstrap.size = 0,
-  which = "by_FV", ...)
+\method{pairwise.test}{DataSetList}(x, ftarget, bootstrap.size = 0, which = "by_FV", ...)
 }
 \arguments{
 \item{x}{either a list that contains running time sample for each algorithm as

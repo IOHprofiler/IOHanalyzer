@@ -5,13 +5,31 @@
 \alias{Plot.FV.Parameters.DataSetList}
 \title{Plot the parameter values recorded in a DataSetList (aligned by budget)}
 \usage{
-Plot.FV.Parameters(dsList, rt_min = NULL, rt_max = NULL,
-  algids = "all", par_name = NULL, scale.xlog = F, scale.ylog = F,
-  show.mean = T, show.median = F, show.CI = F)
+Plot.FV.Parameters(
+  dsList,
+  rt_min = NULL,
+  rt_max = NULL,
+  algids = "all",
+  par_name = NULL,
+  scale.xlog = F,
+  scale.ylog = F,
+  show.mean = T,
+  show.median = F,
+  show.CI = F
+)
 
-\method{Plot.FV.Parameters}{DataSetList}(dsList, rt_min = NULL,
-  rt_max = NULL, algids = "all", par_name = NULL, scale.xlog = F,
-  scale.ylog = F, show.mean = T, show.median = F, show.CI = F)
+\method{Plot.FV.Parameters}{DataSetList}(
+  dsList,
+  rt_min = NULL,
+  rt_max = NULL,
+  algids = "all",
+  par_name = NULL,
+  scale.xlog = F,
+  scale.ylog = F,
+  show.mean = T,
+  show.median = F,
+  show.CI = F
+)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

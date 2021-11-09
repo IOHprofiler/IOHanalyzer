@@ -6,11 +6,9 @@
 \title{Plot the empirical cumulative distriburtion as a function of the target values of
 a DataSetList at certain target runtimes}
 \usage{
-Plot.FV.ECDF_Per_Target(dsList, runtimes, scale.xlog = F,
-  scale.reverse = F)
+Plot.FV.ECDF_Per_Target(dsList, runtimes, scale.xlog = F, scale.reverse = F)
 
-\method{Plot.FV.ECDF_Per_Target}{DataSetList}(dsList, runtimes,
-  scale.xlog = F, scale.reverse = F)
+\method{Plot.FV.ECDF_Per_Target}{DataSetList}(dsList, runtimes, scale.xlog = F, scale.reverse = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

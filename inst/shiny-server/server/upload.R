@@ -503,6 +503,7 @@ observe({
   updateSelectInput(session, 'FCEECDF.AUC.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'ParCoordPlot.Algs', choices = algIds_, selected = algIds_[[1]])
   updateSelectInput(session, 'CoordPlot.Algs', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'SplomPlot.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FV_PAR.Plot.Params', choices = parIds_, selected = parIds_)
   updateSelectInput(session, 'RT_PAR.Plot.Params', choices = parIds_, selected = parIds_)
 })

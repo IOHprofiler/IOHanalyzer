@@ -8,8 +8,7 @@ a certain target runtime}
 \usage{
 Plot.FV.PDF(dsList, runtime, show.sample = F, scale.ylog = F)
 
-\method{Plot.FV.PDF}{DataSetList}(dsList, runtime, show.sample = F,
-  scale.ylog = F)
+\method{Plot.FV.PDF}{DataSetList}(dsList, runtime, show.sample = F, scale.ylog = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

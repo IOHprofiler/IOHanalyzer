@@ -4,13 +4,29 @@
 \alias{plot_general_data}
 \title{General function for plotting within IOHanalyzer}
 \usage{
-plot_general_data(df, x_attr = "algId", y_attr = "vals",
-  type = "violin", legend_attr = "algId", scale.xlog = F,
-  scale.ylog = F, scale.reverse = F, p = NULL, x_title = NULL,
-  y_title = NULL, plot_title = NULL, upper_attr = NULL,
-  lower_attr = NULL, subplot_attr = NULL, show.legend = F,
-  inf.action = "none", frame_attr = "frame", symbol_attr = "run_nr",
-  ...)
+plot_general_data(
+  df,
+  x_attr = "algId",
+  y_attr = "vals",
+  type = "violin",
+  legend_attr = "algId",
+  scale.xlog = F,
+  scale.ylog = F,
+  scale.reverse = F,
+  p = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  plot_title = NULL,
+  upper_attr = NULL,
+  lower_attr = NULL,
+  subplot_attr = NULL,
+  show.legend = F,
+  inf.action = "none",
+  frame_attr = "frame",
+  symbol_attr = "run_nr",
+  nr_dims = 5,
+  ...
+)
 }
 \arguments{
 \item{df}{The dataframe containing the data to plot. It should contain at least two columns:
@@ -54,6 +70,8 @@ Only works in combination with`upper_attr` and `type` == 'ribbon'}
 \item{frame_attr}{When using anim_scatter plot, which variable to use to determine the frame}
 
 \item{symbol_attr}{When using a scatterplot, which variable identifies the symbol}
+
+\item{nr_dims}{When using anim_splom, how many dimensions to plot (all names should be x0,x1,...xn-1)}
 
 \item{...}{Additional parameters for the add_trace function}
 }

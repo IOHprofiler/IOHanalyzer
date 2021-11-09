@@ -4,7 +4,9 @@
 \name{dsl_large}
 \alias{dsl_large}
 \title{Larger example DataSetList used in tests / examples}
-\format{DataSetList}
+\format{
+DataSetList
+}
 \usage{
 dsl_large
 }

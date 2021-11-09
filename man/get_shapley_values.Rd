@@ -4,8 +4,14 @@
 \alias{get_shapley_values}
 \title{Get the shapley-values of a portfolio of algorithms}
 \usage{
-get_shapley_values(dsList, targets, scale.log = T, group_size = 5,
-  max_perm_size = 10, normalize = T)
+get_shapley_values(
+  dsList,
+  targets,
+  scale.log = T,
+  group_size = 5,
+  max_perm_size = 10,
+  normalize = T
+)
 }
 \arguments{
 \item{dsList}{The DataSetList object}

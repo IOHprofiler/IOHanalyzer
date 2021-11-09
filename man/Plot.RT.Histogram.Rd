@@ -5,11 +5,9 @@
 \alias{Plot.RT.Histogram.DataSetList}
 \title{Plot histograms of the runtimes of a DataSetList at a certain target function value}
 \usage{
-Plot.RT.Histogram(dsList, ftarget, plot_mode = "overlay",
-  use.equal.bins = F)
+Plot.RT.Histogram(dsList, ftarget, plot_mode = "overlay", use.equal.bins = F)
 
-\method{Plot.RT.Histogram}{DataSetList}(dsList, ftarget,
-  plot_mode = "overlay", use.equal.bins = F)
+\method{Plot.RT.Histogram}{DataSetList}(dsList, ftarget, plot_mode = "overlay", use.equal.bins = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

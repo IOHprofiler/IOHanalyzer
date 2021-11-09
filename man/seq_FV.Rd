@@ -4,8 +4,7 @@
 \alias{seq_FV}
 \title{Function for generating sequences of function values}
 \usage{
-seq_FV(FV, from = NULL, to = NULL, by = NULL, length.out = NULL,
-  scale = NULL)
+seq_FV(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, scale = NULL)
 }
 \arguments{
 \item{FV}{A list of function values}

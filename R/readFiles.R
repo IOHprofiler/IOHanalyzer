@@ -136,7 +136,39 @@ read_index_file__IOH <- function(fname) {
     i <- i + 1
   }
   close(f)
-  data
+  
+  datafiles <- unlist(lapply(data, function(x) x$datafile))
+  if (length(datafiles) > length(unique(datafiles)))
+    return(merge_indexinfo(data))
+  else 
+    return(data)
+}
+
+#' Process IOHprofiler-based .info files if they contain multiple references
+#' to a single data-file
+#'
+#' This is needed to assure that the meta-information is concatenated properly
+#' and no datafile is processed more often than nessecary
+#'
+#' @param indexInfo The info-list to reduce
+#' @return a reduced version of the provided indexInfo, preserving original order
+#' @noRd
+merge_indexinfo <- function(indexInfo) {
+  datafiles <- unlist(lapply(indexInfo, function(x) x$datafile))
+  lapply(unique(datafiles), function(dfile) {
+    new_info <- list()
+    idxs <- datafiles == dfile
+    infos <- indexInfo[idxs]
+    nr_runs <- length(unlist(lapply(infos, function(x) x$instance)))
+    for (a in attributes(infos[[1]])$names) {
+      temp <- unlist(lapply(infos, function(x) x[[a]]))
+      if (length(temp) == nr_runs)
+        new_info[[a]] <- temp
+      else
+        new_info[[a]] <- unique(temp)
+    }
+    new_info
+  })
 }
 
 #' Read single-objective COCO-based .info files and extract information

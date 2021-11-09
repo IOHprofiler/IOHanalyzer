@@ -120,6 +120,10 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
       'by_FV' = RT[names(RT) != 'RT'],
       'by_RT' = FV[names(FV) != 'FV']
     )
+    
+    if (all(paste0('x', seq(0,info$DIM-1)) %in% names(PAR$by_RT))) {
+      info$contains_position <- T
+    }
 
     RT <- RT$RT
     mode(RT) <- 'integer'

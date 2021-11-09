@@ -1370,12 +1370,13 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
             list(label=paste0('X', idx), values = formula(paste0('~x', idx)))
             })          
           
+          #Reset base-plot, since labels are set using the dims object
+          p <- IOH_plot_ly_default()
           for (xv in xs){
             df_sub = df[l==xv,]
             col = colors[lval]
             p %<>% add_trace(data = df_sub, type = 'splom', dimensions = dims, 
                              marker = list(color = colors[xv], symbol = ~s), 
-                             colors = add_transparancy(colors, 0.9),
                              legendgroup = xv,  
                              frame = ~frame, showlegend = F, 
                              diagonal=list(visible=F), name = xv)           

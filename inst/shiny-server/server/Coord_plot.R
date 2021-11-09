@@ -30,7 +30,8 @@ render_selected_coords <- reactive({
     
     plot_general_data(pos[order(generation),], x_attr = colname_x, y_attr = colname_y, type = 'anim_scatter',
                       symbol_attr = 'run_nr', frame_attr = 'generation', legend_attr = legend_attr)
-  })
+  },
+  message = "Creating plot")
 })
 
 output$Coord_Plot <- renderPlotly({
@@ -72,7 +73,8 @@ render_splom <- reactive({
     plot_general_data(pos[order(generation),], x_attr = 'temp0', y_attr = 'temp1', type = 'anim_splom',
                       symbol_attr = 'run_nr', frame_attr = 'generation', 
                       nr_dim = get_dim(data), legend_attr = legend_attr)
-  })
+  },
+  message = "Creating plot")
 })
 
 output$Splom_Plot <- renderPlotly({
@@ -148,7 +150,8 @@ render_parallel_coord <- reactive({
     #                                                 symbol = 'cross'),
     #                 legendgroup = ~algId, opacity = 0.9, showlegend = F) %>%
     #   layout(yaxis = list(range = c(-0.02,1.02)), xaxis = list(range = c(-0.5, get_dim(dsl) + 0.5)))
-  })
+  },
+  message = "Creating plot")
 })
 
 output$Parallel_Coord_Plot <- renderPlotly({

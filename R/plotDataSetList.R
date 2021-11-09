@@ -1348,31 +1348,39 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
         'anim_scatter' = {
           colnames(df)[colnames(df) == frame_attr] <- "frame"
           colnames(df)[colnames(df) == symbol_attr] <- "s"
-          
+          colors = add_transparancy(colors, 0.9)
           df = df[order(frame), ]
-          p %<>% add_trace(data = df, x = ~x, y = ~y, type = 'scatter',
-                          mode = 'markers', marker = list(color = ~l, 
-                                                          symbol = ~s), colors = add_transparancy(colors, 0.9),
-                          legendgroup = ~l, frame = ~frame, showlegend = F) 
+          for (xv in xs){
+            df_sub = df[l==xv,]
+            col = colors[lval]
+            p %<>% add_trace(data = df_sub, x = ~x, y = ~y, type = 'scatter',
+                            mode = 'markers', marker = list(color = colors[xv], 
+                                                            symbol = ~s),
+                            legendgroup = xv, frame = ~frame, showlegend = F, name = xv) 
+          }
           p %<>% animation_opts(transition = 0)
           
         },
         'anim_splom' = {
           colnames(df)[colnames(df) == frame_attr] <- "frame"
           colnames(df)[colnames(df) == symbol_attr] <- "s"
+          colors = add_transparancy(colors, 0.9)
           df = df[order(frame), ]
-          
-          p <- IOH_plot_ly_default()
           dims <- lapply(seq(0, nr_dims-1), function(idx) {
             list(label=paste0('X', idx), values = formula(paste0('~x', idx)))
-            })
+            })          
           
-          p %<>% add_trace(data = df, type = 'splom', dimensions = dims, 
-                           marker = list(color = ~l, symbol = ~s), 
-                           colors = add_transparancy(colors, 0.9),
-                           legendgroup = ~l,  
-                           frame = ~frame, showlegend = F, 
-                           diagonal=list(visible=F)) 
+          for (xv in xs){
+            df_sub = df[l==xv,]
+            col = colors[lval]
+            p %<>% add_trace(data = df_sub, type = 'splom', dimensions = dims, 
+                             marker = list(color = colors[xv], symbol = ~s), 
+                             colors = add_transparancy(colors, 0.9),
+                             legendgroup = xv,  
+                             frame = ~frame, showlegend = F, 
+                             diagonal=list(visible=F), name = xv)           
+          }
+
           p %<>% animation_opts(transition = 0)
           
         }

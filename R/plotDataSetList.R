@@ -1352,8 +1352,10 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
           df = df[order(frame), ]
           p %<>% add_trace(data = df, x = ~x, y = ~y, type = 'scatter',
                           mode = 'markers', marker = list(color = ~l, 
-                                                          symbol = ~s), colors = add_transparancy(colors, 0.6),
-                          legendgroup = ~l, opacity = 0.9, frame = ~frame, showlegend = F) 
+                                                          symbol = ~s), colors = add_transparancy(colors, 0.9),
+                          legendgroup = ~l, frame = ~frame, showlegend = F) 
+          p %<>% animation_opts(transition = 0)
+          
         },
         'anim_splom' = {
           colnames(df)[colnames(df) == frame_attr] <- "frame"
@@ -1367,10 +1369,12 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
           
           p %<>% add_trace(data = df, type = 'splom', dimensions = dims, 
                            marker = list(color = ~l, symbol = ~s), 
-                           colors = add_transparancy(colors, 0.6),
-                           legendgroup = ~l, opacity = 0.9, 
+                           colors = add_transparancy(colors, 0.9),
+                           legendgroup = ~l,  
                            frame = ~frame, showlegend = F, 
                            diagonal=list(visible=F)) 
+          p %<>% animation_opts(transition = 0)
+          
         }
   )
   return(p)

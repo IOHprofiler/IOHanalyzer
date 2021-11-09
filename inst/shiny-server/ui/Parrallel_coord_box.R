@@ -7,7 +7,10 @@ Par_coord_box <- function(width = 12, collapsible = T, collapsed = F) {
           width = 3,
           
           selectInput('ParCoordPlot.Algs', label = 'Select which algorithm to plot:',
-                      multiple = F, selected = NULL, choices = NULL),
+                      multiple = T, selected = NULL, choices = NULL),
+          numericInput('ParCoordPlot.Gen_size', label = "Generation size (For animation):", value = 10),
+          selectInput('ParCoordPlot.Iid', label = 'Select which instances to show:',
+                      multiple = T, selected = NULL, choices = NULL),
           
           hr(),
           
@@ -42,7 +45,8 @@ coord_box <- function(width = 12, collapsible = T, collapsed = F) {
           
           selectInput('CoordPlot.Algs', label = 'Select which algorithms to plot:',
                       multiple = T, selected = NULL, choices = NULL),
-          numericInput('CoordPlot.Iid', label = 'Select which instance to show:', value = 1),
+          selectInput('CoordPlot.Iid', label = 'Select which instances to show:',
+                      multiple = T, selected = NULL, choices = NULL),
           numericInput('CoordPlot.C1', label = 'Select the first coordinate to show:', value = 0),
           numericInput('CoordPlot.C2', label = 'Select the second coordinate to show:', value = 1),
           numericInput('CoordPlot.Gen_size', label = "Generation size (For animation):", value = 10),
@@ -80,7 +84,8 @@ splom_box <- function(width = 12, collapsible = T, collapsed = F) {
           
           selectInput('SplomPlot.Algs', label = 'Select which algorithms to plot:',
                       multiple = T, selected = NULL, choices = NULL),
-          numericInput('SplomPlot.Iid', label = 'Select which instance to show:', value = 1),
+          selectInput('SplomPlot.Iid', label = 'Select which instances to show:',
+                      multiple = T, selected = NULL, choices = NULL),
           # numericInput('SplomPlot.C1', label = 'Select the first coordinate to show:', value = 0),
           # numericInput('SplomPlot.C2', label = 'Select the second coordinate to show:', value = 1),
           numericInput('SplomPlot.Gen_size', label = "Generation size (For animation):", value = 10),

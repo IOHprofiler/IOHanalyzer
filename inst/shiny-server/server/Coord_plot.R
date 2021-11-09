@@ -2,7 +2,7 @@ render_selected_coords <- reactive({
   data <- DATA()
   req(attr(data[[1]], 'contains_position')) #TODO: change this to be a datasetlist attr instead of dataset
   
-  data <- subset(data, algId == input$CoordPlot.Algs)
+  data <- subset(data, algId %in% input$CoordPlot.Algs)
   
   withProgress({
     pos <- get_position_dsl(data, input$CoordPlot.Iid)
@@ -23,8 +23,13 @@ render_selected_coords <- reactive({
       colname_y = 'PC2'
     }
     
+    if (length(input$CoordPlot.Algs) == 1) 
+      legend_attr <- 'iid'
+    else
+      legend_attr <- 'algId'
+    
     plot_general_data(pos[order(generation),], x_attr = colname_x, y_attr = colname_y, type = 'anim_scatter',
-                      symbol_attr = 'run_nr', frame_attr = 'generation')
+                      symbol_attr = 'run_nr', frame_attr = 'generation', legend_attr = legend_attr)
   })
 })
 
@@ -46,7 +51,7 @@ render_splom <- reactive({
   data <- DATA()
   req(attr(data[[1]], 'contains_position')) #TODO: change this to be a datasetlist attr instead of dataset
   
-  data <- subset(data, algId == input$SplomPlot.Algs)
+  data <- subset(data, algId %in% input$SplomPlot.Algs)
   
   withProgress({
     pos <- get_position_dsl(data, input$SplomPlot.Iid)
@@ -60,9 +65,13 @@ render_splom <- reactive({
     #Temporary, to fit in the existing plot_general_function structure
     pos[, c('temp0', 'temp1') := 0]
     
-    
+    if (length(input$SplomPlot.Algs) == 1) 
+      legend_attr <- 'iid'
+    else
+      legend_attr <- 'algId'
     plot_general_data(pos[order(generation),], x_attr = 'temp0', y_attr = 'temp1', type = 'anim_splom',
-                      symbol_attr = 'run_nr', frame_attr = 'generation', nr_dim = get_dim(data))
+                      symbol_attr = 'run_nr', frame_attr = 'generation', 
+                      nr_dim = get_dim(data), legend_attr = legend_attr)
   })
 })
 
@@ -107,3 +116,51 @@ output$SplomPlot.Download <- downloadHandler(
 #   )
 # }
 
+
+
+render_parallel_coord <- reactive({
+  data <- DATA()
+  # req(attr(data, 'suite') == "SOS")
+  data <- subset(data, algId %in% input$ParCoordPlot.Algs)
+  withProgress({
+    # p <- IOH_plot_ly_default("Parallel coordinate plot", "Coordinate", "Value")
+    
+    pos <- get_position_dsl(data, input$ParCoordPlot.Iid)
+    
+    # p <- IOH_plot_ly_default("Coordinate plot animated", "C1", "C2")
+    if (!'generation' %in% colnames(pos)) {
+      ind_per_gen <- input$ParCoordPlot.Gen_size
+      pos[,generation := ceiling(runtime/ind_per_gen)]
+    }
+    
+    
+    pos2 <- pos %>% melt(id.vars =  c('generation', 'run_nr', 'algId', 'iid'))
+    pos2 <- pos2[variable %in% paste0('x', seq(0,4)), ]
+    if (length(input$ParCoordPlot.Algs) == 1) 
+      legend_attr <- 'iid'
+    else
+      legend_attr <- 'algId'
+    plot_general_data(pos2[order(generation),], x_attr = 'variable', y_attr = 'value', type = 'anim_scatter',
+                      symbol_attr = 'run_nr', frame_attr = 'generation', legend_attr = legend_attr)
+    # p %>% add_trace(data = pos2, x = ~variable, y = ~value, type = 'scatter',
+    #                 mode = 'markers', marker = list(color = ~fval_log, colorscale = 'Viridis',
+    #                                                 colorbar = list(title = 'Log best f(x)'),
+    #                                                 symbol = 'cross'),
+    #                 legendgroup = ~algId, opacity = 0.9, showlegend = F) %>%
+    #   layout(yaxis = list(range = c(-0.02,1.02)), xaxis = list(range = c(-0.5, get_dim(dsl) + 0.5)))
+  })
+})
+
+output$Parallel_Coord_Plot <- renderPlotly({
+  render_parallel_coord()
+})
+
+output$ParCoordPlot.Download <- downloadHandler(
+  filename = function() {
+    paste0('Par_coord_', input$ParCoordPlot.Algs, '.', input$ParCoordPlot.Format )
+  },
+  content = function(file) {
+    save_plotly(render_parallel_coord(), file)
+  },
+  contentType = paste0('image/', input$ParCoordPlot.Format)
+)

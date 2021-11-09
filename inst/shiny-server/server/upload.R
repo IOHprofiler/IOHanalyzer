@@ -333,7 +333,8 @@ observe({
   selected_f <- attr(selected_ds,'funcId')
   selected_dim <- attr(selected_ds, 'DIM')
   selected_alg <- attr(selected_ds, 'algId')
-
+  selected_iids <- unique(attr(selected_ds, 'instance'))
+  
   updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'ERTPlot.Aggr.Funcs', choices = funcIds, selected = funcIds)
@@ -501,11 +502,16 @@ observe({
   updateSelectInput(session, 'FCEECDF.Single.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCEECDF.Mult.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'FCEECDF.AUC.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'ParCoordPlot.Algs', choices = algIds_, selected = algIds_[[1]])
+  updateSelectInput(session, 'ParCoordPlot.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'CoordPlot.Algs', choices = algIds_, selected = algIds_)
   updateSelectInput(session, 'SplomPlot.Algs', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'ParCoordPlot.Iid', choices = selected_iids, selected = selected_iids)
+  updateSelectInput(session, 'CoordPlot.Iid', choices = selected_iids, selected = selected_iids)
+  updateSelectInput(session, 'SplomPlot.Iid', choices = selected_iids, selected = selected_iids)
   updateSelectInput(session, 'FV_PAR.Plot.Params', choices = parIds_, selected = parIds_)
   updateSelectInput(session, 'RT_PAR.Plot.Params', choices = parIds_, selected = parIds_)
+  
+  selected_iids
 })
 
 # update (filter) according to users selection DataSets

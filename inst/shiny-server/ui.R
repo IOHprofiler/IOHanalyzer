@@ -593,8 +593,8 @@ body <- dashboardBody(
               column(
                 width = 12,
                 coord_box(),
-                splom_box(),
-                Par_coord_box()
+                splom_box(collapsed = T),
+                Par_coord_box(collapsed = T)
               )
             )
     ),

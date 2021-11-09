@@ -1292,7 +1292,7 @@ generate_data.ECDF_raw <- function(dsList, targets, scale_log = F) {
 #' Extract the position information from a datasetlist object 
 #' 
 #' @param dsList The DataSetList object
-#' @param iid the Instance Id from which to get the position history
+#' @param iid the Instance Id from which to get the position history (can be a list)
 #' 
 #' @export
 #' @examples 
@@ -1303,7 +1303,7 @@ get_position_dsl <- function(dsList, iid) {
   
   dt <- rbindlist(lapply(dsList, function(ds) {
     if (!isTRUE(attr(ds, 'contains_position'))) return(NULL)
-    instance_idxs <- which(attr(ds, 'instance') == iid)
+    instance_idxs <- which(attr(ds, 'instance') %in% iid)
     dt_sub <- rbindlist(lapply(instance_idxs, function(idx) {
       temp <- lapply(seq(0, dim - 1), function(x_idx) {
         ds$PAR$by_RT[[paste0('x', x_idx)]][, idx]
@@ -1314,6 +1314,7 @@ get_position_dsl <- function(dsList, iid) {
       }
       dt_subsub <- data.table('runtime' = rownames(ds$PAR$by_RT$x0), setDT(temp))
       dt_subsub[, 'run_nr' := idx]
+      dt_subsub[, 'iid' := attr(ds, 'instance')[idx]]
       dt_subsub
     }))
     dt_sub[, 'algId' := attr(ds, 'algId')]

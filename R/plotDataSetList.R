@@ -1352,11 +1352,11 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
           df = df[order(frame), ]
           for (xv in xs){
             df_sub = df[l==xv,]
-            col = colors[lval]
             p %<>% add_trace(data = df_sub, x = ~x, y = ~y, type = 'scatter',
                             mode = 'markers', marker = list(color = colors[xv], 
                                                             symbol = ~s),
-                            legendgroup = xv, frame = ~frame, showlegend = F, name = xv) 
+                            legendgroup = xv, frame = ~frame, showlegend = F, 
+                            name = xv, text=~text) 
           }
           p %<>% animation_opts(transition = 0)
           
@@ -1374,12 +1374,11 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
           p <- IOH_plot_ly_default()
           for (xv in xs){
             df_sub = df[l==xv,]
-            col = colors[lval]
             p %<>% add_trace(data = df_sub, type = 'splom', dimensions = dims, 
                              marker = list(color = colors[xv], symbol = ~s), 
                              legendgroup = xv,  
                              frame = ~frame, showlegend = F, 
-                             diagonal=list(visible=F), name = xv)           
+                             diagonal=list(visible=F), name = xv, text=~text)           
           }
 
           p %<>% animation_opts(transition = 0)

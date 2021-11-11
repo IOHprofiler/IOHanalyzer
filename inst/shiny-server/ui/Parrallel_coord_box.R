@@ -17,7 +17,7 @@ Par_coord_box <- function(width = 12, collapsible = T, collapsed = F) {
           selectInput('ParCoordPlot.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = supported_fig_format[[1]]),
           
-          downloadButton('ParCoordPlot.Download', label = 'Download the figure')
+          downloadButton('ParCoordPlot.Download', label = 'Download the figure (only frame 1)')
           
         ),
         
@@ -50,13 +50,13 @@ coord_box <- function(width = 12, collapsible = T, collapsed = F) {
           numericInput('CoordPlot.C1', label = 'Select the first coordinate to show:', value = 0),
           numericInput('CoordPlot.C2', label = 'Select the second coordinate to show:', value = 1),
           numericInput('CoordPlot.Gen_size', label = "Generation size (For animation):", value = 10),
-          checkboxInput('CoordPlot.PCA', label = "Use PCA instead of coordinated", value = F),
+          # checkboxInput('CoordPlot.PCA', label = "Use PCA instead of coordinated", value = F),
           hr(),
           
           selectInput('CoordPlot.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = supported_fig_format[[1]]),
           
-          downloadButton('CoordPlot.Download', label = 'Download the figure')
+          downloadButton('CoordPlot.Download', label = 'Download the figure (only frame 1)')
           
         ),
         
@@ -95,7 +95,7 @@ splom_box <- function(width = 12, collapsible = T, collapsed = F) {
           selectInput('SplomPlot.Format', label = 'Select the figure format',
                       choices = supported_fig_format, selected = supported_fig_format[[1]]),
           
-          downloadButton('SplomPlot.Download', label = 'Download the figure')
+          downloadButton('SplomPlot.Download', label = 'Download the figure (only frame 1)')
           
         ),
         

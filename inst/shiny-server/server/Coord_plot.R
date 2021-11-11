@@ -15,20 +15,20 @@ render_selected_coords <- reactive({
     colname_x = paste0("x", input$CoordPlot.C1)
     colname_y = paste0("x", input$CoordPlot.C2)
     
-    if (input$CoordPlot.PCA) {
-      xnames <- paste0('x', seq(0, get_dim(data)[[1]] - 1))
-      pca = prcomp(pos[, ..xnames], center = T, scale. = T)
-      pos = cbind(pos, pca)
-      colname_x = 'PC1'
-      colname_y = 'PC2'
-    }
+    # if (input$CoordPlot.PCA) {
+    #   xnames <- paste0('x', seq(0, get_dim(data)[[1]] - 1))
+    #   pca = prcomp(pos[, ..xnames], center = T, scale. = T)
+    #   pos = cbind(pos, pca)
+    #   colname_x = 'PC1'
+    #   colname_y = 'PC2'
+    # }
     
     if (length(input$CoordPlot.Algs) == 1) 
       legend_attr <- 'iid'
     else
       legend_attr <- 'algId'
-    
-    plot_general_data(pos[order(generation),], x_attr = colname_x, y_attr = colname_y, type = 'anim_scatter',
+    pos[, text := paste0('run ', run_nr, ', f: ', FV)]
+    plot_general_data(pos, x_attr = colname_x, y_attr = colname_y, type = 'anim_scatter',
                       symbol_attr = 'run_nr', frame_attr = 'generation', legend_attr = legend_attr)
   },
   message = "Creating plot")
@@ -70,6 +70,8 @@ render_splom <- reactive({
       legend_attr <- 'iid'
     else
       legend_attr <- 'algId'
+    
+    pos[, text := paste0('run ', run_nr, ', f: ', FV)]
     plot_general_data(pos[order(generation),], x_attr = 'temp0', y_attr = 'temp1', type = 'anim_splom',
                       symbol_attr = 'run_nr', frame_attr = 'generation', 
                       nr_dim = get_dim(data), legend_attr = legend_attr)
@@ -142,6 +144,7 @@ render_parallel_coord <- reactive({
       legend_attr <- 'iid'
     else
       legend_attr <- 'algId'
+    pos[, text := paste0('run ', run_nr, ', f: ', FV)]
     plot_general_data(pos2[order(generation),], x_attr = 'variable', y_attr = 'value', type = 'anim_scatter',
                       symbol_attr = 'run_nr', frame_attr = 'generation', legend_attr = legend_attr)
     # p %>% add_trace(data = pos2, x = ~variable, y = ~value, type = 'scatter',

@@ -1312,7 +1312,11 @@ get_position_dsl <- function(dsList, iid) {
       if ('generation' %in% get_PAR_name(ds)) {
         temp$generation <- ds$PAR$by_RT[['generation']][, idx]
       }
-      dt_subsub <- data.table('runtime' = rownames(ds$PAR$by_RT$x0), setDT(temp))
+      dt_subsub <- data.table('runtime' = as.integer(rownames(ds$PAR$by_RT$x0)), setDT(temp))
+      dt_subsub$FV <- ds$FV[,idx]
+      if (length(unique(dt_subsub$runtime)) < max(dt_subsub$runtime)) {
+        dt_subsub <- dt_subsub[1:nrow(dt_subsub) - 1,]
+      }
       dt_subsub[, 'run_nr' := idx]
       dt_subsub[, 'iid' := attr(ds, 'instance')[idx]]
       dt_subsub

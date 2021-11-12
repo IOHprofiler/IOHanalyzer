@@ -1015,7 +1015,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
     #Only need one legend for the whole plot
     legends_show <- rep(F, length(attrs))
     legends_show[[1]] <- show.legend
-    names(legends_show) <- attrs
+    names(legends_show) <- as.character(attrs)
     
     #Get some number of rows and columns
     n_cols <- 1 + ceiling(length(attrs)/10)
@@ -1041,12 +1041,12 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
         type1 <- substr(type, 0, stri_locate_all(type, fixed = '+')[[1]][[1]] - 1)
         p <- plot_general_data(df_sub, x_attr, y_attr, type1, legend_attr, scale.xlog, scale.ylog, 
                                scale.reverse, NULL, x.title, y.title, plot_title, upper_attr, lower_attr, 
-                               show.legend = legends_show[[attr_val]], subplot_attr = NULL, ...)
+                               show.legend = legends_show[[as.character(attr_val)]], subplot_attr = NULL, ...)
         type <- substr(type, stri_locate_all(type, fixed = '+')[[1]][[1]] + 1, nchar(type))
       }
       plot_general_data(df_sub, x_attr, y_attr, type, legend_attr, scale.xlog, scale.ylog, 
                         scale.reverse, p, x.title, y.title, plot_title, upper_attr, lower_attr, 
-                        show.legend = legends_show[[attr_val]], subplot_attr = NULL, ...) %>%
+                        show.legend = legends_show[[as.character(attr_val)]], subplot_attr = NULL, ...) %>%
         layout(
           annotations = list(
             text = sub_title, 

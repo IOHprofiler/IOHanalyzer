@@ -964,6 +964,7 @@ add_transparancy <- function(colors, percentage){
 #' @param lower_attr When using ribbon-plot, this can be used to create a shaded area. 
 #' Only works in combination with`upper_attr` and `type` == 'ribbon' 
 #' @param subplot_attr Which attribute of the dataframe to use for creating subplots
+#' @param subplot_shareX Whether or not to share X-axis when using subplots
 #' @param scale.xlog Logarithmic scaling of x-axis
 #' @param scale.ylog Logarithmic scaling of y-axis
 #' @param scale.reverse Decreasing or increasing x-axis
@@ -982,7 +983,8 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                               scale.reverse = F, p = NULL, x_title = NULL,
                               y_title = NULL, plot_title = NULL, upper_attr = NULL,
                               lower_attr = NULL, subplot_attr = NULL, show.legend = F,
-                              inf.action = 'none', violin.showpoints = F,...) {
+                              inf.action = 'none', violin.showpoints = F,
+                              subplot_shareX = F, ...) {
   
   l <- x <- isinf <- y <- text <- l_orig <- NULL #Set local binding to remove warnings
   
@@ -1015,7 +1017,7 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
     #Only need one legend for the whole plot
     legends_show <- rep(F, length(attrs))
     legends_show[[1]] <- show.legend
-    names(legends_show) <- attrs
+    names(legends_show) <- as.character(attrs)
     
     #Get some number of rows and columns
     n_cols <- 1 + ceiling(length(attrs)/10)
@@ -1044,24 +1046,32 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                                show.legend = legends_show[[as.character(attr_val)]], subplot_attr = NULL, ...)
         type <- substr(type, stri_locate_all(type, fixed = '+')[[1]][[1]] + 1, nchar(type))
       }
-      plot_general_data(df_sub, x_attr, y_attr, type, legend_attr, scale.xlog, scale.ylog, 
+      p <- plot_general_data(df_sub, x_attr, y_attr, type, legend_attr, scale.xlog, scale.ylog, 
                         scale.reverse, p, x.title, y.title, plot_title, upper_attr, lower_attr, 
-                        show.legend = legends_show[[as.character(attr_val)]], subplot_attr = NULL, ...) %>%
-        layout(
+                        show.legend = legends_show[[as.character(attr_val)]], subplot_attr = NULL, ...) 
+      if (getOption("IOHanalyzer.annotation_x", 0.5) >= 0 & 
+          getOption("IOHanalyzer.annotation_y", 1) >= 0) {
+        p %<>% layout(
           annotations = list(
             text = sub_title, 
-            font = f2,
-            xref = "paper", yref = "paper", align = "center",
-            yanchor = "bottom", 
-            xanchor = "center", textangle = 0,
-            x = 0.5, y = 1, showarrow = FALSE
+            font = f2, showarrow = FALSE,
+            xref = "paper", yref = "paper",
+            x = getOption("IOHanalyzer.annotation_x", 0.5), 
+            y = getOption("IOHanalyzer.annotation_y", 1)
           )
         )
+        p
+      }
+        
     })
     
     p <- subplot(
       p, nrows = n_rows, titleX = T, titleY = T, 
-      margin = c(0.02, 0.02, 0.06, 0.06)
+      margin = c(getOption("IOHanalyzer.margin_horizontal", 0.02), 
+                 getOption("IOHanalyzer.margin_vertical", 0.02), 
+                 getOption("IOHanalyzer.margin_horizontal", 0.02), 
+                 getOption("IOHanalyzer.margin_vertical", 0.02)), 
+      shareX = subplot_shareX
     ) %>% 
       layout(title = plot_title)
     return(p)

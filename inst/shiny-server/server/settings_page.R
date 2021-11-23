@@ -150,6 +150,33 @@ observe({
 })
 
 observe({
+  options("IOHanalyzer.margin_horizontal" = input$Settings.Subplot.Margin_horizontal)
+})
+
+observe({
+  options("IOHanalyzer.margin_vertical" = input$Settings.Subplot.Margin_vertictal)
+})
+
+observe({
+  options("Settings.Subplot.LocationX" = input$IOHanalyzer.annotation_x)
+})
+
+observe({
+  options("Settings.Subplot.LocationY" = input$IOHanalyzer.annotation_y)
+})
+
+observe({
+  if (input$Settings.Subplot.Include_annotations) {
+    options("Settings.Subplot.LocationX" = input$IOHanalyzer.annotation_x)
+    options("Settings.Subplot.LocationY" = input$IOHanalyzer.annotation_y)
+  }
+  else {
+    options("Settings.Subplot.LocationX" = -1)
+    options("Settings.Subplot.LocationY" = -1)
+  }
+})
+
+observe({
   req(input$Settings.ID.Variables)
   withProgress({
   id_vars <- input$Settings.ID.Variables

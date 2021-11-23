@@ -23,6 +23,7 @@ plot_general_data(
   show.legend = F,
   inf.action = "none",
   violin.showpoints = F,
+  subplot_shareX = F,
   ...
 )
 }
@@ -66,6 +67,8 @@ Only works in combination with`upper_attr` and `type` == 'ribbon'}
 \item{inf.action}{How to deal with infinite values. Can be 'none', 'overlap' or 'jitter'}
 
 \item{violin.showpoints}{Wheteher or not to show individual points when making a violinplot}
+
+\item{subplot_shareX}{Whether or not to share X-axis when using subplots}
 
 \item{...}{Additional parameters for the add_trace function}
 }

@@ -154,7 +154,7 @@ observe({
 })
 
 observe({
-  options("IOHanalyzer.margin_vertical" = input$Settings.Subplot.Margin_vertictal)
+  options("IOHanalyzer.margin_vertical" = input$Settings.Subplot.Margin_vertical)
 })
 
 observe({

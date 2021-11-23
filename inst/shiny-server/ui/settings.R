@@ -97,7 +97,7 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
               ),
               numericInput("Settings.Subplot.Margin_horizontal", "Horizontal margin between subplots", 
                            value = 0.02, step = 0.005, min = 0, max = 0.1),
-              numericInput("Settings.Subplot.Margin_horizontal", "Vertical margin between subplots", 
+              numericInput("Settings.Subplot.Margin_vertical", "Vertical margin between subplots", 
                            value = 0.02, step = 0.005, min = 0, max = 0.1)
           ),
         )

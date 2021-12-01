@@ -95,7 +95,10 @@ read_index_file__IOH <- function(fname) {
       }
 
     record <- trimws(strsplit(lines[3], ',')[[1]])
-    
+    if (length(record) == 1){
+      next
+    }
+      
     has_dynattr <- !is.null(header$dynamicAttribute)
 
     # TODO: this must also be removed...
@@ -110,13 +113,17 @@ read_index_file__IOH <- function(fname) {
       #Check for incorrect usages of reset_problem and remove them
       maxRTs <- as.numeric(info[1,])
       idx_correct <- which(maxRTs > 0)
-      info_split <- strsplit(info[2,], ';')
-      finalFVs <- as.numeric(info_split[[1]][[1]])[idx_correct]
-      instances <- as.numeric(res[1,])[idx_correct]
       if (has_dynattr){
+        info_split <- strsplit(info[2,], ';')
+        finalFVs <- as.numeric(info_split[[1]][[1]])[idx_correct]
+        
         dynamic_attrs <- info_split[[1]][[2]]
         dynamic_attrs <- dynamic_attrs[idx_correct]
       }
+      else {
+        finalFVs <- as.numeric(info[2,])[idx_correct]
+      }
+      instances <- as.numeric(res[1,])[idx_correct]
       maxRTs <- maxRTs[idx_correct]
     }
     
@@ -146,7 +153,38 @@ read_index_file__IOH <- function(fname) {
     i <- i + 1
   }
   close(f)
-  data
+  datafiles <- unlist(lapply(data, function(x) x$datafile))
+  if (length(datafiles) > length(unique(datafiles)))
+    return(merge_indexinfo(data))
+  else 
+    return(data)
+}
+
+#' Process IOHprofiler-based .info files if they contain multiple references
+#' to a single data-file
+#'
+#' This is needed to assure that the meta-information is concatenated properly
+#' and no datafile is processed more often than nessecary
+#'
+#' @param indexInfo The info-list to reduce
+#' @return a reduced version of the provided indexInfo, preserving original order
+#' @noRd
+merge_indexinfo <- function(indexInfo) {
+  datafiles <- unlist(lapply(indexInfo, function(x) x$datafile))
+  lapply(unique(datafiles), function(dfile) {
+    new_info <- list()
+    idxs <- datafiles == dfile
+    infos <- indexInfo[idxs]
+    nr_runs <- length(unlist(lapply(infos, function(x) x$instance)))
+    for (a in attributes(infos[[1]])$names) {
+      temp <- unlist(lapply(infos, function(x) x[[a]]))
+      if (length(temp) == nr_runs)
+        new_info[[a]] <- temp
+      else
+        new_info[[a]] <- unique(temp)
+    }
+    new_info
+  })
 }
 
 #' Read single-objective COCO-based .info files and extract information

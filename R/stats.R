@@ -19,7 +19,7 @@ SP <- function(data, max_runtime) {
   succ <- N - rowSums(idx)
   succ_rate <- succ / N
   data[idx] <- max_runtime
-  
+
   list(ERT = rowSums(data) / succ, runs = succ, succ_rate = succ_rate)
 }
 
@@ -151,7 +151,7 @@ pairwise.test.DataSetList <- function(x, ftarget, bootstrap.size = 0, which = 'b
     s <- split(dt$`f(x)`, dt$algId)
   }
   else stop("Unsupported argument 'which'. Available options are 'by_FV' and 'by_RT'")
-  
+
   return(pairwise.test.list(s, maxRT, bootstrap.size))
 }
 
@@ -614,19 +614,19 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = N
 
 
 #' Verify that the credentials for DSCtool have been set
-#' 
-#' This uses the keyring package to store and load credentials. 
+#'
+#' This uses the keyring package to store and load credentials.
 #' If the keyring package does not exists, it will default to look for
 #' a config-file in the 'repository'-folder, under your home directory.
 #' This can be changed by setting the option IOHprofiler.config_dir
 #' If you already have an account, please call `set_DSC_credentials`
-#' with the corresponding username and password. 
+#' with the corresponding username and password.
 #' If you don't have an account, you can register for one using `register_DSC`
-#' 
-#' 
-#' 
+#'
+#'
+#'
 #' @export
-#' @examples 
+#' @examples
 #' check_dsc_configured()
 check_dsc_configured <- function() {
   if (!requireNamespace("keyring", quietly = TRUE)) {
@@ -643,7 +643,7 @@ check_dsc_configured <- function() {
     data <- readRDS(paste0(repo_dir, "/config.rds"))
     if (is.null(data$DSCusername) || is.null(data$DSCpassword)) {
       return(FALSE)
-    } 
+    }
     return(TRUE)
   }
   tryCatch({
@@ -652,7 +652,7 @@ check_dsc_configured <- function() {
     return(TRUE)
     },
     error = function(e) {
-      print("DSCtool connection not yet set. Please use the function `register_DSC` to 
+      print("DSCtool connection not yet set. Please use the function `register_DSC` to
             create an account to use the DSC tool locally (or use 'add_DSC_credentials'
             to use an existing account)")
       return(FALSE)
@@ -661,20 +661,20 @@ check_dsc_configured <- function() {
 }
 
 #' Register an account to the DSCtool API
-#' 
-#' This uses the keyring package to store and load credentials. 
+#'
+#' This uses the keyring package to store and load credentials.
 #' If you already have an account, please call `set_DSC_credentials` instead
-#' 
+#'
 #' @param name Your name
 #' @param username A usename to be identified with. Will be stored on keyring under 'DSCtool_name'
 #' @param affiliation Your affiliation (university / company)
 #' @param email Your email adress
-#' @param password The password to use. If NULL, this will be generated at random. 
+#' @param password The password to use. If NULL, this will be generated at random.
 #' Will be stored on keyring under 'DSCtool'
-#' 
+#'
 #' @export
 #' @examples
-#' \dontrun{ 
+#' \dontrun{
 #' register_DSC('John Doe', 'jdoe', 'Sample University', "j.doe.sample.com")
 #' }
 register_DSC <- function(name, username, affiliation, email, password = NULL) {
@@ -683,7 +683,7 @@ register_DSC <- function(name, username, affiliation, email, password = NULL) {
   result_json <- POST(url, add_headers(.headers = c('Content-Type' = "application/json",
                                                     'Accept' = "application/json")),
                       body = list(name = name, affiliation = affiliation, email = email,
-                                  username = username, password = password), 
+                                  username = username, password = password),
                       encode = "json")
   if (result_json$status_code == 200) {
     if (!requireNamespace("keyring", quietly = TRUE)) {
@@ -691,7 +691,7 @@ register_DSC <- function(name, username, affiliation, email, password = NULL) {
       if (!is.null(getOption("IOHprofiler.repo_dir"))) {
         repo_dir <- getOption("IOHprofiler.repo_dir")
       }
-      saveRDS(list(DSCusername = username, DSCpassword = password), 
+      saveRDS(list(DSCusername = username, DSCpassword = password),
               paste0(repo_dir, "/config.rds"))
       return(TRUE)
     }
@@ -707,15 +707,15 @@ register_DSC <- function(name, username, affiliation, email, password = NULL) {
 }
 
 #' Register an account to the DSCtool API
-#' 
-#' This uses the keyring package to store and load credentials. 
+#'
+#' This uses the keyring package to store and load credentials.
 #' If you already have an account, please call `add_DSC_credentials` instead
-#' 
+#'
 #' @param username The usename you use on DSCtool. Will be stored on keyring under 'DSCtool_name'
 #' @param password The password you use on DSCtool. Will be stored on keyring under 'DSCtool'
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' \dontrun{set_DSC_credentials('jdoe', 'monkey123')}
 set_DSC_credentials <- function(username, password) {
   if (!requireNamespace("keyring", quietly = TRUE)) {
@@ -723,7 +723,7 @@ set_DSC_credentials <- function(username, password) {
     if (!is.null(getOption("IOHprofiler.repo_dir"))) {
       repo_dir <- getOption("IOHprofiler.repo_dir")
     }
-    saveRDS(list(DSCusername = username, DSCpassword = password), 
+    saveRDS(list(DSCusername = username, DSCpassword = password),
             paste0(repo_dir, "/config.rds"))
   }
   else {
@@ -733,10 +733,10 @@ set_DSC_credentials <- function(username, password) {
 }
 
 #' Load stored credentials for DSCtool
-#' 
-#' 
+#'
+#'
 #' @noRd
-#' @examples 
+#' @examples
 #' \dontrun{
 #' get_DSC_credentials()
 #' }
@@ -750,32 +750,32 @@ get_DSC_credentials <- function() {
     return(list(name = data$DSCusername, pwd = data$DSCpassword))
   }
   else {
-    return(list(name = keyring::key_get("DSCtool_name"), 
+    return(list(name = keyring::key_get("DSCtool_name"),
                 pwd = keyring::key_get("DSCtool")))
   }
 }
 
 #' Convert a DataSetList to the format needed for the DSCtool
-#' 
-#' 
+#'
+#'
 #' @param dsList The DataSetList object
 #' @param targets Optional list of target values (Runtime or target value)
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
 #' @param na.correction How to deal with missing values. Only used in fixed-target perspective.
-#' 
+#'
 #' @noRd
-#' @examples 
+#' @examples
 #' convert_to_dsc_compliant(dsl)
-convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT', 
+convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT',
                                      na.correction = NULL) {
   maximize <- attr(dsList, 'maximization')
   variable <- fid <- value <- NULL #Set local binding to remove warnings
   by_rt <- which == 'by_RT'
-  
+
   if (is.null(targets)) {
     targets <- get_target_dt(dsList, which)
   }
-  
+
   final_list <- lapply(get_algId(dsList), function(algname) {
     dsl_sub <- subset(dsList, algId == algname)
     problems <- lapply(dsl_sub, function(ds) {
@@ -799,7 +799,7 @@ convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT',
             if (is.infinite(ert)) {
               ert <- sum(attr(ds, 'maxRT'))
             }
-            data[is.na(data)] <- ert 
+            data[is.na(data)] <- ert
           }
           else if (na.correction == 'Remove-na') {
             data <- data[!is.na(data)]
@@ -814,7 +814,7 @@ convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT',
         if (attr(ds, 'maximization')) data <- -1  * data
       }
       if (any(is.na(data))) {
-        warning("NA-values detected in data preparation for DSCtool. This will likely result in an 
+        warning("NA-values detected in data preparation for DSCtool. This will likely result in an
                   error. Please verify the provided DataSetList.")
       }
       return(list(name = paste0("F", attr(ds, 'funcId'), "_", attr(ds, 'DIM'),"D"),
@@ -822,70 +822,70 @@ convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT',
     })
     return(list(algorithm = algname, problems = problems))
   })
-  
-  
+
+
   return(final_list)
 }
 
 #' Get the matrix of rankings using the DSCtool api for a DataSetList
-#' 
-#' 
+#'
+#'
 #' @param dsList The DataSetList object
 #' @param targets Optional list of target values (Runtime or target value)
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
 #' @param test_type Either 'AD' for Anderson-Darling or KS for Kolmogorov-Smirnov tests
 #' @param alpha Threshold value for statistical significance
 #' @param epsilon Minimum threshold to have practical difference between algorithms (eDSC)
-#' @param monte_carlo_iterations How many monte-carlo-simulations to perform 
+#' @param monte_carlo_iterations How many monte-carlo-simulations to perform
 #' (set to 0 to use regular DSC)
 #' @param na.correction How to deal with missing values. Only used in fixed-target perspective.
-#' Options are: 
+#' Options are:
 #' - 'NULL': No correction is done. This will likely result in an error, as the DSCtool
 #' does not allow for na values
 #' - 'PAR-1' Replace missing values with Budget (budget taken from relevant DataSet)
 #' - 'PAR-10' Replace missing values with 10*Budget (budget taken from relevant DataSet)
-#' - 'ERT' Replace NA values with the Expected Running Time. If all values are NA, this 
+#' - 'ERT' Replace NA values with the Expected Running Time. If all values are NA, this
 #' reverts to nr_runs * budget
 #' - 'Remove-na' Removes all NA values
-#' 
+#'
 #' @return A named list containing a ranked-matrix which has the rankin of each algorithm
 #' on each problem, as well as a list of which omnibus tests can be used to further process
 #' this data. This can be further analyzed using `get_dsc_omnibus`
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' get_dsc_rank(dsl)
 get_dsc_rank <- function(dsList, targets = NULL, which = 'by_RT', test_type = "AD", alpha = 0.05,
                          epsilon = 0, monte_carlo_iterations = 0, na.correction = NULL) {
   if (!check_dsc_configured()) return(NULL)
   url <- "https://ws.ijs.si:8443/dsc-1.5/service/rank"
   dsc_list <- convert_to_dsc_compliant(dsList, targets, which, na.correction = na.correction)
-  json_list <- list(method = list(name = test_type, alpha = alpha), epsilon = epsilon, 
+  json_list <- list(method = list(name = test_type, alpha = alpha), epsilon = epsilon,
                     data = dsc_list, monte_carlo_iterations = monte_carlo_iterations)
-  
+
   result_json <- POST(url,
                       authenticate(get_DSC_credentials()$name, get_DSC_credentials()$pwd),
                       add_headers(.headers = c('Content-Type' = "application/json",
                                                'Accept' = "application/json")),
                       body = json_list, encode = "json")
-  
+
   return(content(result_json)$result)
 }
 
 
-#' Perform omnibus statistical tests on the matrix of rankings from the DSCtool api 
-#' 
-#' 
+#' Perform omnibus statistical tests on the matrix of rankings from the DSCtool api
+#'
+#'
 #' @param res The result of a call to the `get_dsc_rank`
-#' @param method Which method to use to do the tests. 
-#' Has be be one of the allowed ones in `res$valid_methods`. 
+#' @param method Which method to use to do the tests.
+#' Has be be one of the allowed ones in `res$valid_methods`.
 #' When NULL, the first valid option is chosen by default
 #' @param alpha Threshold value for statistical significance
-#' 
+#'
 #' @return A named list containing the algorithm means
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' get_dsc_omnibus(get_dsc_rank(dsl))
 get_dsc_omnibus <- function(res, method = NULL, alpha = 0.05) {
   if (!check_dsc_configured()) return(NULL)
@@ -901,31 +901,31 @@ get_dsc_omnibus <- function(res, method = NULL, alpha = 0.05) {
                       add_headers(.headers = c('Content-Type' = "application/json",
                                                'Accept' = "application/json")),
                       body = new_json, encode = "json")
-  
+
   return(content(result_json)$result)
 }
 
 #' Perform post-hoc processing on data from DSCtool
-#' 
-#' 
+#'
+#'
 #' @param omni_res The result from a call to `get_dsc_omnibus`
 #' @param nr_algs The number of algorithms present in `omni_res`
 #' @param nr_problems The number of problems present in `omni_res`
-#' @param base_algorithm The base algorithm to which the other are compared. 
+#' @param base_algorithm The base algorithm to which the other are compared.
 #' This has to be present in `omni_res$algorithm_means` as an `algorithm` property
 #' @param method Either 'friedman' or 'friedman-aligned-rank'
 #' @param alpha Threshold value for statistical significance
-#' 
+#'
 #' @return A named list containing 4 types of analyses:
 #' * Zvalue
 #' * UnadjustedPValue
 #' * Holm
 #' * Hochberg
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' get_dsc_posthoc(get_dsc_omnibus(get_dsc_rank(dsl)), 2, 2)
-get_dsc_posthoc <- function(omni_res, nr_algs, nr_problems, base_algorithm = NULL, 
+get_dsc_posthoc <- function(omni_res, nr_algs, nr_problems, base_algorithm = NULL,
                             method = "friedman", alpha = 0.05) {
   if (!check_dsc_configured()) return(NULL)
   if (is.null(base_algorithm)) base_algorithm <- omni_res$algorithm_means[[1]]$algorithm
@@ -941,22 +941,22 @@ get_dsc_posthoc <- function(omni_res, nr_algs, nr_problems, base_algorithm = NUL
                       add_headers(.headers = c('Content-Type' = "application/json",
                                                'Accept' = "application/json")),
                       body = new_json, encode = "json")
-  
+
   return(content(result_json)$result)
 }
 
 
 #' Get the marginal contribution of an algorithm to a portfolio
-#' 
-#' Based on the contribution to the ECDF-curve of the VBS of the portfolio 
-#' 
+#'
+#' Based on the contribution to the ECDF-curve of the VBS of the portfolio
+#'
 #' @param alg The result from a call to `get_dsc_omnibus`
 #' @param perm The permutation of algorithms to which is being contributed
 #' @param j At which point in the permutation the contribution should be measured
 #' @param dt The datatable in which the raw ecdf-values are stored (see `generate_data.ECDF_raw`)
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' dt <- generate_data.ECDF_raw(dsl, get_ECDF_targets(dsl))
 #' get_marg_contrib_ecdf(get_algId(dsl)[[1]], get_algId(dsl), 1, dt)
 get_marg_contrib_ecdf <- function(alg, perm, j, dt) {
@@ -974,30 +974,30 @@ get_marg_contrib_ecdf <- function(alg, perm, j, dt) {
 
 
 #' Get the shapley-values of a portfolio of algorithms
-#' 
-#' Based on the contribution to the ECDF-curve of the VBS of the portfolio 
-#' 
+#'
+#' Based on the contribution to the ECDF-curve of the VBS of the portfolio
+#'
 #' @param dsList The DataSetList object
-#' @param targets A list or data.table containing the targets per function / dimension. If this is 
+#' @param targets A list or data.table containing the targets per function / dimension. If this is
 #' a data.table, it needs columns 'target', 'DIM' and 'funcId'
 #' @param scale.log Whether to use logarithmic scaling for the runtimes at which the ecdf will be sampled or not
 #' @param group_size How many permutation groups will be considered
 #' @param max_perm_size The maximum limit for permutations to be considered
-#' @param normalize Whether or not to ensure the resulting values will be in [0,1] 
-#' 
+#' @param normalize Whether or not to ensure the resulting values will be in [0,1]
+#'
 #' @export
-#' @examples 
+#' @examples
 #' get_shapley_values(dsl, get_ECDF_targets(dsl))
 get_shapley_values <- function(dsList, targets, scale.log = T, group_size = 5, max_perm_size = 10, normalize = T){
   hit <- NULL #Bind to avoid notes
   algs_full <- get_algId(dsList)
-  
+
   dt <- generate_data.ECDF_raw(dsList, targets, scale_log = scale.log)
-  
+
   nr_players <- length(algs_full)
-  
+
   perms <- lapply(seq_len(nr_players * group_size), function(i) {sample(algs_full)})
-  
+
   max_val <- sum(dt[, list(hit = max(hit)), by = c('funcId', 'DIM', 'target', 'rt')][['hit']])
   ### For each algorithm, calculate shapley value
   shapleys <- lapply(algs_full, function(alg) {
@@ -1012,35 +1012,37 @@ get_shapley_values <- function(dsList, targets, scale.log = T, group_size = 5, m
             get_marg_contrib_ecdf(alg, perm, j, dt)
           })
         ))
-        
+
       })
-    )) 
-    if (normalize) 
+    ))
+    if (normalize)
       temp <- temp / max_val #Scale so Shapleys always fall between 0 and 1
     temp
   })
-  
+
   data.table(algId = algs_full, shapley = shapleys)
 }
 
 
 #' Get the list of available options for data from the OPTION ontology
-#' 
-#' 
+#'
+#'
 #' @param varname The variable for which to get the options. Restricted to [Fid, Iid, DIM, AlgId, Suite]
 #' @param datasource The datasource for which to get the attributes. Either BBOB or Nevergrad
 #' @param ... Additional arguments to the OPTION call. Currently only supports 'Suite' for nevergrad.
-#' 
+#'
 #' @return the options of varname given the specified datasource
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' get_ontology_var("Fid", "BBOB")
 get_ontology_var <- function(varname, datasource, ...) {
-  
+
   url_base <- "http://semanticannotations.ijs.si:8080/"
-  
-  if (datasource == "BBOB")
+
+  if (datasource == "NA")
+    parameters_list <- list()
+  else if (datasource == "BBOB")
     parameters_list <- list(testbed = "COCO-BBOB")
   else{
     dot_args = list(...)
@@ -1051,24 +1053,25 @@ get_ontology_var <- function(varname, datasource, ...) {
     "DIM" = "dimensions",
     "Iid" = "instance",
     "Suite" = "nevergrad_testbeds",
-    "AlgId" = "algorithms"
+    "AlgId" = "algorithms",
+    "Study" = "studies"
   )
-    
+
   url <- paste0(url_base, url_appendix)
-    
+
   tryCatch({
-    resp <- GET(url, query = parameters_list)  
-    return(unlist(content(resp))) 
+    resp <- GET(url, query = parameters_list)
+    return(unlist(content(resp)))
   },
-  error = function(e) { 
+  error = function(e) {
     warning(e)
     return(NULL)}
   )
 }
 
 #' Get the list of available options for data from the OPTION ontology
-#' 
-#' 
+#'
+#'
 #' @param datasource The datasource: either BBOB or Nevergrad
 #' @param fids The function names as given by `get_ontology_var`
 #' @param dims The dimensionalities as given by `get_ontology_var`
@@ -1079,23 +1082,23 @@ get_ontology_var <- function(varname, datasource, ...) {
 #' @param max_target The maximum target value for which to return data
 #' @param min_budget The minimum budget value for which to return data
 #' @param max_budget The maximum budget value for which to return data
-#' 
+#'
 #' @return a DataSetList object matching the selected attributes.
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' get_ontology_data("BBOB", "f5", 5, "IPOP400D", 1)
 get_ontology_data <- function(datasource, fids, dims, algs, iids = NULL, funcsuites = NULL,
                               min_target = NULL, max_target = NULL,
                               min_budget = NULL, max_budget = NULL) {
-  
+
   url_base <- "http://semanticannotations.ijs.si:8080/query"
-  
+
   if (datasource == "BBOB")
     parameters_list <- list(testbed = "COCO-BBOB")
   else
     parameters_list <- list(testbed = "Nevergrad")
-  
+
   parameters_list$functions <- paste0(fids, collapse = ',')
   parameters_list$dimensions  <- paste0(dims, collapse = ',')
   parameters_list$algorithms  <- paste0(algs, collapse = ',')
@@ -1103,7 +1106,7 @@ get_ontology_data <- function(datasource, fids, dims, algs, iids = NULL, funcsui
     parameters_list$instances  <- paste0(iids, collapse = ',')
   if (!is.null(funcsuites))
     parameters_list$nevergradTestbed  <- funcsuites
-  
+
   if (!is.null(min_target) & !is.null(max_target)) {
     parameters_list$target <- paste0(min_target, '-', max_target)
   } else if (!is.null(min_target)) {
@@ -1119,12 +1122,12 @@ get_ontology_data <- function(datasource, fids, dims, algs, iids = NULL, funcsui
   } else if (!is.null(max_budget)) {
     parameters_list$budget <- paste0('<=', max_budget)
   }
-  
+
   tryCatch({
     resp <- POST(url_base, body = parameters_list, encode = "form")
     results <- content(resp)
   },
-  error = function(e) { 
+  error = function(e) {
     warning(e)
     return(NULL)}
   )

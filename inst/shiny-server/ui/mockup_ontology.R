@@ -11,20 +11,20 @@
 #   )
 # }
 
-ontology_box <- function(width = 12, collapsible = T, collapsed = F, 
+ontology_box <- function(width = 12, collapsible = T, collapsed = F,
                            height = '1200px') {
   box(
-    title = HTML('<p style="font-size:120%;">Create Query on Ontology</p>'), 
+    title = HTML('<p style="font-size:120%;">Create Query on Ontology</p>'),
     width = width, height = height, collapsed = collapsed, collapsible = collapsible,
-    solidHeader = T, status = "primary",  
+    solidHeader = T, status = "primary",
     sidebarPanel(
       width = 12,
-      
+
       HTML_P("Create a Query from the ontology:"),
-      
+
       # selectInput('i1', label = "Select the va type source",
       #             choices = c(""), selected = NULL, width = '50%'),
-      
+
       # checkboxInput("c3", "Choose Specific Data Source", value = FALSE),
       # conditionalPanel(condition = 'input["c3"] == true',
       selectInput('Ontology.Source', label = "Please choose the data source", choices = c("BBOB", "Nevergrad"), selected = "BBOB", width = '50%', multiple = F),
@@ -35,7 +35,7 @@ ontology_box <- function(width = 12, collapsible = T, collapsed = F,
                        selectInput('Ontology.NG_Suite',
                                    label = "Please choose the Function Suite",
                                    choices = NULL, selected = NULL, width = '50%', multiple = F)),
-      
+
       selectInput('Ontology.Functions',
                   label = "Please choose the functions",
                   choices = NULL, selected = NULL, width = '50%', multiple = T),
@@ -45,9 +45,9 @@ ontology_box <- function(width = 12, collapsible = T, collapsed = F,
       selectInput('Ontology.Algorithms',
                   label = "Please choose the algorithms",
                   choices = NULL, selected = NULL, width = '50%', multiple = T),
-      
 
-      
+
+
       conditionalPanel(condition = 'input["Ontology.Source"] == "BBOB"',
                        selectInput('Ontology.Iids',
                                    label = "Please choose the instances",
@@ -55,18 +55,24 @@ ontology_box <- function(width = 12, collapsible = T, collapsed = F,
 
       box(title = HTML('<p style="font-size:120%;color:black;">Additional Options</p>'), collapsible = T, collapsed = T,
           width = width, solidHeader = T, status = 'info',
+
+          selectInput('Ontology.Study', label = "Pre-select algorithms from existing study",
+                      choices = NULL, selected = NULL,
+                      width = '50%', multiple = F),
+
+
           checkboxInput('Ontology.Limit_Targets',
                         label = "Limit runs based on target reached",
-                        value = F) %>% 
+                        value = F) %>%
             shinyInput_label_embed(
               custom_icon("info") %>%
                 bs_embed_popover(
                   title = "Limit Targets", content = "This will limit the target values for which data is returned.
-                  This means that run integrity can not be guaranteed, and fixed-budget data might get skewed. 
-                  Use this setting with care.", 
+                  This means that run integrity can not be guaranteed, and fixed-budget data might get skewed.
+                  Use this setting with care.",
                   placement = "auto"
                 )
-            ) 
+            )
           ,
           conditionalPanel('input["Ontology.Limit_Targets"]',
                            numericInput("Ontology.Min_Target", label = "Minimum", value = 0),

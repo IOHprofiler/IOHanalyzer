@@ -2,6 +2,11 @@
 # set up list of datasets (scan the repository, looking for .rds files)
 observe({
   req(input$Ontology.Source)
+
+  if (input$Ontology.Study != 'None') {
+    return()
+  }
+
   input_source <- input$Ontology.Source
   if (input_source == "Nevergrad") {
     available_suite <- get_ontology_var("Suite", input_source)
@@ -17,47 +22,79 @@ observe({
     return()
   }
 
-  available_functions <- get_ontology_var("Fid", input_source)
-  available_dimensions <- get_ontology_var("DIM", input_source)
+  # available_functions <- get_ontology_var("Fid", input_source)
+  # available_dimensions <- get_ontology_var("DIM", input_source)
   available_algorithms <- get_ontology_var("AlgId", input_source)
-  available_iid <- get_ontology_var("Iid", input_source)
+  # available_iid <- get_ontology_var("Iid", input_source)
 
-  if (is.null(available_functions) || length(available_functions) == 0) {# TODO: the alert msg should be updated
+  if (is.null(available_algorithms) || length(available_algorithms) == 0) {# TODO: the alert msg should be updated
     shinyjs::alert("No connection could be made with the OPTION ontology. Please try again later.")
     shinyjs::disable('Ontology.Load')
     return()
   }
-  updateSelectInput(session, 'Ontology.Functions', choices = available_functions, selected = available_functions[[1]])
-  updateSelectInput(session, 'Ontology.Dimensions', choices = available_dimensions, selected = available_dimensions[[1]])
+  # updateSelectInput(session, 'Ontology.Functions', choices = available_functions, selected = available_functions[[1]])
+  # updateSelectInput(session, 'Ontology.Dimensions', choices = available_dimensions, selected = available_dimensions[[1]])
   updateSelectInput(session, 'Ontology.Algorithms', choices = available_algorithms, selected = available_algorithms[[1]])
-  updateSelectInput(session, 'Ontology.Iids', choices = available_iid, selected = available_iid[[1]])
-  shinyjs::enable('Ontology.Load')
+  # updateSelectInput(session, 'Ontology.Iids', choices = available_iid, selected = available_iid[[1]])
+  # shinyjs::enable('Ontology.Load')
 
 })
 
 observe({
   req(input$Ontology.NG_Suite)
   input_suite <- input$Ontology.NG_Suite
-  available_functions <- get_ontology_var("Fid", "Nevergrad", suite = input_suite)
-  available_dimensions <- get_ontology_var("DIM", "Nevergrad", suite = input_suite)
+  # available_functions <- get_ontology_var("Fid", "Nevergrad", suite = input_suite)
+  # available_dimensions <- get_ontology_var("DIM", "Nevergrad", suite = input_suite)
   available_algorithms <- get_ontology_var("AlgId", "Nevergrad", suite = input_suite)
+
+  if (is.null(available_algorithms) || length(available_algorithms) == 0) {# TODO: the alert msg should be updated
+    shinyjs::alert("No connection could be made with the OPTION ontology. Please try again later.")
+    shinyjs::disable('Ontology.Load')
+    return()
+  }
+  # updateSelectInput(session, 'Ontology.Functions', choices = available_functions, selected = available_functions[[1]])
+  # updateSelectInput(session, 'Ontology.Dimensions', choices = available_dimensions, selected = available_dimensions[[1]])
+  updateSelectInput(session, 'Ontology.Algorithms', choices = available_algorithms, selected = available_algorithms[[1]])
+  # shinyjs::enable('Ontology.Load')
+})
+
+observe({
+  req(input$Ontology.Algorithms)
+  input_source <- input$Ontology.Source
+  input_suite <- input$Ontology.NG_Suite
+  sel_algs <- input$Ontology.Algorithms
+
+
+  available_functions <- get_ontology_var("Fid", input_source, suite = input_suite, algs = sel_algs)
+  available_dimensions <- get_ontology_var("DIM", input_source, suite = input_suite, algs = sel_algs)
+
+  updateSelectInput(session, 'Ontology.Functions', choices = available_functions, selected = available_functions[[1]])
+  updateSelectInput(session, 'Ontology.Dimensions', choices = available_dimensions, selected = available_dimensions[[1]])
 
   if (is.null(available_functions) || length(available_functions) == 0) {# TODO: the alert msg should be updated
     shinyjs::alert("No connection could be made with the OPTION ontology. Please try again later.")
     shinyjs::disable('Ontology.Load')
     return()
   }
-  updateSelectInput(session, 'Ontology.Functions', choices = available_functions, selected = available_functions[[1]])
-  updateSelectInput(session, 'Ontology.Dimensions', choices = available_dimensions, selected = available_dimensions[[1]])
-  updateSelectInput(session, 'Ontology.Algorithms', choices = available_algorithms, selected = available_algorithms[[1]])
+
+  if (input_source == "BBOB") {
+    available_iid <- get_ontology_var("Iid", input_source)
+    updateSelectInput(session, 'Ontology.Iids', choices = available_iid, selected = available_iid[[1]])
+  }
   shinyjs::enable('Ontology.Load')
+
 })
+
 
 observe({
   study_name <- input$Ontology.Study
   req(!is.null(study_name) & study_name != 'None' & study_name != "")
 
-  used_suite <- get_ontology_var("Suite", study = study_name)
+  used_setting <- get_ontology_var("Repo", study = study_name)
+
+  if (used_setting == "Nevergrad")
+    used_suite <- get_ontology_var("Suite", study = study_name)
+  updateSelectInput(session, 'Ontology.NG_Suite', selected = used_suite)
 
 
   used_functions <- get_ontology_var("Fid", study = study_name)
@@ -70,20 +107,14 @@ observe({
     shinyjs::disable('Ontology.Load')
     return()
   }
-  updateSelectInput(session, 'Ontology.Functions', selected = available_functions[[1]])
-  updateSelectInput(session, 'Ontology.Iids', selected = available_iid[[1]])
-  updateSelectInput(session, 'Ontology.Dimensions', selected = available_dimensions[[1]])
-  updateSelectInput(session, 'Ontology.Algorithms', selected = available_algorithms[[1]])
+  updateSelectInput(session, 'Ontology.NG_Suite', selected = used_suite)
+
+  updateSelectInput(session, 'Ontology.Functions', selected = used_functions)
+  updateSelectInput(session, 'Ontology.Iids', selected = used_iids)
+  updateSelectInput(session, 'Ontology.Dimensions', selected = used_dimensions)
+  updateSelectInput(session, 'Ontology.Algorithms', selected = used_algorithms)
   shinyjs::enable('Ontology.Load')
 })
-
-# observe({
-#   a <- "a"
-#   if (input$tabname == "ontology"){
-#     available_studies <- get_ontology_var("Study", "NA")
-#     updateSelectInput(session, 'Ontology.Study', choices = c('None', available_studies), selected = 'None')
-#   }
-# })
 
 # load data from ontology according to selected options
 observeEvent(input$Ontology.Load, {

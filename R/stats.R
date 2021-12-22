@@ -1036,18 +1036,25 @@ get_shapley_values <- function(dsList, targets, scale.log = T, group_size = 5, m
 #' @export
 #' @examples
 #' get_ontology_var("Fid", "BBOB")
-get_ontology_var <- function(varname, datasource, ...) {
+get_ontology_var <- function(varname, datasource = NULL, study=NULL, algs=NULL, ...) {
 
   url_base <- "http://semanticannotations.ijs.si:8080/"
 
-  if (datasource == "NA")
+  if (is.null(datasource)){
     parameters_list <- list()
-  else if (datasource == "BBOB")
+  } else if (datasource == "BBOB")
     parameters_list <- list(testbed = "COCO-BBOB")
   else{
     dot_args = list(...)
     parameters_list <- list(testbed = "Nevergrad", nevergradTestbed = dot_args[['suite']])
   }
+
+  if (!is.null(study))
+    parameters_list['study'] <- study
+
+  if (!is.null(algs))
+    parameters_list['algorithms'] <- algs
+
   url_appendix <- switch(varname,
     "Fid" = "functions",
     "DIM" = "dimensions",

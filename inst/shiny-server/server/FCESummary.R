@@ -9,7 +9,7 @@ FCE_runtime_summary_condensed <- reactive({
   df$"Budget" %<>% as.numeric
   df$"miminal runtime" %<>% as.numeric
   df$"maximal runtime" %<>% as.numeric
-  
+
   df
 })
 
@@ -25,7 +25,7 @@ output$FCESummary.Overview.Download <- downloadHandler(
   },
   content = function(file) {
     df <- FCE_runtime_summary_condensed()
-    df <- df[input[["FCE_SAMPLE_rows_all"]]]
+    df <- df[input[["table_FV_overview_rows_all"]]]
     save_table(df, file)
   }
 )
@@ -39,8 +39,8 @@ get_FCE_summary <- reactive({
 
   data <- DATA()
   data <- subset(data, ID %in% input$FCESummary.Statistics.ID)
-  
-  
+
+
   if (!input$FCESummary.Statistics.Single) {
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     rt <- get_runtimes(data)
@@ -59,9 +59,9 @@ get_FCE_summary <- reactive({
   df$median %<>% format(format = 'e', digits = 3)
   df$mean %<>% format(format = 'e', digits = 3)
   df$runtime %<>% as.numeric
-  
+
   probs <- getOption("IOHanalyzer.quantiles")
-  
+
   # format the integers
   for (p in paste0(probs * 100, '%')) {
     df[[p]] %<>% format(format = 'e', digits = 3)
@@ -81,7 +81,7 @@ output$FCESummary.Statistics.Download <- downloadHandler(
   },
   content = function(file) {
     df <- get_FCE_summary()
-    df <- df[input[["FCE_SAMPLE_rows_all"]]]
+    df <- df[input[["FCE_SUMMARY_rows_all"]]]
     save_table(df, file)
   }
 )
@@ -94,7 +94,7 @@ get_FCE <- reactive({
 
   data <- DATA()
   data <- subset(data, ID %in% input$FCESummary.Sample.ID)
-  
+
   if (!input$FCESummary.Sample.Single) {
     req(rt_min <= rt_max, rt_step <= rt_max - rt_min)
     rt <- get_runtimes(data)

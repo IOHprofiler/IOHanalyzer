@@ -62,6 +62,6 @@ shinyServer(function(input, output, session) {
             color = "blue", width = 14, fill = T, href = "mailto:iohprofiler@liacs.leidenuniv.nl"
     )
   })
-  available_studies <- get_ontology_var("Study", "NA")
+  available_studies <- get_ontology_var("Study")
   updateSelectInput(session, 'Ontology.Study', choices = c('None', available_studies), selected = 'None')
 })

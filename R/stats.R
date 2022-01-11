@@ -1052,8 +1052,10 @@ get_ontology_var <- function(varname, datasource = NULL, study=NULL, algs=NULL, 
   if (!is.null(study))
     parameters_list['study'] <- study
 
-  if (!is.null(algs))
-    parameters_list['algorithms'] <- algs
+  if (!is.null(algs)){
+    temp <- lapply(algs, function(x){return(paste0('\"', x, '\"'))})
+    parameters_list['algorithms'] <- paste0(temp, collapse = ',')
+  }
 
   url_appendix <- switch(varname,
     "Fid" = "functions",
@@ -1061,14 +1063,16 @@ get_ontology_var <- function(varname, datasource = NULL, study=NULL, algs=NULL, 
     "Iid" = "instance",
     "Suite" = "nevergrad_testbeds",
     "AlgId" = "algorithms",
-    "Study" = "studies"
+    "Study" = "studies",
+    "Repo" = "studyDataSource"
   )
 
   url <- paste0(url_base, url_appendix)
 
   tryCatch({
     resp <- GET(url, query = parameters_list)
-    return(unlist(content(resp)))
+    res <- content(resp)$results
+    return(unlist(res))
   },
   error = function(e) {
     warning(e)

@@ -9,10 +9,10 @@ rt_ecdf_single_target_box <- function(width = 12, collapsible = T, collapsed = T
                       multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                         custom_icon() %>%
                           bs_embed_popover(
-                            title = "ID selection", content = alg_select_info, 
+                            title = "ID selection", content = alg_select_info,
                             placement = "auto"
                           )
-                      ),   
+                      ),
           HTML('Select the target values for which EDCF curves are displayed'),
           textInput('RTECDF.Single.Target', label = HTML('<p>\\(f_{target}\\)</p>'),
                     value = ''),
@@ -52,10 +52,10 @@ rt_ecdf_agg_targets_box <- function(width = 12, collapsible = T, collapsed = T) 
                   multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                     custom_icon() %>%
                       bs_embed_popover(
-                        title = "ID selection", content = alg_select_info, 
+                        title = "ID selection", content = alg_select_info,
                         placement = "auto"
                       )
-                  ),   
+                  ),
       HTML('<p align="justify">Set the range and the granularity
            of the quality targets taken into account in the ECDF curve.
            The plot will show the ECDF curves for evenly spaced target values.</p>'),
@@ -107,81 +107,94 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
       selectInput(
         'RTECDF.Aggr.Algs',
         label = 'Select which IDs to include:',
-        multiple = T, 
-        selected = NULL, 
+        multiple = T,
+        selected = NULL,
         choices = NULL
         ) %>% shinyInput_label_embed(
           custom_icon() %>%
             bs_embed_popover(
-              title = "ID selection", content = alg_select_info, 
+              title = "ID selection", content = alg_select_info,
               placement = "auto"
             )
           ),
-        
+
       checkboxInput("RTECDF.Aggr.Func", "Aggregate functions", value = T),
-      conditionalPanel(condition = 'input["RTECDF.Aggr.Func"]', 
+      conditionalPanel(condition = 'input["RTECDF.Aggr.Func"]',
                        selectInput('RTECDF.Aggr.FuncIds', label = "Functions to include:",
                                     selected = NULL, choices = NULL, multiple = T)
       ),
       checkboxInput("RTECDF.Aggr.Dim", "Aggregate dimensions", value = F),
-      conditionalPanel(condition = 'input["RTECDF.Aggr.Dim"]', 
+      conditionalPanel(condition = 'input["RTECDF.Aggr.Dim"]',
                        selectInput('RTECDF.Aggr.DIMS', label = "Dimsensions to include:",
                                    selected = NULL, choices = NULL, multiple = T)
       ),      checkboxInput("RTECDF.Aggr.Logx", "Scale x axis \\(\\log_{10}\\)", value = T),
-      checkboxInput("RTECDF.Aggr.Logy", "Scale y axis \\(\\log_{10}\\)", value = F) %>% 
+      checkboxInput("RTECDF.Aggr.Logy", "Scale y axis \\(\\log_{10}\\)", value = F) %>%
         shinyInput_label_embed(
           custom_icon() %>%
             bs_embed_popover(
               title = "Scaling", content = "The logorithmic scaling might cause some visual issues
-              when the smallest y-values are (very close to) 0. 
-              Please be mindful of this fact when using this option.", 
+              when the smallest y-values are (very close to) 0.
+              Please be mindful of this fact when using this option.",
               placement = "auto"
             )
         ),
-      
+
       br(),
       actionButton(
-        "RTECDF.Aggr.Refresh", 
+        "RTECDF.Aggr.Refresh",
         label = HTML('<p align="left" style="font-size:100%;">Refresh the figure</p>')
       ),
-      
+
       hr(),
       selectInput("RTECDF.Aggr.Target_type", label = "Select the spacing for the
-                  automatically generated ECDF-targets:", 
-                  choices = c('linear', 'log-linear', 'bbob'), 
-                  selected = 'linear') %>% 
+                  automatically generated ECDF-targets:",
+                  choices = c('linear', 'log-linear', 'bbob'),
+                  selected = 'linear') %>%
         shinyInput_label_embed(
           custom_icon() %>%
             bs_embed_popover(
               title = "Default targets", content = "The log-linear spacing only works correctly
               when no negative target values are present in the data. The BBOB-spacing is pre-defined
-              to 51 log-linear targets between 10^2 and 10^-8.", 
+              to 51 log-linear targets between 10^2 and 10^-8.",
               placement = "auto"
             )
         ),
-      numericInput("RTECDF.Aggr.Target_number", label = "Select the number of ECDF-targets to 
+      numericInput("RTECDF.Aggr.Target_number", label = "Select the number of ECDF-targets to
                    generate for each function/dimension", value = 10, min = 1, max = 100),
-      
-      HTML_P('Alternatively, you can download the table containing the target values for each 
-              (function, dimension)-pair and edit the table as you want. Please keep 
+
+      HTML_P('Alternatively, you can download the table containing the target values for each
+              (function, dimension)-pair and edit the table as you want. Please keep
              the file format when modifying it.'),
       downloadButton('RTECDF.Aggr.Table.Download', label = 'Download the table of targets'),
       br(),
       br(),
       br(),
-      
+
       HTML_P('Upload the table you just downloaded and edited'),
       fileInput(
-        "RTECDF.Aggr.Table.Upload", 
+        "RTECDF.Aggr.Table.Upload",
         label = NULL,
-        multiple = FALSE, 
+        multiple = FALSE,
         accept = c(
           "text/csv",
           "text/comma-separated-values,text/plain",
           ".csv"
           )
       ),
-      
+      hr(),
+      checkboxInput("RTECDF.Aggr.Normalize_AUC", "Normalize AUC values", value = F) %>%
+        shinyInput_label_embed(
+          custom_icon() %>%
+            bs_embed_popover(
+              title = "Normalization of AUC", content = "By default, the AUC values are
+              approximated based on the trapezium rule using the x-values as
+              present in the ECDF-plot. This value can then be normalized to [0,1]
+              by dividing by the maximum x-value.
+              Please note that the AUC values generated are only comparable to other
+              AUC values if the targets and scaling are identical!",
+              placement = "auto"
+            )
+        ),
       hr(),
       selectInput('RTECDF.Aggr.Format', label = 'figure format to download',
                   choices = supported_fig_format, selected = supported_fig_format[[1]]),
@@ -229,22 +242,22 @@ rt_ecdf_agg_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
 #                   multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
 #                     custom_icon() %>%
 #                       bs_embed_popover(
-#                         title = "ID selection", content = alg_select_info, 
+#                         title = "ID selection", content = alg_select_info,
 #                         placement = "auto"
 #                       )
-#                   ),     
+#                   ),
 #       HTML('<p align="justify">Set the range and the granularity of
 #            the evenly spaced quality targets taken into account in the plot.</p>'),
 #       textInput('RTECDF.AUC.Min', label = F_MIN_LABEL, value = ''),
 #       textInput('RTECDF.AUC.Max', label = F_MAX_LABEL, value = ''),
 #       textInput('RTECDF.AUC.Step', label = F_STEP_LABEL, value = ''),
-# 
+#
 #       hr(),
 #       selectInput('RTECDF.AUC.Format', label = 'Select the figure format',
 #                   choices = supported_fig_format, selected = 'pdf'),
 #       downloadButton('RTECDF.AUC.Download', label = 'Download the figure')
 #       ),
-# 
+#
 #     mainPanel(
 #       width = 9,
 #       column(

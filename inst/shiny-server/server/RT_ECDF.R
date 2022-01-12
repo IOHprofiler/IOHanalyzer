@@ -7,24 +7,24 @@ get_data_RT_ECDF_MULT <- reactive({
   req(input$RTECDF.Aggr.Func || input$RTECDF.Aggr.Dim)
   input$RTECDF.Aggr.Refresh
   dsList <- subset(DATA_RAW(), ID %in% input$RTECDF.Aggr.Algs)
-  
-  if (!input$RTECDF.Aggr.Func) 
+
+  if (!input$RTECDF.Aggr.Func)
     dsList <- subset(dsList, funcId == input$Overall.Funcid)
-  else 
+  else
     dsList <- subset(dsList, funcId %in% input$RTECDF.Aggr.FuncIds)
-  
-  if (!input$RTECDF.Aggr.Dim) 
+
+  if (!input$RTECDF.Aggr.Dim)
     dsList <- subset(dsList, DIM == input$Overall.Dim)
-  else 
+  else
     dsList <- subset(dsList, DIM %in% input$RTECDF.Aggr.DIMS)
-  
+
   if (length(dsList) <= 1) {
     shinyjs::alert("This is an invalid configuration for this plot. \n
-                     Please ensure that the dataset contains multiple functions / 
+                     Please ensure that the dataset contains multiple functions /
                      dimensions to aggregate over.")
     return(NULL)
   }
-  
+
   isolate({
     targets <- RT_ECDF_MULTI_TABLE()
   })
@@ -33,11 +33,11 @@ get_data_RT_ECDF_MULT <- reactive({
 
 render_RT_ECDF_MULT <- reactive({
   withProgress({
-    plot_general_data(get_data_RT_ECDF_MULT(), 'x', 'mean', 'line', 
-                      scale.xlog = input$RTECDF.Aggr.Logx, 
-                      scale.ylog = input$RTECDF.Aggr.Logy, 
+    plot_general_data(get_data_RT_ECDF_MULT(), 'x', 'mean', 'line',
+                      scale.xlog = input$RTECDF.Aggr.Logx,
+                      scale.ylog = input$RTECDF.Aggr.Logy,
                       x_title = "Function Evaluations",
-                      y_title = "Proportion of (run, target, ...) pairs", 
+                      y_title = "Proportion of (run, target, ...) pairs",
                       show.legend = T)
   },
   message = "Creating plot")
@@ -62,7 +62,7 @@ observe({
   funcid <- input$Overall.Funcid
   data <- DATA_RAW()
   dim <- input$Overall.Dim
-  
+
   req(length(data) > 0)
   req(alg)
   req(funcid)
@@ -72,16 +72,16 @@ observe({
   dsList <- subset(data, ID %in% alg)
   req(length(dsList) > 0)
 
-  if (!input$RTECDF.Aggr.Func) 
+  if (!input$RTECDF.Aggr.Func)
     dsList <- subset(dsList, funcId == input$Overall.Funcid)
-  
-  if (!input$RTECDF.Aggr.Dim) 
+
+  if (!input$RTECDF.Aggr.Dim)
     dsList <- subset(dsList, DIM == input$Overall.Dim)
-  
+
   if (length(dsList) == 0) return(NULL)
-  
+
   targets <- get_ECDF_targets(dsList, input$RTECDF.Aggr.Target_type, input$RTECDF.Aggr.Target_number)
-  
+
   RT_ECDF_MULTI_TABLE(targets) # add values to `RT_ECDF_MULTI_TABLE`
   trigger_renderDT(rnorm(1))
 })
@@ -97,19 +97,19 @@ output$RTECDF.AUC.Table.Download <- downloadHandler(
 
 auc_grid_table <- reactive({
   dt_ecdf <- get_data_RT_ECDF_MULT()
-  generate_data.AUC(NULL, NULL, dt_ecdf = dt_ecdf)
+  generate_data.AUC(NULL, NULL, dt_ecdf = dt_ecdf, normalize = input$RTECDF.Aggr.Normalize_AUC)
 })
 
 output$AUC_GRID_GENERATED <- DT::renderDataTable({
   req(length(DATA_RAW()) > 0)
   isolate({auc_grid_table()})
-  }, 
-  editable = FALSE, 
+  },
+  editable = FALSE,
   rownames = FALSE,
   options = list(
-    pageLength = 10, 
-    lengthMenu = c(5, 10, 25, -1), 
-    scrollX = T, 
+    pageLength = 10,
+    lengthMenu = c(5, 10, 25, -1),
+    scrollX = T,
     server = T,
     columnDefs = list(
       list(
@@ -124,13 +124,13 @@ output$RT_GRID_GENERATED <- DT::renderDataTable({
   req(length(DATA_RAW()) > 0)
   trigger_renderDT()
   isolate({RT_ECDF_MULTI_TABLE()})
-  }, 
-  editable = TRUE, 
+  },
+  editable = TRUE,
   rownames = FALSE,
   options = list(
-    pageLength = 10, 
-    lengthMenu = c(5, 10, 25, -1), 
-    scrollX = T, 
+    pageLength = 10,
+    lengthMenu = c(5, 10, 25, -1),
+    scrollX = T,
     server = T,
     columnDefs = list(
       list(
@@ -146,25 +146,25 @@ observeEvent(input$RT_GRID_GENERATED_cell_edit, {
   i <- info$row
   j <- info$col + 1
   v <- info$value
-  
+
   suppressWarnings({
     df <- RT_ECDF_MULTI_TABLE()
     set(df, i, j, coerceValue(v, as.numeric(df[i, ..j])))
     RT_ECDF_MULTI_TABLE(df)
   })
-  replaceData(proxy, RT_ECDF_MULTI_TABLE(), 
+  replaceData(proxy, RT_ECDF_MULTI_TABLE(),
               resetPaging = FALSE, rownames = FALSE)
 })
 
 observeEvent(input$RTECDF.Aggr.Table.Upload, {
   if (!is.null(input$RTECDF.Aggr.Table.Upload)) {
-    df <- read.csv2(input$RTECDF.Aggr.Table.Upload$datapath, header = T) %>% 
+    df <- read.csv2(input$RTECDF.Aggr.Table.Upload$datapath, header = T) %>%
       as.data.table
-    
+
     if (ncol(df) == ncol(RT_ECDF_MULTI_TABLE())) {
       RT_ECDF_MULTI_TABLE(df)
-      replaceData(proxy, RT_ECDF_MULTI_TABLE(), 
-                  resetPaging = FALSE, 
+      replaceData(proxy, RT_ECDF_MULTI_TABLE(),
+                  resetPaging = FALSE,
                   rownames = FALSE)
     } else {
       RT_ECDF_MULTI_TABLE(df)
@@ -192,7 +192,7 @@ get_data_RT_ECDF_Single <- reactive({
 
 output$RT_ECDF <- renderPlotly({
   req(input$RTECDF.Single.Target)
-  plot_general_data(get_data_RT_ECDF_Single(), 'x', 'mean', 'line', 
+  plot_general_data(get_data_RT_ECDF_Single(), 'x', 'mean', 'line',
                     x_title = "Function Evaluations",
                     y_title = "Proportion of runs", scale.xlog = input$RTECDF.Single.Logx, show.legend = T)
   # ftargets <- as.numeric(format_FV(input$RTECDF.Single.Target))
@@ -252,12 +252,12 @@ get_data_RT_ECDF_AGGR <- reactive({
 
 render_RT_ECDF_AGGR <- reactive({
   withProgress({
-  
-    plot_general_data(get_data_RT_ECDF_AGGR(), 'x', 'mean', 'line', 
+
+    plot_general_data(get_data_RT_ECDF_AGGR(), 'x', 'mean', 'line',
                       x_title = "Function Evaluations",
-                      y_title = "Proportion of (run, target) pairs", 
+                      y_title = "Proportion of (run, target) pairs",
                       scale.xlog = input$RTECDF.Multi.Logx, show.legend = T)
-  
+
   # Plot.RT.ECDF_Single_Func(
   #   data, fstart, fstop, fstep,
   #   scale.xlog = input$RTECDF.Multi.Logx
@@ -270,7 +270,7 @@ render_RT_ECDF_AGGR <- reactive({
 # output$RT_AUC <- renderPlotly({
 #   render_RT_AUC()
 # })
-# 
+#
 # output$RTECDF.AUC.Download <- downloadHandler(
 #   filename = function() {
 #     eval(FIG_NAME_RT_AUC)
@@ -280,10 +280,10 @@ render_RT_ECDF_AGGR <- reactive({
 #   },
 #   contentType = paste0('image/', input$RTECDF.AUC.Format)
 # )
-# 
+#
 # get_data_RT_AUC <- reactive({
 #   req(input$RTECDF.AUC.Min, input$RTECDF.AUC.Max, input$RTECDF.AUC.Step)
-#   
+#
 #   fstart <- format_FV(input$RTECDF.AUC.Min) %>% as.numeric
 #   fstop <- format_FV(input$RTECDF.AUC.Max) %>% as.numeric
 #   fstep <- format_FV(input$RTECDF.AUC.Step) %>% as.numeric
@@ -291,15 +291,15 @@ render_RT_ECDF_AGGR <- reactive({
 #   targets <- seq_FV(get_funvals(data), fstart, fstop, fstep, length.out = 10)
 #   generate_data.AUC(data, targets)
 # })
-# 
+#
 # render_RT_AUC <- reactive({
 #   # req(input$RTECDF.AUC.Min, input$RTECDF.AUC.Max, input$RTECDF.AUC.Step)
-#   # 
+#   #
 #   # fstart <- format_FV(input$RTECDF.AUC.Min) %>% as.numeric
 #   # fstop <- format_FV(input$RTECDF.AUC.Max) %>% as.numeric
 #   # fstep <- format_FV(input$RTECDF.AUC.Step) %>% as.numeric
 #   # data <- subset(DATA(), algId %in% input$RTECDF.AUC.Algs)
-#   # 
+#   #
 #   # Plot.RT.ECDF_AUC(
 #   #   data, fstart, fstop, fstep, fval_formatter = format_FV
 #   # )

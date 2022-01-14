@@ -7,15 +7,16 @@ ERT_agg_box <- function(width = 12, height = '600px', collapsible = T,
     sidebarLayout(
       sidebarPanel(
         width = 2,
-        selectInput('ERTPlot.Multi.Algs', label = 'Select which algorithms to plot:', 
+        selectInput('ERTPlot.Multi.Algs', label = 'Select which IDs to include:', 
                     multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                       custom_icon() %>%
                         bs_embed_popover(
-                          title = "Algorithm selection", content = alg_select_info, 
+                          title = "ID selection", content = alg_select_info, 
                           placement = "auto"
                         )
                     ),
-        
+        selectInput('ERTPlot.Multi.Funcs', label = 'Select which Functions to include:', 
+                    multiple = T, selected = NULL, choices = NULL),        
         checkboxInput('ERTPlot.Multi.Logx', 
                       label = 'Scale x axis \\(\\log_{10}\\)',
                       value = T),

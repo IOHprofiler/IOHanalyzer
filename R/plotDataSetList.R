@@ -3,7 +3,7 @@ symbols <- c("circle-open", "diamond-open", "square-open", "cross-open",
 
 get_legends <- function(dsList) {
   N <- length(dsList)
-  legends <- sapply(dsList, function(d) attr(d, 'algId'))
+  legends <- sapply(dsList, function(d) get_id(d))
 
   if (length(unique(legends)) < N) {
     funcId <- sapply(dsList, function(d) attr(d, 'funcId'))
@@ -460,7 +460,7 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
     show_legend <- T
     if (length(y_attrs) > 0) {
       p <- plot_general_data(data, x_attr = 'target', y_attr = y_attrs, 
-                             type = 'line', legend_attr = 'algId', show.legend = show_legend, 
+                             type = 'line', legend_attr = 'ID', show.legend = show_legend, 
                              scale.ylog = scale.ylog, p = p,
                              scale.xlog = scale.xlog, x_title = "Best-so-far f(x)-value",
                              y_title = "Function Evaluations",
@@ -469,7 +469,7 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
     }
     if (show.CI) {
       p <- plot_general_data(data, x_attr = 'target', y_attr = 'mean', 
-                             type = 'ribbon', legend_attr = 'algId', lower_attr = 'lower', 
+                             type = 'ribbon', legend_attr = 'ID', lower_attr = 'lower', 
                              upper_attr = 'upper', p = p, show.legend = show_legend, 
                              scale.ylog = scale.ylog,
                              scale.xlog = scale.xlog, x_title = "Best-so-far f(x)-value",
@@ -513,7 +513,7 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
     show_legend <- T
     if (length(y_attrs) > 0) {
       p <- plot_general_data(data, x_attr = 'runtime', y_attr = y_attrs, 
-                             type = 'line', legend_attr = 'algId', show.legend = show_legend, 
+                             type = 'line', legend_attr = 'ID', show.legend = show_legend, 
                              scale.ylog = scale.ylog, 
                              scale.xlog = scale.xlog, x_title = "Best-so-far f(x)-value",
                              y_title = "Function Evaluations",
@@ -524,7 +524,7 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
       p <- NULL
     if (show.CI) {
       p <- plot_general_data(data, x_attr = 'runtime', y_attr = 'mean', 
-                             type = 'ribbon', legend_attr = 'algId', lower_attr = 'lower', 
+                             type = 'ribbon', legend_attr = 'ID', lower_attr = 'lower', 
                              upper_attr = 'upper', p = p, show.legend = show_legend, 
                              scale.ylog = scale.ylog,
                              scale.xlog = scale.xlog, x_title = "Best-so-far f(x)-value",
@@ -557,7 +557,7 @@ Plot.RT.PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
   
   data <- generate_data.PMF(dsList, ftarget, 'by_RT')
   
-  plot_general_data(data, 'algId', 'RT', scale.ylog = scale.ylog,
+  plot_general_data(data, 'ID', 'RT', scale.ylog = scale.ylog,
                     x_title = "Algorithm", y_title = "Function Evaluations")
 }
 
@@ -571,7 +571,7 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
   }
   data <- generate_data.hist(dsList, ftarget, use.equal.bins, 'by_RT')
   
-  subplot_attr <- if (plot_mode == 'subplot') 'algId' else NULL
+  subplot_attr <- if (plot_mode == 'subplot') 'ID' else NULL
   plot_general_data(data, 'x', 'y', width = 'width', type = 'hist', 
                     subplot_attr = subplot_attr, x_title = "Function Evaluations",
                     y_title = "Runs")
@@ -624,7 +624,7 @@ Plot.FV.PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog
   
   data <- generate_data.PMF(dsList, runtime, 'by_FV')
   
-  plot_general_data(data, 'algId', 'f(x)', scale.ylog = scale.ylog,
+  plot_general_data(data, 'ID', 'f(x)', scale.ylog = scale.ylog,
                     x_title = "Algorithm", y_title = "Target Value")
 }
 
@@ -638,7 +638,7 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', 
   }  
   data <- generate_data.hist(dsList, runtime, use.equal.bins, 'by_FV')
   
-  subplot_attr <- if (plot_mode == 'subplot') 'algId' else NULL
+  subplot_attr <- if (plot_mode == 'subplot') 'ID' else NULL
   plot_general_data(data, 'x', 'y', width = 'width', type = 'hist', 
                     subplot_attr = subplot_attr, x_title = "Target Values",
                     y_title = "Runs")
@@ -702,7 +702,7 @@ Plot.RT.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
   show_legend <- T
   if (length(y_attrs) > 0) {
     p <- plot_general_data(data, x_attr = 'target', y_attr = y_attrs, 
-                           type = 'line', legend_attr = 'algId', show.legend = show_legend, 
+                           type = 'line', legend_attr = 'ID', show.legend = show_legend, 
                            scale.ylog = scale.ylog, subplot_attr = 'parId',
                            scale.xlog = scale.xlog)
     show_legend <- F
@@ -711,7 +711,7 @@ Plot.RT.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
     p <- NULL
   if (show.CI) {
     p <- plot_general_data(data, x_attr = 'target', y_attr = 'mean', 
-                           type = 'ribbon', legend_attr = 'algId', lower_attr = 'lower', 
+                           type = 'ribbon', legend_attr = 'ID', lower_attr = 'lower', 
                            upper_attr = 'upper', p = p, show.legend = show_legend, 
                            scale.ylog = scale.ylog, subplot_attr = 'parId',
                            scale.xlog = scale.xlog)
@@ -735,7 +735,7 @@ Plot.FV.Parameters.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
   show_legend <- T
   if (length(y_attrs) > 0) {
     p <- plot_general_data(data, x_attr = 'runtime', y_attr = y_attrs, 
-                           type = 'line', legend_attr = 'algId', show.legend = show_legend, 
+                           type = 'line', legend_attr = 'ID', show.legend = show_legend, 
                            scale.ylog = scale.ylog, subplot_attr = 'parId',
                            scale.xlog = scale.xlog)
     show_legend <- F
@@ -744,7 +744,7 @@ Plot.FV.Parameters.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
     p <- NULL
   if (show.CI) {
     p <- plot_general_data(data, x_attr = 'runtime', y_attr = 'mean', 
-                           type = 'ribbon', legend_attr = 'algId', lower_attr = 'lower', 
+                           type = 'ribbon', legend_attr = 'ID', lower_attr = 'lower', 
                            upper_attr = 'upper', p = p, show.legend = show_legend, 
                            scale.ylog = scale.ylog, subplot_attr = 'parId',
                            scale.xlog = scale.xlog)
@@ -843,7 +843,7 @@ Plot.Stats.Significance_Heatmap.DataSetList <- function(dsList, ftarget, alpha =
                                             bootstrap.size = 30, which = 'by_FV'){
   if (length(get_dim(dsList)) != 1 ||
       length(get_funcId(dsList)) != 1 ||
-      length(get_algId(dsList)) < 2)
+      length(get_id(dsList)) < 2)
     return(NULL)
 
   p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size, which)
@@ -876,14 +876,18 @@ radian.rescale <- function(x, start=0, direction=1) {
 #' @export
 Plot.Stats.Significance_Graph.DataSetList <- function(dsList, ftarget, alpha = 0.01,
                                                       bootstrap.size = 30, which = 'by_FV'){
-  if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1 || length(get_algId(dsList)) < 2) {
+  if (!requireNamespace("igraph", quietly = TRUE)) {
+    stop("Package \"igraph\" needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
+  if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1 || length(get_id(dsList)) < 2) {
     return(NULL)
   }
   p_matrix <- pairwise.test(dsList, ftarget, bootstrap.size, which)
-  g <- graph_from_adjacency_matrix(p_matrix <= alpha, mode = 'directed', diag = F)
+  g <- igraph::graph_from_adjacency_matrix(p_matrix <= alpha, mode = 'directed', diag = F)
   lab.locs <- radian.rescale(x = 1:nrow(p_matrix), direction = -1, start = 0)
 
-  plot.igraph(g, layout = layout.circle(g), vertex.size = 10, edge.arrow.size = 1,
+  igraph::plot.igraph(g, layout = igraph::layout.circle(g), vertex.size = 10, edge.arrow.size = 1,
               vertex.label.color = 'black',
               vertex.label.dist = 2,
               vertex.label.cex = 1,
@@ -898,13 +902,13 @@ Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds = 100, 
 
   if (is.null(df)) {
     df <- glicko2_ranking(dsList, nr_rounds, which, target_dt = target_dt)$ratings
-    algIds <- df$Player$algId
+    Ids <- df$Player$ID
   }
   else{
-    algIds <- df$algId
+    Ids <- df$ID
   }
   p <- IOH_plot_ly_default(title = "Glicko2-rating",
-                           x.title = "Algorithm",
+                           x.title = "ID",
                            y.title = "Rating")
   df$Rating %<>% as.numeric
   df$Deviation %<>% as.numeric
@@ -914,17 +918,17 @@ Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds = 100, 
   close <- df$Rating - df$Deviation
 
   N <- length(df$Rating)
-  colors <- get_color_scheme(algIds)
+  colors <- get_color_scheme(Ids)
   if (length(colors != N)) {
-    colors <- get_color_scheme(get_algId(dsList))
+    colors <- get_color_scheme(get_id(dsList))
   }
 
   for (i in seq(N)) {
     # rgba_str <- paste0('rgba(', paste0(col2rgb(colors[i]), collapse = ','), ',0.52)')
     color <- list(line = list(color = colors[[i]]))
-    p %<>% add_trace(type = "candlestick", x = algIds[[i]], open = open[[i]], close = close[[i]],
-                     high = high[[i]], low = low[[i]], legendgroup = algIds[[i]],
-                     name = algIds[[i]], increasing = color, decreasing = color,
+    p %<>% add_trace(type = "candlestick", x = Ids[[i]], open = open[[i]], close = close[[i]],
+                     high = high[[i]], low = low[[i]], legendgroup = Ids[[i]],
+                     name = Ids[[i]], increasing = color, decreasing = color,
                      hovertext = paste0(format(df$Rating[[i]], digits = 3), '+-',
                                         format(df$Deviation[[i]], digits = 3)),
                      hoverinfo = "text")
@@ -960,6 +964,7 @@ add_transparancy <- function(colors, percentage){
 #' @param lower_attr When using ribbon-plot, this can be used to create a shaded area. 
 #' Only works in combination with`upper_attr` and `type` == 'ribbon' 
 #' @param subplot_attr Which attribute of the dataframe to use for creating subplots
+#' @param subplot_shareX Whether or not to share X-axis when using subplots
 #' @param scale.xlog Logarithmic scaling of x-axis
 #' @param scale.ylog Logarithmic scaling of y-axis
 #' @param scale.reverse Decreasing or increasing x-axis
@@ -969,15 +974,17 @@ add_transparancy <- function(colors, percentage){
 #' @param p A previously existing plot on which to add traces. If NULL, a new canvas is created
 #' @param show.legend Whether or not to include a legend
 #' @param inf.action How to deal with infinite values. Can be 'none', 'overlap' or 'jitter'
+#' @param violin.showpoints Wheteher or not to show individual points when making a violinplot
 #' @param ... Additional parameters for the add_trace function
 #' 
 #' @export
-plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'violin',
-                              legend_attr = 'algId', scale.xlog = F, scale.ylog = F,
+plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin',
+                              legend_attr = 'ID', scale.xlog = F, scale.ylog = F,
                               scale.reverse = F, p = NULL, x_title = NULL,
                               y_title = NULL, plot_title = NULL, upper_attr = NULL,
                               lower_attr = NULL, subplot_attr = NULL, show.legend = F,
-                              inf.action = 'none', ...) {
+                              inf.action = 'none', violin.showpoints = F,
+                              subplot_shareX = F, ...) {
   
   l <- x <- isinf <- y <- text <- l_orig <- NULL #Set local binding to remove warnings
   
@@ -1010,7 +1017,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
     #Only need one legend for the whole plot
     legends_show <- rep(F, length(attrs))
     legends_show[[1]] <- show.legend
-    names(legends_show) <- attrs
+    names(legends_show) <- as.character(attrs)
     
     #Get some number of rows and columns
     n_cols <- 1 + ceiling(length(attrs)/10)
@@ -1036,27 +1043,35 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
         type1 <- substr(type, 0, stri_locate_all(type, fixed = '+')[[1]][[1]] - 1)
         p <- plot_general_data(df_sub, x_attr, y_attr, type1, legend_attr, scale.xlog, scale.ylog, 
                                scale.reverse, NULL, x.title, y.title, plot_title, upper_attr, lower_attr, 
-                               show.legend = legends_show[[attr_val]], subplot_attr = NULL, ...)
+                               show.legend = legends_show[[as.character(attr_val)]], subplot_attr = NULL, ...)
         type <- substr(type, stri_locate_all(type, fixed = '+')[[1]][[1]] + 1, nchar(type))
       }
-      plot_general_data(df_sub, x_attr, y_attr, type, legend_attr, scale.xlog, scale.ylog, 
+      p <- plot_general_data(df_sub, x_attr, y_attr, type, legend_attr, scale.xlog, scale.ylog, 
                         scale.reverse, p, x.title, y.title, plot_title, upper_attr, lower_attr, 
-                        show.legend = legends_show[[attr_val]], subplot_attr = NULL, ...) %>%
-        layout(
+                        show.legend = legends_show[[as.character(attr_val)]], subplot_attr = NULL, ...) 
+      if (getOption("IOHanalyzer.annotation_x", 0.5) >= 0 & 
+          getOption("IOHanalyzer.annotation_y", 1) >= 0) {
+        p %<>% layout(
           annotations = list(
             text = sub_title, 
-            font = f2,
-            xref = "paper", yref = "paper", align = "center",
-            yanchor = "bottom", 
-            xanchor = "center", textangle = 0,
-            x = 0.5, y = 1, showarrow = FALSE
+            font = f2, showarrow = FALSE,
+            xref = "paper", yref = "paper",
+            x = getOption("IOHanalyzer.annotation_x", 0.5), 
+            y = getOption("IOHanalyzer.annotation_y", 1)
           )
         )
+        p
+      }
+        
     })
     
     p <- subplot(
       p, nrows = n_rows, titleX = T, titleY = T, 
-      margin = c(0.02, 0.02, 0.06, 0.06)
+      margin = c(getOption("IOHanalyzer.margin_horizontal", 0.02), 
+                 getOption("IOHanalyzer.margin_vertical", 0.02), 
+                 getOption("IOHanalyzer.margin_horizontal", 0.02), 
+                 getOption("IOHanalyzer.margin_vertical", 0.02)), 
+      shareX = subplot_shareX
     ) %>% 
       layout(title = plot_title)
     return(p)
@@ -1126,7 +1141,7 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
              add_trace(data = df,
                        x = ~x, y = ~y, type = 'violin',
                        hoveron = "points+kde",
-                       points = F,
+                       points = violin.showpoints,
                        pointpos = 1.5,
                        jitter = 0,
                        scalemode = 'count',
@@ -1359,15 +1374,15 @@ plot_general_data <- function(df, x_attr = 'algId', y_attr = 'vals', type = 'vio
 #' }
 Plot.Performviz <- function(DSC_rank_result) {
   if (!requireNamespace("ComplexHeatmap", quietly = TRUE)) {
-    stop("Package \"pkg\" needed for this function to work. Please install it.",
+    stop("Package \"ComplexHeatmap\" needed for this function to work. Please install it.",
          call. = FALSE)
   }
   if (!requireNamespace("reshape2", quietly = TRUE)) {
-    stop("Package \"pkg\" needed for this function to work. Please install it.",
+    stop("Package \"reshape2\" needed for this function to work. Please install it.",
          call. = FALSE)
   }
   if (!requireNamespace("grid", quietly = TRUE)) {
-    stop("Package \"pkg\" needed for this function to work. Please install it.",
+    stop("Package \"grid\" needed for this function to work. Please install it.",
          call. = FALSE)
   }
   mlist <- DSC_rank_result$ranked_matrix

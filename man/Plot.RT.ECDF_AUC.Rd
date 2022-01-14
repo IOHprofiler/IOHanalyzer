@@ -5,11 +5,21 @@
 \alias{Plot.RT.ECDF_AUC.DataSetList}
 \title{Radarplot of the area under the aggregated ECDF-curve of a DataSetList.}
 \usage{
-Plot.RT.ECDF_AUC(dsList, fstart = NULL, fstop = NULL, fstep = NULL,
-  fval_formatter = as.integer)
+Plot.RT.ECDF_AUC(
+  dsList,
+  fstart = NULL,
+  fstop = NULL,
+  fstep = NULL,
+  fval_formatter = as.integer
+)
 
-\method{Plot.RT.ECDF_AUC}{DataSetList}(dsList, fstart = NULL,
-  fstop = NULL, fstep = NULL, fval_formatter = as.integer)
+\method{Plot.RT.ECDF_AUC}{DataSetList}(
+  dsList,
+  fstart = NULL,
+  fstop = NULL,
+  fstep = NULL,
+  fval_formatter = as.integer
+)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

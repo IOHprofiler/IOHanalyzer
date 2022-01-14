@@ -8,11 +8,9 @@
 \usage{
 get_PAR_summary(ds, idxValue, ...)
 
-\method{get_PAR_summary}{DataSet}(ds, idxValue, parId = "all",
-  which = "by_FV", ...)
+\method{get_PAR_summary}{DataSet}(ds, idxValue, parId = "all", which = "by_FV", ...)
 
-\method{get_PAR_summary}{DataSetList}(ds, idxValue, algorithm = "all",
-  ...)
+\method{get_PAR_summary}{DataSetList}(ds, idxValue, algorithm = "all", ...)
 }
 \arguments{
 \item{ds}{A DataSet or DataSetList object}

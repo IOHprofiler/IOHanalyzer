@@ -2,7 +2,7 @@ render_heatmap <- reactive({
   req(length(DATA()) > 0)
   withProgress({
     target <- as.numeric(input$RT_Stats.Overview.Target)
-    data <- subset(DATA(), algId %in% input$RT_Stats.Overview.Algid)
+    data <- subset(DATA(), ID %in% input$RT_Stats.Overview.ID)
     Plot.Stats.Significance_Heatmap(data, target, alpha = as.numeric(input$RT_Stats.Overview.Alpha),
                                     bootstrap.size = input$RT_Stats.Overview.Samples)
   },
@@ -16,8 +16,8 @@ output$RT_Stats.Overview.Heatmap <- renderPlotly(
 
 create_stats_table <- reactive({
   req(length(DATA()) > 0)
-  req(length(get_algId(DATA())) > 1)
-  data <- subset(DATA(), algId %in% input$RT_Stats.Overview.Algid)
+  req(length(get_id(DATA())) > 1)
+  data <- subset(DATA(), ID %in% input$RT_Stats.Overview.ID)
   target <- as.numeric(input$RT_Stats.Overview.Target)
   df <- pairwise.test(data, target, bootstrap.size = input$RT_Stats.Overview.Samples)
   df <- format(df, digits = 3)
@@ -36,7 +36,7 @@ render_graph <- reactive({
   req(length(DATA()) > 0)
   withProgress({
     target <- as.numeric(input$RT_Stats.Overview.Target)
-    data <- subset(DATA(), algId %in% input$RT_Stats.Overview.Algid)
+    data <- subset(DATA(), ID %in% input$RT_Stats.Overview.ID)
     Plot.Stats.Significance_Graph(data, target, alpha = as.numeric(input$RT_Stats.Overview.Alpha),
                                     bootstrap.size = input$RT_Stats.Overview.Samples)
   },
@@ -117,13 +117,13 @@ output$RT_Stats.Glicko.Download <- downloadHandler(
 
 
 RT_glicko_data <- function() {
-  data <- subset(DATA_RAW(), algId %in% isolate(input$RT_Stats.Glicko.Algid))
+  data <- subset(DATA_RAW(), ID %in% isolate(input$RT_Stats.Glicko.ID))
   if (length(data) == 0) return(NULL)
   data <- subset(data, DIM %in% input$RT_Stats.Glicko.Dim)
   data <- subset(data, funcId %in% input$RT_Stats.Glicko.Funcid)
-  if (length(unique(get_algId(data))) < 2) {
+  if (length(unique(get_id(data))) < 2) {
     shinyjs::alert("This plot is only available when the dataset contains
-                   multiple algorithms for the selected functions and dimensions.")
+                   multiple IDs for the selected functions and dimensions.")
     return(NULL)
   }
   data

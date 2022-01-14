@@ -4,8 +4,15 @@
 \alias{generate_data.Single_Function}
 \title{Generate dataframe of a single function/dimension pair}
 \usage{
-generate_data.Single_Function(dsList, start = NULL, stop = NULL,
-  scale_log = F, which = "by_RT", include_opts = F, budget = NULL)
+generate_data.Single_Function(
+  dsList,
+  start = NULL,
+  stop = NULL,
+  scale_log = F,
+  which = "by_RT",
+  include_opts = F,
+  budget = NULL
+)
 }
 \arguments{
 \item{dsList}{The DataSetList object}

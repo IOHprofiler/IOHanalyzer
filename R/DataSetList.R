@@ -45,6 +45,9 @@ read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
 #'  These formats are specified in more detail in our github wiki.
 #' @param subsampling Logical. Whether *.cdat files are subsampled?
 #' @param print_fun Function used to print output when in verbose mode
+#' @param full_aggregation If True, individual DataSets are aggregated as much as possible: all DataSets
+#' with the same algorithmname, function id and dimension are combined together. This leads to information loss
+#' related to static variables, so only use if that information is not required.
 #'
 #' @return A DataSetList object
 #' @export
@@ -52,10 +55,10 @@ read_dir <- function(path, verbose = T, print_fun = NULL, maximization = TRUE,
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package = "IOHanalyzer")
 #' DataSetList(path)
 DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization = NULL,
-                        format = IOHprofiler, subsampling = FALSE) {
+                        format = IOHprofiler, subsampling = FALSE, full_aggregation = TRUE) {
   if (is.null(path))
     return(structure(list(), class = c('DataSetList', 'list')))
-  
+
   path <- trimws(path)
   if (format == NEVERGRAD) {
     if (sub('[^\\.]*\\.', '', basename(path), perl = T) == "csv")
@@ -69,10 +72,10 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
   }
   else
     indexFiles <- scan_index_file(path)
-  
+
   if (is.null(print_fun))
     print_fun <- cat
-  
+
   object <- list()
   class(object) <- c('DataSetList', class(object))
   DIM <- c()
@@ -81,12 +84,12 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
   suites <- c()
   maximizations <- c()
   i <- 1
-  
+
   for (file in indexFiles) {
     if (verbose) {
       print_fun(paste('Processing', file, '...\n'))
     }
-    
+
     if (format == NEVERGRAD) {
       dsl <- read_nevergrad(file)
       object %<>% c(., dsl)
@@ -94,9 +97,9 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
     }
     else {
       indexInfo <- read_index_file(file)
-      if (verbose) 
+      if (verbose)
         print_fun(sprintf('   algorithm %s...\n', indexInfo[[1]]$algId))
-      
+
       for (info in indexInfo) {
         if (verbose) {
           print_fun(
@@ -108,15 +111,15 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
             )
           )
         }
-        
+
         copy_flag <- TRUE
         data <- DataSet(info, maximization = maximization,
                         format = format, subsampling = subsampling)
-        
+
         DIM[i] <- attr(data, 'DIM')
         funcId[i] <- attr(data, 'funcId')
         algId[i] <- attr(data, 'algId')
-        
+
         # TODO: double-check the following treatment on `instance`!!!
         instance <- attr(data, 'instance') #Was instance without index?
         suites[i] <- attr(data, 'suite')
@@ -131,78 +134,90 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
               warning('duplicated instances!')
               break
             }
-            
+
             if (length(intersect(instance, instance_)) != 0) {
               warning('duplicated instances!')
             }
           }
         }
-        
+
         if (copy_flag) {
           object[[i]] <- data
           i <- i + 1
         }
       }
     }
-    
-    if (verbose) 
+
+    if (verbose)
       print_fun("\n")
   }
-    
+
   # TODO: sort all DataSet by multiple attributes: algId, funcId and DIM
   if (format != NEVERGRAD) {
     attr(object, 'DIM') <- DIM
     attr(object, 'funcId') <- funcId
     attr(object, 'algId') <- algId
   }
-  
+
   suite <- unique(suites)
   maximization <- unique(maximizations)
   if (length(maximization) != 1) {
     warning("Multipe different optimization types detected!")
   }
-  
+
   attr(object, 'suite') <- suite
   attr(object, 'maximization') <- maximization
-  clean_DataSetList(object)
+  attr(object, 'ID') <- attr(object, 'algId')
+  attr(object, 'ID_attributes') <- c('algId')
+  if (full_aggregation)
+    clean_DataSetList(object)
+  else
+    object
 }
 
 
 #' Clean DataSetList object by concatenating DataSets
-#' 
-#' Concatenates all DataSets with the same algorith name, function id and dimension
-#'  
+#'
+#' Concatenates all DataSets with the same ID, algid, function id and dimension
+#'
 #' @param dsList The DataSetList object to clean
 #' @export
-#' @examples 
+#' @examples
 #' clean_DataSetList(dsl)
 clean_DataSetList <- function(dsList) {
   #To ensure no uninitialized variables are present
   .I <- NULL
+
+  if (is.null(attr(dsList, 'ID'))) {
+    dsList <- change_id(dsList, getOption("IOHanalyzer.ID_vars", c("algId")))
+  }
+
   cases <- mapply(
     function(...) paste0(list(...), collapse = ','),
-    attr(dsList, 'funcId'), 
+    attr(dsList, 'funcId'),
     attr(dsList, 'DIM'),
     attr(dsList, 'algId'),
+    attr(dsList, 'ID'),
     SIMPLIFY = T,
     USE.NAMES = F
   )
-    
+
   dt <- as.data.table(cases)[, list(list(.I)), by = cases]
   idx_to_del <- c()
-  
+
   for (idx in dt$V1) {
     if (length(idx) > 1) {
       dsList[[idx[1]]] <- c.DataSet(dsList[idx])
       idx_to_del <- c(idx_to_del, idx[-1])
     }
-  }  
+  }
   dsList[idx_to_del] <- NULL
-  
+
   if (length(idx_to_del) > 0) {
     attr(dsList, 'DIM') <- sapply(dsList, function(ds) attr(ds, 'DIM'))
     attr(dsList, 'funcId') <- sapply(dsList, function(ds) attr(ds, 'funcId'))
     attr(dsList, 'algId') <- sapply(dsList, function(ds) attr(ds, 'algId'))
+    attr(dsList, 'ID') <- sapply(dsList, function(ds) attr(ds, 'ID'))
   }
   dsList
 }
@@ -227,7 +242,7 @@ c.DataSetList <- function(...) {
   if (!any((class(object)) == 'DataSetList'))
     class(object) <- c('DataSetList', class(object))
 
-  for (attr_str in c('DIM', 'funcId', 'algId')) {
+  for (attr_str in c('DIM', 'funcId', 'algId', 'ID')) {
     attr(object, attr_str) <- unlist(lapply(dsl, function(x) attr(x, attr_str)))
   }
 
@@ -237,9 +252,9 @@ c.DataSetList <- function(...) {
       lapply(dsl, function(x) attr(x, "suite"))
     )
   )
-  
+
   # These attributes NEED to be the same across the datasetlist
-  for (attr_str in c('maximization')) {
+  for (attr_str in c('maximization', 'ID_attributes')) {
     temp <- unique(
         unlist(lapply(dsl, function(x) attr(x, attr_str)))
     )
@@ -270,6 +285,7 @@ c.DataSetList <- function(...) {
 
   # also slice the attributes accordingly
   attr(obj, 'DIM') <- attr(x, 'DIM')[i]
+  attr(obj, 'ID') <- attr(x, 'ID')[i]
   attr(obj, 'funcId') <- attr(x, 'funcId')[i]
   attr(obj, 'algId') <- attr(x, 'algId')[i]
   attr(obj, 'suite') <- attr(x, 'suite')
@@ -289,14 +305,14 @@ print.DataSetList <- function(x, ...) {
   cat('DataSetList:\n')
   cat(paste0('Suite: ', attr(x, 'suite'), '\n'))
   N <- length(x)
-  
+
   # TODO: add an option for the following numbers: 15 and 5
-  if (N <= 15) 
+  if (N <= 15)
     idx <- seq_along(x)
-  else 
+  else
     idx <- c(1:5, '---', (N-4):N)
-  idx <- format(idx, digits = 0, justify = 'right')
-    
+  idx <- format(idx, justify = 'right')
+
   for (i in idx) {
     if (trimws(i) == '---')
       cat(paste0(i), '\n')
@@ -329,7 +345,7 @@ summary.DataSetList <- function(object, ...) {
             suite = attr(d, 'suite'),
             funcId = attr(d, 'funcId'),
             DIM = attr(d, 'DIM'),
-            algId = attr(d, 'algId'),
+            ID = attr(d, 'ID'),
             datafile = attr(d, 'datafile'),
             comment = attr(d, 'comment')
           )
@@ -371,7 +387,7 @@ arrange.DataSetList <- function(dsl, ...) {
     }
 
     v <- as.character(v)
-    if (v %in% c('DIM', 'funcId', 'algId'))
+    if (v %in% c('DIM', 'funcId', 'ID'))
       cols[[i]] <- v
     else {
       cols[[i]] <- NULL
@@ -390,20 +406,20 @@ arrange.DataSetList <- function(dsl, ...) {
   dsl <- dsl[idx]
 
   # TODO: perhaps we do not need those attributes at all...
-  for (v in c('DIM', 'funcId', 'algId'))
+  for (v in c('DIM', 'funcId', 'ID'))
     attr(dsl, v) <- sapply(dsl, function(d) attr(d, v))
   dsl
 }
 
 #' @rdname get_ERT
-#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.
 #' @export
 #'
 get_ERT.DataSetList <- function(ds, ftarget, budget = NULL, algorithm = 'all', ...) {
     if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
-    
+
     rbindlist(lapply(ds, function(ds) {
       res <-
         cbind(attr(ds, 'DIM'), attr(ds, 'funcId'), get_ERT(ds, ftarget, budget))
@@ -414,13 +430,8 @@ get_ERT.DataSetList <- function(ds, ftarget, budget = NULL, algorithm = 'all', .
   }
 
 #' @rdname get_RT_summary
-#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
 #' @export
-get_RT_summary.DataSetList <- function(ds, ftarget, budget = NULL, algorithm = 'all', ...) {
-    if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
-    if (algorithm != 'all')
-      ds <- subset(ds, algId == algorithm)
-    
+get_RT_summary.DataSetList <- function(ds, ftarget, budget = NULL, ...) {
     rbindlist(lapply(ds, function(ds) {
       res <-
         cbind(attr(ds, 'DIM'),
@@ -433,7 +444,7 @@ get_RT_summary.DataSetList <- function(ds, ftarget, budget = NULL, algorithm = '
   }
 
 #' @rdname get_RT_sample
-#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.
 #'
 #' @export
 get_RT_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
@@ -454,7 +465,7 @@ get_RT_sample.DataSetList <- function(ds, ftarget, algorithm = 'all', ...) {
   }
 
 #' @rdname get_maxRT
-#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.
 #'
 #' @export
 get_maxRT.DataSetList <- function(ds, algorithm = 'all', ...) {
@@ -473,7 +484,7 @@ get_maxRT.DataSetList <- function(ds, algorithm = 'all', ...) {
 }
 
 #' @rdname get_FV_summary
-#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.
 #' @export
 #'
 get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
@@ -492,7 +503,7 @@ get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
     }))
 }
 
-#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.
 #' @export
 #' @rdname get_FV_overview
 #'
@@ -507,7 +518,7 @@ get_FV_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
 }
 
 #' @rdname get_RT_overview
-#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.
 #' @export
 get_RT_overview.DataSetList <- function(ds, algorithm = 'all', ...) {
     if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
@@ -541,7 +552,7 @@ get_overview.DataSetList <- function(ds, ...) {
 }
 
 #' @rdname get_FV_sample
-#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.
 #' @export
 #'
 get_FV_sample.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
@@ -562,7 +573,7 @@ get_FV_sample.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
   }
 
 #' @rdname get_PAR_summary
-#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.
 #' @export
 get_PAR_summary.DataSetList <- function(ds, idxValue, algorithm = 'all', ...) {
   if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
@@ -573,7 +584,7 @@ get_PAR_summary.DataSetList <- function(ds, idxValue, algorithm = 'all', ...) {
 }
 
 #' @rdname get_PAR_sample
-#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider. 
+#' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.
 #' @export
 get_PAR_sample.DataSetList <- function(ds, idxValue, algorithm = 'all', ...) {
   if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
@@ -581,6 +592,18 @@ get_PAR_sample.DataSetList <- function(ds, idxValue, algorithm = 'all', ...) {
     ds <- subset(ds, algId == algorithm)
 
   rbindlist(lapply(ds, function(ds) get_PAR_sample(ds, idxValue, ...)), fill = T)
+}
+
+#' @rdname get_id
+#' @export
+get_id.DataSetList <- function(ds, ...) {
+  temp <- attr(ds, 'ID')
+  if (is.null(temp)) {
+    warning("No ID attribute set, returning the algId's instead. (from 1.6.0 onwards, ID attributes are always added
+            to new datasets, see the 'change_id' function.")
+    return(get_algId(ds))
+  }
+  return(unique(temp))
 }
 
 #' Get all dimensions present in a DataSetList
@@ -609,14 +632,26 @@ get_funcId <- function(dsList) {
   # TODO: what if the function ID is a double value?
   # those are coerced to integers now
   if (is.integer(ll)) return(sort(ll))
-  
+
   lli <- suppressWarnings(as.integer(ll))
   if (any(is.na(lli))) return(sort(ll))
-  
+
   if (all((lli >= 0L) & (lli <= 1000000000L))) return(ll[order(lli)])
-  
+
   # TODO: should this be even allowed?
   sort(lli)
+}
+
+#' Get all function names present in a DataSetList
+#'
+#' @param dsList The DataSetLsit
+#'
+#' @return A list of all unique function names which occur in the DataSetList
+#' @export
+#' @examples
+#' get_funcName(dsl)
+get_funcName <- function(dsList) {
+  unique(unname(unlist(sapply(dsList, function(d) attr(d, 'funcName')))))
 }
 
 #' Get all algorithm ids present in a DataSetList
@@ -700,57 +735,174 @@ get_runtimes <- function(dsList) {
   ))))
 }
 
-# #' Get the best function value reached in a DataSetList
-# #'
-# #' @param dsList The DataSetLsit
-# #'
-# #' @return A list matrices of all runtime values which occur in the DataSetList
-# #' @export
-# get_best_targets <- function(dsList, by = 'funcId', maximize = T) {
-#   targets <- c()
-#   funcIds <- get_funcId(dsList)
+#' Get all attributes which can be used to subset a DataSetList
+#'
+#' @param dsl The DataSetList
+#'
+#' @return The list of available attributes
+#' @export
+#' @examples
+#' get_static_attributes(dsl)
+get_static_attributes <- function(dsl) {
+  full_names <- unique(unlist(lapply(dsl, function(ds) {names(attributes(ds))})))
 
-#   for (i in seq_along(aggr_attr)) {
-#     data <- subset(dsList, funcId == funcIds[i])
+  reserved_attributes <- c("names", "class", "suite", "maximization", "algInfo", "comment",
+                           "datafile", "maxRT", "finalFV", "format")
+  setdiff(full_names, reserved_attributes)
+}
 
-#     Fall <- get_funvals(data)
-#     Fval <- ifelse(maximize, max(Fall), min(Fall))
-#     targets <- c(targets, Fval)
-#   }
-#   targets
-# }
+#' Get all options for a specific attribute which can be used to subset a DataSetList
+#'
+#' This is a more generic version of the existing `get_dim`, `get_funcId` and `get_algId` functions.
+#' Note the only attributes returned by `get_static_attributes` are supported in this funcion
+#'
+#' @param dsl The DataSetList
+#' @param attribute the name of the attribute for which to get the available options in dsl
+#' @return The list of options for the specified attribute
+#' @export
+#' @examples
+#' get_static_attribute_values(dsl, 'funcId')
+get_static_attribute_values <- function(dsl, attribute) {
+  unique(unlist(lapply(dsl, function(ds) {attr(ds, attribute)})))
+}
 
-# TODO: the attribute list should als be sliced here...
 #' Filter a DataSetList by some criteria
 #'
-#' @param x The DataSetLsit
-#' @param ... The condition to filter on. Can be any expression which assigns True or False
-#' to a DataSet object, such as DIM == 625 or funcId == 2
+#' @param x The DataSetList
+#' @param ... The conditions to filter on. Can be any expression which assigns True or False
+#' to a DataSet object, such as DIM == 625 or funcId == 2. Usage of && and || is only supported on default attributes
+#' (funcId, algId, DIM), not on combinations of with other attributes (e.g. instance). In those cases, & and | should
+#' be used respectively. Alternatively, this can be used as a keyword argument named 'text', with the condition as a
+#' string to be parsed. This allows exectution of subset commands on arbitrary variables in code.
 #'
 #' @return The filtered DataSetList
 #' @export
 #' @examples
 #' subset(dsl, funcId == 1)
+#' subset(dsl, funcId == 1 && DIM == 16) # Can use && and || for default attributes
+#' subset(dsl, instance == 1)
+#' subset(dsl, instance == 1 & funcId == 1) # Can use & and | for all attributes
+#' subset(dsl, instance == 1, funcId == 1) # Comma-seperated conditions are treated as AND
 subset.DataSetList <- function(x, ...) {
-  condition_call <- substitute(list(...))
   enclos <- parent.frame()
-  idx <- sapply(x,
-                function(ds)
-                  all(unlist(
-                    eval(condition_call, attributes(ds), enclos)
-                  )))
-  x[idx]
+  if (hasArg('text')) {
+    text <- list(...)$text
+    condition_call <- parse(text = text)
+  } else {
+    condition_call <- substitute(list(...))
+    condition_call <- condition_call[2:length(condition_call)]
+  }
+
+  obj <- lapply(x,
+                function(ds){
+                  mask <- tryCatch(expr = {
+                    mask <- NULL
+                    for (idx in seq(length(condition_call))) {
+                      mask_temp <- unlist(
+                        eval(condition_call[[idx]], attributes(ds), enclos = enclos)
+                      )
+                      if (is.null(mask)) mask <- mask_temp
+                      else {
+                        if (length(mask_temp) == 1 && !mask_temp) {
+                          mask <- F
+                        } else if (length(mask_temp) == 1) {
+                          mask <- mask
+                        } else if (length(mask_temp) == length(mask) || length(mask) == 1) {
+                          mask <- mask & mask_temp
+                        } else {
+                          stop("Error creating mask")
+                        }
+
+                      }
+                    }
+                    mask
+                  }, error = function(e) {F})
+
+                  if (length(mask) == 1 && mask) return(ds)
+                  else if (length(mask) == 1 || !any(mask)) return(NULL)
+                  return(subset(ds, mask))
+                })
+
+  class(obj) <- c('DataSetList', class(obj))
+  obj <- Filter(Negate(is.null), obj)
+
+  # also slice the attributes accordingly
+  attr(obj, 'suite') <- attr(x, 'suite')
+  attr(obj, 'maximization') <- attr(x, 'maximization')
+  attr(obj, 'DIM') <- sapply(obj, function(ds) attr(ds, 'DIM'))
+  attr(obj, 'funcId') <- sapply(obj, function(ds) attr(ds, 'funcId'))
+  attr(obj, 'algId') <- sapply(obj, function(ds) attr(ds, 'algId'))
+  unique_ids <- unlist(sapply(obj, function(ds) attr(ds, 'unique_id')))
+  if (!any(is.null(unique_ids))) {
+    attr(obj, 'unique_ids') <- unique_ids
+  }
+  return(obj)
 }
 
+#' Add unique identifiers to each DataSet in the provided DataSetList based on static attributes
+#'
+#' Note that this function returns a new DataSetList object, since a split into new datasetlist has to be done to
+#' ensure each dataset has exactly one unique identifier.
+#' Note that only static attributes (see `get_static_attributes`) can be used to create unique identifiers.
+#'
+#' @param dsl The DataSetList
+#' @param attrs The list of attributes to combine into a unique identifier
+#' @return A new DataSetList object where the split has been done based on the provided attributes, and the unique
+#' identifier has been added.
+#' @export
+#' @examples
+#' change_id(dsl, c('instance'))
+change_id <- function(dsl, attrs) {
+  if (length(dsl) == 0) return(dsl)
+  if (!all(attrs %in% get_static_attributes(dsl))) stop("Selected attributes are not usable to create unique ids")
+  grid <- expand.grid(lapply(attrs, function(x){get_static_attribute_values(dsl, x)}))
+  colnames(grid) <- attrs
+
+  dsl_new <- DataSetList()
+  attr_vals <- c()
+  for (x in transpose(grid)) {
+    #TODO: on Windows, UTF-8 Characters get converted into <U+XXXX> characters, which then
+    #don't interact correctly with the parse used in 'subset' function, leading to empty datasetlist objects.
+    #I'm not aware of any way to fix this, so UFT-8 characters should be avoided in ID for now.
+    conditions <- paste0(unlist(lapply(seq(length(attrs)), function(idx) {
+      paste0(attrs[[idx]], ' == "', x[[idx]], '"')
+    })), collapse = " & ")
+    dsl_temp <- subset(dsl, text = conditions)
+    if (length(attrs) == 1)
+      attr_val <- x
+    else
+      attr_val <- paste0(x, collapse = "_")
+
+    attr_vals <- c(attr_vals, rep(attr_val, length(dsl_temp)))
+    dsl_new <- c(dsl_new, dsl_temp)
+  }
+  attr(dsl_new, 'ID_attributes') <- attrs
+  attr(dsl_new, 'ID') <- attr_vals
+  for (idx in seq(length(dsl_new))) {
+    attr(dsl_new[[idx]], 'ID') <- attr_vals[[idx]]
+  }
+  class(dsl_new) <- c("DataSetList", "list")
+  attr(dsl_new, 'suite') <- attr(dsl, 'suite')
+  attr(dsl_new, 'maximization') <- attr(dsl, 'maximization')
+
+  attr(dsl_new, 'DIM') <- lapply(dsl_new, function(x) attr(x, 'DIM'))
+  attr(dsl_new, 'funcId') <- lapply(dsl_new, function(x) attr(x, 'funcId'))
+  attr(dsl_new, 'algId') <- lapply(dsl_new, function(x) attr(x, 'algId'))
+  dsl_new
+}
+
+
+
+
 #' Save DataTable in multiple formats
-#' 
+#'
 #' @param df The DataTable to store
 #' @param file String. The name of the figure file, with the extension of the required file-format
 #' @param format Optional, string. Overwrites the extension of the `file` parameter. If not specified while
 #' file does not have an extension, it defaults to csv
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' df <- generate_data.Single_Function(subset(dsl, funcId == 1), which = 'by_RT')
 #' save_table(df, tempfile(fileext = ".md"))
 save_table <- function(df, file, format = NULL) {
@@ -760,7 +912,7 @@ save_table <- function(df, file, format = NULL) {
   if (format == 'TeX' || format == 'tex') {
     if (requireNamespace('xtable', quietly = T))
       print(xtable::xtable(df), file = file)
-    else 
+    else
       write(kable(df, format = 'latex'), file)
   } else if (format == 'Markdown' || format == 'md') {
     write(kable(df, format = 'markdown'), file)
@@ -773,32 +925,32 @@ save_table <- function(df, file, format = NULL) {
 }
 
 #' Generation of default ECDF-targets
-#' 
+#'
 #' @param dsList The DataSetList object for which to generate the targets
 #' @param type The way to generate the targets. Either 'log-linear', 'linear' or 'bbob' (51 fixed targets,
 #' equal for all functions / dimensions)
 #' @param number_targets The amount of targets to generate
-#' 
+#'
 #' @return A data.table with 3 columns: funcId, DIM and target
 #' @export
-#' @examples 
+#' @examples
 #' get_ECDF_targets(dsl, 'linear', 10)
 get_ECDF_targets <- function(dsList, type = "log-linear", number_targets = 10) {
   funcIds <- get_funcId(dsList)
   dims <- get_dim(dsList)
-  
+
   dt <- rbindlist(apply(expand.grid(funcIds, dims), 1, function(x) {
     if (type == 'bbob') {
       fseq <- rev(seq_FV(c(100,1e-8), length.out = 51, scale = 'log'))
     }
     else {
       dsl <- subset(dsList, funcId == x[[1]] && DIM == x[[2]])
-      if (length(dsl) == 0) 
+      if (length(dsl) == 0)
         return(NULL)
       fall <- get_funvals(dsl)
-      if (length(fall) < 2) 
-        return(NULL) 
-      
+      if (length(fall) < 2)
+        return(NULL)
+
       fseq <- seq_FV(fall, length.out = number_targets, scale = ifelse(type == "log-linear", 'log', 'linear'))
     }
     data.table(funcId = x[[1]], DIM = x[[2]], target = fseq)
@@ -808,9 +960,9 @@ get_ECDF_targets <- function(dsList, type = "log-linear", number_targets = 10) {
 
 ### __________________________ Rewritten data generation functions _______________________ ###
 #' Generate dataframe of a single function/dimension pair
-#' 
-#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
-#' 
+#'
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
+#'
 #' @param dsList The DataSetList object
 #' @param start Optional start value (Runtime or target value)
 #' @param stop Optional end value (Runtime or target value)
@@ -820,42 +972,43 @@ get_ECDF_targets <- function(dsList, type = "log-linear", number_targets = 10) {
 #' the generated datapoints
 #' @param budget Optional; overwrites the budget of each individual algorithm when doing ERT calculations. Only works
 #' in fixed_target mode.
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' generate_data.Single_Function(subset(dsl, funcId == 1), which = 'by_RT')
-generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL, 
-                                          scale_log = F, which = 'by_RT', include_opts = F, budget = NULL) {
-  
+generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL,
+                                          scale_log = F, which = 'by_RT',
+                                          include_opts = F, budget = NULL) {
+
   if (length(get_funcId(dsList)) != 1 || length(get_dim(dsList)) != 1 ) {
-    #Required because target generation is included in this function, 
+    #Required because target generation is included in this function,
     #which needs to be done on a per-function basis
-    stop("Multiple functions / dimensions are present in provided DataSetList. 
-    Please call this function for each individual function/dimension pair instead.") 
+    stop("Multiple functions / dimensions are present in provided DataSetList.
+    Please call this function for each individual function/dimension pair instead.")
   }
-  
+
   by_rt <- (which == 'by_RT')
-  
+
   if (by_rt)
     all <- get_funvals(dsList)
   else
     all <- get_runtimes(dsList)
 
   maximization <- attr(dsList, 'maximization')
-  
+
   if (is.null(maximization)) maximization <- T
   if (is.null(start)) start <- min(all)
   if (is.null(stop)) stop <- max(all)
-  
+
   if (by_rt) {
     Xseq <- seq_FV(all, start, stop, length.out = 60,
                    scale = ifelse(scale_log, 'log', 'linear'))
     if (include_opts) {
-      for (algid in get_algId(dsList)) {
+      for (uid in get_id(dsList)) {
         if (maximization)
-          Xseq <- c(Xseq, max(get_funvals(subset(dsList, algId == algid))))
+          Xseq <- c(Xseq, max(get_funvals(subset(dsList, ID == uid))))
         else
-          Xseq <- c(Xseq, min(get_funvals(subset(dsList, algId == algid))))
+          Xseq <- c(Xseq, min(get_funvals(subset(dsList, ID == uid))))
       }
       Xseq <- unique(sort(Xseq))
     }
@@ -865,29 +1018,29 @@ generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL,
     Xseq <- seq_RT(all, start, stop, length.out = 60,
                    scale = ifelse(scale_log, 'log', 'linear'))
     if (include_opts) {
-      for (algid in get_algId(dsList)) {
-        Xseq <- c(Xseq, max(get_funvals(subset(dsList, algId == algid))))
+      for (uid in get_id(dsList)) {
+        Xseq <- c(Xseq, max(get_funvals(subset(dsList, ID == uid))))
       }
       Xseq <- unique(sort(Xseq))
     }
     dt <- get_FV_summary(dsList, Xseq)
   }
-  
-  
+
+
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
   return(dt)
 }
 
 #' Generate dataframe of a single function/dimension pair for creating PDF or PMF plots
-#' 
-#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
-#' 
+#'
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
+#'
 #' @param dsList The DataSetList object
 #' @param target The target value (Runtime or target value)
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' generate_data.PMF(subset(dsl, funcId == 1), target = 15, which = 'by_RT')
 generate_data.PMF <- function(dsList, target, which = 'by_RT') {
   if (which == 'by_RT')
@@ -896,72 +1049,72 @@ generate_data.PMF <- function(dsList, target, which = 'by_RT') {
 }
 
 #' Generate dataframe of a single function/dimension pair
-#' 
-#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
-#' 
+#'
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
+#'
 #' @param dsList The DataSetList object
 #' @param target The target value (Runtime or target value)
 #' @param use.equal.bins Whether all bins should be equal size for each algorithm or not
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' generate_data.hist(subset(dsl, funcId == 1), target = 15, which = 'by_RT')
 generate_data.hist <- function(dsList, target, use.equal.bins = F, which = 'by_RT') {
   width <- NULL # Set local binding to remove warnings
-  
+
   if (length(get_funcId(dsList)) > 1 || length(get_dim(dsList)) > 1)
     stop('This function is only available a single function/dimension pair at a time.')
-  
+
   if (use.equal.bins) {
     if (which == 'by_RT')
       res1 <- hist(
-        get_RT_sample(dsList, target, output = 'long')$RT, 
-        breaks = nclass.FD, 
+        get_RT_sample(dsList, target, output = 'long')$RT,
+        breaks = nclass.FD,
         plot = F
       )
     else
       res1 <- hist(
-        get_FV_sample(dsList, target, output = 'long')$`f(x)`, 
-        breaks = nclass.FD, 
+        get_FV_sample(dsList, target, output = 'long')$`f(x)`,
+        breaks = nclass.FD,
         plot = F
       )
   }
-  
+
   dt <- as.data.table(
     rbindlist(
       lapply(
-        dsList, 
+        dsList,
         function(ds) {
-          algId <- attr(ds, 'algId')
-          
-          if (which == 'by_RT') 
+          ID <- get_id(ds)
+
+          if (which == 'by_RT')
             data <- get_RT_sample(ds, target, output = 'long')$RT
-          else if (which == 'by_FV') 
+          else if (which == 'by_FV')
             data <- get_FV_sample(ds, target, output = 'long')$`f(x)`
-          else 
+          else
             stop('Invalid argument for parameter `which`.')
-          
+
           if (sum(!is.na(data)) < 2)
             return(NULL)
-          
-          if (use.equal.bins) 
+
+          if (use.equal.bins)
             breaks <- res1$breaks
-          else 
+          else
             breaks <- nclass.FD
-          
+
           res <- hist(data, breaks = breaks, plot = F)
           breaks <- res$breaks
-          
+
           plot_text <- paste0(
             '<b>count</b>: ', res$counts, '<br><b>breaks</b>: [',
             breaks[-length(breaks)], ',', breaks[-1], ']'
           )
-          
+
           plot_data <- data.frame(
-            x = res$mids, 
-            y = res$counts, 
-            algId = algId,
+            x = res$mids,
+            y = res$counts,
+            ID = ID,
             width = breaks[2] - breaks[1],
             text =  plot_text
           )
@@ -975,19 +1128,19 @@ generate_data.hist <- function(dsList, target, use.equal.bins = F, which = 'by_R
 }
 
 #' Generate dataframe of a single function/dimension pair
-#' 
-#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
-#' 
+#'
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
+#'
 #' @param dsList The DataSetList object
-#' @param targets A list or data.table containing the targets per function / dimension. If this is 
+#' @param targets A list or data.table containing the targets per function / dimension. If this is
 #' a data.table, it needs columns 'target', 'DIM' and 'funcId'
 #' @param scale_log Wheterh to use logarithmic scaling or not
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
-#' @param use_full_range Whether or not to use the full range of the x-axis or cut it off as soon as 
+#' @param use_full_range Whether or not to use the full range of the x-axis or cut it off as soon as
 #' all algorithms reach 98\% success (+10\% buffer). Only supported in the case of one function and dimension
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' generate_data.ECDF(subset(dsl, funcId == 1), c(10, 15, 16))
 generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', use_full_range = TRUE) {
   V1 <- NULL #Set local binding to remove warnings
@@ -1004,16 +1157,16 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', 
       }
     }
     x <- unique(seq_RT(RT, length.out = 50, scale = ifelse(scale_log, 'log', 'linear')))
-    
+
     #TODO: Some scaling by dimension?
-    
+
     if (!is.data.table(targets)) {
       if (length(get_funcId(dsList)) > 1 || length(get_dim(dsList)) > 1 )
-        stop("Targets provided are not in data.table format, while multiple functions / dimensions 
+        stop("Targets provided are not in data.table format, while multiple functions / dimensions
              are present in provided DataSetList.")
       targets <- data.table(
-        target = targets, 
-        funcId = get_funcId(dsList), 
+        target = targets,
+        funcId = get_funcId(dsList),
         DIM = get_dim(dsList)
       )
     }
@@ -1022,56 +1175,56 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', 
     FV <- get_funvals(dsList)
     x <- unique(seq_FV(FV, length.out = 50, scale = ifelse(scale_log, 'log', 'linear')))
   }
-  
+
   dt <- as.data.table(rbindlist(lapply(dsList, function(df) {
-    algId <- attr(df, 'algId')
+    ID <- get_id(df)
     if (by_rt) {
       temp <- targets[DIM == attr(df, 'DIM'), c('target', 'funcId')]
       targets_ <- temp[funcId == attr(df, 'funcId')][['target']]
     }
-    else 
+    else
       targets_ <- targets
     m <- lapply(targets_, function(target) {
       if (by_rt)
         data <- get_RT_sample(df, target, output = 'long')$RT
       else
         data <- get_FV_sample(df, target, output = 'long')$`f(x)`
-      
+
       if (all(is.na(data)))
         return(rep(0, length(x)))
       fun <- ecdf(data)
       if (is.function(fun)) fun(x) else NA
     }) %>%
       do.call(rbind, .)
-    
+
     data.frame(x = x,
                mean = apply(m, 2, . %>% mean(na.rm = T)),
                sd = apply(m, 2, . %>% sd(na.rm = T))) %>%
-      mutate(upper = mean + sd, lower = mean - sd, algId = algId)
+      mutate(upper = mean + sd, lower = mean - sd, ID = ID)
   })))
-  dt[, mean(mean), by = .(x, algId)][, .(mean = V1, algId = algId, x = x)]
+  dt[, mean(mean), by = .(x, ID)][, .(mean = V1, ID = ID, x = x)]
 }
 
 
 #' Generate dataframe containing the AUC for any ECDF-curves
-#' 
-#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
-#' 
+#'
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
+#'
 #' @param dsList The DataSetList object
-#' @param targets A list or data.table containing the targets per function / dimension. If this is 
+#' @param targets A list or data.table containing the targets per function / dimension. If this is
 #' a data.table, it needs columns 'target', 'DIM' and 'funcId'
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
 #' @param scale_log Whether to use logarithmic scaling or not
-#' @param dt_ecdf A data table of the ECDF to avoid needless recomputations. Will take preference if it 
+#' @param dt_ecdf A data table of the ECDF to avoid needless recomputations. Will take preference if it
 #' is provided together with dsList and targets
 #' @param multiple_x Boolean, whether to get only the total AUC or get stepwise AUC values
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' generate_data.AUC(dsl, get_ECDF_targets(dsl))
 #' generate_data.AUC(NULL, NULL, dt_ecdf = generate_data.ECDF(dsl, get_ECDF_targets(dsl)))
 generate_data.AUC <- function(dsList, targets, scale_log = F, which = 'by_RT', dt_ecdf = NULL,
-                              multiple_x = FALSE) {
+                              multiple_x = FALSE, normalize = T) {
   idx <- auc_contrib <- mean_pre <- mean_post <- x <- x_pre <- auc <- NULL
   if (is.null(dt_ecdf)) {
     if (length(dsList) == 0 || is.null(targets))
@@ -1079,28 +1232,31 @@ generate_data.AUC <- function(dsList, targets, scale_log = F, which = 'by_RT', d
     dt_ecdf <- generate_data.ECDF(dsList, targets, scale_log, which)
   }
   max_idx <- nrow(unique(dt_ecdf[,'x']))
-  dt_ecdf[, idx := seq(max_idx), by = 'algId']
+  dt_ecdf[, idx := seq(max_idx), by = 'ID']
   dt3 = copy(dt_ecdf)
   dt3[, idx := idx - 1]
-  dt_merged = merge(dt_ecdf, dt3, by = c('algId', 'idx'))
-  colnames(dt_merged) <- c("algId", "idx", "mean_pre", "x_pre", "mean_post", "x")
+  dt_merged = merge(dt_ecdf, dt3, by = c('ID', 'idx'))
+  colnames(dt_merged) <- c("ID", "idx", "mean_pre", "x_pre", "mean_post", "x")
   dt_merged[, auc_contrib := ((mean_pre + mean_post)/2)*(x - x_pre)]
-  dt_merged[, auc := cumsum(auc_contrib)/x, by = 'algId']
-  #TODO: just for max x
+  if (normalize){
+  dt_merged[, auc := cumsum(auc_contrib)/x, by = 'ID']
+  } else {
+    dt_merged[, auc := cumsum(auc_contrib), by = 'ID']
+  }
   if (multiple_x)
-    return(dt_merged[, c('algId','x','auc') ])
-  return(dt_merged[idx == (max_idx - 1), c('algId','x','auc') ])
+    return(dt_merged[, c('ID','x','auc') ])
+  return(dt_merged[idx == (max_idx - 1), c('ID','x','auc') ])
 }
-  
-  
+
+
 # #' Generate dataframe of a single function/dimension pair
-# #' 
+# #'
 # #' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
-# #' 
+# #'
 # #' @param dsList The DataSetList object
 # #' @param targets A list of the target value for which to calculate the AUC (Runtime or target value)
 # #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
-# #' 
+# #'
 # #' @export
 # #' @examples
 # #' generate_data.AUC(subset(dsl, funcId == 1), c(12, 16))
@@ -1109,14 +1265,14 @@ generate_data.AUC <- function(dsList, targets, scale_log = F, which = 'by_RT', d
 #     stop("This function is only available a single function/dimension pair at a time.")
 #   }
 #   by_rt <- which == 'by_RT'
-#   
+#
 #   if (by_rt)
 #     RT.max <- sapply(dsList, function(ds) max(attr(ds, 'maxRT'))) %>% max
 #   else {
 #     funevals.max <- sapply(dsList, function(ds) max(attr(ds, 'finalFV'))) %>% max
 #     funevals.min <- sapply(dsList, function(ds) min(attr(ds, 'finalFV'))) %>% min
 #   }
-#   
+#
 #   as.data.table(rbindlist(lapply(dsList, function(df) {
 #     algId <- attr(df, 'algId')
 #     if (by_rt)
@@ -1135,15 +1291,15 @@ generate_data.AUC <- function(dsList, targets, scale_log = F, which = 'by_RT', d
 #           }
 #         }
 #       })
-#       
+#
 #       auc <- sapply(funs,
 #                     function(fun) {
 #                       if (is.null(fun)) 0
-#                       else{ 
+#                       else{
 #                         if (attr(df, 'maximization'))
 #                           integrate(fun, lower = attr(fun, 'min') - 1, upper = funevals.max,
 #                                     subdivisions = 1e3) %>% {'$'(., 'value') / funevals.max}
-#                         else 
+#                         else
 #                           integrate(fun, lower =  funevals.min, upper = attr(fun, 'max') + 1,
 #                                     subdivisions = 1e3) %>% {'$'(., 'value') / (attr(fun, 'max') + 1)}
 #                       }
@@ -1154,15 +1310,15 @@ generate_data.AUC <- function(dsList, targets, scale_log = F, which = 'by_RT', d
 # }
 
 #' Generate dataframe of a single function/dimension pair
-#' 
-#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
-#' 
+#'
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
+#'
 #' @param dsList The DataSetList object
 #' @param scale_log Wheterh to use logarithmic scaling or not
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' generate_data.Parameters(subset(dsl, funcId == 1))
 generate_data.Parameters <- function(dsList, which = 'by_RT', scale_log = F) {
   if (length(get_funcId(dsList)) > 1 || length(get_dim(dsList)) > 1) {
@@ -1170,18 +1326,18 @@ generate_data.Parameters <- function(dsList, which = 'by_RT', scale_log = F) {
   }
   if (which == 'by_RT') {
     rtall <- get_runtimes(dsList)
-    
+
     rtseq <- seq_RT(rtall, length.out = 50,  scale = ifelse(scale_log, 'log', 'linear'))
     req(rtseq)
-    
+
     dt <- get_PAR_summary(dsList, rtseq, which = 'by_RT')
   }
   else if (which == 'by_FV') {
     rtall <- get_funvals(dsList)
-    
+
     rtseq <- seq_FV(rtall, length.out = 50,  scale = ifelse(scale_log, 'log', 'linear'))
     req(rtseq)
-    
+
     dt <- get_PAR_summary(dsList, rtseq, which = 'by_FV')
   }
   else stop("Invalid value for parameter `which`")
@@ -1189,28 +1345,28 @@ generate_data.Parameters <- function(dsList, which = 'by_RT', scale_log = F) {
 }
 
 #' Generate dataframe of a single function/dimension pair
-#' 
-#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function 
-#' 
+#'
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
+#'
 #' @param dsList The DataSetList object
 #' @param aggr_on Which attribute to use for aggregation. Either 'funcId' or 'DIM'
 #' @param targets Optional list of target values (Runtime or target value)
 #' @param which Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' generate_data.Aggr(dsl)
 generate_data.Aggr <- function(dsList, aggr_on = 'funcId', targets = NULL, which = 'by_RT') {
   maximize <- attr(dsList, 'maximization')
   variable <- fid <- value <- NULL #Set local binding to remove warnings
   by_rt <- which == 'by_RT'
-  
+
   if (is.null(targets)) {
     targets <- get_target_dt(dsList, which)
   }
- 
+
   aggr_attr <- if (aggr_on == 'funcId') get_funcId(dsList) else get_dim(dsList)
-  N <- length(get_algId(dsList))
+  N <- length(get_id(dsList))
 
   dt <- rbindlist(lapply(aggr_attr, function(agg_val) {
     if (by_rt) {
@@ -1218,7 +1374,7 @@ generate_data.Aggr <- function(dsList, aggr_on = 'funcId', targets = NULL, which
         dt <- get_RT_summary(subset(dsList, funcId == agg_val), targets[funcId == agg_val][['target']])
       else
         dt <- get_RT_summary(subset(dsList, DIM == agg_val), targets[DIM == agg_val][['target']])
-      dt[, c('algId', value = 'ERT', 'funcId', 'DIM')]
+      dt[, c('ID', value = 'ERT', 'funcId', 'DIM')]
       setnames(dt, 'ERT', 'value')
     }
     else{
@@ -1226,40 +1382,40 @@ generate_data.Aggr <- function(dsList, aggr_on = 'funcId', targets = NULL, which
         dt <- get_FV_summary(subset(dsList, funcId == agg_val), targets[funcId == agg_val][['target']])
       else
         dt <- get_FV_summary(subset(dsList, DIM == agg_val), targets[DIM == agg_val][['target']])
-      dt[, c('algId', value = 'mean', 'funcId', 'DIM')]
+      dt[, c('ID', value = 'mean', 'funcId', 'DIM')]
       setnames(dt, 'mean', 'value')
     }
   }))
 
   if (by_rt) order_sel <- 1
   else order_sel <- -1*(maximize*2 - 1)
-  
+
   dt[, rank := frank(order_sel*value, na.last = T), by = .(DIM, funcId)]
   return(dt)
 }
 
 
 
-#' Generate dataframe of a the unaggregated values of individual algorithms. Stripped-down version of 
-#' 
-#' This provides an unaggregated version of the function `generate_data.ECDF`. 
-#' 
+#' Generate dataframe of a the unaggregated values of individual algorithms. Stripped-down version of
+#'
+#' This provides an unaggregated version of the function `generate_data.ECDF`.
+#'
 #' @param dsList The DataSetList object
-#' @param targets A list or data.table containing the targets per function / dimension. If this is 
+#' @param targets A list or data.table containing the targets per function / dimension. If this is
 #' a data.table, it needs columns 'target', 'DIM' and 'funcId'
 #' @param scale_log Wheterh to use logarithmic scaling or not
-#' 
+#'
 #' @export
-#' @examples 
+#' @examples
 #' generate_data.ECDF_raw(subset(dsl, funcId == 1), c(10, 15, 16))
 generate_data.ECDF_raw <- function(dsList, targets, scale_log = F) {
   V1 <- NULL #Set local binding to remove warnings
-  
+
   #Get the x-coordinates at which to calculate the ECDF
   RT <- get_runtimes(dsList)
   x <- unique(seq_RT(RT, length.out = 50, scale = ifelse(scale_log, 'log', 'linear')))
   #TODO: Some scaling by dimension?
-  
+
   #Get targets to use
   if (!is.data.table(targets)) {
     if (length(get_funcId(dsList)) > 1 || length(get_dim(dsList)) > 1 )
@@ -1271,12 +1427,12 @@ generate_data.ECDF_raw <- function(dsList, targets, scale_log = F) {
       DIM = get_dim(dsList)
     )
   }
-  
+
   dt <- as.data.table(rbindlist(lapply(dsList, function(df) {
-    algId <- attr(df, 'algId')
+    ID <- get_id(df)
     temp <- targets[DIM == attr(df, 'DIM'), c('target', 'funcId')]
     targets_ <- temp[funcId == attr(df, 'funcId')][['target']]
-    
+
     m <- lapply(targets_, function(target) {
       data <- fast_RT_samples(df$RT, target, attr(df, 'maximization'))
       if (all(is.na(data)))
@@ -1285,7 +1441,7 @@ generate_data.ECDF_raw <- function(dsList, targets, scale_log = F) {
         fun <- ecdf(data)
         hit <- if (is.function(fun)) fun(x) else NA
       }
-      data.table(hit = hit, rt = x, target = target, funcId = attr(df, 'funcId'), DIM = attr(df, 'DIM'), algId = attr(df, 'algId'))
+      data.table(hit = hit, rt = x, target = target, funcId = attr(df, 'funcId'), DIM = attr(df, 'DIM'), ID = ID)
     }) %>%
       do.call(rbind, .)
     m

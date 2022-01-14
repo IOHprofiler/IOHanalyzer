@@ -29,7 +29,7 @@ render_ERTPlot_aggr_plot <- reactive({
 
 ### Gather relevant datasetlist
 ERTPlot.Aggr.data <- function() {
-  data <- subset(DATA_RAW(), algId %in% isolate(input$ERTPlot.Aggr.Algs))
+  data <- subset(DATA_RAW(), ID %in% isolate(input$ERTPlot.Aggr.Algs))
   if (length(data) == 0) return(NULL)
   data <- subset(data, DIM == input$Overall.Dim)
   
@@ -39,9 +39,9 @@ ERTPlot.Aggr.data <- function() {
     return(NULL)
   }
   
-  if (length(unique(get_algId(data))) == 1) {
+  if (length(unique(get_id(data))) == 1) {
     shinyjs::alert("This plot is only available when the dataset contains
-                   multiple algorithms for the selected dimension.")
+                   multiple IDs for the selected dimension.")
     return(NULL)
   }
   data
@@ -50,7 +50,7 @@ ERTPlot.Aggr.data <- function() {
 ### format table for display
 ert_multi_function <- function() {
   dt <- ERTPlot.Aggr.ERTs_obj()
-  dt <- dcast(dt, funcId~algId, value.var = 'value')
+  dt <- dcast(dt, funcId~ID, value.var = 'value')
   format(dt, digits = 4) 
 }
 
@@ -58,7 +58,7 @@ ert_multi_function <- function() {
 default_targets_table <- reactive({
   data <- ERTPlot.Aggr.data()
   if (is.null(data)) return(NULL)
-  targets <- get_target_dt(data)
+  targets <- get_target_dt(data, which = 'by_FV')
   targets <- targets[, c('funcId','target')] 
   # %>% melt(id.vars = 'funcId') %>% dcast(variable ~ funcId)
   # targets <- targets[, 'variable' = NULL]

@@ -6,7 +6,7 @@ output$FCE_ECDF_PER_TARGET <- renderPlotly({
 get_data_FV_ECDF_Single <- reactive({
   req(input$FCEECDF.Single.Target)
   ftargets <- as.numeric(format_FV(input$FCEECDF.Single.Target))
-  data <- subset(DATA(), algId %in% input$FCEECDF.Single.Algs)
+  data <- subset(DATA(), ID %in% input$FCEECDF.Single.Algs)
   generate_data.ECDF(data, ftargets, input$FCEECDF.Single.Logx, which = 'by_FV')
 })
 
@@ -40,7 +40,7 @@ get_data_FV_ECDF_AGGR <- reactive({
   fstart <- format_FV(input$FCEECDF.Mult.Min) %>% as.numeric
   fstop <- format_FV(input$FCEECDF.Mult.Max) %>% as.numeric
   fstep <- format_FV(input$FCEECDF.Mult.Step) %>% as.numeric
-  data <- subset(DATA(), algId %in% input$FCEECDF.Mult.Algs)
+  data <- subset(DATA(), ID %in% input$FCEECDF.Mult.Algs)
   targets <- seq_RT(get_funvals(data), fstart, fstop, fstep)
   generate_data.ECDF(data, targets, input$FCEECDF.Mult.Logx, which = 'by_FV')
 })
@@ -86,7 +86,7 @@ get_data_FV_AUC <- reactive({
   rt_min <- input$FCEECDF.AUC.Min %>% as.numeric
   rt_max <- input$FCEECDF.AUC.Max %>% as.numeric
   rt_step <- input$FCEECDF.AUC.Step %>% as.numeric
-  data <- subset(DATA(), algId %in% input$FCEECDF.AUC.Algs)
+  data <- subset(DATA(), ID %in% input$FCEECDF.AUC.Algs)
   targets <- seq_RT(get_runtimes(data), rt_min, rt_max, rt_step, length.out = 10)
   generate_data.AUC(data, targets, which = 'by_FV')
 })

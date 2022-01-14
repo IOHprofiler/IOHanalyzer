@@ -102,8 +102,8 @@ RT_DSC_posthoc_result <- reactive({
       req(omni_res)
       data <- RT_DSC_data()
       req(length(data) > 0)
-      df_posthoc <- rbindlist(lapply(get_algId(data), function(algname){
-        posthoc_res <- get_dsc_posthoc(omni_res, length(get_algId(data)), 
+      df_posthoc <- rbindlist(lapply(get_id(data), function(algname){
+        posthoc_res <- get_dsc_posthoc(omni_res, length(get_id(data)), 
                                        nrow(RT_stats_DSC_targets_obj),
                                        alpha = input$RT_Stats.DSC.Alpha_posthoc, 
                                        base_algorithm = algname,
@@ -182,13 +182,13 @@ output$RT_Stats.DSC.Download <- downloadHandler(
 
 
 RT_DSC_data <- function() {
-  data <- subset(DATA_RAW(), algId %in% isolate(input$RT_Stats.DSC.Algid))
+  data <- subset(DATA_RAW(), ID %in% isolate(input$RT_Stats.DSC.ID))
   if (length(data) == 0) return(NULL)
   data <- subset(data, DIM %in% input$RT_Stats.DSC.Dim)
   data <- subset(data, funcId %in% input$RT_Stats.DSC.Funcid)
-  if (length(unique(get_algId(data))) < 2) {
+  if (length(unique(get_id(data))) < 2) {
     shinyjs::alert("This plot is only available when the dataset contains
-                   multiple algorithms for the selected functions and dimensions.")
+                   multiple IDs for the selected functions and dimensions.")
     return(NULL)
   }
   data

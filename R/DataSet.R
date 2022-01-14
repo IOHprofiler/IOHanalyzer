@@ -163,7 +163,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
       function(...)
         structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
       c(info, list(maxRT = maxRT, finalFV = finalFV, format = format,
-                   maximization = maximization, suite = suite))
+                   maximization = maximization, suite = suite, ID = info$algId))
     )
   }
   else
@@ -184,42 +184,62 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
 c.DataSet <- function(...) {
   dsl <- list(...)
   
-  if (length(dsl) == 1) dsl <- dsl[[1]]
+  if (length(dsl) == 1)
+    dsl <- dsl[[1]]
   dsl <- dsl[sapply(dsl, length) != 0]
   
-  if (length(dsl) == 0) return()
-  if (length(dsl) == 1) return(dsl[[1]])
+  if (length(dsl) == 0)
+    return()
+  if (length(dsl) == 1)
+    return(dsl[[1]])
   
   for (ds in dsl) {
     if (!any((class(ds)) == 'DataSet'))
       stop("Operation only possible when all arguments are DataSets")
   }
-
-  fixed_attrs <- c('suite', 'maximization', 'DIM', 'funcId', 'algId', 'format')
+  
+  fixed_attrs <-
+    c('suite', 'maximization', 'DIM', 'funcId', 'algId', 'format')
   info <- list()
   for (attr_str in fixed_attrs) {
-    temp  <-  unique(unlist(lapply(dsl, function(x) attr(x, attr_str))))
+    temp  <-  unique(unlist(lapply(dsl, function(x)
+      attr(x, attr_str))))
     if (length(temp) > 1) {
-      stop(paste0("Attempted to add datasets with different ", attr_str,
-                  "-attributes! Tis is not allowed, please keep them as separate DataSets!"))
+      stop(
+        paste0(
+          "Attempted to add datasets with different ",
+          attr_str,
+          "-attributes! This is not supported, please keep them as separate DataSets!"
+        )
+      )
     }
-    info <- c(info,temp)
+    info <- c(info, temp)
   }
   names(info) <- fixed_attrs
-
+  
+  #Record number of runs to make masks of static attributes
+  nr_runs <- sapply(dsl, function(x)
+    ncol(x$FV))
   for (attr_str in names(attributes(dsl[[1]]))) {
-    if (attr_str %in% fixed_attrs || attr_str %in% c("names", "class")) next
-    temp  <- unlist(lapply(dsl, function(x) attr(x, attr_str)))
-    if (length(unique(temp)) == 1) 
+    if (attr_str %in% fixed_attrs ||
+        attr_str %in% c("names", "class"))
+      next
+    temp  <- unlist(lapply(dsl, function(x)
+      attr(x, attr_str)))
+    if (length(unique(temp)) == 1)
       temp <- unique(temp)
-    else 
-      temp <- list(temp_name = temp)
+    else {
+      if (length(temp) == length(nr_runs))
+        temp <- list(temp_name = rep(temp, nr_runs))
+      else
+        temp <- list(temp_name = temp)
+    }
     names(temp) <- attr_str
     info <- c(info, temp)
   }
-
+  
   format <- info[['format']] #attr(dsl[[1]], "format")
-
+  
   RT_raw <- unlist(lapply(dsl, function(ds) {
     lapply(seq_len(ncol(ds$RT)), function(cnr) {
       rt_temp <- as.matrix(ds$RT[, cnr])
@@ -227,26 +247,90 @@ c.DataSet <- function(...) {
     })
   }), recursive = F)
   
-  RT <- align_running_time(RT_raw, format = "TWO_COL", maximization = info$maximization)$RT
+  RT <-
+    align_running_time(RT_raw,
+                       format = "TWO_COL",
+                       maximization = info$maximization)$RT
   FV <- align_function_value(RT_raw, format = "TWO_COL")$FV
-
+  
   # TODO: to deal with cases where aligned parameters are present in original DataSets
-  PAR <- list(
-    'by_FV' = RT[names(RT) != 'RT'],
-    'by_RT' = FV[names(FV) != 'FV']
-  )
+  PAR <- list('by_FV' = RT[names(RT) != 'RT'],
+              'by_RT' = FV[names(FV) != 'FV'])
   
   # Unaligned parameters
   for (par_name in names(dsl[[1]]$PAR)) {
     if (!par_name %in% c('by_FV', 'by_RT'))
-      PAR[[par_name]] <- unlist(lapply(dsl, function(x) {x$PAR[[par_name]]}), recursive = F)
+      PAR[[par_name]] <-
+        unlist(lapply(dsl, function(x) {
+          x$PAR[[par_name]]
+        }), recursive = F)
   }
+  
+  do.call(function(...)
+    structure(list(
+      RT = RT, FV = FV, PAR = PAR
+    ), class = c('DataSet', 'list'), ...),
+    c(info))
+}
 
-  do.call(
-    function(...)
-      structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
-    c(info)
+#' S3 subset function for DataSet
+#'
+#' @description Subset for DataSets. Based on the provided mask, the relevant data is taken from the given DataSet
+#' and turned into a new DataSet object.
+#'
+#' @param x The DataSet from which to get a subset
+#' @param mask The mask (as boolean list) to use when subsetting. The length should be equal to the number of runs
+#'  present in the provided dataset object x.
+#' @param ... Arguments passed to underlying subset method (not yet supported)
+#'
+#' @return A new DataSet
+#' @export
+#' @examples
+#' subset(dsl[[1]], c(0,1,1,1,0,0,0,0,0,0,0))
+subset.DataSet <- function(x, mask, ...) {
+  if (length(mask) != ncol(x$FV))
+    stop(paste("The input DataSet has", ncol(x$FV), "runs while the input mask array has length", length(mask)))
+  
+  info <- list()
+  for (attr_str in names(attributes(x))) {
+    if (attr_str %in% c('names', 'class'))
+      next
+    temp  <- attr(x, attr_str)
+    if (length(unique(temp)) == 1)
+      temp <- unique(temp)
+    else {
+      if (length(temp) == length(mask))
+        temp <- list(temp[mask])
+      else{
+        warning(
+          paste0(
+            "Attribute detected (",
+            attr_str,
+            ") with incorrect length for the mask-based subsetting!"
+          )
+        )
+        next
+      }
+    }
+    names(temp) <- attr_str
+    info <- c(info, temp)
+  }
+  
+  format <- info[['format']]
+  
+  RT <- as.matrix(x$RT[, mask])
+  FV <- as.matrix(x$FV[, mask])
+  
+  PAR <- list(
+    'by_FV' = ifelse(ncol(x$PAR$by_FV) == length(mask), x$PAR$by_FV[, mask], NULL),
+    'by_RT' = ifelse(ncol(x$PAR$by_RT) == length(mask), x$PAR$by_RT[, mask], NULL)
   )
+  
+  do.call(function(...)
+    structure(list(
+      RT = RT, FV = FV, PAR = PAR
+    ), class = c('DataSet', 'list'), ...),
+    c(info))
 }
 
 #' S3 generic print operator for DataSet
@@ -510,6 +594,23 @@ get_RT_overview <- function(ds, ...) UseMethod("get_RT_overview", ds)
 #' @export
 get_overview <- function(ds, ...) UseMethod("get_overview", ds)
 
+#' Get condensed overview of datasets
+#'
+#' Get the unique identifiers for each DataSet in the provided DataSetList
+#' 
+#' If no unique identifier is set (using `change_id` or done in DataSet construction from 1.6.0 onwards), 
+#' this function falls back on returning the algorith id (from `get_aldId`)to ensure backwards compatibility
+#'
+#' @param ds The DataSetList
+#' @param ... Arguments passed to other methods
+#' 
+#' @return The list of unique identiefiers present in dsl
+#' @examples
+#' get_id(dsl)
+#' get_id(dsl[[1]])
+#' @export
+get_id <- function(ds, ...) UseMethod("get_id", ds)
+
 #' @rdname get_FV_overview
 #' @export
 get_FV_overview.DataSet <- function(ds, ...) {
@@ -529,7 +630,7 @@ get_FV_overview.DataSet <- function(ds, ...) {
   median_fv <- median(last_row, na.rm = T)
   runs_reached <- sum(last_row == best_fv)
 
-  data.table(algId = attr(ds, 'algId'),
+  data.table(ID = get_id(ds),
              DIM = attr(ds, 'DIM'),
              funcId = attr(ds, 'funcId'),
              `worst recorded` = worst_recorded_fv,
@@ -563,7 +664,7 @@ get_RT_overview.DataSet <- function(ds, ...) {
     max_rt <- max(data, na.rm = T)
   }
 
-  data.table(algId = attr(ds, 'algId'),
+  data.table(ID = get_id(ds),
              DIM = attr(ds, 'DIM'),
              funcId = attr(ds, 'funcId'),
              `miminal runtime` = min_rt,
@@ -599,7 +700,7 @@ get_overview.DataSet <- function(ds, ...) {
   median_fv <- median(last_row, na.rm = T)
   runs_reached <- sum(last_row == best_fv)
 
-  data.table(`algId` = attr(ds, 'algId'),
+  data.table(ID = get_id(ds),
              `DIM` = attr(ds, 'DIM'),
              `funcId` = attr(ds, 'funcId'),
              `runs` = runs,
@@ -636,8 +737,8 @@ get_ERT.DataSet <- function(ds, ftarget, budget = NULL, ...) {
     return(data.table())
 
   data <- data[matched, , drop = FALSE]
-  dt <- as.data.table(cbind(algId, ftarget, SP(data, maxRT)$ERT))
-  colnames(dt) <- c('algId', 'target', 'ERT')
+  dt <- as.data.table(cbind(get_id(ds), ftarget, SP(data, maxRT)$ERT))
+  colnames(dt) <- c('ID', 'target', 'ERT')
   dt
 }
 
@@ -646,9 +747,9 @@ get_ERT.DataSet <- function(ds, ftarget, budget = NULL, ...) {
 #'
 get_RT_summary.DataSet <- function(ds, ftarget, budget = NULL, ...) {
   data <- ds$RT
-  if (is.null(budget) || is.na(budget)) maxRT <- attr(ds, 'maxRT')
+  if (is.null(budget) || is.na(budget)) maxRT <- max(attr(ds, 'maxRT'))
   else maxRT <- as.numeric(budget)
-  algId <- attr(ds, 'algId')
+  ID <- get_id(ds)
   maximization <- attr(ds, 'maximization')
 
   ftarget <- sort(as.double(unique(c(ftarget))), decreasing = !maximization)
@@ -668,17 +769,23 @@ get_RT_summary.DataSet <- function(ds, ftarget, budget = NULL, ...) {
   }
 
   data <- data[matched, , drop = FALSE]
-  apply(data, 1, IOHanalyzer_env$D_quantile) %>%
+  pen_data <- data
+  pen_data[is.na(pen_data)] = maxRT * getOption("IOHanalyzer.PAR_penalty", 1)
+  pen_data[pen_data > maxRT] = maxRT * getOption("IOHanalyzer.PAR_penalty", 1)
+  dt_temp <- apply(data, 1, IOHanalyzer_env$D_quantile) %>%
     t %>%
     as.data.table %>%
     cbind(as.data.table(SP(data, maxRT))) %>%
-    cbind(algId, ftarget,
+    cbind(ID, ftarget,
           apply(data, 1, .mean),
           apply(data, 1, .median),
-          apply(data, 1, .sd), .) %>%
-    set_colnames(c('algId', 'target', 'mean', 'median',
-                   'sd', paste0(getOption("IOHanalyzer.quantiles") * 100, '%'),
+          apply(data, 1, .sd), 
+          apply(pen_data, 1, .mean), .) %>%
+    set_colnames(c('ID', 'target', 'mean', 'median',
+                   'sd', paste0('PAR-', getOption("IOHanalyzer.PAR_penalty", 1)),
+                   paste0(getOption("IOHanalyzer.quantiles") * 100, '%'),
                    'ERT', 'runs', 'ps'))
+  dt_temp
 }
 
 #' Get the maximal running time
@@ -699,14 +806,14 @@ get_maxRT <- function(ds, ...) UseMethod("get_maxRT", ds)
 #' @export
 #'
 get_maxRT.DataSet <- function(ds, output = 'wide', ...) {
-  algId <- attr(ds, 'algId')
+  ID <- get_id(ds)
   N <- ncol(ds$RT)
-  res <- t(c(algId, attr(ds, 'maxRT'))) %>%
+  res <- t(c(ID, attr(ds, 'maxRT'))) %>%
     as.data.table %>%
-    set_colnames(c('algId', paste0('run.', seq(N))))
+    set_colnames(c('ID', paste0('run.', seq(N))))
 
   if (output == 'long') {
-    res <- melt(res, id = 'algId', variable.name = 'run', value.name = 'maxRT')
+    res <- melt(res, id = 'ID', variable.name = 'run', value.name = 'maxRT')
     res[, run := as.numeric(gsub('run.', '', run)) %>% as.integer
         ][, maxRT := as.integer(maxRT)
           ][order(run)]
@@ -720,7 +827,7 @@ get_maxRT.DataSet <- function(ds, output = 'wide', ...) {
 get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide', ...) {
   data <- ds$RT
   N <- ncol(data)
-  algId <- attr(ds, 'algId')
+  ID <- get_id(ds)
   maximization <- attr(ds, 'maximization')
 
   ftarget <- sort(as.double(unique(c(ftarget))), decreasing = !maximization)
@@ -735,12 +842,12 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide', ...) {
     }
   )
 
-  res <- cbind(algId, ftarget, as.data.table(data[matched, , drop = FALSE])) %>%
-    set_colnames(c('algId', 'target', paste0('run.', seq(N))))
+  res <- cbind(ID, ftarget, as.data.table(data[matched, , drop = FALSE])) %>%
+    set_colnames(c('ID', 'target', paste0('run.', seq(N))))
 
   if (output == 'long') {
     # TODO: option to not add run etc to speed up performance of ECDF calculation?
-    res <- melt(res, id = c('algId', 'target'), variable.name = 'run', value.name = 'RT')
+    res <- melt(res, id = c('ID', 'target'), variable.name = 'run', value.name = 'RT')
     res[, run := as.integer(as.numeric(gsub('run.', '', run)))
         ][, RT := as.integer(RT)
           ][order(target, run)]
@@ -771,7 +878,7 @@ get_FV_summary.DataSet <- function(ds, runtime, ...) {
   data <- ds$FV
   NC <- ncol(data)
   NR <- nrow(data)
-  algId <- attr(ds, 'algId')
+  ID <- get_id(ds)
   maximization <- attr(ds, 'maximization')
 
   runtime <- sort(as.numeric(unique(c(runtime))))
@@ -781,12 +888,12 @@ get_FV_summary.DataSet <- function(ds, runtime, ...) {
   matched <- sapply(runtime, function(r) rev(idx[r >= RT])[1])
   data <- data[matched, , drop = FALSE]
   
-  cbind(algId, runtime, NC,
+  cbind(ID, runtime, NC,
         apply(data, 1, .mean),
         apply(data, 1, .median),
         apply(data, 1, .sd),
         as.data.table(t(apply(data, 1, IOHanalyzer_env$C_quantile)))) %>% 
-    set_colnames(c('algId', 'runtime', 'runs', 'mean', 'median', 'sd',
+    set_colnames(c('ID', 'runtime', 'runs', 'mean', 'median', 'sd',
                     paste0(getOption("IOHanalyzer.quantiles") * 100, '%')))
 }
 
@@ -799,7 +906,7 @@ get_FV_sample.DataSet <- function(ds, runtime, output = 'wide', ...) {
   data <- ds$FV
   N <- ncol(data)
   n_row <- nrow(data)
-  algId <- attr(ds, 'algId')
+  ID <- get_id(ds)
   maximization <- attr(ds, 'maximization')
 
   runtime <- sort(as.numeric(unique(c(runtime))))
@@ -807,11 +914,11 @@ get_FV_sample.DataSet <- function(ds, runtime, output = 'wide', ...) {
   idx <- seq_along(RT)
 
   matched <- sapply(runtime, function(r) rev(idx[r >= RT])[1])
-  res <- cbind(algId, runtime, as.data.table(data[matched, , drop = FALSE])) %>%
-    set_colnames(c('algId', 'runtime', paste0('run.', seq(N))))
+  res <- cbind(ID, runtime, as.data.table(data[matched, , drop = FALSE])) %>%
+    set_colnames(c('ID', 'runtime', paste0('run.', seq(N))))
 
   if (output == 'long') {
-    res <- melt(res, id = c('algId', 'runtime'), variable.name = 'run', value.name = 'f(x)')
+    res <- melt(res, id = c('ID', 'runtime'), variable.name = 'run', value.name = 'f(x)')
     res[, run := as.integer(as.numeric(gsub('run.', '', run)))
         ][order(runtime, run)]
   }
@@ -844,7 +951,7 @@ get_PAR_summary.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV'
   }
 
   idx <- seq_along(RefValues)
-  algId <- attr(ds, 'algId')
+  ID <- get_id(ds)
   par_name <- get_PAR_name(ds, which = which)
 
   if (parId != 'all')
@@ -868,14 +975,14 @@ get_PAR_summary.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV'
          function(par) {
            data <- ds_par[[par]][matched, , drop = FALSE]
            df <- cbind(
-             algId, par, idxValue,
+             ID, par, idxValue,
              apply(data, 1, function(x) length(x[!is.na(x)])),
              apply(data, 1, .mean),
              apply(data, 1, .median),
              apply(data, 1, .sd),
              as.data.table(t(apply(data, 1, IOHanalyzer_env$C_quantile)))
            )
-           colnames(df) <- c('algId', 'parId', idx_name, 'runs', 'mean', 'median', 'sd',
+           colnames(df) <- c('ID', 'parId', idx_name, 'runs', 'mean', 'median', 'sd',
                              paste0(getOption("IOHanalyzer.quantiles") * 100, '%'))
            df
          }) %>%
@@ -904,7 +1011,7 @@ get_PAR_sample.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV',
   }
 
   idx <- seq_along(RefValues)
-  algId <- attr(ds, 'algId')
+  ID <- get_id(ds)
   par_name <- get_PAR_name(ds, which = which)
 
   if (parId != 'all')
@@ -922,14 +1029,14 @@ get_PAR_sample.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV',
                 function(parId) {
                   data <- ds_par[[parId]]
                   data <- as.data.table(data[matched, , drop = FALSE])
-                  data <- cbind(algId, parId, idxValue, data)
-                  colnames(data) <- c('algId', 'parId', idx_name, paste0('run.', seq(N)))
+                  data <- cbind(ID, parId, idxValue, data)
+                  colnames(data) <- c('ID', 'parId', idx_name, paste0('run.', seq(N)))
                   data
                 })
   res <- rbindlist(res)
 
   if (output == 'long') {
-    res <- melt(res, id = c('algId', 'parId', idx_name), variable.name = 'run', value.name = 'value')
+    res <- melt(res, id = c('ID', 'parId', idx_name), variable.name = 'run', value.name = 'value')
     res[, run := as.integer(as.numeric(gsub('run.', '', run)))]
     if (which == 'by_FV')
       res[order(target, run)]
@@ -937,4 +1044,16 @@ get_PAR_sample.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV',
       res[order(runtime, run)]
   }
   res
+}
+
+#' @rdname get_id
+#' @export
+get_id.DataSet <- function(ds, ...) {
+  temp <- attr(ds, 'ID')
+  if (is.null(temp)) {
+    warning("No ID attribute set, returning the algId's instead. (from 1.6.0 onwards, ID attributes are always added
+            to new datasets, see the 'change_id' function.")
+    return(attr(ds, 'algId'))
+  }
+  return(unique(temp))
 }

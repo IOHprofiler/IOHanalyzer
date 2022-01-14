@@ -23,7 +23,7 @@ It <i>provides</i>:
 * [Diederick Vermetten](https://www.universiteitleiden.nl/en/staffmembers/diederick-vermetten), <i>Leiden Institute of Advanced Computer Science</i>.
 * [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye), <i>Leiden Institute of Advanced Computer Science</i>.
 * [Carola Doerr](http://www-desir.lip6.fr/~doerr/), <i>CNRS and Sorbonne University</i>.
-* [Ofer Shir](http://www.migal.org.il/Ofer-Shir) <i>Migal - The Galilee Research Institute, Tel-Hai College</i>.
+* [Ofer Shir](https://www.migal.org.il/Ofer-Shir) <i>Migal - The Galilee Research Institute, Tel-Hai College</i>.
 * [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back), <i>Leiden Institute of Advanced Computer Science</i>.
 
 ## <a name="install"></a>Installation

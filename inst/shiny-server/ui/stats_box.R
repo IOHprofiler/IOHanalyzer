@@ -4,7 +4,7 @@ rt_heatmap_box <- function(width = 12, collapsible = T, collapsed = F) {
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        selectInput('RT_Stats.Overview.Algid', 'Algorithms to compare', choices = NULL, 
+        selectInput('RT_Stats.Overview.ID', 'Algorithms to compare', choices = NULL, 
                     selected = NULL, multiple = T),
         textInput('RT_Stats.Overview.Target', label = F_TAR_LABEL),
         textInput('RT_Stats.Overview.Alpha', 
@@ -85,7 +85,7 @@ rt_glicko2_box <- function(width = 12, collapsible = T, collapsed = T) {
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        selectInput('RT_Stats.Glicko.Algid', 'Algorithms to compare', choices = NULL, 
+        selectInput('RT_Stats.Glicko.ID', 'Algorithms to compare', choices = NULL, 
                     selected = NULL, multiple = T),
         selectInput('RT_Stats.Glicko.Funcid', 'Functions to use', choices = NULL, 
                     selected = NULL, multiple = T),

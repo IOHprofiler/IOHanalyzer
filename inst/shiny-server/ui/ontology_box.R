@@ -1,16 +1,3 @@
-# filler_box <- function(width = 12, collapsible = T, collapsed = T) {
-#   box(
-#     title = HTML('<p style="font-size:120%;">Get Provenance Information</p>'),
-#     width = width, solidHeader = T, status = "primary",
-#     collapsible = collapsible, collapsed = collapsed,
-#     # dataTableOutput('data_info')
-#     selectInput('i9', label = "Please Select the Study Name", choices = c("Dimension Selection in Axis-Parallel Brent-STEP Method
-# for Black-Box Optimization of Separable Continuous
-# Functions", "The Impact of Initial Designs on the Performance of
-# MATSuMoTo on the Noiseless BBOB-2015 Testbed"), selected = "")
-#   )
-# }
-
 ontology_box <- function(width = 12,
                          collapsible = T,
                          collapsed = F,

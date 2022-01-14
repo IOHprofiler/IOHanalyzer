@@ -9,7 +9,12 @@ get_ontology_var(varname, datasource = NULL, study = NULL, algs = NULL, ...)
 \arguments{
 \item{varname}{The variable for which to get the options. Restricted to [Fid, Iid, DIM, AlgId, Suite]}
 
-\item{datasource}{The datasource for which to get the attributes. Either BBOB or Nevergrad}
+\item{datasource}{The datasource for which to get the attributes. Either BBOB
+or Nevergrad, or NULL if looking at a specific `study` argument}
+
+\item{study}{Which study to load the requested variables for (NULL if no study is considered)}
+
+\item{algs}{Which algorithms to get the requested variables for. Required for varnames in [Fid, Iid, DIM]}
 
 \item{...}{Additional arguments to the OPTION call. Currently only supports 'Suite' for nevergrad.}
 }

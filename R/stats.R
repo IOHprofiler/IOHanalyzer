@@ -1028,7 +1028,11 @@ get_shapley_values <- function(dsList, targets, scale.log = T, group_size = 5, m
 #'
 #'
 #' @param varname The variable for which to get the options. Restricted to [Fid, Iid, DIM, AlgId, Suite]
-#' @param datasource The datasource for which to get the attributes. Either BBOB or Nevergrad
+#' @param datasource The datasource for which to get the attributes. Either BBOB
+#' or Nevergrad, or NULL if looking at a specific `study` argument
+#' @param study Which study to load the requested variables for (NULL if no study is considered)
+#' @param algs Which algorithms to get the requested variables for. Required for varnames in [Fid, Iid, DIM]
+#'
 #' @param ... Additional arguments to the OPTION call. Currently only supports 'Suite' for nevergrad.
 #'
 #' @return the options of varname given the specified datasource

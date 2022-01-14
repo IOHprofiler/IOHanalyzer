@@ -1218,6 +1218,7 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', 
 #' @param dt_ecdf A data table of the ECDF to avoid needless recomputations. Will take preference if it
 #' is provided together with dsList and targets
 #' @param multiple_x Boolean, whether to get only the total AUC or get stepwise AUC values
+#' @param normalize Whether to normalize the resulting AUC values to [0,1] or not
 #'
 #' @export
 #' @examples

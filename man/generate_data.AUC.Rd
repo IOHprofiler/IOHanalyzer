@@ -28,6 +28,8 @@ a data.table, it needs columns 'target', 'DIM' and 'funcId'}
 is provided together with dsList and targets}
 
 \item{multiple_x}{Boolean, whether to get only the total AUC or get stepwise AUC values}
+
+\item{normalize}{Whether to normalize the resulting AUC values to [0,1] or not}
 }
 \description{
 This function generates a dataframe which can be easily plotted using the `plot_general_data`-function

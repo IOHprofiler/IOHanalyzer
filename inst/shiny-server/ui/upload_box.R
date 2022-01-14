@@ -109,7 +109,16 @@ repository_box <- function(width = 12, collapsible = F, collapsed = T,
                   label = "Select the dataset",
                   choices = NULL, selected = NULL, width = '80%', multiple = T),
 
-      selectInput('repository.algId',
+
+      selectInput('repository.funcId',
+                  label = "Please choose the function",
+                  choices = NULL, selected = NULL, width = '50%', multiple = T),
+
+      selectInput('repository.dim',
+                  label = "Please choose the dimension",
+                  choices = NULL, selected = NULL, width = '50%', multiple = T),
+
+      selectInput('repository.ID',
                   label = "Please choose the algorithm",
                   choices = NULL, selected = NULL, width = '80%', multiple = T),
 

@@ -59,7 +59,7 @@ observeEvent(input$repository.dataset, {
   dims <- unique(dims)
   funcs <- unique(funcs)
 
-  updateSelectInput(session, 'repository.algId', choices = algs, selected = algs)
+  updateSelectInput(session, 'repository.ID', choices = algs, selected = algs)
   updateSelectInput(session, 'repository.dim', choices = dims, selected = dims)
   updateSelectInput(session, 'repository.funcId', choices = funcs, selected = funcs)
   shinyjs::enable('repository.load_button')
@@ -75,7 +75,7 @@ observeEvent(input$repository.load_button, {
   }
   data <- subset(data, funcId %in% input$repository.funcId)
   data <- subset(data, DIM %in% input$repository.dim)
-  data <- subset(data, algId %in% input$repository.algId)
+  data <- subset(data, algId %in% input$repository.ID)
   
   if (length(DataList$data) > 0 && attr(data, 'maximization') != attr(DataList$data, 'maximization')) {
     shinyjs::alert(paste0("Attempting to add data from a different optimization type to the currently",
@@ -85,11 +85,13 @@ observeEvent(input$repository.load_button, {
   }
   
   DataList$data <- c(DataList$data, data)
+  DataList$data <- clean_DataSetList(DataList$data)
+  # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
   update_menu_visibility(attr(DataList$data, 'suite'))
   # set_format_func(attr(DataList$data, 'suite'))
-  algids <- get_algId(DataList$data)
-  if (!all(algids %in% get_color_scheme_dt()[['algnames']])) {
-    set_color_scheme("Default", algids)
+  IDs <- get_id(DataList$data)
+  if (!all(IDs %in% get_color_scheme_dt()[['ids']])) {
+    set_color_scheme("Default", IDs)
   }
 })
 
@@ -180,8 +182,13 @@ observeEvent(selected_folders(), {
       folder_new <- setdiff(folders, intersect(folderList$data, folders))
   
     req(length(folder_new) != 0)
+    tryCatch(
     format_detected <- lapply(folder_new, check_format) %>% unique
-  
+    , error = function(e) {
+    print_html(paste('<p style="color:red;">The data verification 
+                     failed, please check that the uploaded files are complete 
+                     and not corrupted.</p>'))
+      })
     if (length(format_detected) > 1)
       print_html(paste('<p style="color:red;">more than one format: <br>',
                        format_detected,
@@ -237,6 +244,7 @@ observeEvent(selected_folders(), {
     }
     
     DataList$data <- clean_DataSetList(DataList$data)
+    # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
     if (is.null(DataList$data)) {
       shinyjs::alert("An error occurred when processing the uploaded data.
                      Please ensure the data is not corrupted.")
@@ -245,9 +253,9 @@ observeEvent(selected_folders(), {
     
     update_menu_visibility(attr(DataList$data, 'suite'))
     # set_format_func(attr(DataList$data, 'suite'))
-    algids <- get_algId(DataList$data)
-    if (!all(algids %in% get_color_scheme_dt()[['algnames']])) {
-      set_color_scheme("Default", algids)
+    IDs <- get_id(DataList$data)
+    if (!all(IDs %in% get_color_scheme_dt()[['ids']])) {
+      set_color_scheme("Default", IDs)
     }
   }, message = "Processing data, this might take some time")
 })
@@ -272,6 +280,10 @@ update_menu_visibility <- function(suite){
   else {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "Positions"))
   }
+  if (!is.null(get_funcName(DataList$data))) 
+    shinyjs::enable("Settings.Use_Funcname")
+  else 
+    shinyjs::disable("Settings.Use_Funcname")
 }
 
 observeEvent(input$Upload.Add_to_repo, {
@@ -305,7 +317,9 @@ observeEvent(input$upload.remove_data, {
 
     updateSelectInput(session, 'Overall.Dim', choices = c(), selected = '')
     updateSelectInput(session, 'Overall.Funcid', choices = c(), selected = '')
-
+    updateSelectInput(session, 'Overall.Funcname', choices = c(), selected = '')
+    updateSelectInput(session, 'Overall.ID', choices = c(), selected = '')
+    
     print_html('<p style="color:red;">all data are removed!</p>')
     print_html('', 'upload_data_promt')
   }
@@ -328,201 +342,236 @@ observe({
     return()
 
   # TODO: create reactive values for them
-  algIds_ <- get_algId(data)
-  algIds <- c(algIds_, 'all')
+  IDs <- get_id(data)
+  # algIds <- c(IDs, 'all')
   parIds_ <- get_parId(data)
   parIds <- c(parIds_, 'all')
   funcIds <- get_funcId(data)
   DIMs <- get_dim(data)
-
+  algIds <- get_algId(data)
+  
   selected_ds <- data[[1]]
   selected_f <- attr(selected_ds,'funcId')
   selected_dim <- attr(selected_ds, 'DIM')
   selected_alg <- attr(selected_ds, 'algId')
-
+  selected_ID <- get_id(selected_ds)
+  
   updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = selected_f)
-  updateSelectInput(session, 'ERTPlot.Aggr.Funcs', choices = funcIds, selected = funcIds)
+  if (input$Settings.Use_Funcname)
+    updateSelectInput(session, 'Overall.Funcname', choices = get_funcName(data), selected = get_funcName(data[1]))
   
-  updateSelectInput(session, 'Overview.Single.Algid', choices = algIds_, selected = algIds_)
+  if ('algId' %in% input$Settings.ID.Variables) 
+    updateSelectInput(session, 'Overall.ID', choices = NULL, selected = NULL)
+  else
+    updateSelectInput(session, 'Overall.ID', choices = algIds, selected = selected_alg)
+  
+  updateSelectInput(session, 'ERTPlot.Aggr.Funcs', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'Overview.Single.ID', choices = IDs, selected = IDs)
   
   # updateSelectInput(session, 'Report.RT.Overview-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.Overview-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.RT.Overview-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.RT.Overview-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.RT.Statistics-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.Statistics-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.RT.Statistics-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.RT.Statistics-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.RT.Single_ERT-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.Single_ERT-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.RT.Single_ERT-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.RT.Single_ERT-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.RT.Multi_ERT-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.RT.Multi_ERT-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.RT.Multi_ERT-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.RT.Rank-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.RT.Rank-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.RT.Rank-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.RT.Histogram-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.Histogram-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.RT.Histogram-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.RT.Histogram-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.RT.PMF-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.PMF-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.RT.PMF-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.RT.PMF-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.RT.ECDF_Single_Target-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.ECDF_Single_Target-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.RT.ECDF_Single_Target-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.RT.ECDF_Single_Target-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.RT.ECDF_Single_Function-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.ECDF_Single_Function-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.RT.ECDF_Single_Function-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.RT.ECDF_Single_Function-Alg', choices = IDs, selected = IDs)
   # 
-  # updateSelectInput(session, 'Report.RT.ECDF_Aggregated-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.RT.ECDF_Aggregated-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.RT.ECDF_AUC-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.ECDF_AUC-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.RT.ECDF_AUC-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.RT.ECDF_AUC-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.FV.Overview-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.Overview-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.FV.Overview-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.FV.Overview-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.FV.Statistics-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.Statistics-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.FV.Statistics-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.FV.Statistics-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.FV.Single_FCE-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.Single_FCE-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.FV.Single_FCE-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.FV.Single_FCE-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.FV.Multi_FCE-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.FV.Multi_FCE-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.FV.Multi_FCE-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.FV.Rank-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.FV.Rank-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.FV.Rank-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.FV.Histogram-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.Histogram-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.FV.Histogram-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.FV.Histogram-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.FV.PMF-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.PMF-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.FV.PMF-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.FV.PMF-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.FV.ECDF_Single_Target-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.ECDF_Single_Target-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.FV.ECDF_Single_Target-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.FV.ECDF_Single_Target-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.FV.ECDF_Single_Function-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.ECDF_Single_Function-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.FV.ECDF_Single_Function-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.FV.ECDF_Single_Function-Alg', choices = IDs, selected = IDs)
   # 
-  # updateSelectInput(session, 'Report.FV.ECDF_Aggregated-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.FV.ECDF_Aggregated-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.FV.ECDF_AUC-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.ECDF_AUC-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.FV.ECDF_AUC-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.FV.ECDF_AUC-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.Param.Plot-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.Param.Plot-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.Param.Plot-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.Param.Plot-Alg', choices = IDs, selected = IDs)
   # 
   # updateSelectInput(session, 'Report.Param.Statistics-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.Param.Statistics-DIM', choices = DIMs, selected = selected_dim)
-  # updateSelectInput(session, 'Report.Param.Statistics-Alg', choices = algIds_, selected = algIds_)
+  # updateSelectInput(session, 'Report.Param.Statistics-Alg', choices = IDs, selected = IDs)
   
-  updateSelectInput(session, 'RTportfolio.Shapley.Algs', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RTportfolio.Shapley.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RTportfolio.Shapley.Funcs', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RTportfolio.Shapley.Dims', choices = DIMs, selected = DIMs)
-  updateNumericInput(session, 'RTportfolio.Shapley.Permsize', min = 2, max = length(algIds_),
-                     value = min(10, length(algIds_)))
+  updateNumericInput(session, 'RTportfolio.Shapley.Permsize', min = 2, max = length(IDs),
+                     value = min(10, length(IDs)))
 
 
-  updateSelectInput(session, 'RT.MultiERT.AlgId', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RT.MultiERT.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RT.MultiERT.FuncId', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RT.MultiERT.DIM', choices = DIMs, selected = selected_dim)
-  updateSelectInput(session, 'RT.Multisample.AlgId', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RT.Multisample.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RT.Multisample.FuncId', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RT.Multisample.DIM', choices = DIMs, selected = selected_dim)
-
-  updateSelectInput(session, 'FV.MultiFV.AlgId', choices = algIds_, selected = algIds_)
+  
+  updateSelectInput(session, 'ERTPlot.Multi.Funcs', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'FCEPlot.Multi.Funcs', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'RTECDF.Aggr.FuncIds', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'RTECDF.Aggr.DIMS', choices = DIMs, selected = DIMs)
+  
+  updateSelectInput(session, 'FV.MultiFV.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV.MultiFV.FuncId', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'FV.MultiFV.DIM', choices = DIMs, selected = selected_dim)
-  updateSelectInput(session, 'FV.Multisample.AlgId', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FV.Multisample.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV.Multisample.FuncId', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'FV.Multisample.DIM', choices = DIMs, selected = selected_dim)
 
-  updateSelectInput(session, 'RT_Stats.Glicko.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RT_Stats.Glicko.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RT_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'RT_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
   
-  updateSelectInput(session, 'RT_Stats.DSC.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RT_Stats.DSC.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RT_Stats.DSC.Funcid', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RT_Stats.DSC.Dim', choices = DIMs, selected = DIMs)
 
-  updateSelectInput(session, 'FV_Stats.DSC.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FV_Stats.DSC.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV_Stats.DSC.Funcid', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'FV_Stats.DSC.Dim', choices = DIMs, selected = DIMs)  
   
-  updateSelectInput(session, 'RT_Stats.Overview.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'RT_Stats.Overview.ID', choices = IDs, selected = IDs)
 
-  updateSelectInput(session, 'FV_Stats.Glicko.Algid', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FV_Stats.Glicko.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'FV_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
 
-  updateSelectInput(session, 'FV_Stats.Overview.Algid', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'RTSummary.Statistics.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'RTSummary.Overview.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'FCESummary.Overview.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'RTSummary.Sample.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'FV_PAR.Plot.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'RT_PAR.Plot.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'FCESummary.Statistics.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'FCESummary.Sample.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'FV_PAR.Summary.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'FV_PAR.Sample.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'RT_PAR.Summary.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'RT_PAR.Sample.Algid', choices = algIds, selected = 'all')
-  updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = algIds_, selected = selected_alg)
-  updateSelectInput(session, 'ERTPlot.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'ERTPlot.Aggr.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'ERTPlot.Aggr_Dim.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = algIds_, selected = selected_alg)
-  updateSelectInput(session, 'FCEPlot.Aggr.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'FCEPlot.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'FCEPDF.Bar.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'FCEPDF.Hist.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'RTPMF.Bar.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'RTPMF.Hist.Algs', choices = algIds_, selected = algIds_)
+  updateSelectInput(session, 'FV_Stats.Overview.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RTSummary.Statistics.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RTSummary.Overview.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FCESummary.Overview.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RTSummary.Sample.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FV_PAR.Plot.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RT_PAR.Plot.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FCESummary.Statistics.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FCESummary.Sample.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FV_PAR.Summary.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FV_PAR.Sample.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RT_PAR.Summary.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RT_PAR.Sample.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'ERTPlot.Multi.Algs', choices = IDs, selected = selected_ID)
+  updateSelectInput(session, 'ERTPlot.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'ERTPlot.Aggr.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'ERTPlot.Aggr_Dim.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FCEPlot.Multi.Algs', choices = IDs, selected = selected_ID)
+  updateSelectInput(session, 'FCEPlot.Aggr.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FCEPlot.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FCEPDF.Bar.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FCEPDF.Hist.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RTPMF.Bar.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RTPMF.Hist.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV_PAR.Summary.Param', choices = parIds, selected = 'all')
   updateSelectInput(session, 'FV_PAR.Sample.Param', choices = parIds, selected = 'all')
   updateSelectInput(session, 'RT_PAR.Summary.Param', choices = parIds, selected = 'all')
   updateSelectInput(session, 'RT_PAR.Sample.Param', choices = parIds, selected = 'all')
-  updateSelectInput(session, 'RTECDF.Single.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'RTECDF.Aggr.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'RTECDF.AUC.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'RTECDF.Multi.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'FCEECDF.Single.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'FCEECDF.Mult.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'FCEECDF.AUC.Algs', choices = algIds_, selected = algIds_)
-  updateSelectInput(session, 'ParCoordPlot.Algs', choices = algIds_, selected = algIds_[[1]])
+  updateSelectInput(session, 'RTECDF.Single.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RTECDF.Aggr.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RTECDF.AUC.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RTECDF.Multi.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FCEECDF.Single.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FCEECDF.Mult.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FCEECDF.AUC.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'ParCoordPlot.Algs', choices = IDs, selected = IDs[[1]])
   updateSelectInput(session, 'FV_PAR.Plot.Params', choices = parIds_, selected = parIds_)
   updateSelectInput(session, 'RT_PAR.Plot.Params', choices = parIds_, selected = parIds_)
+  
+  attr_choices <- get_static_attributes(data)
+  invalid_choices <- c('funcId', 'DIM', 'ID')
+  updateSelectInput(session, 'Settings.ID.Variables', choices = attr_choices[!attr_choices %in% invalid_choices], 
+                    selected = attr(data, 'ID_attributes'))
 })
+
+
 
 # update (filter) according to users selection DataSets
 DATA <- reactive({
   dim <- input$Overall.Dim
-  id <- input$Overall.Funcid
-  req(dim, id)
+  req(dim)
+  
+  d <- subset(DataList$data, DIM == dim)
+  
+  if (!'algId' %in% input$Settings.ID.Variables) {
+    algid <- input$Overall.ID
+    if (!is.null(algid)) d <- subset(d, algId == algid)
+  }
+  
+  if (input$Settings.Use_Funcname) {
+    fname <- input$Overall.Funcname
+    if (!is.null(fname)) d <- subset(d, funcname == fname)
+  }
+  else {
+    fid <- input$Overall.Funcid
+    if (!is.null(fid)) d <- subset(d, funcId == fid)  
+  }
 
   if (length(DataList$data) == 0) return(NULL)
-
-  d <- subset(DataList$data, DIM == dim, funcId == id)
-  if (length(d) == 0 && dim != "" && id != "") {
+  
+  if (length(d) == 0 && dim != "") {
     showNotification("There is no data available for this (dimension,function)-pair")
   }
   d
@@ -531,6 +580,20 @@ DATA <- reactive({
 # TODO: give a different name for DATA and DATA_RAW
 DATA_RAW <- reactive({
   DataList$data
+})
+
+# This observe statement tries to match funcid and funcname seletions so funcId can still be used internally.
+# TODO: think of a better solution to ensure this matching doesn't break.
+observe({
+  req(length(DATA_RAW()) > 0)
+  fname <- input$Overall.Funcname
+  req(fname)
+  req(getOption('IOHanalyzer.function_representation', 'funcId') == 'funcname')
+  dsl_sub <- subset(DATA_RAW(), funcName == fname)
+  fids <- get_funcId(dsl_sub)
+  if (length(fids) == 1) {
+    updateSelectInput(session, 'Overall.Funcid', selected = fids)
+  }
 })
 
 MAX_ERTS_FUNC <- reactive({

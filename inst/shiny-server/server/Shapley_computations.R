@@ -5,14 +5,14 @@ output$RT_SHAPLEY <- renderPlotly({
 
 get_data_RT_SHAPLEY <- reactive({
   input$RTportfolio.Shapley.Refresh
-  dsList <- subset(DATA_RAW(), algId %in% input$RTportfolio.Shapley.Algs & 
+  dsList <- subset(DATA_RAW(), ID %in% input$RTportfolio.Shapley.Algs & 
                      funcId %in% input$RTportfolio.Shapley.Funcs &
                      DIM %in% input$RTportfolio.Shapley.Dims)
   
   
-  if (length(get_algId(dsList)) <= 1) {
+  if (length(get_id(dsList)) <= 1) {
     shinyjs::alert("This is an invalid configuration for this plot. \n
-                     Please ensure that the dataset contains multiple algorithms.")
+                     Please ensure that the dataset contains multiple IDs.")
     return(NULL)
   }
   
@@ -26,8 +26,8 @@ get_data_RT_SHAPLEY <- reactive({
 render_RT_SHAPLEY <- reactive({
   withProgress({
     dt <- get_data_RT_SHAPLEY()
-    plot_general_data(dt, x_attr = 'algId', y_attr = 'shapley', type = 'bar', 
-                      legend_attr = 'algId', show.legend = T)
+    plot_general_data(dt, x_attr = 'ID', y_attr = 'shapley', type = 'bar', 
+                      legend_attr = 'ID', show.legend = T)
   },
   message = "Creating plot")
 })
@@ -48,7 +48,7 @@ proxy <- dataTableProxy('RT_SHAPLEY_TARGETS_GENERATED')
 
 observe({
   req(length(DATA_RAW()) > 0)
-  dsList <- subset(DATA_RAW(), algId %in% input$RTportfolio.Shapley.Algs & 
+  dsList <- subset(DATA_RAW(), ID %in% input$RTportfolio.Shapley.Algs & 
                      funcId %in% input$RTportfolio.Shapley.Funcs &
                      DIM %in% input$RTportfolio.Shapley.Dims)
   req(length(dsList) > 0)

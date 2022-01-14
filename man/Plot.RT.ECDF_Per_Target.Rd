@@ -8,8 +8,7 @@ a DataSetList at certain target function values}
 \usage{
 Plot.RT.ECDF_Per_Target(dsList, ftargets, scale.xlog = F)
 
-\method{Plot.RT.ECDF_Per_Target}{DataSetList}(dsList, ftargets,
-  scale.xlog = F)
+\method{Plot.RT.ECDF_Per_Target}{DataSetList}(dsList, ftargets, scale.xlog = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

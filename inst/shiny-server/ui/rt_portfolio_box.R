@@ -87,7 +87,8 @@ rt_shapleys_box <- function(width = 12, collapsible = T, collapsed = T) {
         width = 12, align = "center",
         hr(),
         
-        HTML_P('DESCRIPTION OF SHAPLEY VALUES HERE'),
+        HTML_P('This figure shows the approximated shapley values according to the algorithms contribution to the 
+               overall portfolios ECDF.'),
         plotlyOutput.IOHanalyzer('RT_SHAPLEY'),
         HTML_P('The selected targets are:'),
         DT::dataTableOutput('RT_SHAPLEY_TARGETS_GENERATED')

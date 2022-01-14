@@ -6,7 +6,7 @@ output$FCE_PER_FUN <- renderPlotly({
 
 get_data_FCE_PER_FUN <- reactive({
   req(input$FCEPlot.Min, input$FCEPlot.Max, length(DATA()) > 0)
-  data <- subset(DATA(), algId %in% input$FCEPlot.Algs)
+  data <- subset(DATA(), ID %in% input$FCEPlot.Algs)
   fstart <- input$FCEPlot.Min %>% as.numeric
   fstop <- input$FCEPlot.Max %>% as.numeric
   generate_data.Single_Function(data, fstart, fstop, input$FCEPlot.semilogx, 
@@ -21,7 +21,7 @@ render_FV_PER_FUN <- reactive({
     show_legend <- T
     if (length(y_attrs) > 0) {
       p <- plot_general_data(get_data_FCE_PER_FUN(), x_attr = 'runtime', y_attr = y_attrs, 
-                             type = 'line', legend_attr = 'algId', show.legend = show_legend, 
+                             type = 'line', legend_attr = 'ID', show.legend = show_legend, 
                              scale.ylog = isolate(input$FCEPlot.semilogy),
                              scale.xlog = input$FCEPlot.semilogx, x_title = "Function Evaluations",
                              y_title = "Best-so-far f(x)-value")
@@ -31,7 +31,7 @@ render_FV_PER_FUN <- reactive({
       p <- NULL
     if (input$FCEPlot.show.CI) {
       p <- plot_general_data(get_data_FCE_PER_FUN(), x_attr = 'runtime', y_attr = 'mean', 
-                             type = 'ribbon', legend_attr = 'algId', lower_attr = 'lower', 
+                             type = 'ribbon', legend_attr = 'ID', lower_attr = 'lower', 
                              upper_attr = 'upper', p = p, show.legend = show_legend)
       show_legend <- F
     }
@@ -40,7 +40,7 @@ render_FV_PER_FUN <- reactive({
       IOHanalyzer.quantiles.bk <- getOption("IOHanalyzer.quantiles")
       options(IOHanalyzer.quantiles = c(0.25, 0.75))
       p <- plot_general_data(get_data_FCE_PER_FUN(), x_attr = 'runtime', y_attr = 'mean', 
-                                  type = 'ribbon', legend_attr = 'algId', lower_attr = '25%', 
+                                  type = 'ribbon', legend_attr = 'ID', lower_attr = '25%', 
                                   upper_attr = '75%', p = p, show.legend = show_legend)
       show_legend <- F
       options(IOHanalyzer.quantiles = IOHanalyzer.quantiles.bk)
@@ -48,13 +48,13 @@ render_FV_PER_FUN <- reactive({
     if (input$FCEPlot.show.runs) {
       fstart <- isolate(input$FCEPlot.Min %>% as.numeric)
       fstop <- isolate(input$FCEPlot.Max %>% as.numeric)
-      data <- isolate(subset(DATA(), algId %in% input$FCEPlot.Algs))
+      data <- isolate(subset(DATA(), ID %in% input$FCEPlot.Algs))
       dt <- get_FV_sample(data, seq_RT(c(fstart, fstop), from = fstart, to = fstop, length.out = 50,
                                        scale = ifelse(isolate(input$FCEPlot.semilogx), 'log', 'linear')))
       nr_runs <- ncol(dt) - 4
       for (i in seq_len(nr_runs)) {
         p <- plot_general_data(dt, x_attr = 'runtime', y_attr = paste0('run.', i), type = 'line',
-                               legend_attr = 'algId', p = p, show.legend = show_legend, 
+                               legend_attr = 'ID', p = p, show.legend = show_legend, 
                                scale.ylog = input$FCEPlot.semilogy,
                                scale.xlog = input$FCEPlot.semilogx, x_title = "Function Evaluations",
                                y_title = "Best-so-far f(x)-value")
@@ -89,9 +89,8 @@ output$FCEPlot.Multi.Plot <- renderPlotly(
 )
 
 get_data_FCE_multi_func_bulk <- reactive({
-  data <- subset(DATA_RAW(),
-                 DIM == input$Overall.Dim)
-  if (length(get_algId(data)) < 20) { #Arbitrary limit for the time being
+  data <- subset(DATA_RAW(), DIM == input$Overall.Dim)
+  if (length(get_id(data)) < 20) { #Arbitrary limit for the time being
     rbindlist(lapply(get_funcId(data), function(fid) {
       generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$FCEPlot.Multi.Logx, 
                                     which = 'by_FV')
@@ -104,12 +103,16 @@ get_data_FCE_multi_func_bulk <- reactive({
 get_data_FCEPlot_multi <- reactive({
   req(isolate(input$FCEPlot.Multi.Algs))
   input$FCEPlot.Multi.PlotButton
-  if (length(get_algId(data)) < 20) {
-    get_data_FCE_multi_func_bulk()[algId %in% isolate(input$FCEPlot.Multi.Algs), ]
+  data <- subset(DATA_RAW(),
+                 DIM == input$Overall.Dim)
+  if (length(get_id(data)) < 20 & length(get_funcId(data)) < 30) {
+    get_data_FCE_multi_func_bulk()[(ID %in% isolate(input$FCEPlot.Multi.Algs)) &
+                                     (funcId %in% isolate(input$FCEPlot.Multi.Funcs)), ]
   }
   else {
     data <- subset(DATA_RAW(),
-                   algId %in% isolate(input$FCEPlot.Multi.Algs),
+                   ID %in% isolate(input$FCEPlot.Multi.Algs),
+                   funcId %in% isolate(input$FCEPlot.Multi.Funcs),
                    DIM == input$Overall.Dim)
     rbindlist(lapply(get_funcId(data), function(fid) {
       generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$FCEPlot.Multi.Logx, 
@@ -122,8 +125,8 @@ render_FCEPlot_multi_plot <- reactive({
   withProgress({
   plot_general_data(get_data_FCEPlot_multi(), x_attr = 'runtime', y_attr = 'mean', 
                     subplot_attr = 'funcId', type = 'line', scale.xlog = input$FCEPlot.Multi.Logx, 
-                    scale.ylog = input$FCEPlot.Multi.Logy, x_title = 'Runtime', 
-                    y_title = 'Best-so-far f(x)', show.legend = T)
+                    scale.ylog = input$FCEPlot.Multi.Logy, x_title = 'Function Evaluations', 
+                    y_title = 'Best-so-far f(x)', show.legend = T, subplot_shareX = T)
   },
   message = "Creating plot")
 })

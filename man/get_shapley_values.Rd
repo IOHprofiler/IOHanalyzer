@@ -4,13 +4,19 @@
 \alias{get_shapley_values}
 \title{Get the shapley-values of a portfolio of algorithms}
 \usage{
-get_shapley_values(dsList, targets, scale.log = T, group_size = 5,
-  max_perm_size = 10, normalize = T)
+get_shapley_values(
+  dsList,
+  targets,
+  scale.log = T,
+  group_size = 5,
+  max_perm_size = 10,
+  normalize = T
+)
 }
 \arguments{
 \item{dsList}{The DataSetList object}
 
-\item{targets}{A list or data.table containing the targets per function / dimension. If this is 
+\item{targets}{A list or data.table containing the targets per function / dimension. If this is
 a data.table, it needs columns 'target', 'DIM' and 'funcId'}
 
 \item{scale.log}{Whether to use logarithmic scaling for the runtimes at which the ecdf will be sampled or not}

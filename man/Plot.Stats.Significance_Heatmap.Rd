@@ -5,11 +5,21 @@
 \alias{Plot.Stats.Significance_Heatmap.DataSetList}
 \title{Plot a heatmap showing the statistically different algorithms}
 \usage{
-Plot.Stats.Significance_Heatmap(dsList, ftarget, alpha = 0.01,
-  bootstrap.size = 30, which = "by_FV")
+Plot.Stats.Significance_Heatmap(
+  dsList,
+  ftarget,
+  alpha = 0.01,
+  bootstrap.size = 30,
+  which = "by_FV"
+)
 
-\method{Plot.Stats.Significance_Heatmap}{DataSetList}(dsList, ftarget,
-  alpha = 0.01, bootstrap.size = 30, which = "by_FV")
+\method{Plot.Stats.Significance_Heatmap}{DataSetList}(
+  dsList,
+  ftarget,
+  alpha = 0.01,
+  bootstrap.size = 30,
+  which = "by_FV"
+)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

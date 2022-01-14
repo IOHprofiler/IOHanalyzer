@@ -4,9 +4,9 @@ general_overview_box_single <- function(width = 12, collapsible = T, collapsed =
       collapsible = collapsible, collapsed = collapsed,
       sidebarPanel(
         width = 3,
-        HTML('<p align="justify">Select which algorithms to show.</p>'),
+        HTML('<p align="justify">Select which IDs to include:</p>'),
         
-        selectInput('Overview.Single.Algid', 'Algorithms', choices = NULL, selected = NULL, multiple = T),
+        selectInput('Overview.Single.ID', 'IDs:', choices = NULL, selected = NULL, multiple = T),
         hr(),
         selectInput('Overview.Single.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
         downloadButton("Overview.Single.Download", "Save this table")

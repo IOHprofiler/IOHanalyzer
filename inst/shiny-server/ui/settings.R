@@ -59,6 +59,11 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
           numericInput("Settings.General.Precision", label = "Function value precision (digits)",
                        value = 2),
           hr(),
+          HTML_P("ID variables"),
+          selectInput("Settings.ID.Variables", label = "Attributes used to create IDs",
+                      multiple = T, selected = NULL, choices = NULL),
+          checkboxInput("Settings.Use_Funcname", "Use function names instead of IDs"),
+          hr(),
           downloadButton("Settings.Download", "Download current general settings file"),
           fileInput("Settings.Upload", "Upload a settings file", accept = "rds")
         ),
@@ -79,7 +84,22 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
           numericInput("Settings.Font.Title", label = "Title", value = 16, min = 8, max = 100),
           numericInput("Settings.Font.Label", label = "Axis labels", value = 16, min = 8, max = 100),
           numericInput("Settings.Font.Legend", label = "Legend", value = 13, min = 8, max = 100),
-          numericInput("Settings.Font.Tick", label = "Ticks", value = 12, min = 8, max = 100)
+          numericInput("Settings.Font.Tick", label = "Ticks", value = 12, min = 8, max = 100),
+          box(title = HTML('<p style="font-size:120%;color:black;">Subplot Options</p>'), collapsible = T, collapsed = T, solidHeader = T, status = 'info',
+              checkboxInput('Settings.Subplot.Include_annotations',
+                            label = "Include subplot name when using subplots",
+                            value = T),
+              conditionalPanel(condition = 'input["Settings.Subplot.Include_annotations"]',
+                               numericInput("Settings.Subplot.LocationX", "X-position of subplot name", 
+                                            value = 0.5, step = 0.05, min = 0, max = 1),
+                               numericInput("Settings.Subplot.LocationY", "Y-position of subplot name", 
+                                            value = 1, step = 0.05, min = 0, max = 1)
+              ),
+              numericInput("Settings.Subplot.Margin_horizontal", "Horizontal margin between subplots", 
+                           value = 0.02, step = 0.005, min = 0, max = 0.1),
+              numericInput("Settings.Subplot.Margin_vertical", "Vertical margin between subplots", 
+                           value = 0.02, step = 0.005, min = 0, max = 0.1)
+          ),
         )
       )
          

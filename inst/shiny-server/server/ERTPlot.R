@@ -9,24 +9,30 @@ output$ERT_PER_FUN <- renderPlotly({
 get_data_ERT_PER_FUN <- reactive({
   req(input$ERTPlot.Min, input$ERTPlot.Max, length(DATA()) > 0)
   selected_algs <- input$ERTPlot.Algs
-  data <- subset(DATA(), algId %in% input$ERTPlot.Algs)
+  data <- subset(DATA(), ID %in% input$ERTPlot.Algs)
   fstart <- input$ERTPlot.Min %>% as.numeric
   fstop <- input$ERTPlot.Max %>% as.numeric
   budget <- input$ERTPlot.Additional.Budget %>% as.numeric
+  options('IOHanalyzer.PAR_penalty' = input$ERTPlot.ParX)
   generate_data.Single_Function(data, fstart, fstop, input$ERTPlot.semilogx, 
-                                'by_RT', include_opts = input$ERTPlot.inclueOpts, budget = budget)
+                                'by_RT', include_opts = input$ERTPlot.inclueOpts, 
+                                budget = budget)
 })
 
 render_ert_per_fct <- reactive({
   withProgress({
     y_attrs <- c()
     if (input$ERTPlot.show.ERT) y_attrs <- c(y_attrs, 'ERT')
-    if (input$ERTPlot.show.mean) y_attrs <- c(y_attrs, 'mean')
+    if (input$ERTPlot.show.Par) y_attrs <- c(y_attrs, paste0('PAR-', input$ERTPlot.ParX))
     if (input$ERTPlot.show.median) y_attrs <- c(y_attrs, 'median')
+    if (input$ERTPlot.show.fixed_prob) {
+      y_attrs <- c(y_attrs, paste0(input$ERTPlot.Fixed_Prob * 100, '%'))
+      options('IOHanalyzer.quantile' = unique(c(getOption('IOHanalyzer.quantile'), input$ERTPlot.Fixed_Prob)))
+    }
     show_legend <- T
     if (length(y_attrs) > 0) {
       p <- plot_general_data(get_data_ERT_PER_FUN(), x_attr = 'target', y_attr = y_attrs, 
-                             type = 'line', legend_attr = 'algId', show.legend = show_legend, 
+                             type = 'line', legend_attr = 'ID', show.legend = show_legend, 
                              scale.ylog = input$ERTPlot.semilogy,
                              scale.xlog = input$ERTPlot.semilogx, x_title = "Best-so-far f(x)-value",
                              y_title = "Function Evaluations",
@@ -37,7 +43,7 @@ render_ert_per_fct <- reactive({
       p <- NULL
     if (input$ERTPlot.show.CI) {
       p <- plot_general_data(get_data_ERT_PER_FUN(), x_attr = 'target', y_attr = 'mean', 
-                             type = 'ribbon', legend_attr = 'algId', lower_attr = 'lower', 
+                             type = 'ribbon', legend_attr = 'ID', lower_attr = 'lower', 
                              upper_attr = 'upper', p = p, show.legend = show_legend, 
                              scale.ylog = input$ERTPlot.semilogy,
                              scale.xlog = input$ERTPlot.semilogx, x_title = "Best-so-far f(x)-value",
@@ -48,7 +54,7 @@ render_ert_per_fct <- reactive({
     if (input$ERTPlot.show.Quantiles) {
       quantiles <- paste0(getOption("IOHanalyzer.quantiles", c(0.2, 0.98)) * 100, '%')
       p <- plot_general_data(get_data_ERT_PER_FUN(), x_attr = 'target', y_attr = 'median', 
-                             type = 'ribbon', legend_attr = 'algId', lower_attr = quantiles[[1]], 
+                             type = 'ribbon', legend_attr = 'ID', lower_attr = quantiles[[1]], 
                              upper_attr = quantiles[[length(quantiles)]], p = p, 
                              show.legend = show_legend, 
                              scale.ylog = input$ERTPlot.semilogy,
@@ -60,13 +66,13 @@ render_ert_per_fct <- reactive({
     if (input$ERTPlot.show.runs) {
       fstart <- isolate(input$ERTPlot.Min %>% as.numeric)
       fstop <- isolate(input$ERTPlot.Max %>% as.numeric)
-      data <- isolate(subset(DATA(), algId %in% input$ERTPlot.Algs))
+      data <- isolate(subset(DATA(), ID %in% input$ERTPlot.Algs))
       dt <- get_RT_sample(data, seq_FV(get_funvals(data), from = fstart, to = fstop, length.out = 50,
                                        scale = ifelse(isolate(input$ERTPlot.semilogx), 'log', 'linear')))
       nr_runs <- ncol(dt) - 4
       for (i in seq_len(nr_runs)) {
         p <- plot_general_data(dt, x_attr = 'target', y_attr = paste0('run.', i), type = 'line',
-                               legend_attr = 'algId', p = p, show.legend = show_legend, 
+                               legend_attr = 'ID', p = p, show.legend = show_legend, 
                                scale.ylog = input$ERTPlot.semilogy,
                                scale.xlog = input$ERTPlot.semilogx, x_title = "Best-so-far f(x)-value",
                                y_title = "Function Evaluations",
@@ -133,9 +139,9 @@ output$ERTPlot.Multi.Plot <- renderPlotly(
 )
 
 get_data_ERT_multi_func_bulk <- reactive({
-  data <- subset(DATA_RAW(),
+  data <- subset(DATA_RAW(), 
                  DIM == input$Overall.Dim)
-  if (length(get_algId(data)) < 20) { #Arbitrary limit for the time being
+  if (length(get_id(data)) < 20) { #Arbitrary limit for the time being
     rbindlist(lapply(get_funcId(data), function(fid) {
       generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$ERTPlot.Multi.Logx, 
                                     which = 'by_RT')
@@ -150,13 +156,19 @@ get_data_ERT_multi_func <- reactive({
   input$ERTPlot.Multi.PlotButton
   data <- subset(DATA_RAW(),
                  DIM == input$Overall.Dim)
-  if (length(get_algId(data)) < 20) {
-    get_data_ERT_multi_func_bulk()[algId %in% isolate(input$ERTPlot.Multi.Algs), ]
+  if (length(get_funcId(data)) < 2) {
+    shinyjs::alert("This functionality is only available when 2 or more functions
+                   are present in the dataset")
+  }
+  if (length(get_id(data)) < 20 & length(get_funcId(data)) < 30) {
+    get_data_ERT_multi_func_bulk()[(ID %in% isolate(input$ERTPlot.Multi.Algs)) &
+                                     (funcId %in% isolate(input$ERTPlot.Multi.Funcs)), ]
   }
   else {
     selected_algs <- isolate(input$ERTPlot.Multi.Algs)
     data <- subset(DATA_RAW(),
-                   algId %in% selected_algs,
+                   ID %in% selected_algs,
+                   funcId %in% isolate(input$ERTPlot.Multi.Funcs),
                    DIM == input$Overall.Dim)
     rbindlist(lapply(get_funcId(data), function(fid) {
     generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$ERTPlot.Multi.Logx, 

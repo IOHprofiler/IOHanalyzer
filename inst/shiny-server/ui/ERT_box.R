@@ -6,11 +6,11 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
         sidebarPanel(
           width = 3,
 
-          selectInput('ERTPlot.Algs', label = 'Select which algorithms to plot:',
+          selectInput('ERTPlot.Algs', label = 'Select which IDs to include:',
                       multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                         custom_icon() %>%
                           bs_embed_popover(
-                            title = "Algorithm selection", content = alg_select_info, 
+                            title = "ID selection", content = alg_select_info, 
                             placement = "auto"
                           )
                       ),
@@ -40,18 +40,22 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
                         value = T),
 
           checkboxInput(
-            'ERTPlot.show.mean',
-            label = 'Show/hide PAR-1',
+            'ERTPlot.show.Par',
+            label = 'Show/hide PAR-X',
             value = F
           ) %>% 
             shinyInput_label_embed(
               custom_icon() %>%
                 bs_embed_popover(
-                  title = "Penalized Average Runtime", content = "PAR-1 score is ther average of running time values, 
-                    where non-successful runs are counted as evaluation budget B.", 
+                  title = "Penalized Average Runtime", content = "PAR-X score is ther average of running time values, 
+                    where non-successful runs are counted as X times the evaluation budget B.", 
                   placement = "auto"
                 )
             ),
+          conditionalPanel(condition = 'input["ERTPlot.show.Par"]', 
+                           numericInput('ERTPlot.ParX', label = "Choose the used penaltiy factor:",
+                                        value = 1, min = 1, max = 500, step = 1)
+          ),
 
           checkboxInput('ERTPlot.show.CI',
                         label = 'Show/hide mean +/- sd',
@@ -72,7 +76,15 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
           checkboxInput('ERTPlot.show.median',
                         label = 'Show/hide median',
                         value = F),
-
+          
+          checkboxInput('ERTPlot.show.fixed_prob',
+                        label = "Show/hide fixed-probability line",
+                        value = F),
+          conditionalPanel(condition = 'input["ERTPlot.show.fixed_prob"]', 
+                           numericInput('ERTPlot.Fixed_Prob', label = "Fixed Probability",
+                                        value = 0.9, min = 0, max = 1, step = 0.01)
+          ),
+          
           checkboxInput('ERTPlot.semilogx',
                         label = 'Scale x axis \\(\\log_{10}\\)',
                         value = T),
@@ -100,7 +112,7 @@ ERT_box <- function(width = 12, collapsible = T, collapsed = T) {
                 custom_icon("info") %>%
                   bs_embed_popover(
                     title = "Custom Budget", content = "This will use this budget value instead of the ones in the 
-                    data for the ERT calculation. Any hitting times larger than this value are treated as unfinished runs.
+                    data for the ERT and PAR-X calculation. Any hitting times larger than this value are treated as unfinished runs.
                     Please use with caution.", 
                     placement = "auto"
                   )

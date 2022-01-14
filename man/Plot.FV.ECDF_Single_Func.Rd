@@ -6,13 +6,25 @@
 \title{Plot the aggregated empirical cumulative distriburtion as a function of the function values of
 a DataSetList.}
 \usage{
-Plot.FV.ECDF_Single_Func(dsList, rt_min = NULL, rt_max = NULL,
-  rt_step = NULL, scale.xlog = F, show.per_target = F,
-  scale.reverse = F)
+Plot.FV.ECDF_Single_Func(
+  dsList,
+  rt_min = NULL,
+  rt_max = NULL,
+  rt_step = NULL,
+  scale.xlog = F,
+  show.per_target = F,
+  scale.reverse = F
+)
 
-\method{Plot.FV.ECDF_Single_Func}{DataSetList}(dsList, rt_min = NULL,
-  rt_max = NULL, rt_step = NULL, scale.xlog = F,
-  show.per_target = F, scale.reverse = F)
+\method{Plot.FV.ECDF_Single_Func}{DataSetList}(
+  dsList,
+  rt_min = NULL,
+  rt_max = NULL,
+  rt_step = NULL,
+  scale.xlog = F,
+  show.per_target = F,
+  scale.reverse = F
+)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

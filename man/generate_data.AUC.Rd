@@ -4,20 +4,27 @@
 \alias{generate_data.AUC}
 \title{Generate dataframe containing the AUC for any ECDF-curves}
 \usage{
-generate_data.AUC(dsList, targets, scale_log = F, which = "by_RT",
-  dt_ecdf = NULL, multiple_x = FALSE)
+generate_data.AUC(
+  dsList,
+  targets,
+  scale_log = F,
+  which = "by_RT",
+  dt_ecdf = NULL,
+  multiple_x = FALSE,
+  normalize = T
+)
 }
 \arguments{
 \item{dsList}{The DataSetList object}
 
-\item{targets}{A list or data.table containing the targets per function / dimension. If this is 
+\item{targets}{A list or data.table containing the targets per function / dimension. If this is
 a data.table, it needs columns 'target', 'DIM' and 'funcId'}
 
 \item{scale_log}{Whether to use logarithmic scaling or not}
 
 \item{which}{Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'}
 
-\item{dt_ecdf}{A data table of the ECDF to avoid needless recomputations. Will take preference if it 
+\item{dt_ecdf}{A data table of the ECDF to avoid needless recomputations. Will take preference if it
 is provided together with dsList and targets}
 
 \item{multiple_x}{Boolean, whether to get only the total AUC or get stepwise AUC values}

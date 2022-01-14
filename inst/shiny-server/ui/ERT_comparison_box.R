@@ -5,11 +5,11 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
       sidebarLayout(
         sidebarPanel(
             width = 2,
-            selectInput('ERTPlot.Aggr.Algs', label = 'Select which algorithms to plot:',
+            selectInput('ERTPlot.Aggr.Algs', label = 'Select which IDs to include:',
                         multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                           custom_icon() %>%
                             bs_embed_popover(
-                              title = "Algorithm selection", content = alg_select_info, 
+                              title = "ID selection", content = alg_select_info, 
                               placement = "auto"
                             )
                         ),
@@ -48,8 +48,8 @@ ERT_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
           HTML_P('The <b><i>ERT</i></b> of the runtime samples across all functions. 
                   ERT is decided based on the target values in the table below,
                   with the default being the <b>best reached f(x) by any of the 
-                  selected algorithms</b>. <i>Infinite ERTS</i> are shown as 
-                  seperate dots on the graph.'),
+                  selected algorithms</b>. When using a lineplot, <i>Infinite ERTS</i> are shown as 
+                  non-connected dots on the graph.'),
           plotlyOutput.IOHanalyzer('ERTPlot.Aggr.Plot'),
           hr(),
           HTML_P("The chosen <b>target values</b> per function are as follows 
@@ -72,11 +72,11 @@ ERT_comparison_box_dim <- function(width = 12, collapsible = T, collapsed = T) {
       sidebarLayout(
         sidebarPanel(
           width = 2,
-          selectInput('ERTPlot.Aggr_Dim.Algs', label = 'Select which algorithms to plot:',
+          selectInput('ERTPlot.Aggr_Dim.Algs', label = 'Select which IDs to include:',
                       multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                         custom_icon() %>%
                           bs_embed_popover(
-                            title = "Algorithm selection", content = alg_select_info, 
+                            title = "ID selection", content = alg_select_info, 
                             placement = "auto"
                           )
                       ),

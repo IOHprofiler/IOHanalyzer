@@ -320,18 +320,18 @@ body <- dashboardBody(
 
       fluidRow(
         column(
-          width = 4,
+          width = 6,
           upload_box(collapsible = F)
         ),
 
         column(
-          width = 4,
-          repository_box(collapsible = F)
+          width = 6,
+          overal_loading_box(collapsible = F)
         ),
-        column(
-          width = 4,
-          ontology_box(collapsible = F)
-        ),
+        # column(
+        #   width = 4,
+        #   ontology_box(collapsible = F)
+        # ),
       ),
 
       fluidRow(

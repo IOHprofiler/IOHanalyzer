@@ -1,15 +1,15 @@
 upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: find a way to include all potential arguments
-                       height = '75vh') {  
+                       height = '75vh') {
   box(
-    title = HTML('<p style="font-size:120%;">Upload Data</p>'), 
-    width = width, height = height, collapsed = collapsed, collapsible = collapsible, 
-    solidHeader = T, status = "primary", 
+    title = HTML('<p style="font-size:120%;">Upload Data</p>'),
+    width = width, height = height, collapsed = collapsed, collapsible = collapsible,
+    solidHeader = T, status = "primary",
     sidebarPanel(
       width = 12,
-      
-      HTML_P('<b>IOHexperimenter, Nevergrad, and BBOB/COCO data files are accepted. 
+
+      HTML_P('<b>IOHexperimenter, Nevergrad, and BBOB/COCO data files are accepted.
              For alternative data files, please convert them to the format described</b> <a href="https://iohprofiler.github.io/IOHanalyzer/data/">here</a>.'),
-      
+
       selectInput(
         'upload.data_format',
         label = "Please choose the format of your datasets",
@@ -27,26 +27,26 @@ upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: fin
                   label = "Maximization or minimization?",
                   choices = c(AUTOMATIC,"MAXIMIZE", "MINIMIZE"),
                   selected = AUTOMATIC, width = '60%') ,
-      
-      HTML('<p align="justify" style="font-size:120%;">When the dataset is huge, 
-           the alignment can take a very long time. In this case, you could toggle 
-           the efficient mode to subsample the dataset. However, 
+
+      HTML('<p align="justify" style="font-size:120%;">When the dataset is huge,
+           the alignment can take a very long time. In this case, you could toggle
+           the efficient mode to subsample the dataset. However,
            the precision of data will be compromised.</p>'),
-      
-      checkboxInput('upload.subsampling', 
+
+      checkboxInput('upload.subsampling',
                     label = HTML('<p align="left">
-                                 Efficient mode</p>'), 
+                                 Efficient mode</p>'),
                     value = F),
 
-      fileInput("upload.add_zip", 
+      fileInput("upload.add_zip",
                 label = HTML('<p align="left">
-                             Please choose a <i>zip file</i> containing the 
+                             Please choose a <i>zip file</i> containing the
                              benchmark data</p>'),
                 multiple = TRUE, accept = c("Application/zip", ".zip",
                                             ".csv", 'bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz')),
 
-      actionButton('upload.remove_data', 
-                   label = HTML('<p align="center" style="margin-bottom:0;"><b> 
+      actionButton('upload.remove_data',
+                   label = HTML('<p align="center" style="margin-bottom:0;"><b>
                    Remove all the data</b></p>'))
       )
     )
@@ -81,15 +81,15 @@ data_list_box <- function(width = 12, collapsible = T, collapsed = T) {
   )
 }
 
-repository_box <- function(width = 12, collapsible = F, collapsed = T, 
+repository_box <- function(width = 12, collapsible = F, collapsed = T,
                            height = '75vh') {
   box(
-    title = HTML('<p style="font-size:120%;">Load Data from Repository</p>'), 
+    title = HTML('<p style="font-size:120%;">Load Data from Repository</p>'),
     width = width, height = height, collapsed = collapsed, collapsible = collapsible,
-    solidHeader = T, status = "primary",  
+    solidHeader = T, status = "primary",
     sidebarPanel(
       width = 12,
-      
+
       HTML_P("Load the data from the available repositories. There are currently three available sources:
              <ul>
                 <li>
@@ -101,26 +101,36 @@ repository_box <- function(width = 12, collapsible = F, collapsed = T,
                 <li>
                   The majority of the publicly available benchmark data on the single-objective <a href=https://github.com/numbbo/coco>BBOB</a> framework
                 </li>"),
-      
-      selectInput('repository.type', label = "Select the dataset source",
-                  choices = NULL, selected = NULL, width = '50%'),
-      
-      selectInput('repository.dataset', 
-                  label = "Select the dataset",
-                  choices = NULL, selected = NULL, width = '50%', multiple = T),
 
-      selectInput('repository.funcId', 
+      selectInput('repository.type', label = "Select the dataset source",
+                  choices = NULL, selected = NULL, width = '80%'),
+
+      selectInput('repository.dataset',
+                  label = "Select the dataset",
+                  choices = NULL, selected = NULL, width = '80%', multiple = T),
+
+
+      selectInput('repository.funcId',
                   label = "Please choose the function",
-                  choices = NULL, selected = NULL, width = '50%', multiple = T),
-      
-      selectInput('repository.dim', 
+                  choices = NULL, selected = NULL, width = '80%', multiple = T),
+
+      selectInput('repository.dim',
                   label = "Please choose the dimension",
-                  choices = NULL, selected = NULL, width = '50%', multiple = T),
-      
-      selectInput('repository.ID', 
+                  choices = NULL, selected = NULL, width = '80%', multiple = T),
+
+      selectInput('repository.ID',
                   label = "Please choose the algorithm",
-                  choices = NULL, selected = NULL, width = '50%', multiple = T),
-      
+                  choices = NULL, selected = NULL, width = '80%', multiple = T),
+
+      # selectInput('repository.funcId',
+      #       label = "Please choose the function",
+      #       choices = NULL, selected = NULL, width = '80%', multiple = T),
+      #
+      # selectInput('repository.dim',
+      #             label = "Please choose the dimension",
+      #             choices = NULL, selected = NULL, width = '80%', multiple = T),
+
+
       shinyjs::disabled(
         actionButton('repository.load_button', 'load data')
       )
@@ -132,9 +142,9 @@ welcome_bar <- function(width = 12, collapsible = T, collapsed = F) {
   box(
     title = HTML('<p style="font-size:140%;">Welcome to IOHanalyzer!</p>'),
     width = width, collapsed = collapsed, collapsible = collapsible,
-    solidHeader = T, status = "primary",  
+    solidHeader = T, status = "primary",
     mainPanel(
-      width = 12, 
+      width = 12,
       HTML(paste0(
         '<font size="4">',
         includeMarkdown('markdown/welcome.md'),

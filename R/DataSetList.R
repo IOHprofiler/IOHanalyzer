@@ -1218,6 +1218,7 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', 
 #' @param dt_ecdf A data table of the ECDF to avoid needless recomputations. Will take preference if it
 #' is provided together with dsList and targets
 #' @param multiple_x Boolean, whether to get only the total AUC or get stepwise AUC values
+#' @param normalize Whether to normalize the resulting AUC values to [0,1] or not
 #'
 #' @export
 #' @examples
@@ -1447,4 +1448,119 @@ generate_data.ECDF_raw <- function(dsList, targets, scale_log = F) {
     m
   })))
   dt
+}
+
+#' Extract the position information from a datasetlist object
+#'
+#' @param dsList The DataSetList object
+#' @param iid the Instance Id from which to get the position history (can be a list)
+#'
+#' @export
+#' @examples
+#' get_position_dsl(subset(dsl, funcId == 1), 1)
+get_position_dsl <- function(dsList, iid) {
+  if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1) return(NULL)
+  dim <- get_dim(dsList)
+
+  dt <- rbindlist(lapply(dsList, function(ds) {
+    if (!isTRUE(attr(ds, 'contains_position'))) return(NULL)
+    instance_idxs <- which(attr(ds, 'instance') %in% iid)
+    dt_sub <- rbindlist(lapply(instance_idxs, function(idx) {
+      temp <- lapply(seq(0, dim - 1), function(x_idx) {
+        ds$PAR$by_RT[[paste0('x', x_idx)]][, idx]
+      })
+      names(temp) <- paste0('x', seq(0, dim - 1))
+      if ('generation' %in% get_PAR_name(ds)) {
+        temp$generation <- ds$PAR$by_RT[['generation']][, idx]
+      }
+      dt_subsub <- data.table('runtime' = as.integer(rownames(ds$PAR$by_RT$x0)), setDT(temp))
+      dt_subsub$FV <- ds$FV[,idx]
+      if (length(unique(dt_subsub$runtime)) < max(dt_subsub$runtime)) {
+        dt_subsub <- dt_subsub[1:nrow(dt_subsub) - 1,]
+      }
+      dt_subsub[, 'run_nr' := idx]
+      dt_subsub[, 'iid' := attr(ds, 'instance')[idx]]
+      dt_subsub
+    }))
+    dt_sub[, 'algId' := attr(ds, 'algId')]
+    dt_sub
+  }))
+  if (nrow(dt) == 0) return(NULL)
+  dt[, runtime := as.numeric(runtime)]
+  return(dt)
+}
+
+#' Nevergrad-dashboard based algorithm comparison
+#'
+#' This procedure calculates the fraction of times algorithm A is better than
+#' algorithm B according to their mean on each function,dimension,target tuple
+#'
+#' @param dsList The DataSetList, can contain multiple functions and dimensions, but should have the
+#' same algorithms for all of them. For functions/dimensions where this is not the case,
+#' all algorithms are considered tied.
+#' @param which Whether to use fixed-target ('by_FV') or fixed-budget ('by_RT') perspective
+#' @param target_dt Custom data.table target value to use. When NULL, this is selected automatically.
+#' @return A matrix containing the pairwise win-ratios.
+#'
+#' @export
+#' @examples
+#' generate_data.Heatmaps(dsl)
+#' generate_data.Heatmaps(dsl, which = 'by_RT')
+generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
+
+  req(length(get_id(dsl)) > 1)
+
+  if (!is.null(target_dt) && !('data.table' %in% class(target_dt))) {
+    warning("Provided `target_dt` argument is not a data.table")
+    target_dt <- NULL
+  }
+
+  if (is.null(target_dt))
+    target_dt <- get_target_dt(dsList, which)
+
+  if (!(which %in% c('by_FV', 'by_RT')))
+    stop("Invalid argument: 'which' can only be 'by_FV' or 'by_RT'")
+
+  n_ids <- length(get_id(dsList))
+  is_max <- attr(dsl_large, 'maximization')
+
+  res <- lapply(get_funcId(dsList), function(fid) {
+    res <- lapply(get_dim(dsList), function(dim) {
+      ds_sub <- subset(dsList, funcId == fid & DIM == dim)
+      targets <- target_dt[DIM == dim & funcId == fid, 'target']
+
+      mat_temp <- lapply(targets, function(target) {
+        if (which == 'by_FV')
+          dt <- get_RT_summary(ds_sub, target)
+        else
+          dt <- get_FV_summary(ds_sub, target)
+        temp <- as.numeric(as.matrix(dt[,'mean']))
+        if (which == 'by_RT' & is_max) { #Maximization of FV
+          temp[is.na(temp)] <- -Inf
+          mat <- outer(temp,temp, FUN = "-")
+          winrates <- (mat > 0) + 0.5 * (mat == 0)
+        }
+        else { #Minimization (FV or RT)
+          temp[is.na(temp)] <- Inf
+          mat <- outer(temp,temp, FUN = "-")
+          winrates <- (mat < 0) + 0.5 * (mat == 0)
+        }
+        if(nrow(winrates) != n_ids) {
+          warning("The number of algorithm present in a subset is not equal to the overall number, skipping subset")
+          return(matrix(0.5, n_ids, n_ids))
+        }
+        winrates
+      })
+      res_mat <- simplify2array(mat_temp)
+      res_dt <- as.data.frame(apply(res_mat, c(1,2), mean))
+      res_dt[is.na(res_dt)] <- 0.5
+      res_dt
+
+    })
+  })
+  winrates_aggr <- array(unlist(res), dim = c(n_ids,n_ids,length(res)))
+  winrates_aggr <- apply(winrates_aggr, c(1,2), mean)
+  rownames(winrates_aggr) <- get_id(dsList)
+  colnames(winrates_aggr) <- get_id(dsList)
+  winrates_aggr
 }

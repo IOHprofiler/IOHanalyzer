@@ -15,14 +15,14 @@ generate_data.ECDF(
 \arguments{
 \item{dsList}{The DataSetList object}
 
-\item{targets}{A list or data.table containing the targets per function / dimension. If this is 
+\item{targets}{A list or data.table containing the targets per function / dimension. If this is
 a data.table, it needs columns 'target', 'DIM' and 'funcId'}
 
 \item{scale_log}{Wheterh to use logarithmic scaling or not}
 
 \item{which}{Whether to use a fixed-target 'by_RT' perspective or fixed-budget 'by_FV'}
 
-\item{use_full_range}{Whether or not to use the full range of the x-axis or cut it off as soon as 
+\item{use_full_range}{Whether or not to use the full range of the x-axis or cut it off as soon as
 all algorithms reach 98\% success (+10\% buffer). Only supported in the case of one function and dimension}
 }
 \description{

@@ -42,13 +42,13 @@ tagAssert <- function(tag, type = NULL, class = NULL, allowUI = TRUE) {
   }
 }
 
-# Modified dashboard header from the original source for incorporating two `select input` widgets 
+# Modified dashboard header from the original source for incorporating two `select input` widgets
 .dashboardHeader <- function(..., title = NULL, titleWidth = NULL, disable = FALSE, .list = NULL) {
   items <- c(list(...), .list)
   lapply(items, tagAssert, type = "li", class = "dropdown")
-  
+
   titleWidth <- validateCssUnit(titleWidth)
-  
+
   # Set up custom CSS for custom width.
   custom_css <- NULL
   if (!is.null(titleWidth)) {
@@ -75,7 +75,7 @@ tagAssert <- function(tag, type = NULL, class = NULL, allowUI = TRUE) {
       )
     )
   }
-  
+
   tags$header(
     class = "main-header",
     id = 'header',
@@ -91,8 +91,9 @@ tagAssert <- function(tag, type = NULL, class = NULL, allowUI = TRUE) {
         href="#", class="sidebar-toggle", `data-toggle`="offcanvas",
         role="button", span(class="sr-only", "Toggle navigation")
       ),
-             
+
       # select inputs for dimension and function/problem ID
+
       # HTML('
       #  <div class="col-sm-1">
       #  </div>
@@ -111,7 +112,7 @@ tagAssert <- function(tag, type = NULL, class = NULL, allowUI = TRUE) {
       #    </tr>
       #  </table>'
       # ),
-                   
+
       div(
         class = "navbar-custom-menu",
         tags$ul(class = "nav navbar-nav", items)
@@ -148,11 +149,11 @@ body <- dashboardBody(
          top: 0;
          width: 100%;
         }
-       
+
        .sticky2 {
          position: fixed;
         }
-       
+
        .table {
           border-collapse: collapse;
           width: 100%;
@@ -166,7 +167,7 @@ body <- dashboardBody(
        .table th {height: 0px;}'
     )
   ),
-  
+
   # to show text on the header (heading banner)
   tags$head(
     tags$style(
@@ -183,7 +184,7 @@ body <- dashboardBody(
       )
     )
   ),
-  
+
   tags$head(
     tags$style(
       HTML(
@@ -199,7 +200,7 @@ body <- dashboardBody(
       )
     )
   ),
-  
+
   tags$head(
     tags$style(
       HTML(
@@ -207,24 +208,24 @@ body <- dashboardBody(
       )
     )
   ),
-  
+
   tags$script(
     HTML('
       $(document).ready(function() {
-        $("header").find("nav").append(\'<span class="myClass">Performance Evaluation for Iterative 
+        $("header").find("nav").append(\'<span class="myClass">Performance Evaluation for Iterative
         Optimization Heuristics</span>\');
       })'
     )
   ),
-  
+
   tags$script(
-    "Shiny.addCustomMessageHandler('background-color', 
+    "Shiny.addCustomMessageHandler('background-color',
       function(color) {
         document.body.style.backgroundColor = color;
         document.body.innerText = color;
       });"
   ),
-  
+
   tags$script(
     HTML('
       window.setInterval(function() {
@@ -233,13 +234,13 @@ body <- dashboardBody(
       }, 20);'
     )
   ),
-  
+
   tags$head(
     tags$script(
       HTML("
         Shiny.addCustomMessageHandler('manipulateMenuItem', function(message){
           var aNodeList = document.getElementsByTagName('a');
-  
+
           for (var i = 0; i < aNodeList.length; i++) {
             if(aNodeList[i].getAttribute('data-value') == message.tabName || aNodeList[i].getAttribute('href') == message.tabName) {
               if(message.action == 'hide'){
@@ -253,7 +254,7 @@ body <- dashboardBody(
       ")
     )
   ),
-  
+
   # make the data uploading prompt always scroll to the bottom
   tags$script(
     HTML('
@@ -263,24 +264,24 @@ body <- dashboardBody(
        }, 20);'
     )
   ),
-  
+
   # render the header and the side bar 'sticky'
   tags$script(
     HTML(
       '// When the user scrolls the page, execute myFunction
       window.onscroll = function() {myFunction()};
-      
+
       // Get the header
       var header = document.getElementById("header");
-      
+
       // Get the side bar
       var sideBar = document.getElementById("sidebarCollapsed");
       sideBar.classList.add("sticky2");
-      
+
       // Get the offset position of the navbar
       var sticky = header.offsetTop;
-      
-      // Add the sticky class to the header when you reach its scroll position. 
+
+      // Add the sticky class to the header when you reach its scroll position.
       // Remove "sticky" when you leave the scroll position
       function myFunction() {
         if (window.pageYOffset > sticky) {
@@ -291,7 +292,7 @@ body <- dashboardBody(
       }'
     )
   ),
-  
+
   if (suppressWarnings(require("dashboardthemes", quietly = T))) {
     shinyDashboardThemes(
       theme = "grey_light"
@@ -304,7 +305,7 @@ body <- dashboardBody(
        async></script></head>"),
   use_bs_tooltip(),
   use_bs_popover(),
-  
+
   # tabitems ----------------------
   tabItems(
     tabItem(tabName = 'about', includeMarkdown('markdown/about.md')),
@@ -316,16 +317,21 @@ body <- dashboardBody(
       fluidRow(
         welcome_bar(width = 12)
       ),
-      
+
       fluidRow(
         column(
-          width = 6,
+          width = 4,
           upload_box(collapsible = F)
         ),
+
         column(
-          width = 6,
+          width = 4,
           repository_box(collapsible = F)
-        )
+        ),
+        column(
+          width = 4,
+          ontology_box(collapsible = F)
+        ),
       ),
 
       fluidRow(
@@ -351,7 +357,7 @@ body <- dashboardBody(
         )
       )
     ),
-    
+
     # RT (RunTime): Data Summary -----------------
     tabItem(
       tabName = 'ERT_data',
@@ -382,12 +388,12 @@ body <- dashboardBody(
       fluidRow(
         column(
           width = 12,
-          ERT_agg_box(collapsed = F), 
+          ERT_agg_box(collapsed = F),
           ERT_comparison_box(collapsed = T)
         )
       )
     ),
-    
+
     # RT: histograms, violin plots ------------------------------------------
     tabItem(
       tabName = 'RT_PMF',
@@ -412,7 +418,7 @@ body <- dashboardBody(
         )
       )
     ),
-    
+
     tabItem(
       tabName = 'RT_ECDF_aggr',
       fluidRow(
@@ -454,16 +460,17 @@ body <- dashboardBody(
                 rt_dsc_box_posthoc()
               )
             )
-    ),    
+    ),
     tabItem(tabName = 'RT_Statistics_aggr',
             fluidRow(
               column(
                 width = 12,
-                rt_glicko2_box(collapsed = F)
+                fv_nevergrad_box(collapsed = F),
+                rt_glicko2_box(collapsed = T)
               )
             )
 
-    ),    
+    ),
     tabItem(tabName = 'RT_table_multi',
             fluidRow(
               column(
@@ -472,8 +479,8 @@ body <- dashboardBody(
                 multi_function_sample_box(collapsed = T)
               )
             )
-            
-    ), 
+
+    ),
     tabItem(tabName = 'RT_portfolio',
             fluidRow(
               column(
@@ -481,8 +488,8 @@ body <- dashboardBody(
                 rt_shapleys_box(collapsed = F)
               )
             )
-            
-    ), 
+
+    ),
     # FCE: Data Summary -----------------
     tabItem(
       tabName = 'FCE_DATA',
@@ -541,7 +548,7 @@ body <- dashboardBody(
         )
       )
     ),
-    
+
     # Parameter tab -------
     tabItem(
       tabName = 'FCE_PARAMETER',
@@ -572,8 +579,8 @@ body <- dashboardBody(
                 multi_function_sample_box_fv(collapsed = T)
               )
             )
-            
-    ), 
+
+    ),
 
     tabItem(tabName = 'FCE_DSC',
             fluidRow(
@@ -585,12 +592,13 @@ body <- dashboardBody(
               )
             )
     ),
-    
+
     tabItem(tabName = 'FCE_Statistics_aggr',
             fluidRow(
               column(
                 width = 12,
-                fv_glicko2_box(collapsed = F)
+                rt_nevergrad_box(collapsed = F),
+                fv_glicko2_box(collapsed = T)
               )
             )
     ),
@@ -602,7 +610,7 @@ body <- dashboardBody(
               )
             )
     ),
-    
+
     tabItem(
       tabName = 'Settings',
       fluidRow(

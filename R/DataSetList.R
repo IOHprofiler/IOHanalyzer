@@ -1508,7 +1508,7 @@ get_position_dsl <- function(dsList, iid) {
 #' generate_data.Heatmaps(dsl, which = 'by_RT')
 generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
 
-  req(length(get_id(dsl)) > 1)
+  req(length(get_id(dsList)) > 1)
 
   if (!is.null(target_dt) && !('data.table' %in% class(target_dt))) {
     warning("Provided `target_dt` argument is not a data.table")
@@ -1522,7 +1522,7 @@ generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
     stop("Invalid argument: 'which' can only be 'by_FV' or 'by_RT'")
 
   n_ids <- length(get_id(dsList))
-  is_max <- attr(dsl_large, 'maximization')
+  is_max <- attr(dsList, 'maximization')
 
   res <- lapply(get_funcId(dsList), function(fid) {
     res <- lapply(get_dim(dsList), function(dim) {

@@ -20,7 +20,7 @@ get_dsc_posthoc(
 
 \item{nr_problems}{The number of problems present in `omni_res`}
 
-\item{base_algorithm}{The base algorithm to which the other are compared.
+\item{base_algorithm}{The base algorithm to which the other are compared. 
 This has to be present in `omni_res$algorithm_means` as an `algorithm` property}
 
 \item{method}{Either 'friedman' or 'friedman-aligned-rank'}

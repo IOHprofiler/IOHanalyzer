@@ -7,8 +7,8 @@
 #' @importFrom colorspace sequential_hcl
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom colorRamps primary.colors
-#' @importFrom data.table as.data.table rbindlist data.table fread := melt is.data.table 
-#' @importFrom data.table setorderv frank setnames rbindlist copy transpose
+#' @importFrom data.table as.data.table rbindlist data.table fread := melt is.data.table
+#' @importFrom data.table setorderv frank setnames rbindlist copy transpose setDT
 #' @importFrom plotly add_annotations add_trace orca plot_ly rename_ subplot layout
 #' @importFrom ggplot2 aes geom_jitter geom_line geom_ribbon geom_violin ggplot element_text
 #' @importFrom ggplot2 guides scale_color_manual scale_colour_manual scale_fill_manual
@@ -61,7 +61,7 @@ options(shiny.port = 4242)
   )
   toset <- !(names(op.IOHanalyzer) %in% names(op))
   if (any(toset)) options(op.IOHanalyzer[toset])
-  
+
   invisible()
 }
 
@@ -120,13 +120,13 @@ SOS <- 'SOS'
 #'
 #' @docType package
 #' @name IOHanalyzer
-#' @examples 
+#' @examples
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
 #' dsList <- DataSetList(path)
 #' summary(dsList)
 #' Plot.RT.Single_Func(dsList[1])
-#' 
-#' @examples 
+#'
+#' @examples
 #' \dontrun{
 #' runServer()
 #' }

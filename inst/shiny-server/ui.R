@@ -465,7 +465,8 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                rt_glicko2_box(collapsed = F)
+                fv_nevergrad_box(collapsed = F),
+                rt_glicko2_box(collapsed = T)
               )
             )
 
@@ -596,7 +597,8 @@ body <- dashboardBody(
             fluidRow(
               column(
                 width = 12,
-                fv_glicko2_box(collapsed = F)
+                rt_nevergrad_box(collapsed = F),
+                fv_glicko2_box(collapsed = T)
               )
             )
     ),

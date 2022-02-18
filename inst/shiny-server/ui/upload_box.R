@@ -81,6 +81,7 @@ data_list_box <- function(width = 12, collapsible = T, collapsed = T) {
   )
 }
 
+
 welcome_bar <- function(width = 12, collapsible = T, collapsed = F) {
   box(
     title = HTML('<p style="font-size:140%;">Welcome to IOHanalyzer!</p>'),

@@ -24,7 +24,7 @@ The list of unique identiefiers present in dsl
 Get the unique identifiers for each DataSet in the provided DataSetList
 }
 \details{
-If no unique identifier is set (using `change_id` or done in DataSet construction from 1.6.0 onwards), 
+If no unique identifier is set (using `change_id` or done in DataSet construction from 1.6.0 onwards),
 this function falls back on returning the algorith id (from `get_aldId`)to ensure backwards compatibility
 }
 \examples{

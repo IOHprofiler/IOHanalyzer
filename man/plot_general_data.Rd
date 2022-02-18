@@ -35,7 +35,7 @@ plot_general_data(
 
 \item{y_attr}{The column to specify the y_axis}
 
-\item{type}{The type of plot to use. Currently available: 'violin', 'line', 'radar', 
+\item{type}{The type of plot to use. Currently available: 'violin', 'line', 'radar',
 'bar', hist' and 'ribbon'}
 
 \item{legend_attr}{Default is 'algId' This is also used for the selection of colorschemes}
@@ -54,10 +54,10 @@ plot_general_data(
 
 \item{plot_title}{Title of x-axis. Defaults to no title}
 
-\item{upper_attr}{When using ribbon-plot, this can be used to create a shaded area. 
+\item{upper_attr}{When using ribbon-plot, this can be used to create a shaded area.
 Only works in combination with`lower_attr` and `type` == 'ribbon'}
 
-\item{lower_attr}{When using ribbon-plot, this can be used to create a shaded area. 
+\item{lower_attr}{When using ribbon-plot, this can be used to create a shaded area.
 Only works in combination with`upper_attr` and `type` == 'ribbon'}
 
 \item{subplot_attr}{Which attribute of the dataframe to use for creating subplots}

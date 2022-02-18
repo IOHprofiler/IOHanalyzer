@@ -1073,15 +1073,16 @@ get_ontology_var <- function(varname, datasource = NULL, study=NULL, algs=NULL, 
 
   url <- paste0(url_base, url_appendix)
 
-  tryCatch({
+  status <- try({
     resp <- GET(url, query = parameters_list)
     res <- content(resp)$results
-    return(unlist(res))
-  },
-  error = function(e) {
-    warning(e)
-    return(NULL)}
-  )
+  }, silent = TRUE)
+
+  if (class(status) == "try-error") {
+    return(NULL)
+  } else {
+    return(res)
+  }
 }
 
 #' Get the list of available options for data from the OPTION ontology

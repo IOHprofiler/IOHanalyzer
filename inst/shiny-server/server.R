@@ -63,5 +63,10 @@ shinyServer(function(input, output, session) {
     )
   })
   available_studies <- get_ontology_var("Study")
-  updateSelectInput(session, 'Ontology.Study', choices = c('None', available_studies), selected = 'None')
+  if (is.null(available_studies)) {
+    shinyjs::disable("Loading.Type")
+  }
+  else {
+    updateSelectInput(session, 'Ontology.Study', choices = c('None', available_studies), selected = 'None')
+  }
 })

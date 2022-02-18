@@ -2,8 +2,10 @@ sidebar_menu <- function() {
   sidebarMenu(id = "tabs",
               menuItem("Upload Data", tabName = "upload", icon = icon('upload', lib = 'glyphicon'),
                        selected = T),
+              # menuItem("OPTION Data", tabName = "ontology", icon = icon('upload', lib = 'glyphicon'),
+              #          selected = T),
               menuItem("General Overview", tabName = "overview", icon = icon("table")),
-              
+
               menuItem("Fixed-Target Results", tabName = "ERT", icon = icon("file-text-o"),
                        menuItem("Single Function", tabName = "RT_single", icon = icon("line-chart"), selected = F,
                             menuSubItem("Data Summary", tabName = "ERT_data", icon = icon("table")),

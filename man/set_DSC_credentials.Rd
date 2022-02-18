@@ -12,7 +12,7 @@ set_DSC_credentials(username, password)
 \item{password}{The password you use on DSCtool. Will be stored on keyring under 'DSCtool'}
 }
 \description{
-This uses the keyring package to store and load credentials. 
+This uses the keyring package to store and load credentials.
 If you already have an account, please call `add_DSC_credentials` instead
 }
 \examples{

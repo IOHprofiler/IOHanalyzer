@@ -4,7 +4,7 @@ repo_data <- NULL      # repository data
 has_rendered_ERT_per_fct <- FALSE
 
 # Formatter for function values. Somewhat overkill with as.numeric, but this prevents unneeded precision
-format_FV <- function(v) as.numeric(format(v, digits = getOption("IOHanalyzer.precision", 2), 
+format_FV <- function(v) as.numeric(format(v, digits = getOption("IOHanalyzer.precision", 2),
                                 nsmall = getOption("IOHanalyzer.precision", 2)))
 format_RT <- function(v) as.integer(v)
 
@@ -18,7 +18,7 @@ rand_strings <- function(n = 10) {
 
 setTextInput <- function(session, id, name, alternative) {
   v <- REG[[id]]
-  if (name %in% names(v)) 
+  if (name %in% names(v))
     updateTextInput(session, id, value = v[[name]])
   else
     updateTextInput(session, id, value = alternative)
@@ -44,11 +44,11 @@ shinyServer(function(input, output, session) {
     # close_connection()
     unlink(exdir, recursive = T)
   })
-  
+
   for (f in list.files('server', pattern = '.R', full.names = T)) {
     source(f, local = TRUE)
   }
-  
+
   output$VersionBox <- renderValueBox({
     infoBox(title = "IOHanalyzer version:", value = paste0('v', packageVersion("IOHanalyzer")), icon = icon("code-branch"),
       color = "blue", width = 12, fill = T, href = "https://github.com/IOHprofiler/IOHanalyzer", subtitle = "View source on Github"
@@ -62,4 +62,11 @@ shinyServer(function(input, output, session) {
             color = "blue", width = 14, fill = T, href = "mailto:iohprofiler@liacs.leidenuniv.nl"
     )
   })
+  available_studies <- get_ontology_var("Study")
+  if (is.null(available_studies)) {
+    shinyjs::disable("Loading.Type")
+  }
+  else {
+    updateSelectInput(session, 'Ontology.Study', choices = c('None', available_studies), selected = 'None')
+  }
 })

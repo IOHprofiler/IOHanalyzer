@@ -16,7 +16,7 @@ get_shapley_values(
 \arguments{
 \item{dsList}{The DataSetList object}
 
-\item{targets}{A list or data.table containing the targets per function / dimension. If this is 
+\item{targets}{A list or data.table containing the targets per function / dimension. If this is
 a data.table, it needs columns 'target', 'DIM' and 'funcId'}
 
 \item{scale.log}{Whether to use logarithmic scaling for the runtimes at which the ecdf will be sampled or not}

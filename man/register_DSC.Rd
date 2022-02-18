@@ -15,15 +15,15 @@ register_DSC(name, username, affiliation, email, password = NULL)
 
 \item{email}{Your email adress}
 
-\item{password}{The password to use. If NULL, this will be generated at random. 
+\item{password}{The password to use. If NULL, this will be generated at random.
 Will be stored on keyring under 'DSCtool'}
 }
 \description{
-This uses the keyring package to store and load credentials. 
+This uses the keyring package to store and load credentials.
 If you already have an account, please call `set_DSC_credentials` instead
 }
 \examples{
-\dontrun{ 
+\dontrun{
 register_DSC('John Doe', 'jdoe', 'Sample University', "j.doe.sample.com")
 }
 }

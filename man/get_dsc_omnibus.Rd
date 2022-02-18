@@ -9,8 +9,8 @@ get_dsc_omnibus(res, method = NULL, alpha = 0.05)
 \arguments{
 \item{res}{The result of a call to the `get_dsc_rank`}
 
-\item{method}{Which method to use to do the tests. 
-Has be be one of the allowed ones in `res$valid_methods`. 
+\item{method}{Which method to use to do the tests.
+Has be be one of the allowed ones in `res$valid_methods`.
 When NULL, the first valid option is chosen by default}
 
 \item{alpha}{Threshold value for statistical significance}

@@ -15,8 +15,8 @@
 #' @importFrom ggplot2 scale_x_continuous scale_x_log10 facet_wrap theme_set theme_grey theme
 #' @importFrom shiny req
 #' @importFrom stringi stri_detect_regex stri_detect_fixed stri_locate_all stri_replace
-#' @importFrom stringi stri_rand_strings
-#' @importFrom httr POST add_headers content authenticate
+#' @importFrom stringi stri_rand_strings stri_sub
+#' @importFrom httr POST GET add_headers content authenticate
 #' @importFrom reshape2 acast
 #' @importFrom knitr kable
 #' @importFrom methods hasArg

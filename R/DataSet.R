@@ -1063,8 +1063,8 @@ get_PAR_sample.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV',
 get_id.DataSet <- function(ds, ...) {
   temp <- attr(ds, 'ID')
   if (is.null(temp)) {
-    warning("No ID attribute set, returning the algId's instead. (from 1.6.0 onwards, ID attributes are always added
-            to new datasets, see the 'change_id' function.")
+    # warning("No ID attribute set, returning the algId's instead. (from 1.6.0 onwards, ID attributes are always added
+    #         to new datasets, see the 'change_id' function.")
     return(attr(ds, 'algId'))
   }
   return(unique(temp))

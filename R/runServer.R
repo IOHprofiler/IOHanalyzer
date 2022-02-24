@@ -1,11 +1,11 @@
 #'  Create a shiny-server GUI to interactively use the IOHanalyzer
-#' @param port Optional; which port the server should be opened at. Defaults 
+#' @param port Optional; which port the server should be opened at. Defaults
 #' to the option set for 'shiny.port'
-#' @param open_browser Whether or not to open a browser tab with the 
+#' @param open_browser Whether or not to open a browser tab with the
 #' IOHanalyzer GUI. Defaults to TRUE.
-#' @param orca_gpu Whether or not orca will be allowed to use gpu-accelleration for saving figures to file. 
+#' @param orca_gpu Whether or not orca will be allowed to use gpu-accelleration for saving figures to file.
 #' @export
-#' @examples 
+#' @examples
 #' \dontrun{
 #' runServer(6563, TRUE)
 #' }
@@ -13,6 +13,14 @@ runServer <- function(port = getOption('shiny.port'), open_browser = TRUE, orca_
   appDir <- system.file("shiny-server", package = "IOHanalyzer")
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `IOHanalyzer`.", call. = FALSE)
+  }
+  for (pkgname in c('DT', 'bsplus', 'colourpicker', 'kableExtra', 'markdown', 'shinydashboard',
+                     'shinyjs')) {
+    if (!requireNamespace(pkgname, quietly = TRUE)) {
+      stop(paste0("Package \"", pkgname, "\" is needed for this function to work.
+           It is recommended to install all suggested packages if you want to make use of the GUI functionality."),
+           call. = FALSE)
+    }
   }
   options("IOHanalyzer.orca_use_gpu" = orca_gpu)
 

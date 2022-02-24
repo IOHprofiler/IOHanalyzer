@@ -599,8 +599,8 @@ get_PAR_sample.DataSetList <- function(ds, idxValue, algorithm = 'all', ...) {
 get_id.DataSetList <- function(ds, ...) {
   temp <- attr(ds, 'ID')
   if (is.null(temp)) {
-    warning("No ID attribute set, returning the algId's instead. (from 1.6.0 onwards, ID attributes are always added
-            to new datasets, see the 'change_id' function.")
+    # warning("No ID attribute set, returning the algId's instead. (from 1.6.0 onwards, ID attributes are always added
+    #         to new datasets, see the 'change_id' function.")
     return(get_algId(ds))
   }
   return(unique(temp))

@@ -7,10 +7,10 @@
 runServer(port = getOption("shiny.port"), open_browser = TRUE, orca_gpu = TRUE)
 }
 \arguments{
-\item{port}{Optional; which port the server should be opened at. Defaults 
+\item{port}{Optional; which port the server should be opened at. Defaults
 to the option set for 'shiny.port'}
 
-\item{open_browser}{Whether or not to open a browser tab with the 
+\item{open_browser}{Whether or not to open a browser tab with the
 IOHanalyzer GUI. Defaults to TRUE.}
 
 \item{orca_gpu}{Whether or not orca will be allowed to use gpu-accelleration for saving figures to file.}

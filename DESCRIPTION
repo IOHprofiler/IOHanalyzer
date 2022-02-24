@@ -30,18 +30,11 @@ Imports:
   colorRamps,
   RColorBrewer,
   shiny,
-  markdown,
   reshape2,
-  shinyjs,
-  colourpicker,
-  bsplus,
-  DT,
-  kableExtra,
   stringi,
   httr,
   knitr,
-  methods,
-  shinydashboard
+  methods
 LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 7.1.2
@@ -54,5 +47,12 @@ Suggests:
   keyring,
   PlayerRatings,
   xtable,
-  igraph
+  shinyjs,
+  colourpicker,
+  bsplus,
+  DT,
+  kableExtra,
+  markdown,
+  igraph,
+  shinydashboard
 Depends: R (>= 2.10)

@@ -865,7 +865,7 @@ Plot.Stats.Significance_Heatmap.DataSetList <- function(dsList, ftarget, alpha =
                            col = c('blue', 'blue', 'white', 'white', 'red', 'red')
                            )
   heatmap <-  y - t(y)
-
+  heatmap[is.na(heatmap)] <- 0
   p <- plot_ly(x = colnames(y), y = rownames(y), z = heatmap, type = 'heatmap',
                xgap = 0.2, ygap = 0.2, colorscale = colorScale, showscale = F)
   p %<>% layout(yaxis = list(autorange = 'reversed', scaleratio = 1),

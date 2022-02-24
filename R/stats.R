@@ -1139,15 +1139,18 @@ get_ontology_data <- function(datasource, fids, dims, algs, iids = NULL, funcsui
     parameters_list$budget <- paste0('<=', max_budget)
   }
 
-  tryCatch({
+
+  status <- try({
     resp <- POST(url_base, body = parameters_list, encode = "form")
     results <- content(resp)
-  },
-  error = function(e) {
-    warning(e)
-    return(NULL)}
-  )
-  dt_temp <- rbindlist(results$results)
-  convert_from_OPTION(dt_temp, datasource)
+    dt_temp <- rbindlist(results$results)
+    res <- convert_from_OPTION(dt_temp, datasource)
+  }, silent = TRUE)
+
+  if (class(status) == "try-error") {
+    return(NULL)
+  } else {
+    return(res)
+  }
 }
 

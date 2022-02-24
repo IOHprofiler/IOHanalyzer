@@ -1143,13 +1143,13 @@ get_ontology_data <- function(datasource, fids, dims, algs, iids = NULL, funcsui
   status <- try({
     resp <- POST(url_base, body = parameters_list, encode = "form")
     results <- content(resp)
-    dt_temp <- rbindlist(results$results)
-    res <- convert_from_OPTION(dt_temp, datasource)
   }, silent = TRUE)
 
   if (class(status) == "try-error") {
     return(NULL)
   } else {
+    dt_temp <- rbindlist(results$results)
+    res <- convert_from_OPTION(dt_temp, datasource)
     return(res)
   }
 }

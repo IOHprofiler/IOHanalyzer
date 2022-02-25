@@ -1,16 +1,20 @@
-## This is a resubmission after a previous rejection
-All exported functions needed to have examples documented. This has now been implemented.
+## This is a resubmission after a newly occuring warning on m1mac and no-ld checks.
+This warning should now be resolved. 
+
+In addition, this release implements several new features, including new 
+visualization options.
 
 ## Test environments
-* local windows install, R 3.5.1 and 3.5.3
-* local ubuntu install, R 3.4.4
-* local macOS install, R 3.5.2
+* Local Windows install, R 4.1.2
+* Windows, Ubuntu and Macos r-release version, Ubuntu r-devel version (as part of CI)
 
 ## R CMD check results
 There were no ERRORs or WARNINGs.
 
 There was 1 NOTE:
-* New submission, since this is the first submission of the IOHanalyzer package to CRAN
+* Package size exceeds 5mb on some systems. 
+Because of the large scope of the package, we have been unable to resolve this, 
+and would like to request acceptance is spite of being slightly too large.
 
 ## Downstream dependencies
-Since this is the first submission of the IOHanalyzer package, there are no downstream dependencies
+There are no known downstream dependencies

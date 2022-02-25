@@ -1078,7 +1078,7 @@ get_ontology_var <- function(varname, datasource = NULL, study=NULL, algs=NULL, 
     res <- content(resp)$results
   }, silent = TRUE)
 
-  if (class(status) == "try-error") {
+  if (inherits(status, "try-error")) {
     return(NULL)
   } else {
     return(res)
@@ -1145,7 +1145,7 @@ get_ontology_data <- function(datasource, fids, dims, algs, iids = NULL, funcsui
     results <- content(resp)
   }, silent = TRUE)
 
-  if (class(status) == "try-error") {
+  if (inherits(status, "try-error")) {
     return(NULL)
   } else {
     dt_temp <- rbindlist(results$results)

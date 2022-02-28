@@ -7,7 +7,8 @@
 \usage{
 Plot.Comparison.Heatmap(dsList, target_dt, which = "by_FV")
 
-\method{Plot.Comparison.Heatmap}{DataSetList}(dsList, target_dt = NULL, which = "by_FV")
+\method{Plot.Comparison.Heatmap}{DataSetList}(dsList, target_dt = NULL,
+  which = "by_FV")
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

@@ -1117,7 +1117,7 @@ get_ontology_data <- function(datasource, fids, dims, algs, iids = NULL, funcsui
 
   parameters_list$functions <- paste0(fids, collapse = ',')
   parameters_list$dimensions  <- paste0(dims, collapse = ',')
-  parameters_list$algorithms  <- paste0(dQuote(algs, q='"'), collapse = ',')
+  parameters_list$algorithms  <- paste0('\"', algs, '\"', collapse = ',')
   if (!is.null(iids))
     parameters_list$instances  <- paste0(iids, collapse = ',')
   if (!is.null(funcsuites))

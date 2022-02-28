@@ -4,13 +4,8 @@
 \alias{generate_data.ECDF}
 \title{Generate dataframe of a single function/dimension pair}
 \usage{
-generate_data.ECDF(
-  dsList,
-  targets,
-  scale_log = F,
-  which = "by_RT",
-  use_full_range = TRUE
-)
+generate_data.ECDF(dsList, targets, scale_log = F, which = "by_RT",
+  use_full_range = TRUE)
 }
 \arguments{
 \item{dsList}{The DataSetList object}

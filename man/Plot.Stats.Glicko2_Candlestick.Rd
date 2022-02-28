@@ -5,21 +5,12 @@
 \alias{Plot.Stats.Glicko2_Candlestick.DataSetList}
 \title{Create a candlestick plot of Glicko2-rankings}
 \usage{
-Plot.Stats.Glicko2_Candlestick(
-  dsList,
-  nr_rounds = 100,
-  glicko2_rank_df = NULL,
-  which = "by_FV",
-  target_dt = NULL
-)
+Plot.Stats.Glicko2_Candlestick(dsList, nr_rounds = 100,
+  glicko2_rank_df = NULL, which = "by_FV", target_dt = NULL)
 
-\method{Plot.Stats.Glicko2_Candlestick}{DataSetList}(
-  dsList,
-  nr_rounds = 100,
-  glicko2_rank_df = NULL,
-  which = "by_FV",
-  target_dt = NULL
-)
+\method{Plot.Stats.Glicko2_Candlestick}{DataSetList}(dsList,
+  nr_rounds = 100, glicko2_rank_df = NULL, which = "by_FV",
+  target_dt = NULL)
 }
 \arguments{
 \item{dsList}{A DataSetList}

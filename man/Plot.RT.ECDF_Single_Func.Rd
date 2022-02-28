@@ -6,23 +6,11 @@
 \title{Plot the aggregated empirical cumulative distriburtion as a function of the running times of
 a DataSetList.}
 \usage{
-Plot.RT.ECDF_Single_Func(
-  dsList,
-  fstart = NULL,
-  fstop = NULL,
-  fstep = NULL,
-  show.per_target = F,
-  scale.xlog = F
-)
+Plot.RT.ECDF_Single_Func(dsList, fstart = NULL, fstop = NULL,
+  fstep = NULL, show.per_target = F, scale.xlog = F)
 
-\method{Plot.RT.ECDF_Single_Func}{DataSetList}(
-  dsList,
-  fstart = NULL,
-  fstop = NULL,
-  fstep = NULL,
-  show.per_target = F,
-  scale.xlog = F
-)
+\method{Plot.RT.ECDF_Single_Func}{DataSetList}(dsList, fstart = NULL,
+  fstop = NULL, fstep = NULL, show.per_target = F, scale.xlog = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

@@ -4,14 +4,8 @@
 \alias{get_dsc_posthoc}
 \title{Perform post-hoc processing on data from DSCtool}
 \usage{
-get_dsc_posthoc(
-  omni_res,
-  nr_algs,
-  nr_problems,
-  base_algorithm = NULL,
-  method = "friedman",
-  alpha = 0.05
-)
+get_dsc_posthoc(omni_res, nr_algs, nr_problems, base_algorithm = NULL,
+  method = "friedman", alpha = 0.05)
 }
 \arguments{
 \item{omni_res}{The result from a call to `get_dsc_omnibus`}

@@ -5,9 +5,11 @@
 \alias{Plot.FV.Histogram.DataSetList}
 \title{Plot histograms of the function values of a DataSetList at a certain target runtime}
 \usage{
-Plot.FV.Histogram(dsList, runtime, plot_mode = "overlay", use.equal.bins = F)
+Plot.FV.Histogram(dsList, runtime, plot_mode = "overlay",
+  use.equal.bins = F)
 
-\method{Plot.FV.Histogram}{DataSetList}(dsList, runtime, plot_mode = "overlay", use.equal.bins = F)
+\method{Plot.FV.Histogram}{DataSetList}(dsList, runtime,
+  plot_mode = "overlay", use.equal.bins = F)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

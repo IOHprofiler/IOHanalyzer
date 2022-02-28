@@ -4,7 +4,8 @@
 \alias{runServer}
 \title{Create a shiny-server GUI to interactively use the IOHanalyzer}
 \usage{
-runServer(port = getOption("shiny.port"), open_browser = TRUE, orca_gpu = TRUE)
+runServer(port = getOption("shiny.port"), open_browser = TRUE,
+  orca_gpu = TRUE)
 }
 \arguments{
 \item{port}{Optional; which port the server should be opened at. Defaults

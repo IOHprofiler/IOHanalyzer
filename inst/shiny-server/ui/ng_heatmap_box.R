@@ -15,7 +15,7 @@ rt_nevergrad_box <- function(width = 12, collapsible = T, collapsed = T) {
         selectInput('RT_NG.Heatmap.Format', label = 'Select the figure format',
                     choices = supported_fig_format, selected = supported_fig_format),
 
-        downloadButton('RT_NG.Heatmap.Download', label = 'Download the figure'),
+        downloadButton('RT_NG.Heatmap.Download', label = 'Download the figure')
       ),
 
       mainPanel(
@@ -50,7 +50,7 @@ fv_nevergrad_box <- function(width = 12, collapsible = T, collapsed = T) {
         selectInput('FV_NG.Heatmap.Format', label = 'Select the figure format',
                     choices = supported_fig_format, selected = supported_fig_format),
 
-        downloadButton('FV_NG.Heatmap.Download', label = 'Download the figure'),
+        downloadButton('FV_NG.Heatmap.Download', label = 'Download the figure')
       ),
 
       mainPanel(

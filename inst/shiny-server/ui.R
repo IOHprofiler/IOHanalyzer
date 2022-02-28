@@ -327,7 +327,7 @@ body <- dashboardBody(
         column(
           width = 6,
           overal_loading_box(collapsible = F)
-        ),
+        )
         # column(
         #   width = 4,
         #   ontology_box(collapsible = F)

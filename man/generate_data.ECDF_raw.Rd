@@ -9,7 +9,7 @@ generate_data.ECDF_raw(dsList, targets, scale_log = F)
 \arguments{
 \item{dsList}{The DataSetList object}
 
-\item{targets}{A list or data.table containing the targets per function / dimension. If this is 
+\item{targets}{A list or data.table containing the targets per function / dimension. If this is
 a data.table, it needs columns 'target', 'DIM' and 'funcId'}
 
 \item{scale_log}{Wheterh to use logarithmic scaling or not}

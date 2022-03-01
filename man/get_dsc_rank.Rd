@@ -4,16 +4,9 @@
 \alias{get_dsc_rank}
 \title{Get the matrix of rankings using the DSCtool api for a DataSetList}
 \usage{
-get_dsc_rank(
-  dsList,
-  targets = NULL,
-  which = "by_RT",
-  test_type = "AD",
-  alpha = 0.05,
-  epsilon = 0,
-  monte_carlo_iterations = 0,
-  na.correction = NULL
-)
+get_dsc_rank(dsList, targets = NULL, which = "by_RT",
+  test_type = "AD", alpha = 0.05, epsilon = 0,
+  monte_carlo_iterations = 0, na.correction = NULL)
 }
 \arguments{
 \item{dsList}{The DataSetList object}
@@ -28,16 +21,16 @@ get_dsc_rank(
 
 \item{epsilon}{Minimum threshold to have practical difference between algorithms (eDSC)}
 
-\item{monte_carlo_iterations}{How many monte-carlo-simulations to perform 
+\item{monte_carlo_iterations}{How many monte-carlo-simulations to perform
 (set to 0 to use regular DSC)}
 
 \item{na.correction}{How to deal with missing values. Only used in fixed-target perspective.
-Options are: 
+Options are:
 - 'NULL': No correction is done. This will likely result in an error, as the DSCtool
 does not allow for na values
 - 'PAR-1' Replace missing values with Budget (budget taken from relevant DataSet)
 - 'PAR-10' Replace missing values with 10*Budget (budget taken from relevant DataSet)
-- 'ERT' Replace NA values with the Expected Running Time. If all values are NA, this 
+- 'ERT' Replace NA values with the Expected Running Time. If all values are NA, this
 reverts to nr_runs * budget
 - 'Remove-na' Removes all NA values}
 }

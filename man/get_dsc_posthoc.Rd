@@ -4,14 +4,8 @@
 \alias{get_dsc_posthoc}
 \title{Perform post-hoc processing on data from DSCtool}
 \usage{
-get_dsc_posthoc(
-  omni_res,
-  nr_algs,
-  nr_problems,
-  base_algorithm = NULL,
-  method = "friedman",
-  alpha = 0.05
-)
+get_dsc_posthoc(omni_res, nr_algs, nr_problems, base_algorithm = NULL,
+  method = "friedman", alpha = 0.05)
 }
 \arguments{
 \item{omni_res}{The result from a call to `get_dsc_omnibus`}
@@ -20,7 +14,7 @@ get_dsc_posthoc(
 
 \item{nr_problems}{The number of problems present in `omni_res`}
 
-\item{base_algorithm}{The base algorithm to which the other are compared. 
+\item{base_algorithm}{The base algorithm to which the other are compared.
 This has to be present in `omni_res$algorithm_means` as an `algorithm` property}
 
 \item{method}{Either 'friedman' or 'friedman-aligned-rank'}

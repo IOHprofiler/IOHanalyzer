@@ -54,17 +54,17 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
             maximization <- FALSE
           else
             maximization <- TRUE
-        } 
+        }
       else {
-        warning("Can't detect maximization based on suite-attribute, setting to 
+        warning("Can't detect maximization based on suite-attribute, setting to
                 minimization by default")
         maximization <- FALSE # default to minimization
       }
     }
 
-    if(!(isTRUE(maximization) || isFALSE(maximization))) 
+    if(!(isTRUE(maximization) || isFALSE(maximization)))
       warning("unclear whether we should maximize or minimize.")
-    
+
     datBaseName <- sub(pattern = '(.*)\\..*$', replacement = '\\1', basename(info$datafile))
     datFile <- file.path(path, paste0(datBaseName, '.dat'))
     tdatFile <- file.path(path, paste0(datBaseName, '.tdat'))
@@ -97,7 +97,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
       TWO_COL = read_dat  # TODO: perhaps rename `TWO_COL` or to use a better naming
                           # scheme for all format names
     )
-    
+
     RT_raw <- read_raw(rtFile, subsampling)
     FV_raw <- read_raw(fvFile, subsampling)
 
@@ -124,7 +124,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     RT <- RT$RT
     mode(RT) <- 'integer'
     FV <- FV$FV
-    
+
     if (format %in% c(IOHprofiler)) {
       # try to save some memory here...
       FV <- tryCatch({
@@ -133,9 +133,9 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
         if (all(FV == .FV)) .FV
         else FV
       },
-      warning = function(w) FV) # in case the type coercion gives a warning 
+      warning = function(w) FV) # in case the type coercion gives a warning
     }
-   
+
     # TODO: add more data sanity checks
     maxRT <- set_names(sapply(RT_raw, function(d) d[nrow(d), idxEvals]), NULL)
     # Fix for old-format files which do not store used runtime in .dat-files
@@ -179,25 +179,25 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
 #' @param ... The DataSets to concatenate
 #' @return A new DataSet
 #' @export
-#' @examples 
+#' @examples
 #' c(dsl[[1]], dsl[[1]])
 c.DataSet <- function(...) {
   dsl <- list(...)
-  
+
   if (length(dsl) == 1)
     dsl <- dsl[[1]]
   dsl <- dsl[sapply(dsl, length) != 0]
-  
+
   if (length(dsl) == 0)
     return()
   if (length(dsl) == 1)
     return(dsl[[1]])
-  
+
   for (ds in dsl) {
     if (!any((class(ds)) == 'DataSet'))
       stop("Operation only possible when all arguments are DataSets")
   }
-  
+
   fixed_attrs <-
     c('suite', 'maximization', 'DIM', 'funcId', 'algId', 'format')
   info <- list()
@@ -216,7 +216,7 @@ c.DataSet <- function(...) {
     info <- c(info, temp)
   }
   names(info) <- fixed_attrs
-  
+
   #Record number of runs to make masks of static attributes
   nr_runs <- sapply(dsl, function(x)
     ncol(x$FV))
@@ -237,26 +237,26 @@ c.DataSet <- function(...) {
     names(temp) <- attr_str
     info <- c(info, temp)
   }
-  
+
   format <- info[['format']] #attr(dsl[[1]], "format")
-  
+
   RT_raw <- unlist(lapply(dsl, function(ds) {
     lapply(seq_len(ncol(ds$RT)), function(cnr) {
       rt_temp <- as.matrix(ds$RT[, cnr])
       cbind(rt_temp, as.numeric(rownames(ds$RT)))
     })
   }), recursive = F)
-  
+
   RT <-
     align_running_time(RT_raw,
                        format = "TWO_COL",
                        maximization = info$maximization)$RT
   FV <- align_function_value(RT_raw, format = "TWO_COL")$FV
-  
+
   # TODO: to deal with cases where aligned parameters are present in original DataSets
   PAR <- list('by_FV' = RT[names(RT) != 'RT'],
               'by_RT' = FV[names(FV) != 'FV'])
-  
+
   # Unaligned parameters
   for (par_name in names(dsl[[1]]$PAR)) {
     if (!par_name %in% c('by_FV', 'by_RT'))
@@ -265,7 +265,7 @@ c.DataSet <- function(...) {
           x$PAR[[par_name]]
         }), recursive = F)
   }
-  
+
   do.call(function(...)
     structure(list(
       RT = RT, FV = FV, PAR = PAR
@@ -290,7 +290,7 @@ c.DataSet <- function(...) {
 subset.DataSet <- function(x, mask, ...) {
   if (length(mask) != ncol(x$FV))
     stop(paste("The input DataSet has", ncol(x$FV), "runs while the input mask array has length", length(mask)))
-  
+
   info <- list()
   for (attr_str in names(attributes(x))) {
     if (attr_str %in% c('names', 'class'))
@@ -315,17 +315,17 @@ subset.DataSet <- function(x, mask, ...) {
     names(temp) <- attr_str
     info <- c(info, temp)
   }
-  
+
   format <- info[['format']]
-  
+
   RT <- as.matrix(x$RT[, mask])
   FV <- as.matrix(x$FV[, mask])
-  
+
   PAR <- list(
     'by_FV' = ifelse(ncol(x$PAR$by_FV) == length(mask), x$PAR$by_FV[, mask], NULL),
     'by_RT' = ifelse(ncol(x$PAR$by_RT) == length(mask), x$PAR$by_RT[, mask], NULL)
   )
-  
+
   do.call(function(...)
     structure(list(
       RT = RT, FV = FV, PAR = PAR
@@ -432,7 +432,7 @@ summary.DataSet <- function(object, ...) {
 `==.DataSet` <- function(dsL, dsR) {
   if (length(dsL) == 0 || length(dsR) == 0)
     return(FALSE)
-  
+
   for (attr_str in names(attributes(dsL))) {
     if (any(attr(dsL, attr_str) != attr(dsR, attr_str))) return(FALSE)
   }
@@ -597,13 +597,13 @@ get_overview <- function(ds, ...) UseMethod("get_overview", ds)
 #' Get condensed overview of datasets
 #'
 #' Get the unique identifiers for each DataSet in the provided DataSetList
-#' 
-#' If no unique identifier is set (using `change_id` or done in DataSet construction from 1.6.0 onwards), 
+#'
+#' If no unique identifier is set (using `change_id` or done in DataSet construction from 1.6.0 onwards),
 #' this function falls back on returning the algorith id (from `get_aldId`)to ensure backwards compatibility
 #'
 #' @param ds The DataSetList
 #' @param ... Arguments passed to other methods
-#' 
+#'
 #' @return The list of unique identiefiers present in dsl
 #' @examples
 #' get_id(dsl)
@@ -779,7 +779,7 @@ get_RT_summary.DataSet <- function(ds, ftarget, budget = NULL, ...) {
     cbind(ID, ftarget,
           apply(data, 1, .mean),
           apply(data, 1, .median),
-          apply(data, 1, .sd), 
+          apply(data, 1, .sd),
           apply(pen_data, 1, .mean), .) %>%
     set_colnames(c('ID', 'target', 'mean', 'median',
                    'sd', paste0('PAR-', getOption("IOHanalyzer.PAR_penalty", 1)),
@@ -861,7 +861,7 @@ get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide', ...) {
 #' @param maximization Whether maximization is needed or not
 #' @export
 fast_RT_samples <- function(RT_mat, target, maximization = F) {
-  if (maximization) 
+  if (maximization)
     idxs <- seq_along(rownames(RT_mat))[as.double(rownames(RT_mat)) >= target]
   else
     idxs <- seq_along(rownames(RT_mat))[as.double(rownames(RT_mat)) <= target]
@@ -884,15 +884,27 @@ get_FV_summary.DataSet <- function(ds, runtime, ...) {
   runtime <- sort(as.numeric(unique(c(runtime))))
   RT <- as.numeric(rownames(data))
   idx <- seq_along(RT)
-  
+
+  if (max(RT) < max(runtime)) { #Avoid forgetting stopped runs
+    data2 <- rbind(data, data[nrow(data),])
+    rownames(data2) <- c(rownames(data), max(c(runtime, RT)) + 1)
+    data <- data2
+  }
+
+  data <- apply(data, 2, function(x) { #Remove NA to preserve monotonicity of mean
+    temp <- x
+    temp[is.na(temp)] <- min(x, na.rm = T)
+    temp
+  })
+
   matched <- sapply(runtime, function(r) rev(idx[r >= RT])[1])
   data <- data[matched, , drop = FALSE]
-  
+
   cbind(ID, runtime, NC,
         apply(data, 1, .mean),
         apply(data, 1, .median),
         apply(data, 1, .sd),
-        as.data.table(t(apply(data, 1, IOHanalyzer_env$C_quantile)))) %>% 
+        as.data.table(t(apply(data, 1, IOHanalyzer_env$C_quantile)))) %>%
     set_colnames(c('ID', 'runtime', 'runs', 'mean', 'median', 'sd',
                     paste0(getOption("IOHanalyzer.quantiles") * 100, '%')))
 }
@@ -1051,8 +1063,8 @@ get_PAR_sample.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV',
 get_id.DataSet <- function(ds, ...) {
   temp <- attr(ds, 'ID')
   if (is.null(temp)) {
-    warning("No ID attribute set, returning the algId's instead. (from 1.6.0 onwards, ID attributes are always added
-            to new datasets, see the 'change_id' function.")
+    # warning("No ID attribute set, returning the algId's instead. (from 1.6.0 onwards, ID attributes are always added
+    #         to new datasets, see the 'change_id' function.")
     return(attr(ds, 'algId'))
   }
   return(unique(temp))

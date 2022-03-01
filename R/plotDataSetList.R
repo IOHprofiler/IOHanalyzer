@@ -407,6 +407,19 @@ Plot.Stats.Significance_Heatmap <- function(dsList, ftarget, alpha = 0.01, boots
                                             which = 'by_FV')
   UseMethod("Plot.Stats.Significance_Heatmap", dsList)
 
+#' Plot a heatmap according to the specifications from the Nevergrad dashboard
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension).
+#' @param target_dt A data-table containing the targets to condider on each function/dimension pair
+#' @param which Whether to use fixed-target ('by_FV') or fixed-budget ('by_RT') perspective
+#'
+#' @return A heatmap showing the fraction of times algorithm A beats algorithm B
+#' @export
+#' @examples
+#' Plot.Comparison.Heatmap(dsl)
+Plot.Comparison.Heatmap <- function(dsList, target_dt, which = 'by_FV')
+  UseMethod("Plot.Comparison.Heatmap", dsList)
+
 #' Plot a network graph showing the statistically different algorithms
 #'
 #' @param dsList A DataSetList (should consist of only one function and dimension).
@@ -452,15 +465,15 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
 
   if (backend == 'plotly') {
     data <- generate_data.Single_Function(dsList, Fstart, Fstop, scale.xlog, 'by_RT', includeOpts)
-    
+
     y_attrs <- c()
     if (show.ERT) y_attrs <- c(y_attrs, 'ERT')
     if (show.mean) y_attrs <- c(y_attrs, 'mean')
     if (show.median) y_attrs <- c(y_attrs, 'median')
     show_legend <- T
     if (length(y_attrs) > 0) {
-      p <- plot_general_data(data, x_attr = 'target', y_attr = y_attrs, 
-                             type = 'line', legend_attr = 'ID', show.legend = show_legend, 
+      p <- plot_general_data(data, x_attr = 'target', y_attr = y_attrs,
+                             type = 'line', legend_attr = 'ID', show.legend = show_legend,
                              scale.ylog = scale.ylog, p = p,
                              scale.xlog = scale.xlog, x_title = "Best-so-far f(x)-value",
                              y_title = "Function Evaluations",
@@ -468,9 +481,9 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
       show_legend <- F
     }
     if (show.CI) {
-      p <- plot_general_data(data, x_attr = 'target', y_attr = 'mean', 
-                             type = 'ribbon', legend_attr = 'ID', lower_attr = 'lower', 
-                             upper_attr = 'upper', p = p, show.legend = show_legend, 
+      p <- plot_general_data(data, x_attr = 'target', y_attr = 'mean',
+                             type = 'ribbon', legend_attr = 'ID', lower_attr = 'lower',
+                             upper_attr = 'upper', p = p, show.legend = show_legend,
                              scale.ylog = scale.ylog,
                              scale.xlog = scale.xlog, x_title = "Best-so-far f(x)-value",
                              y_title = "Function Evaluations",
@@ -480,13 +493,13 @@ Plot.RT.Single_Func.DataSetList <- function(dsList, Fstart = NULL, Fstop = NULL,
   # } else if (backend == 'ggplot2') {
   #   dt[, 'group' := paste(algId, funcId, DIM, sep = '-')]
   #   p <- ggplot(data = dt, aes(group = `group`, colour = `group`))
-  # 
+  #
   #   if (show.CI) p <- p + geom_ribbon(aes(target, ymin = lower, ymax = upper, fill = `group`),
   #                                     alpha = 0.2, colour = NA)
   #   if (show.ERT) p <- p + geom_line(aes(target, ERT), size = 1.2)
   #   if (show.mean) p <- p + geom_line(aes(target, mean), linetype = 'dashed')
   #   if (show.median) p <- p + geom_line(aes(target, median), linetype = 'dotted')
-  # 
+  #
   #   p <- p +
   #     scale_color_manual(values = colors) +
   #     scale_fill_manual(values = colors)
@@ -506,26 +519,26 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
 
   if (backend == 'plotly') {
     data <- generate_data.Single_Function(dsList, RTstart, RTstop, scale.xlog, 'by_FV')
-    
+
     y_attrs <- c()
     if (show.mean) y_attrs <- c(y_attrs, 'mean')
     if (show.median) y_attrs <- c(y_attrs, 'median')
     show_legend <- T
     if (length(y_attrs) > 0) {
-      p <- plot_general_data(data, x_attr = 'runtime', y_attr = y_attrs, 
-                             type = 'line', legend_attr = 'ID', show.legend = show_legend, 
-                             scale.ylog = scale.ylog, 
+      p <- plot_general_data(data, x_attr = 'runtime', y_attr = y_attrs,
+                             type = 'line', legend_attr = 'ID', show.legend = show_legend,
+                             scale.ylog = scale.ylog,
                              scale.xlog = scale.xlog, x_title = "Best-so-far f(x)-value",
                              y_title = "Function Evaluations",
                              scale.reverse = scale.reverse)
       show_legend <- F
     }
-    else 
+    else
       p <- NULL
     if (show.CI) {
-      p <- plot_general_data(data, x_attr = 'runtime', y_attr = 'mean', 
-                             type = 'ribbon', legend_attr = 'ID', lower_attr = 'lower', 
-                             upper_attr = 'upper', p = p, show.legend = show_legend, 
+      p <- plot_general_data(data, x_attr = 'runtime', y_attr = 'mean',
+                             type = 'ribbon', legend_attr = 'ID', lower_attr = 'lower',
+                             upper_attr = 'upper', p = p, show.legend = show_legend,
                              scale.ylog = scale.ylog,
                              scale.xlog = scale.xlog, x_title = "Best-so-far f(x)-value",
                              y_title = "Function Evaluations",
@@ -536,14 +549,14 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
   # } else if (backend == 'ggplot2') {
   #   fce[, 'group' := paste(algId, funcId, DIM, sep = '-')]
   #   p <- ggplot(data = fce, aes(group = `group`, colour = `group`))
-  # 
+  #
   #   if (show.mean) p <- p + geom_line(aes(runtime, mean), linetype = 'dashed')
   #   if (show.median) p <- p + geom_line(aes(runtime, median), linetype = 'dotted')
-  # 
+  #
   #   p <- p +
   #     scale_color_manual(values = colors) +
   #     scale_fill_manual(values = colors)
-  # 
+  #
   #   #TODO: add individual run etc
   # }
   return(p)
@@ -554,9 +567,9 @@ Plot.FV.Single_Func.DataSetList <- function(dsList, RTstart = NULL, RTstop = NUL
 Plot.RT.PMF.DataSetList <- function(dsList, ftarget, show.sample = F,
                                     scale.ylog = F, backend = NULL){
   if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
-  
+
   data <- generate_data.PMF(dsList, ftarget, 'by_RT')
-  
+
   plot_general_data(data, 'ID', 'RT', scale.ylog = scale.ylog,
                     x_title = "Algorithm", y_title = "Function Evaluations")
 }
@@ -570,9 +583,9 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
     return(NULL)
   }
   data <- generate_data.hist(dsList, ftarget, use.equal.bins, 'by_RT')
-  
+
   subplot_attr <- if (plot_mode == 'subplot') 'ID' else NULL
-  plot_general_data(data, 'x', 'y', width = 'width', type = 'hist', 
+  plot_general_data(data, 'x', 'y', width = 'width', type = 'hist',
                     subplot_attr = subplot_attr, x_title = "Function Evaluations",
                     y_title = "Runs")
 }
@@ -582,7 +595,7 @@ Plot.RT.Histogram.DataSetList <- function(dsList, ftarget, plot_mode = 'overlay'
 Plot.RT.ECDF_Per_Target.DataSetList <- function(dsList, ftargets, scale.xlog = F){
   req(length(ftargets) != 0)
   data <- generate_data.ECDF(dsList, ftargets, scale.xlog)
-  plot_general_data(data, 'x', 'mean', 'line', 
+  plot_general_data(data, 'x', 'mean', 'line',
                     x_title = "Function Evaluations",
                     y_title = "Proportion of runs", scale.xlog = scale.xlog, show.legend = T)
 }
@@ -592,15 +605,15 @@ Plot.RT.ECDF_Per_Target.DataSetList <- function(dsList, ftargets, scale.xlog = F
 Plot.RT.ECDF_Single_Func.DataSetList <- function(dsList, fstart = NULL, fstop = NULL,
                                           fstep = NULL, show.per_target = F,
                                           scale.xlog = F) {
-  
+
   targets <- seq_FV(get_funvals(dsList), fstart, fstop, fstep)
   req(targets)
-  
+
   data <- generate_data.ECDF(dsList, targets, scale.xlog)
-  
-  plot_general_data(data, 'x', 'mean', 'line', 
+
+  plot_general_data(data, 'x', 'mean', 'line',
                     x_title = "Function Evaluations",
-                    y_title = "Proportion of (run, target) pairs", 
+                    y_title = "Proportion of (run, target) pairs",
                     scale.xlog = scale.xlog, show.legend = T)
 }
 
@@ -609,21 +622,21 @@ Plot.RT.ECDF_Single_Func.DataSetList <- function(dsList, fstart = NULL, fstop = 
 Plot.RT.ECDF_AUC.DataSetList <- function(dsList, fstart = NULL,
                                     fstop = NULL, fstep = NULL,
                                     fval_formatter = as.integer) {
-  
+
   targets <- seq_FV(get_funvals(dsList), fstart, fstop, fstep, length.out = 10)
   req(targets)
-  
+
   data <- generate_data.AUC(dsList, targets, multiple_x = TRUE)
-  
+
   plot_general_data(data, 'x', 'auc', 'radar')
 }
 
 #' @rdname Plot.FV.PDF
 #' @export
 Plot.FV.PDF.DataSetList <- function(dsList, runtime, show.sample = F, scale.ylog = F){
-  
+
   data <- generate_data.PMF(dsList, runtime, 'by_FV')
-  
+
   plot_general_data(data, 'ID', 'f(x)', scale.ylog = scale.ylog,
                     x_title = "Algorithm", y_title = "Target Value")
 }
@@ -635,11 +648,11 @@ Plot.FV.Histogram.DataSetList <- function(dsList, runtime, plot_mode='overlay', 
     warning("Invalid dataset uploaded. Please ensure the datasetlist contains data
             from only one function and only one dimension.")
     return(NULL)
-  }  
+  }
   data <- generate_data.hist(dsList, runtime, use.equal.bins, 'by_FV')
-  
+
   subplot_attr <- if (plot_mode == 'subplot') 'ID' else NULL
-  plot_general_data(data, 'x', 'y', width = 'width', type = 'hist', 
+  plot_general_data(data, 'x', 'y', width = 'width', type = 'hist',
                     subplot_attr = subplot_attr, x_title = "Target Values",
                     y_title = "Runs")
 }
@@ -650,12 +663,12 @@ Plot.FV.ECDF_Per_Target.DataSetList <- function(dsList, runtimes, scale.xlog = F
   #TODO: Fvals in legend need to be formatted properly
   runtimes <- runtimes[!is.na(runtimes)]
   req(length(runtimes) != 0)
-  
+
   data <- generate_data.ECDF(dsList, runtimes, scale.xlog, which = 'by_FV')
-  
-  plot_general_data(data, 'x', 'mean', 'line', 
+
+  plot_general_data(data, 'x', 'mean', 'line',
                     x_title = "Target Value",
-                    y_title = "Proportion of runs", scale.xlog = scale.xlog, 
+                    y_title = "Proportion of runs", scale.xlog = scale.xlog,
                     show.legend = T,
                     scale.reverse = scale.reverse)
 }
@@ -669,11 +682,11 @@ Plot.FV.ECDF_Single_Func.DataSetList <- function(dsList, rt_min = NULL, rt_max =
   targets <- seq_RT(get_funvals(dsList), rt_min, rt_max, rt_step)
   req(targets)
   data <- generate_data.ECDF(dsList, targets, scale.xlog, which = 'by_FV')
-  
-  plot_general_data(data, 'x', 'mean', 'line', 
+
+  plot_general_data(data, 'x', 'mean', 'line',
                     x_title = "Target Value",
-                    y_title = "Proportion of (run, target) pairs", 
-                    scale.xlog = scale.xlog, 
+                    y_title = "Proportion of (run, target) pairs",
+                    scale.xlog = scale.xlog,
                     scale.reverse = scale.reverse, show.legend = T)
 }
 
@@ -683,7 +696,7 @@ Plot.FV.ECDF_AUC.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL, r
   targets <- seq_RT(get_runtimes(dsList), rt_min, rt_max, rt_step, length.out = 10)
   req(targets)
   data <- generate_data.AUC(dsList, targets, which = 'by_FV', multiple_x = TRUE)
-  
+
   plot_general_data(data, 'x', 'auc', 'radar')
 }
 
@@ -695,24 +708,24 @@ Plot.RT.Parameters.DataSetList <- function(dsList, f_min = NULL, f_max = NULL,
                                         show.mean = T, show.median = F,
                                         show.CI = F) {
   data <- generate_data.Parameters(dsList, scale.xlog, which = 'by_FV')
-  
+
   y_attrs <- c()
   if (show.mean) y_attrs <- c(y_attrs, 'mean')
   if (show.median) y_attrs <- c(y_attrs, 'median')
   show_legend <- T
   if (length(y_attrs) > 0) {
-    p <- plot_general_data(data, x_attr = 'target', y_attr = y_attrs, 
-                           type = 'line', legend_attr = 'ID', show.legend = show_legend, 
+    p <- plot_general_data(data, x_attr = 'target', y_attr = y_attrs,
+                           type = 'line', legend_attr = 'ID', show.legend = show_legend,
                            scale.ylog = scale.ylog, subplot_attr = 'parId',
                            scale.xlog = scale.xlog)
     show_legend <- F
   }
-  else 
+  else
     p <- NULL
   if (show.CI) {
-    p <- plot_general_data(data, x_attr = 'target', y_attr = 'mean', 
-                           type = 'ribbon', legend_attr = 'ID', lower_attr = 'lower', 
-                           upper_attr = 'upper', p = p, show.legend = show_legend, 
+    p <- plot_general_data(data, x_attr = 'target', y_attr = 'mean',
+                           type = 'ribbon', legend_attr = 'ID', lower_attr = 'lower',
+                           upper_attr = 'upper', p = p, show.legend = show_legend,
                            scale.ylog = scale.ylog, subplot_attr = 'parId',
                            scale.xlog = scale.xlog)
   }
@@ -728,24 +741,24 @@ Plot.FV.Parameters.DataSetList <- function(dsList, rt_min = NULL, rt_max = NULL,
                                            show.mean = T, show.median = F,
                                            show.CI = F) {
   data <- generate_data.Parameters(dsList, scale.xlog, which = 'by_RT')
-  
+
   y_attrs <- c()
   if (show.mean) y_attrs <- c(y_attrs, 'mean')
   if (show.median) y_attrs <- c(y_attrs, 'median')
   show_legend <- T
   if (length(y_attrs) > 0) {
-    p <- plot_general_data(data, x_attr = 'runtime', y_attr = y_attrs, 
-                           type = 'line', legend_attr = 'ID', show.legend = show_legend, 
+    p <- plot_general_data(data, x_attr = 'runtime', y_attr = y_attrs,
+                           type = 'line', legend_attr = 'ID', show.legend = show_legend,
                            scale.ylog = scale.ylog, subplot_attr = 'parId',
                            scale.xlog = scale.xlog)
     show_legend <- F
   }
-  else 
+  else
     p <- NULL
   if (show.CI) {
-    p <- plot_general_data(data, x_attr = 'runtime', y_attr = 'mean', 
-                           type = 'ribbon', legend_attr = 'ID', lower_attr = 'lower', 
-                           upper_attr = 'upper', p = p, show.legend = show_legend, 
+    p <- plot_general_data(data, x_attr = 'runtime', y_attr = 'mean',
+                           type = 'ribbon', legend_attr = 'ID', lower_attr = 'lower',
+                           upper_attr = 'upper', p = p, show.legend = show_legend,
                            scale.ylog = scale.ylog, subplot_attr = 'parId',
                            scale.xlog = scale.xlog)
   }
@@ -759,13 +772,13 @@ Plot.RT.ECDF_Multi_Func.DataSetList <- function(dsList, targets = NULL,
   if (is.null(targets) || !is.data.table(targets)) {
     targets <- get_ECDF_targets(dsList)
   }
-  
+
   data <- generate_data.ECDF(dsList, targets, scale.xlog)
-  
-  plot_general_data(data, 'x', 'mean', 'line', 
-                    scale.xlog = scale.xlog, 
+
+  plot_general_data(data, 'x', 'mean', 'line',
+                    scale.xlog = scale.xlog,
                     x_title = "Function Evaluations",
-                    y_title = "Proportion of (run, target, ...) pairs", 
+                    y_title = "Proportion of (run, target, ...) pairs",
                     show.legend = T)
 }
 
@@ -776,15 +789,15 @@ Plot.RT.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
                                            scale.reverse = F,
                                            backend = NULL) {
   if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
-  
+
   data <- rbindlist(lapply(get_funcId(dsList), function(fid) {
-    generate_data.Single_Function(subset(dsList, funcId == fid), scale_log = scale.xlog, 
+    generate_data.Single_Function(subset(dsList, funcId == fid), scale_log = scale.xlog,
                                   which = 'by_RT')
   }))
-  
-  plot_general_data(data, x_attr = 'target', y_attr = 'ERT', 
-                    subplot_attr = 'funcId', type = 'line', scale.xlog = scale.xlog, 
-                    scale.ylog = scale.ylog, x_title = 'Best-so-far f(x)', 
+
+  plot_general_data(data, x_attr = 'target', y_attr = 'ERT',
+                    subplot_attr = 'funcId', type = 'line', scale.xlog = scale.xlog,
+                    scale.ylog = scale.ylog, x_title = 'Best-so-far f(x)',
                     y_title = 'ERT', show.legend = T,
                     scale.reverse = scale.reverse)
 }
@@ -795,15 +808,15 @@ Plot.FV.Multi_Func.DataSetList <- function(dsList, scale.xlog = F,
                                          scale.ylog = F,
                                          backend = NULL) {
   if (is.null(backend)) backend <- getOption("IOHanalyzer.backend", default = 'plotly')
-  
+
   data <- rbindlist(lapply(get_funcId(dsList), function(fid) {
-    generate_data.Single_Function(subset(dsList, funcId == fid), scale_log = scale.xlog, 
+    generate_data.Single_Function(subset(dsList, funcId == fid), scale_log = scale.xlog,
                                   which = 'by_FV')
   }))
-  
-  plot_general_data(data, x_attr = 'runtime', y_attr = 'mean', 
-                    subplot_attr = 'funcId', type = 'line', scale.xlog = scale.xlog, 
-                    scale.ylog = scale.ylog, x_title = 'Runtime', 
+
+  plot_general_data(data, x_attr = 'runtime', y_attr = 'mean',
+                    subplot_attr = 'funcId', type = 'line', scale.xlog = scale.xlog,
+                    scale.ylog = scale.ylog, x_title = 'Runtime',
                     y_title = 'Best-so-far f(x)', show.legend = T)
 }
 
@@ -852,9 +865,22 @@ Plot.Stats.Significance_Heatmap.DataSetList <- function(dsList, ftarget, alpha =
                            col = c('blue', 'blue', 'white', 'white', 'red', 'red')
                            )
   heatmap <-  y - t(y)
-
+  heatmap[is.na(heatmap)] <- 0
   p <- plot_ly(x = colnames(y), y = rownames(y), z = heatmap, type = 'heatmap',
                xgap = 0.2, ygap = 0.2, colorscale = colorScale, showscale = F)
+  p %<>% layout(yaxis = list(autorange = 'reversed', scaleratio = 1),
+                xaxis = list(tickangle = 45))
+  p
+}
+
+#' @rdname Plot.Comparison.Heatmap
+#' @export
+Plot.Comparison.Heatmap.DataSetList <- function(dsList, target_dt = NULL, which='by_FV') {
+  matr <- generate_data.Heatmaps(dsList, which, target_dt)
+  order <- rowMeans(matr) %>% sort(decreasing = T) %>% names
+  matr <- matr[order[1:min(6, length(order))], order]
+  p <- plot_ly(x = colnames(matr), y = rownames(matr), z = matr, type = 'heatmap',
+               xgap = 0.2, ygap = 0.2, colorscale = 'RdBu', showscale = F, zmin=0, zmax=1)
   p %<>% layout(yaxis = list(autorange = 'reversed', scaleratio = 1),
                 xaxis = list(tickangle = 45))
   p
@@ -940,10 +966,10 @@ Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds = 100, 
 ### _______________________ Rewritten plotting function ____________________ ###
 
 #' Add transparancy to named list of colors
-#' 
+#'
 #' @param colors Named list of colors (in hex-notation)
 #' @param percentage The percentage of opacity. 0 is fully transparant, 1 is fully opaque
-#' 
+#'
 #' @noRd
 add_transparancy <- function(colors, percentage){
   hex_val <- format(as.hexmode(as.integer(255 * percentage)), upper.case = T, width = 2)
@@ -957,12 +983,12 @@ add_transparancy <- function(colors, percentage){
 #' @param x_attr The column to specify the x_axis. Default is 'algId'
 #' @param legend_attr Default is 'algId' This is also used for the selection of colorschemes
 #' @param y_attr The column to specify the y_axis
-#' @param type The type of plot to use. Currently available: 'violin', 'line', 'radar', 
+#' @param type The type of plot to use. Currently available: 'violin', 'line', 'radar',
 #' 'bar', hist' and 'ribbon'
-#' @param upper_attr When using ribbon-plot, this can be used to create a shaded area. 
-#' Only works in combination with`lower_attr` and `type` == 'ribbon' 
-#' @param lower_attr When using ribbon-plot, this can be used to create a shaded area. 
-#' Only works in combination with`upper_attr` and `type` == 'ribbon' 
+#' @param upper_attr When using ribbon-plot, this can be used to create a shaded area.
+#' Only works in combination with`lower_attr` and `type` == 'ribbon'
+#' @param lower_attr When using ribbon-plot, this can be used to create a shaded area.
+#' Only works in combination with`upper_attr` and `type` == 'ribbon'
 #' @param subplot_attr Which attribute of the dataframe to use for creating subplots
 #' @param subplot_shareX Whether or not to share X-axis when using subplots
 #' @param scale.xlog Logarithmic scaling of x-axis
@@ -976,7 +1002,7 @@ add_transparancy <- function(colors, percentage){
 #' @param inf.action How to deal with infinite values. Can be 'none', 'overlap' or 'jitter'
 #' @param violin.showpoints Wheteher or not to show individual points when making a violinplot
 #' @param ... Additional parameters for the add_trace function
-#' 
+#'
 #' @export
 plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin',
                               legend_attr = 'ID', scale.xlog = F, scale.ylog = F,
@@ -985,19 +1011,19 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                               lower_attr = NULL, subplot_attr = NULL, show.legend = F,
                               inf.action = 'none', violin.showpoints = F,
                               subplot_shareX = F, ...) {
-  
+
   l <- x <- isinf <- y <- text <- l_orig <- NULL #Set local binding to remove warnings
-  
+
   #Only allow valid plot types
   if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon', 'bar'))) {
     stop(paste0("Provided plot type ('", type, "') is not supported"))
   }
-  
+
   #And valid number of y-attributes
   if (length(y_attr) == 0) {
     stop("At least one y-attribute is needed to plot")
   }
-  
+
   #Deal with subplots
   if (!is.null(subplot_attr)) {
     if (!subplot_attr %in% colnames(df)) {
@@ -1013,16 +1039,16 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
     if (subplot_attr == legend_attr) {
       df[, l := subplot_attr]
     }
-    
+
     #Only need one legend for the whole plot
     legends_show <- rep(F, length(attrs))
     legends_show[[1]] <- show.legend
     names(legends_show) <- as.character(attrs)
-    
+
     #Get some number of rows and columns
     n_cols <- 1 + ceiling(length(attrs)/10)
     n_rows <- ceiling(length(attrs) / n_cols)
-    
+
     p <- lapply(seq(length(attrs)), function(idx) {
       attr_val <- attrs[[idx]]
       df_sub <- df[subplot_attr == attr_val]
@@ -1030,7 +1056,7 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
       disp_x <- idx > (length(attrs) - n_cols)
       x.title = if (disp_x) x_title else ""
       y.title = if (disp_y) y_title else ""
-      
+
       #Generate title for the subplots
       if (stri_detect_regex(subplot_attr, "(?i)fun"))
         sub_title <- paste0('F', attr_val)
@@ -1041,53 +1067,53 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
       p <- NULL
       if (stri_detect_fixed(type, '+')) {
         type1 <- substr(type, 0, stri_locate_all(type, fixed = '+')[[1]][[1]] - 1)
-        p <- plot_general_data(df_sub, x_attr, y_attr, type1, legend_attr, scale.xlog, scale.ylog, 
-                               scale.reverse, NULL, x.title, y.title, plot_title, upper_attr, lower_attr, 
+        p <- plot_general_data(df_sub, x_attr, y_attr, type1, legend_attr, scale.xlog, scale.ylog,
+                               scale.reverse, NULL, x.title, y.title, plot_title, upper_attr, lower_attr,
                                show.legend = legends_show[[as.character(attr_val)]], subplot_attr = NULL, ...)
         type <- substr(type, stri_locate_all(type, fixed = '+')[[1]][[1]] + 1, nchar(type))
       }
-      p <- plot_general_data(df_sub, x_attr, y_attr, type, legend_attr, scale.xlog, scale.ylog, 
-                        scale.reverse, p, x.title, y.title, plot_title, upper_attr, lower_attr, 
-                        show.legend = legends_show[[as.character(attr_val)]], subplot_attr = NULL, ...) 
-      if (getOption("IOHanalyzer.annotation_x", 0.5) >= 0 & 
+      p <- plot_general_data(df_sub, x_attr, y_attr, type, legend_attr, scale.xlog, scale.ylog,
+                        scale.reverse, p, x.title, y.title, plot_title, upper_attr, lower_attr,
+                        show.legend = legends_show[[as.character(attr_val)]], subplot_attr = NULL, ...)
+      if (getOption("IOHanalyzer.annotation_x", 0.5) >= 0 &
           getOption("IOHanalyzer.annotation_y", 1) >= 0) {
         p %<>% layout(
           annotations = list(
-            text = sub_title, 
+            text = sub_title,
             font = f2, showarrow = FALSE,
             xref = "paper", yref = "paper",
-            x = getOption("IOHanalyzer.annotation_x", 0.5), 
+            x = getOption("IOHanalyzer.annotation_x", 0.5),
             y = getOption("IOHanalyzer.annotation_y", 1)
           )
         )
         p
       }
-        
+
     })
-    
+
     p <- subplot(
-      p, nrows = n_rows, titleX = T, titleY = T, 
-      margin = c(getOption("IOHanalyzer.margin_horizontal", 0.02), 
-                 getOption("IOHanalyzer.margin_vertical", 0.02), 
-                 getOption("IOHanalyzer.margin_horizontal", 0.02), 
-                 getOption("IOHanalyzer.margin_vertical", 0.02)), 
+      p, nrows = n_rows, titleX = T, titleY = T,
+      margin = c(getOption("IOHanalyzer.margin_horizontal", 0.02),
+                 getOption("IOHanalyzer.margin_vertical", 0.02),
+                 getOption("IOHanalyzer.margin_horizontal", 0.02),
+                 getOption("IOHanalyzer.margin_vertical", 0.02)),
       shareX = subplot_shareX
-    ) %>% 
+    ) %>%
       layout(title = plot_title)
     return(p)
   }
-  
+
   # Replace colnames to have easier matching
   if (!x_attr %in% colnames(df) || !all(y_attr %in% colnames(df))) {
     stop("Not all provided attributes are colnames of the selected data.table.")
   }
   colnames(df)[colnames(df) == x_attr] <- "x"
-  
-  
+
+
   if (length(y_attr) == 1 && type != 'line')
     colnames(df)[colnames(df) == y_attr] <- "y"
   else if (type != 'line') stop("Multiple y-attrs is currently only supported for line-plots")
-  
+
   if ( !is.null(upper_attr) && !is.null(lower_attr)) {
     if (!upper_attr %in% colnames(df) || !lower_attr %in% colnames(df)) {
       stop("Provided upper and lower attributes are not colnames of the selected data.table.")
@@ -1095,7 +1121,7 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
     colnames(df)[colnames(df) == upper_attr] <- "upper"
     colnames(df)[colnames(df) == lower_attr] <- "lower"
   }
-  
+
   if ( x_attr != legend_attr) {
     colnames(df)[colnames(df) == legend_attr] <- "l"
     xs <- unique(df[['l']])
@@ -1103,14 +1129,14 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
   else{
     xs <- unique(df[['x']])
   }
-  
+
   #Get color and based on legend-attribute
   colors <- get_color_scheme(xs)
   if (is.null(names(colors)) || !all(names(colors) %in% xs) ) names(colors) <- xs
-  
+
   xscale <- if (scale.xlog) 'log' else 'linear'
   yscale <- if (scale.ylog) 'log' else 'linear'
-  
+
   #If new plot is needed, create one. Store in bool to decide if axis scaling is needed.
   is_new_plot <- F
   if (is.null(p)) {
@@ -1119,7 +1145,7 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                              title = plot_title)
     is_new_plot <- T
   }
-  
+
   switch(type,
          'violin' = {
            if (legend_attr != x_attr) {
@@ -1136,7 +1162,7 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
            }
            #Update color names as well, since the value changed
            names(colors) <- unique(df[['x']])
-           
+
            p %<>%
              add_trace(data = df,
                        x = ~x, y = ~y, type = 'violin',
@@ -1164,24 +1190,24 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
            if (legend_attr == x_attr) {
              stop("Duplicated attribute selected for x-axis and legend.")
            }
-           
+
            # Force legend to be categorical
            df[, l_orig := l]
            if (is.numeric(df[['l']])) {
              df[, l := paste0('A', l)]
              names(colors) <- paste0('A', names(colors))
            }
-           
+
            #Use linestyles to differentiate traces if only one attribute is selected to be plotted
            #TODO: Combine these two options more elegantly
            if (length(y_attr) == 1) {
              dashes <- get_line_style(xs)
              names(dashes) <- xs
              colnames(df)[colnames(df) == y_attr] <- "y"
-             
+
              df[, isinf := is.infinite(y)]
              df[, text := as.character(round(y, getOption("IOHanalyzer.precision", 2)))]
-             
+
              if (inf.action == 'overlap') {
                maxval <- max(df[isinf == F, 'y'])
                df[['y']][df[['isinf']]] <- 10**(ceiling(log10(maxval)) + 1)
@@ -1200,19 +1226,19 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                  }
                }
              }
-             
+
              suppressWarnings(
                p %<>%
                  add_trace(
                    data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l_orig, name = ~l_orig,
                    type = 'scatter', mode = 'lines+markers',
-                   linetype = ~l_orig, marker = list(size = getOption('IOHanalyzer.markersize', 4)), 
+                   linetype = ~l_orig, marker = list(size = getOption('IOHanalyzer.markersize', 4)),
                    linetypes = dashes,
                    colors = colors, showlegend = show.legend,
                    text = ~text, line = list(width = getOption('IOHanalyzer.linewidth', 2)),
                    hovertemplate = '%{text}',
                    ...
-                 ) 
+                 )
              )
              if (inf.action != 'none') {
                p %<>% add_trace(data = df[isinf == T], x = ~x, y = ~y, legendgroup = ~l_orig, name = ~l_orig,
@@ -1221,33 +1247,33 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                                 colors = colors, showlegend = F, text = 'Inf', hoverinfo = 'none',
                                 ...
                )
-             }   
-             
+             }
+
            }
            else {
              if (inf.action != 'none') {
                warning("inf.action is not yet supported for multiple y-attributes")
              }
-             
-             dashes_full <- rep(c("solid", "dot", "dash", "longdash", "dashdot", "longdashdot"), 
+
+             dashes_full <- rep(c("solid", "dot", "dash", "longdash", "dashdot", "longdashdot"),
                                 ceiling(length(y_attr)/3))[1:length(y_attr)]
              names(dashes_full) <- y_attr
-             
+
              for (y_atr in y_attr) {
                colnames(df)[colnames(df) == y_atr] <- "y"
-               
+
                #TODO: Figure out how to supress warning about 6 linetypes
                dashstyle <- dashes_full[[y_atr]]
                suppressWarnings(
                  p %<>%
                    add_trace(
                      data = df, x = ~x, y = ~y, color = ~l, legendgroup = ~l_orig, name = ~l_orig,
-                     type = 'scatter', mode = 'lines+markers', 
+                     type = 'scatter', mode = 'lines+markers',
                      marker = list(size = getOption('IOHanalyzer.markersize', 4)), linetype = dashstyle,
                      colors = colors, showlegend = show.legend, name = ~l,
                      text = y_atr, line = list(width = getOption('IOHanalyzer.linewidth', 2)),
                      ...
-                   )         
+                   )
                )
                colnames(df)[colnames(df) == "y"] <- y_atr
                show.legend <- F
@@ -1261,7 +1287,7 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
              else
                p %<>% layout(xaxis = list(type = 'category', tickfont = f3(), ticklen = 3),
                              yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
-             
+
            }
          },
          'ribbon' = {
@@ -1271,7 +1297,7 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
            if (is.null(upper_attr) || is.null(lower_attr)) {
              stop("No upper or lower attribute provided for ribbon-plot")
            }
-           
+
            for (name in xs) {
              df_small <- df[l == name]
              legend_name <- as.character(name)
@@ -1284,9 +1310,9 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                          fill = 'tonexty',  line = list(color = 'transparent'), legendgroup = legend_name,
                          fillcolor = rgba_str, showlegend = F, name = 'lower', ...)
            }
-           
-           
-           
+
+
+
            if (is_new_plot) {
              p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3,
                                         autorange = ifelse(scale.reverse, "reversed", T)),
@@ -1329,7 +1355,7 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                        colors = add_transparancy(colors, 0.6), color = ~l,
                        marker = list(line = list(color = 'rgb(8,48,107)')),
                        ...)
-           
+
            if (is_new_plot) {
              p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3,
                                         autorange = ifelse(scale.reverse, "reversed", T)),
@@ -1349,7 +1375,7 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                         marker = list(line = list(color = 'rgb(8,48,107)')),
                         ...)
           }
-          
+
           if (is_new_plot) {
             p %<>% layout(xaxis = list(tickfont = f3(), ticklen = 3),
                           yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
@@ -1361,11 +1387,11 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
 
 
 #' Create the PerformViz plot
-#' 
-#' From the paper: 
-#' 
+#'
+#' From the paper:
+#'
 #' @param DSC_rank_result The result from a call to DSCtool rank service (`get_dsc_rank`)
-#' 
+#'
 #' @return A performviz plot
 #' @export
 #' @examples
@@ -1386,22 +1412,22 @@ Plot.Performviz <- function(DSC_rank_result) {
          call. = FALSE)
   }
   mlist <- DSC_rank_result$ranked_matrix
-  
+
   problem <- NULL #Assign variable to remove warnings
-  # df_temp <- rbindlist(lapply(mlist[[problem_idx]]$result, 
+  # df_temp <- rbindlist(lapply(mlist[[problem_idx]]$result,
   #                             function(x) {
   #                               list(algorithm = x$algorithm, rank =  x$rank)
   #                             }))
   # df_temp[, problem := mlist[[problem_idx]]$problem]
-  
+
   df <- rbindlist(lapply(seq(length(mlist)), function(problem_idx) {
-    df_temp <- rbindlist(lapply(mlist[[problem_idx]]$result, 
+    df_temp <- rbindlist(lapply(mlist[[problem_idx]]$result,
                                 function(x) {
                                   list(algorithm = x$algorithm, rank =  x$rank)
                                 }))
     df_temp[, problem := mlist[[problem_idx]]$problem]
   }))
-  
+
   rank_matrix <- reshape2::acast(df, algorithm ~ problem, value.var = 'rank')
   df <- rank_matrix
   # colnames(df)<-index
@@ -1412,15 +1438,15 @@ Plot.Performviz <- function(DSC_rank_result) {
   .density = ComplexHeatmap::anno_density(df, type = "line", gp = grid::gpar(col = "blue"))
   ha_mix_top = ComplexHeatmap::HeatmapAnnotation(hist = .hist, density = .density)
   # Define some graphics to display the distribution of rows
-  .violin = ComplexHeatmap::anno_density(df, type = "violin", 
+  .violin = ComplexHeatmap::anno_density(df, type = "violin",
                          gp = grid::gpar(fill = "lightblue"), which = "row")
   .boxplot = ComplexHeatmap::anno_boxplot(df, which = "row")
   ha_mix_right = ComplexHeatmap::HeatmapAnnotation(violin = .violin, bxplt = .boxplot,
                                    which = "row", width = grid::unit(4, "cm"))
   # Combine annotation with heatmap
-  heatmap_main <- ComplexHeatmap::Heatmap(df, name = "Ranking", 
+  heatmap_main <- ComplexHeatmap::Heatmap(df, name = "Ranking",
           column_names_gp = grid::gpar(fontsize = 8),
-          top_annotation = ha_mix_top, 
+          top_annotation = ha_mix_top,
           top_annotation_height = grid::unit(3.8, "cm"))
   return(ComplexHeatmap::draw(
     ComplexHeatmap::`+.AdditiveUnit`(heatmap_main, ha_mix_right))

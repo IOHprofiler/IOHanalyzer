@@ -20,7 +20,7 @@ observe({
   req(input$repository.type)
   repo_dir <- get_repo_location()
   dir <- file.path(repo_dir, input$repository.type)
-  
+
   rds_files <- list.files(dir, pattern = '.rds$') %>% sub('\\.rds$', '', .)
   if (length(rds_files) != 0) {
     updateSelectInput(session, 'repository.dataset', choices = rds_files, selected = rds_files[[1]])
@@ -40,7 +40,7 @@ observeEvent(input$repository.dataset, {
   algs <- c()
   dims <- c()
   funcs <- c()
-  
+
   for (f in input$repository.dataset) {
     rds_file <- file.path(repo_dir, input$repository.type, paste0(f, ".rds"))
     if (file.exists(paste0(rds_file, '_info'))) {
@@ -54,7 +54,7 @@ observeEvent(input$repository.dataset, {
     dims <- c(dims, info$DIM)
     funcs <- c(funcs, info$funcId)
   }
-  
+
   algs <- unique(algs)
   dims <- unique(dims)
   funcs <- unique(funcs)
@@ -76,14 +76,14 @@ observeEvent(input$repository.load_button, {
   data <- subset(data, funcId %in% input$repository.funcId)
   data <- subset(data, DIM %in% input$repository.dim)
   data <- subset(data, algId %in% input$repository.ID)
-  
+
   if (length(DataList$data) > 0 && attr(data, 'maximization') != attr(DataList$data, 'maximization')) {
     shinyjs::alert(paste0("Attempting to add data from a different optimization type to the currently",
                    " loaded data.\nPlease either remove the currently loaded data or",
                    " choose a different dataset to load."))
     return(NULL)
   }
-  
+
   DataList$data <- c(DataList$data, data)
   DataList$data <- clean_DataSetList(DataList$data)
   # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
@@ -95,19 +95,19 @@ observeEvent(input$repository.load_button, {
   }
 })
 
-# decompress zip files recursively and return the root directory of extracted files 
+# decompress zip files recursively and return the root directory of extracted files
 unzip_fct_recursive <- function(zipfile, exdir, print_fun = print, alert_fun = print, depth = 0) {
-  filetype <- basename(zipfile) %>% 
-    strsplit('\\.') %>% `[[`(1) %>%  
-    rev %>% 
+  filetype <- basename(zipfile) %>%
+    strsplit('\\.') %>% `[[`(1) %>%
+    rev %>%
     `[`(1)
   folders <- list()
-  
+
   if (filetype == 'zip')
     unzip_fct <- unzip
   else if (filetype %in% c('bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz'))
     unzip_fct <- untar
-  
+
   files <- unzip_fct(zipfile, list = FALSE, exdir = file.path(exdir, rand_strings(1)))
   if (length(files) == 0) {
     alert_fun("An error occured while unzipping the provided files.\n
@@ -116,19 +116,19 @@ unzip_fct_recursive <- function(zipfile, exdir, print_fun = print, alert_fun = p
     return(NULL)
   }
   print_fun(paste0('<p style="color:blue;">Succesfully unzipped ', basename(zipfile), '.<br>'))
-  
-  folders <- grep('*.info|csv|txt', files, value = T) %>% 
-    dirname %>% 
-    unique %>% 
+
+  folders <- grep('*.info|csv|txt', files, value = T) %>%
+    dirname %>%
+    unique %>%
     grep('__MACOSX', ., value = T, invert = T) %>%  # to get rid of __MACOSX folder on MAC..
     c(folders)
-  
-  zip_files <- grep('.*zip|bz2|bz|gz|tar|tgz|tar\\.gz|xz', files, value = T, perl = T) %>% 
+
+  zip_files <- grep('.*zip|bz2|bz|gz|tar|tgz|tar\\.gz|xz', files, value = T, perl = T) %>%
     grep('__MACOSX', ., value = T, invert = T)
-  
+
   if (depth <= 3) { # only allow for 4 levels of recursions
     for (zipfile in zip_files) {
-      .folders <- unzip_fct_recursive(zipfile, dirname(zipfile), alert_fun, 
+      .folders <- unzip_fct_recursive(zipfile, dirname(zipfile), alert_fun,
                                       print_fun, depth + 1)
       folders <- c(folders, .folders)
     }
@@ -139,24 +139,24 @@ unzip_fct_recursive <- function(zipfile, exdir, print_fun = print, alert_fun = p
 # upload the compressed the data file and uncompress them
 selected_folders <- reactive({
   if (is.null(input$upload.add_zip)) return(NULL)
-  
+
   tryCatch({
     datapath <- input$upload.add_zip$datapath
     folders <- c()
-    
+
     for (i in seq(datapath)) {
-      filetype <- basename(datapath[i]) %>% 
-        strsplit('\\.') %>% `[[`(1) %>%  
-        rev %>% 
+      filetype <- basename(datapath[i]) %>%
+        strsplit('\\.') %>% `[[`(1) %>%
+        rev %>%
         `[`(1)
-      
+
       print_html(paste0('<p style="color:blue;">Handling ', filetype, '-data.<br>'))
       if (filetype == 'csv' || filetype == 'rds') {
         # add the data path to the folders list direct
         folders <- c(folders, datapath[[i]])
         next
       }
-      
+
       .folders <- unzip_fct_recursive(datapath[i], exdir, print_html) %>% unique
       folders %<>% c(.folders)
     }
@@ -170,23 +170,23 @@ observeEvent(selected_folders(), {
   withProgress({
     folders <- selected_folders()
     req(length(folders) != 0)
-    
+
     format_selected <- input$upload.data_format
     maximization <- input$upload.maximization
-    
+
     if (maximization == "AUTOMATIC") maximization <- NULL
-    
+
     if (length(folderList$data) == 0)
       folder_new <- folders
     else
       folder_new <- setdiff(folders, intersect(folderList$data, folders))
-  
+
     req(length(folder_new) != 0)
     tryCatch(
     format_detected <- lapply(folder_new, check_format) %>% unique
     , error = function(e) {
-    print_html(paste('<p style="color:red;">The data verification 
-                     failed, please check that the uploaded files are complete 
+    print_html(paste('<p style="color:red;">The data verification
+                     failed, please check that the uploaded files are complete
                      and not corrupted.</p>'))
       })
     if (length(format_detected) > 1)
@@ -195,18 +195,18 @@ observeEvent(selected_folders(), {
                        'is detected in the uploaded data set... skip the uploaded data'))
     else
       format_detected <- format_detected[[1]]
-    
+
     print_html(paste0('<p style="color:blue;">Data processing of source type:', format_detected, ' <br>'))
-  
+
     for (folder in folder_new) {
       indexFiles <- scan_index_file(folder)
-  
+
       if (length(indexFiles) == 0 && !(format_detected %in% c(NEVERGRAD, "SOS", "RDS")))
         print_html(paste('<p style="color:red;">No .info-files detected in the
                          uploaded folder, while they were expected:</p>', folder))
       else {
         folderList$data <- c(folderList$data, folder)
-        
+
         if (format_detected == "RDS") {
           new_data <- readRDS(folder)
           if (!("DataSetList" %in% class(new_data)))
@@ -242,7 +242,7 @@ observeEvent(selected_folders(), {
                       add = TRUE)
       }
     }
-    
+
     DataList$data <- clean_DataSetList(DataList$data)
     # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
     if (is.null(DataList$data)) {
@@ -250,7 +250,7 @@ observeEvent(selected_folders(), {
                      Please ensure the data is not corrupted.")
       return(NULL)
     }
-    
+
     update_menu_visibility(attr(DataList$data, 'suite'))
     # set_format_func(attr(DataList$data, 'suite'))
     IDs <- get_id(DataList$data)
@@ -280,9 +280,9 @@ update_menu_visibility <- function(suite){
   else {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "Positions"))
   }
-  if (!is.null(get_funcName(DataList$data))) 
+  if (!is.null(get_funcName(DataList$data)))
     shinyjs::enable("Settings.Use_Funcname")
-  else 
+  else
     shinyjs::disable("Settings.Use_Funcname")
 }
 
@@ -319,7 +319,7 @@ observeEvent(input$upload.remove_data, {
     updateSelectInput(session, 'Overall.Funcid', choices = c(), selected = '')
     updateSelectInput(session, 'Overall.Funcname', choices = c(), selected = '')
     updateSelectInput(session, 'Overall.ID', choices = c(), selected = '')
-    
+
     print_html('<p style="color:red;">all data are removed!</p>')
     print_html('', 'upload_data_promt')
   }
@@ -349,114 +349,114 @@ observe({
   funcIds <- get_funcId(data)
   DIMs <- get_dim(data)
   algIds <- get_algId(data)
-  
+
   selected_ds <- data[[1]]
   selected_f <- attr(selected_ds,'funcId')
   selected_dim <- attr(selected_ds, 'DIM')
   selected_alg <- attr(selected_ds, 'algId')
   selected_ID <- get_id(selected_ds)
-  
+
   updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = selected_f)
   if (input$Settings.Use_Funcname)
     updateSelectInput(session, 'Overall.Funcname', choices = get_funcName(data), selected = get_funcName(data[1]))
-  
-  if ('algId' %in% input$Settings.ID.Variables) 
+
+  if ('algId' %in% input$Settings.ID.Variables)
     updateSelectInput(session, 'Overall.ID', choices = NULL, selected = NULL)
   else
     updateSelectInput(session, 'Overall.ID', choices = algIds, selected = selected_alg)
-  
+
   updateSelectInput(session, 'ERTPlot.Aggr.Funcs', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'Overview.Single.ID', choices = IDs, selected = IDs)
-  
+
   # updateSelectInput(session, 'Report.RT.Overview-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.Overview-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.RT.Overview-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.RT.Statistics-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.Statistics-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.RT.Statistics-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.RT.Single_ERT-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.Single_ERT-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.RT.Single_ERT-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.RT.Multi_ERT-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.RT.Multi_ERT-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.RT.Rank-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.RT.Rank-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.RT.Histogram-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.Histogram-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.RT.Histogram-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.RT.PMF-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.PMF-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.RT.PMF-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.RT.ECDF_Single_Target-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.ECDF_Single_Target-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.RT.ECDF_Single_Target-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.RT.ECDF_Single_Function-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.ECDF_Single_Function-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.RT.ECDF_Single_Function-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.RT.ECDF_Aggregated-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.RT.ECDF_AUC-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.RT.ECDF_AUC-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.RT.ECDF_AUC-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.FV.Overview-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.Overview-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.FV.Overview-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.FV.Statistics-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.Statistics-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.FV.Statistics-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.FV.Single_FCE-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.Single_FCE-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.FV.Single_FCE-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.FV.Multi_FCE-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.FV.Multi_FCE-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.FV.Rank-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.FV.Rank-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.FV.Histogram-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.Histogram-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.FV.Histogram-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.FV.PMF-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.PMF-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.FV.PMF-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.FV.ECDF_Single_Target-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.ECDF_Single_Target-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.FV.ECDF_Single_Target-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.FV.ECDF_Single_Function-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.ECDF_Single_Function-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.FV.ECDF_Single_Function-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.FV.ECDF_Aggregated-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.FV.ECDF_AUC-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.FV.ECDF_AUC-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.FV.ECDF_AUC-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.Param.Plot-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.Param.Plot-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.Param.Plot-Alg', choices = IDs, selected = IDs)
-  # 
+  #
   # updateSelectInput(session, 'Report.Param.Statistics-FuncId', choices = funcIds, selected = selected_f)
   # updateSelectInput(session, 'Report.Param.Statistics-DIM', choices = DIMs, selected = selected_dim)
   # updateSelectInput(session, 'Report.Param.Statistics-Alg', choices = IDs, selected = IDs)
-  
+
   updateSelectInput(session, 'RTportfolio.Shapley.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RTportfolio.Shapley.Funcs', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RTportfolio.Shapley.Dims', choices = DIMs, selected = DIMs)
@@ -470,12 +470,12 @@ observe({
   updateSelectInput(session, 'RT.Multisample.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RT.Multisample.FuncId', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RT.Multisample.DIM', choices = DIMs, selected = selected_dim)
-  
+
   updateSelectInput(session, 'ERTPlot.Multi.Funcs', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'FCEPlot.Multi.Funcs', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RTECDF.Aggr.FuncIds', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RTECDF.Aggr.DIMS', choices = DIMs, selected = DIMs)
-  
+
   updateSelectInput(session, 'FV.MultiFV.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV.MultiFV.FuncId', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'FV.MultiFV.DIM', choices = DIMs, selected = selected_dim)
@@ -486,15 +486,23 @@ observe({
   updateSelectInput(session, 'RT_Stats.Glicko.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RT_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'RT_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
-  
+
+  updateSelectInput(session, 'RT_NG.Heatmap.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'RT_NG.Heatmap.Funcid', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'RT_NG.Heatmap.Dim', choices = DIMs, selected = DIMs)
+
+  updateSelectInput(session, 'FV_NG.Heatmap.ID', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FV_NG.Heatmap.Funcid', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'FV_NG.Heatmap.Dim', choices = DIMs, selected = DIMs)
+
   updateSelectInput(session, 'RT_Stats.DSC.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RT_Stats.DSC.Funcid', choices = funcIds, selected = funcIds)
   updateSelectInput(session, 'RT_Stats.DSC.Dim', choices = DIMs, selected = DIMs)
 
   updateSelectInput(session, 'FV_Stats.DSC.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV_Stats.DSC.Funcid', choices = funcIds, selected = funcIds)
-  updateSelectInput(session, 'FV_Stats.DSC.Dim', choices = DIMs, selected = DIMs)  
-  
+  updateSelectInput(session, 'FV_Stats.DSC.Dim', choices = DIMs, selected = DIMs)
+
   updateSelectInput(session, 'RT_Stats.Overview.ID', choices = IDs, selected = IDs)
 
   updateSelectInput(session, 'FV_Stats.Glicko.ID', choices = IDs, selected = IDs)
@@ -539,10 +547,10 @@ observe({
   updateSelectInput(session, 'ParCoordPlot.Algs', choices = IDs, selected = IDs[[1]])
   updateSelectInput(session, 'FV_PAR.Plot.Params', choices = parIds_, selected = parIds_)
   updateSelectInput(session, 'RT_PAR.Plot.Params', choices = parIds_, selected = parIds_)
-  
+
   attr_choices <- get_static_attributes(data)
   invalid_choices <- c('funcId', 'DIM', 'ID')
-  updateSelectInput(session, 'Settings.ID.Variables', choices = attr_choices[!attr_choices %in% invalid_choices], 
+  updateSelectInput(session, 'Settings.ID.Variables', choices = attr_choices[!attr_choices %in% invalid_choices],
                     selected = attr(data, 'ID_attributes'))
 })
 
@@ -552,25 +560,25 @@ observe({
 DATA <- reactive({
   dim <- input$Overall.Dim
   req(dim)
-  
+
   d <- subset(DataList$data, DIM == dim)
-  
+
   if (!'algId' %in% input$Settings.ID.Variables) {
     algid <- input$Overall.ID
     if (!is.null(algid)) d <- subset(d, algId == algid)
   }
-  
+
   if (input$Settings.Use_Funcname) {
     fname <- input$Overall.Funcname
     if (!is.null(fname)) d <- subset(d, funcname == fname)
   }
   else {
     fid <- input$Overall.Funcid
-    if (!is.null(fid)) d <- subset(d, funcId == fid)  
+    if (!is.null(fid)) d <- subset(d, funcId == fid)
   }
 
   if (length(DataList$data) == 0) return(NULL)
-  
+
   if (length(d) == 0 && dim != "") {
     showNotification("There is no data available for this (dimension,function)-pair")
   }

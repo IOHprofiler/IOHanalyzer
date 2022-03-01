@@ -7,16 +7,16 @@
 #' @importFrom colorspace sequential_hcl
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom colorRamps primary.colors
-#' @importFrom data.table as.data.table rbindlist data.table fread := melt is.data.table 
-#' @importFrom data.table setorderv frank setnames rbindlist copy transpose
+#' @importFrom data.table as.data.table rbindlist data.table fread := melt is.data.table
+#' @importFrom data.table setorderv frank setnames rbindlist copy transpose setDT
 #' @importFrom plotly add_annotations add_trace orca plot_ly rename_ subplot layout
 #' @importFrom ggplot2 aes geom_jitter geom_line geom_ribbon geom_violin ggplot element_text
 #' @importFrom ggplot2 guides scale_color_manual scale_colour_manual scale_fill_manual
 #' @importFrom ggplot2 scale_x_continuous scale_x_log10 facet_wrap theme_set theme_grey theme
 #' @importFrom shiny req
 #' @importFrom stringi stri_detect_regex stri_detect_fixed stri_locate_all stri_replace
-#' @importFrom stringi stri_rand_strings
-#' @importFrom httr POST add_headers content authenticate
+#' @importFrom stringi stri_rand_strings stri_sub
+#' @importFrom httr POST GET add_headers content authenticate
 #' @importFrom reshape2 acast
 #' @importFrom knitr kable
 #' @importFrom methods hasArg
@@ -61,7 +61,7 @@ options(shiny.port = 4242)
   )
   toset <- !(names(op.IOHanalyzer) %in% names(op))
   if (any(toset)) options(op.IOHanalyzer[toset])
-  
+
   invisible()
 }
 
@@ -120,13 +120,13 @@ SOS <- 'SOS'
 #'
 #' @docType package
 #' @name IOHanalyzer
-#' @examples 
+#' @examples
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
 #' dsList <- DataSetList(path)
 #' summary(dsList)
 #' Plot.RT.Single_Func(dsList[1])
-#' 
-#' @examples 
+#'
+#' @examples
 #' \dontrun{
 #' runServer()
 #' }

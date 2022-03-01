@@ -4,28 +4,13 @@
 \alias{plot_general_data}
 \title{General function for plotting within IOHanalyzer}
 \usage{
-plot_general_data(
-  df,
-  x_attr = "ID",
-  y_attr = "vals",
-  type = "violin",
-  legend_attr = "ID",
-  scale.xlog = F,
-  scale.ylog = F,
-  scale.reverse = F,
-  p = NULL,
-  x_title = NULL,
-  y_title = NULL,
-  plot_title = NULL,
-  upper_attr = NULL,
-  lower_attr = NULL,
-  subplot_attr = NULL,
-  show.legend = F,
-  inf.action = "none",
-  violin.showpoints = F,
-  subplot_shareX = F,
-  ...
-)
+plot_general_data(df, x_attr = "ID", y_attr = "vals",
+  type = "violin", legend_attr = "ID", scale.xlog = F,
+  scale.ylog = F, scale.reverse = F, p = NULL, x_title = NULL,
+  y_title = NULL, plot_title = NULL, upper_attr = NULL,
+  lower_attr = NULL, subplot_attr = NULL, show.legend = F,
+  inf.action = "none", violin.showpoints = F, subplot_shareX = F,
+  ...)
 }
 \arguments{
 \item{df}{The dataframe containing the data to plot. It should contain at least two columns:
@@ -35,7 +20,7 @@ plot_general_data(
 
 \item{y_attr}{The column to specify the y_axis}
 
-\item{type}{The type of plot to use. Currently available: 'violin', 'line', 'radar', 
+\item{type}{The type of plot to use. Currently available: 'violin', 'line', 'radar',
 'bar', hist' and 'ribbon'}
 
 \item{legend_attr}{Default is 'algId' This is also used for the selection of colorschemes}
@@ -54,10 +39,10 @@ plot_general_data(
 
 \item{plot_title}{Title of x-axis. Defaults to no title}
 
-\item{upper_attr}{When using ribbon-plot, this can be used to create a shaded area. 
+\item{upper_attr}{When using ribbon-plot, this can be used to create a shaded area.
 Only works in combination with`lower_attr` and `type` == 'ribbon'}
 
-\item{lower_attr}{When using ribbon-plot, this can be used to create a shaded area. 
+\item{lower_attr}{When using ribbon-plot, this can be used to create a shaded area.
 Only works in combination with`upper_attr` and `type` == 'ribbon'}
 
 \item{subplot_attr}{Which attribute of the dataframe to use for creating subplots}

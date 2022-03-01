@@ -8,7 +8,8 @@ a DataSetList. Aggregated over multiple functions or dimensions.}
 \usage{
 Plot.RT.ECDF_Multi_Func(dsList, targets = NULL, scale.xlog = F)
 
-\method{Plot.RT.ECDF_Multi_Func}{DataSetList}(dsList, targets = NULL, scale.xlog = F)
+\method{Plot.RT.ECDF_Multi_Func}{DataSetList}(dsList, targets = NULL,
+  scale.xlog = F)
 }
 \arguments{
 \item{dsList}{A DataSetList.}

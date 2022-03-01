@@ -4,7 +4,8 @@
 \alias{generate_data.Aggr}
 \title{Generate dataframe of a single function/dimension pair}
 \usage{
-generate_data.Aggr(dsList, aggr_on = "funcId", targets = NULL, which = "by_RT")
+generate_data.Aggr(dsList, aggr_on = "funcId", targets = NULL,
+  which = "by_RT")
 }
 \arguments{
 \item{dsList}{The DataSetList object}

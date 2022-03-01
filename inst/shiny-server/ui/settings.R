@@ -5,7 +5,7 @@ color_settings_box <- function(width = 12, collapsible = T, collapsed = F) {
       sidebarLayout(
         sidebarPanel(
           width = 3,
-          selectInput(inputId = "Settings.Color.Scheme", label = "Color schemes", 
+          selectInput(inputId = "Settings.Color.Scheme", label = "Color schemes",
                       choices = c("Default", "Variant 1", "Variant 2", "Variant 3", "Custom")),
           conditionalPanel(condition = 'input["Settings.Color.Scheme"] == "Custom"',
                            downloadButton("Settings.Color.Example","Download an example color settings file"),
@@ -16,7 +16,7 @@ color_settings_box <- function(width = 12, collapsible = T, collapsed = F) {
           colourInput("Settings.Color.Tick", "Plot ticks colour", value = "#333333"),
           numericInput("Settings.Color.Linewidth", "Line Width", value = 2),
           numericInput("Settings.Color.Markersize", "Marker Size", value = 4),
-          selectInput("Settings.Legend.Location", "Legend location", 
+          selectInput("Settings.Legend.Location", "Legend location",
                       c("Outside, right", "Inside, right", "Inside, left", "Below", "Custom"), "Below"),
           conditionalPanel(condition = 'input["Settings.Legend.Location"] == "Custom"',
                            numericInput("Settings.Legend.LocationX", "X-position of Legend", value = 0.5, step = 0.05),
@@ -49,12 +49,12 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
           align = "Left",
           HTML_P('Set the general properties'),
           #TODO: get probabilities from get_probability and put them as default
-          textInput("Settings.General.Probs", label = "Probability-quantiles", 
+          textInput("Settings.General.Probs", label = "Probability-quantiles",
                     value = "0.02,0.05,0.10,0.25,0.50,0.75,0.90,0.95,0.98"),
-          numericInput("Settings.General.Max_samples", 
-                       label = "Maximum samples shown per algorithm", 
+          numericInput("Settings.General.Max_samples",
+                       label = "Maximum samples shown per algorithm",
                        value = 100),
-          selectInput("Settings.General.Backend", "Plotting backend", 
+          selectInput("Settings.General.Backend", "Plotting backend",
                       c('plotly', 'ggplot2'), 'plotly'),
           numericInput("Settings.General.Precision", label = "Function value precision (digits)",
                        value = 2),
@@ -71,7 +71,7 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
           width = 3,
           align = "Left",
           HTML_P('Set the figure download properties'),
-          selectInput("Settings.Download.Preset", label = "Choose preset for download and font sizes", 
+          selectInput("Settings.Download.Preset", label = "Choose preset for download and font sizes",
                       choices = c("Default", "Paper-1col", "Paper-2col"), selected = "Default"),
           hr(),
           numericInput("Settings.Download.Width", label = "Image width (px)", value = 1000, min = 100, max = 4096),
@@ -90,18 +90,18 @@ general_settings_box <- function(width=12, collapsible = T, collapsed = F) {
                             label = "Include subplot name when using subplots",
                             value = T),
               conditionalPanel(condition = 'input["Settings.Subplot.Include_annotations"]',
-                               numericInput("Settings.Subplot.LocationX", "X-position of subplot name", 
+                               numericInput("Settings.Subplot.LocationX", "X-position of subplot name",
                                             value = 0.5, step = 0.05, min = 0, max = 1),
-                               numericInput("Settings.Subplot.LocationY", "Y-position of subplot name", 
+                               numericInput("Settings.Subplot.LocationY", "Y-position of subplot name",
                                             value = 1, step = 0.05, min = 0, max = 1)
               ),
-              numericInput("Settings.Subplot.Margin_horizontal", "Horizontal margin between subplots", 
+              numericInput("Settings.Subplot.Margin_horizontal", "Horizontal margin between subplots",
                            value = 0.02, step = 0.005, min = 0, max = 0.1),
-              numericInput("Settings.Subplot.Margin_vertical", "Vertical margin between subplots", 
+              numericInput("Settings.Subplot.Margin_vertical", "Vertical margin between subplots",
                            value = 0.02, step = 0.005, min = 0, max = 0.1)
-          ),
+          )
         )
       )
-         
+
   )
 }

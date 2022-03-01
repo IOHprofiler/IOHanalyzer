@@ -5,37 +5,15 @@
 \alias{Plot.RT.Single_Func.DataSetList}
 \title{Plot lineplot of the ERTs of a DataSetList}
 \usage{
-Plot.RT.Single_Func(
-  dsList,
-  Fstart = NULL,
-  Fstop = NULL,
-  show.ERT = T,
-  show.CI = F,
-  show.mean = F,
-  show.median = F,
-  backend = NULL,
-  scale.xlog = F,
-  scale.ylog = F,
-  scale.reverse = F,
-  includeOpts = F,
-  p = NULL
-)
+Plot.RT.Single_Func(dsList, Fstart = NULL, Fstop = NULL,
+  show.ERT = T, show.CI = F, show.mean = F, show.median = F,
+  backend = NULL, scale.xlog = F, scale.ylog = F,
+  scale.reverse = F, includeOpts = F, p = NULL)
 
-\method{Plot.RT.Single_Func}{DataSetList}(
-  dsList,
-  Fstart = NULL,
-  Fstop = NULL,
-  show.ERT = T,
-  show.CI = T,
-  show.mean = F,
-  show.median = F,
-  backend = NULL,
-  scale.xlog = F,
-  scale.ylog = F,
-  scale.reverse = F,
-  includeOpts = F,
-  p = NULL
-)
+\method{Plot.RT.Single_Func}{DataSetList}(dsList, Fstart = NULL,
+  Fstop = NULL, show.ERT = T, show.CI = T, show.mean = F,
+  show.median = F, backend = NULL, scale.xlog = F, scale.ylog = F,
+  scale.reverse = F, includeOpts = F, p = NULL)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension).}

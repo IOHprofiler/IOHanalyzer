@@ -26,7 +26,7 @@ widget_html <- function(name, package, id, style, class, inline = FALSE, ...) {
                      asNamespace(package),
                      inherits = FALSE),
                  error = function(e) NULL)
-  
+
   # call the custom function if we have one, otherwise create a div
   if (is.function(fn)) {
     fn(id = id, style = style, class = class, ...)
@@ -56,19 +56,19 @@ plotlyOutput.IOHanalyzer <- function(outputId, width = '100%', aspect_ratio = 16
   padding_bottom <- paste0(100 / aspect_ratio, '%')
   reportSize <- TRUE
   inline <- FALSE
-  
+
   checkShinyVersion()
   html <- htmltools::tagList(
-    widget_html('plotly', 'plotly', id = outputId, 
-                class = paste0('plotly', " html-widget html-widget-output", 
-                               if (reportSize) 
-                                 " shiny-report-size"), 
-                style = sprintf("width:%s; height: 0; padding-bottom:%s; %s", 
-                                htmltools::validateCssUnit(width), 
-                                htmltools::validateCssUnit(padding_bottom), 
-                                if (inline) 
+    widget_html('plotly', 'plotly', id = outputId,
+                class = paste0('plotly', " html-widget html-widget-output",
+                               if (reportSize)
+                                 " shiny-report-size"),
+                style = sprintf("width:%s; height: 0; padding-bottom:%s; %s",
+                                htmltools::validateCssUnit(width),
+                                htmltools::validateCssUnit(padding_bottom),
+                                if (inline)
                                   "display: inline-block;"
-                                else ""), 
+                                else ""),
                 width = width, height = 0)
   )
   dependencies <- widget_dependencies('plotly', 'plotly')
@@ -101,7 +101,7 @@ get_repo_location <- function() {
   if (file.exists(repo_dir)) repo_dir else ''
 }
 
-print_html <- function(s, widget_id = 'process_data_promt') 
+print_html <- function(s, widget_id = 'process_data_promt')
   shinyjs::html(widget_id, s, add = TRUE)
 
 # download file names: csv, image ---------------------
@@ -182,6 +182,8 @@ FIG_NAME_RT_PAR_PER_FUN <- parse(text = "paste0('RT_PAR-', Sys.Date(), '.', inpu
 FIG_NAME_FV_PAR_PER_FUN <- parse(text = "paste0('FV_PAR-', Sys.Date(), '.', input$FV_PAR.Plot.Format)")
 
 FIG_NAME_RT_SHAPLEY <- parse(text = "paste0('RT-Shapley-', Sys.Date(), '.', input$RTportfolio.Shapley.Format)")
+RT_NG_heatmap_name <- parse(text = "paste0('RT-NG_Heatmap-', Sys.Date(), '.', input$RT_NG.Heatmap.Format)")
+FV_NG_heatmap_name <- parse(text = "paste0('FV-NG_Heatmap-', Sys.Date(), '.', input$FV_NG.Heatmap.Format)")
 
 # ID of the control widget, whose current value should de always recorded and restored ----
 # those control widget are switched on and off

@@ -1564,3 +1564,48 @@ generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
   colnames(winrates_aggr) <- get_id(dsList)
   winrates_aggr
 }
+
+
+
+
+#' Generate data for the cumulative difference plot.
+#'
+#' This function generates a dataframe that can be used to generate
+#' the `cumulative_difference_plot`-function
+#'
+#' @param dsList The DataSetList object.
+#' Note that the `cumulative_difference_plot` can only compare two algorithms
+#' in a single problem of dimension one.
+#' @param runtime
+#' @return A dataframe with the data to generate the cumulative difference plot.
+#'
+#' @export
+#' @examples
+#'
+#' generate_data.CDP(subset(dsl, funcId == 1), 25)
+generate_data.CDP <- function(dsList, runtime) {
+
+      if (!requireNamespace("RVCompare", quietly = TRUE)) {
+        stop("Package \"RVCompare\" needed for this function to work. Please install it.",
+          call. = FALSE)
+      }
+
+      if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1) return(NULL)
+      if (length(get_id(dsList)) != 2) return(NULL)
+
+      subds <- get_FV_sample(dsList, runtime, output='long')
+
+      algorithms <- unique(subds$ID)
+      X_A <- subds[subds$ID == algorithms[1]]$`f(x)`
+      X_B <- subds[subds$ID == algorithms[2]]$`f(x)`
+
+      res <- data.frame(X_A,X_B)
+      colnames(res) <- algorithms
+
+      res <- RVCompare::get_Y_AB_bounds_bootstrap(X_A, X_B, ignoreMinimumLengthCheck = TRUE)
+
+      return(data.frame(res))
+}
+
+
+

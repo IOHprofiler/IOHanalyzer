@@ -1576,14 +1576,19 @@ generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
 #' @param dsList The DataSetList object.
 #' Note that the `cumulative_difference_plot` can only compare two algorithms
 #' in a single problem of dimension one.
-#' @param runtime
+#' @param runtime The target runtime
+#' @param isMinimizationProblem A boolean that should be TRUE when lower is better.
+#' @param alpha 1 minus the confidence level of the confidence band.
+#' @param EPSILON If abs(x-y) < EPSILON, then we assume that x = y.
+#' @param nOfBootstrapSamples The number of bootstrap samples used in the estimation.
 #' @return A dataframe with the data to generate the cumulative difference plot.
 #'
 #' @export
 #' @examples
 #'
-#' generate_data.CDP(subset(dsl, funcId == 1), 25)
-generate_data.CDP <- function(dsList, runtime) {
+#' generate_data.CDP(subset(dsl, funcId == 1), 25, isMinimizationProblem=FALSE)
+generate_data.CDP <- function(dsList, runtime, isMinimizationProblem=NULL, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3)
+{
 
       if (!requireNamespace("RVCompare", quietly = TRUE)) {
         stop("Package \"RVCompare\" needed for this function to work. Please install it.",
@@ -1602,7 +1607,20 @@ generate_data.CDP <- function(dsList, runtime) {
       res <- data.frame(X_A,X_B)
       colnames(res) <- algorithms
 
-      res <- RVCompare::get_Y_AB_bounds_bootstrap(X_A, X_B, ignoreMinimumLengthCheck = TRUE)
+
+      if(!isTRUE(isMinimizationProblem) && !isFALSE(isMinimizationProblem))
+      {
+        stop("ERROR: To compute the cumulative difference-plot, isMinimizationProblem needs to be TRUE or FALSE.
+         isMinimizationProblem=TRUE needs to be used when low values are prefered to high values.
+         isMinimizationProblem=FALSE needs to be used when high values are preferred to low values.")
+      }
+      else if (isFALSE(isMinimizationProblem))
+      {
+        X_A <- - X_A
+        X_B <- - X_B
+      }
+
+      res <- RVCompare::get_Y_AB_bounds_bootstrap(X_A, X_B, ignoreMinimumLengthCheck = TRUE, alpha=alpha,  EPSILON=EPSILON, nOfBootstrapSamples=1e3)
 
       return(data.frame(res))
 }

@@ -4,12 +4,27 @@
 \alias{Plot.cumulative_difference_plot}
 \title{Plot the cumulative difference plot given a DataSetList and a runtime.}
 \usage{
-Plot.cumulative_difference_plot(dsList, runtime)
+Plot.cumulative_difference_plot(
+  dsList,
+  runtime,
+  isMinimizationProblem = NULL,
+  alpha = 0.05,
+  EPSILON = 1e-80,
+  nOfBootstrapSamples = 1000
+)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension and two algorithms).}
 
 \item{runtime}{The target runtime}
+
+\item{isMinimizationProblem}{A boolean that should be TRUE when lower is better.}
+
+\item{alpha}{1 minus the confidence level of the confidence band.}
+
+\item{EPSILON}{If abs(x-y) < EPSILON, then we assume that x = y.}
+
+\item{nOfBootstrapSamples}{The number of bootstrap samples used in the estimation.}
 }
 \value{
 A cumulative difference plot.
@@ -21,5 +36,5 @@ Plot the cumulative difference plot given a DataSetList and a runtime.
 dsl
 dsl_sub <- subset(dsl, funcId == 1)
 runtime <- 15
-Plot.cumulative_difference_plot(dsl_sub, runtime)
+Plot.cumulative_difference_plot(dsl_sub, runtime, isMinimizationProblem=FALSE)
 }

@@ -4,12 +4,29 @@
 \alias{generate_data.CDP}
 \title{Generate data for the cumulative difference plot.}
 \usage{
-generate_data.CDP(dsList, runtime)
+generate_data.CDP(
+  dsList,
+  runtime,
+  isMinimizationProblem = NULL,
+  alpha = 0.05,
+  EPSILON = 1e-80,
+  nOfBootstrapSamples = 1000
+)
 }
 \arguments{
 \item{dsList}{The DataSetList object.
 Note that the `cumulative_difference_plot` can only compare two algorithms
 in a single problem of dimension one.}
+
+\item{runtime}{The target runtime}
+
+\item{isMinimizationProblem}{A boolean that should be TRUE when lower is better.}
+
+\item{alpha}{1 minus the confidence level of the confidence band.}
+
+\item{EPSILON}{If abs(x-y) < EPSILON, then we assume that x = y.}
+
+\item{nOfBootstrapSamples}{The number of bootstrap samples used in the estimation.}
 }
 \value{
 A dataframe with the data to generate the cumulative difference plot.
@@ -20,5 +37,5 @@ the `cumulative_difference_plot`-function
 }
 \examples{
 
-generate_data.CDP(subset(dsl, funcId == 1), 25)
+generate_data.CDP(subset(dsl, funcId == 1), 25, isMinimizationProblem=FALSE)
 }

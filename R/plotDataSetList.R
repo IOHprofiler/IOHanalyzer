@@ -1457,17 +1457,25 @@ Plot.Performviz <- function(DSC_rank_result) {
 #'
 #' @param dsList A DataSetList (should consist of only one function and dimension and two algorithms).
 #' @param runtime The target runtime
-#'
+#' @param isMinimizationProblem A boolean that should be TRUE when lower is better.
+#' @param alpha 1 minus the confidence level of the confidence band.
+#' @param EPSILON If abs(x-y) < EPSILON, then we assume that x = y.
+#' @param nOfBootstrapSamples The number of bootstrap samples used in the estimation.
 #' @return A cumulative difference plot.
 #' @export
 #' @examples
 #' dsl
 #' dsl_sub <- subset(dsl, funcId == 1)
 #' runtime <- 15
-#' Plot.cumulative_difference_plot(dsl_sub, runtime)
-Plot.cumulative_difference_plot <- function(dsList, runtime)
+#' Plot.cumulative_difference_plot(dsl_sub, runtime, isMinimizationProblem=FALSE)
+Plot.cumulative_difference_plot <- function(dsList, runtime, isMinimizationProblem=NULL, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3)
 {
-  data <- generate_data.CDP(dsList, runtime)
+  data <- generate_data.CDP(dsList, runtime, isMinimizationProblem, alpha,  EPSILON, nOfBootstrapSamples)
+
+
+  subds <- get_FV_sample(dsList, runtime, output='long')
+  algorithms <- unique(subds$ID)
+
 
   # Convert back to list
   plot_data <- list()
@@ -1513,7 +1521,10 @@ Plot.cumulative_difference_plot <- function(dsList, runtime)
                       fillcolor="rgba(51,204,255,0.2)", fill = 'tonexty') %>%
 
 
-    plotly::layout(xaxis = list(range = c(0,1)), yaxis = list(range = c(-1, 1)), showlegend=FALSE)
+    plotly::layout(xaxis = list(range = c(0,1)), yaxis = list(range = c(-1, 1)), showlegend=FALSE)%>%
+
+    plotly::add_annotations(x=0.02, y=0.85, xref = "x", yref = "y", text = algorithms[1], xanchor = 'left', showarrow = F)%>%
+    plotly::add_annotations(x=0.02, y=-0.85, xref = "x", yref = "y", text = algorithms[2], xanchor = 'left', showarrow = F)
 
   return(fig)
 }

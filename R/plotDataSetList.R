@@ -1452,3 +1452,70 @@ Plot.Performviz <- function(DSC_rank_result) {
     ComplexHeatmap::`+.AdditiveUnit`(heatmap_main, ha_mix_right))
   )
 }
+
+#' Plot the cumulative difference plot given a DataSetList and a runtime.
+#'
+#' @param dsList A DataSetList (should consist of only one function and dimension and two algorithms).
+#' @param runtime The target runtime
+#'
+#' @return A cumulative difference plot.
+#' @export
+#' @examples
+#' dsl
+#' dsl_sub <- subset(dsl, funcId == 1)
+#' runtime <- 15
+#' Plot.cumulative_difference_plot(dsl_sub, runtime)
+Plot.cumulative_difference_plot <- function(dsList, runtime)
+{
+  data <- generate_data.CDP(dsList, runtime)
+
+  # Convert back to list
+  plot_data <- list()
+  for(i in 1:ncol(data)) {
+    plot_data[[i]] <- data[ , i]
+  }
+  names(plot_data) <- colnames(data)
+
+
+  # Confidence band
+  trace1 <- list(x = plot_data$p, y = plot_data$diff_upper, line = list(color = "rgba(0, 0, 40, 0)"),
+                 mode = "lines",  name = "Upper bound of the confidence band",  type = "scatter")
+  trace3 <- list(x = plot_data$p, y = plot_data$diff_lower,  connectgaps = TRUE,
+                 line = list(color = "rgba(0, 0, 40, 0)"),  mode = "lines", name = "Lower bound of the confidence band",
+                 type = "scatter")
+
+  # Area in which the cumulative diference can be.
+  trace4 <- list(x = c(0,0.5,1), y = c(0,1,0), line = list(color = "rgba(0, 0, 40, 0)"),
+                 mode = "lines",  name = "",  type = "scatter")
+  trace6 <- list(x = c(0,0.5,1), y = c(0,-1,0),  connectgaps = TRUE,
+                 line = list(color = "rgba(0, 0, 40, 0)"),  mode = "lines", name = "", type = "scatter")
+
+
+
+
+  fig <- plotly::plot_ly() %>%
+    plotly::add_lines(x = plot_data$p, y=plot_data$diff_estimation, color=I("black"), name="Estimated cumulative diference")%>%
+    plotly::add_lines(x=trace1$x, y=trace1$y, line=trace1$line, mode=trace1$mode,
+                      name=trace1$name, type=trace1$type, uid=trace1$uid, xsrc=trace1$xsrc,
+                      ysrc=trace1$ysrc) %>%
+
+    plotly::add_trace(x=trace3$x, y=trace3$y, connectgaps=trace3$connectgaps,
+                      line=trace3$line, mode=trace3$mode, name=trace3$name, type=trace3$type,
+                      uid=trace3$uid, xsrc=trace3$xsrc, ysrc=trace3$ysrc,
+                      fillcolor="rgba(0,40,100,0.2)", fill = 'tonexty') %>%
+
+    plotly::add_lines(x=trace4$x, y=trace4$y, line=trace4$line, mode=trace4$mode,
+                      name=trace4$name, type=trace4$type, uid=trace4$uid, xsrc=trace4$xsrc,
+                      ysrc=trace4$ysrc) %>%
+    plotly::add_trace(x=trace6$x, y=trace6$y, connectgaps=trace6$connectgaps,
+                      line=trace6$line, mode=trace6$mode, name=trace6$name, type=trace6$type,
+                      uid=trace6$uid, xsrc=trace6$xsrc, ysrc=trace6$ysrc,
+                      fillcolor="rgba(51,204,255,0.2)", fill = 'tonexty') %>%
+
+
+    plotly::layout(xaxis = list(range = c(0,1)), yaxis = list(range = c(-1, 1)), showlegend=FALSE)
+
+  return(fig)
+}
+
+

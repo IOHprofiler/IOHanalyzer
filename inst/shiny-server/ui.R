@@ -555,8 +555,7 @@ body <- dashboardBody(
       fluidRow(
         column(
           width = 12,
-          fv_CDP_box(collapsed = F),
-          fv_pdf_box()
+          fv_CDP_box(collapsed = F)
         )
       )
     ),

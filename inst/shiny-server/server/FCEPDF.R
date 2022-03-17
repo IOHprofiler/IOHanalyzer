@@ -85,7 +85,9 @@ render_FV_CDP <- reactive({
   req(input$FCEPDF.CDP.Runtime != "", length(DATA()) > 0)   # require non-empty input
   withProgress({
     subplot_attr <- if (input$FCEPDF.CDP.Mode == 'subplot') 'ID' else NULL
-    Plot.cumulative_difference_plot(get_data_FV_CDP(), 0, isMinimizationProblem=TRUE)
+    runtime <- input$FCEPDF.CDP.Runtime %>% as.numeric
+    data <- subset(DATA(), ID %in% input$FCEPDF.CDP.Algs)
+    Plot.cumulative_difference_plot(data, 0, isMinimizationProblem=TRUE, dataAlreadyComputed = TRUE, precomputedData = get_data_FV_CDP())
     # runtime <- input$FCEPDF.Hist.Runtime %>% as.numeric
     # data <- subset(DATA(), algId %in% input$FCEPDF.Hist.Algs)
     # Plot.FV.Histogram(data, runtime, plot_mode = input$FCEPDF.Hist.Mode, use.equal.bins = input$FCEPDF.Hist.Equal)

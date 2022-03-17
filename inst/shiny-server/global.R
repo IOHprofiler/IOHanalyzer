@@ -175,6 +175,7 @@ FIG_NAME_FV_PER_FUN_MULTI <- parse(text = "paste0('FCE_Mult-', Sys.Date(), '.', 
 FIG_NAME_FV_AGGR <- parse(text = "paste0('FCE_Aggr-', Sys.Date(), '.', input$FCEPlot.Aggr.Format)")
 FIG_NAME_FV_PDF <- parse(text = "paste0('FV_PMF-', Sys.Date(), '.', input$FCEPDF.Bar.Format)")
 FIG_NAME_FV_HIST <- parse(text = "paste0('FV_HIST-', Sys.Date(), '.', input$FCEPDF.Hist.Format)")
+FIG_NAME_FV_CDP <- parse(text = "paste0('FV_CPD-', Sys.Date(), '.', input$FCEPDF.CPD.Format)")
 FIG_NAME_FV_ECDF_AGGR <- parse(text = "paste0('FV_ECDF_AGGR-', Sys.Date(), '.', input$FCEECDF.Mult.Format)")
 FIG_NAME_FV_AUC <- parse(text = "paste0('FV_AUC-', Sys.Date(), '.', input$FCEECDF.AUC.Format)")
 
@@ -228,6 +229,7 @@ widget_id <- c('RTSummary.Statistics.Min',
                'FCESummary.Sample.Max',
                'FCESummary.Sample.Step',
                'FCEPDF.Hist.Runtime',
+               'FCEPDF.CDP.Runtime',
                'FCEPDF.Bar.Runtime',
                'FCEPlot.Min',
                'FCEPlot.Max',

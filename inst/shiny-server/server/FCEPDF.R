@@ -46,7 +46,7 @@ render_FV_HIST <- reactive({
   req(input$FCEPDF.Hist.Runtime != "", length(DATA()) > 0)   # require non-empty input
   withProgress({
     subplot_attr <- if (input$FCEPDF.Hist.Mode == 'subplot') 'ID' else NULL
-    plot_general_data(get_data_FV_HIST(), 'x', 'y', width = 'width', type = 'hist', 
+    plot_general_data(get_data_FV_HIST(), 'x', 'y', width = 'width', type = 'hist',
                       subplot_attr = subplot_attr, x_title = "Target Values",
                       y_title = "Runs")
   # runtime <- input$FCEPDF.Hist.Runtime %>% as.numeric
@@ -69,3 +69,43 @@ output$FCEPDF.Hist.Download <- downloadHandler(
 output$FCE_HIST <- renderPlotly({
   render_FV_HIST()
 })
+
+# --------------------------- Cumulative difference plot
+
+
+
+get_data_FV_CDP <- reactive({
+  ftarget <- input$FCEPDF.CDP.Runtime %>% as.numeric
+  data <- subset(DATA(), ID %in% input$FCEPDF.CDP.Algs)
+  generate_data.hist(data, ftarget, input$FCEPDF.CDP.Equal, 'by_FV')
+})
+
+
+render_FV_CDP <- reactive({
+  req(input$FCEPDF.CDP.Runtime != "", length(DATA()) > 0)   # require non-empty input
+  withProgress({
+    subplot_attr <- if (input$FCEPDF.Hist.Mode == 'subplot') 'ID' else NULL
+    plot_general_data(get_data_FV_CDP(), 'x', 'y', width = 'width', type = 'hist',
+                      subplot_attr = subplot_attr, x_title = "Target Values",
+                      y_title = "Runs")
+    # runtime <- input$FCEPDF.Hist.Runtime %>% as.numeric
+    # data <- subset(DATA(), algId %in% input$FCEPDF.Hist.Algs)
+    # Plot.FV.Histogram(data, runtime, plot_mode = input$FCEPDF.Hist.Mode, use.equal.bins = input$FCEPDF.Hist.Equal)
+  },
+  message = "Creating plot")
+})
+
+output$FCEPDF.CDP.Download <- downloadHandler(
+  filename = function() {
+    eval(FIG_NAME_FV_HIST)
+  },
+  content = function(file) {
+    save_plotly(render_FV_HIST(), file)
+  },
+  contentType = paste0('image/', input$FCEPDF.Hist.Format)
+)
+
+output$FCE_CDP <- renderPlotly({
+  render_FV_CDP()
+})
+

@@ -549,6 +549,18 @@ body <- dashboardBody(
       )
     ),
 
+    # FCE: Cumulative difference plot ------------------------------------------
+    tabItem(
+      tabName = 'FCE_CDP',
+      fluidRow(
+        column(
+          width = 12,
+          fv_CDP_box(collapsed = F),
+          fv_pdf_box()
+        )
+      )
+    ),
+
     # Parameter tab -------
     tabItem(
       tabName = 'FCE_PARAMETER',

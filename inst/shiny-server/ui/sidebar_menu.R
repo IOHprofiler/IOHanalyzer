@@ -31,7 +31,7 @@ sidebar_menu <- function() {
                            menuSubItem("Expected Target Value", tabName = "FCE_convergence_single", icon = icon("bar-chart")),
                            menuSubItem("Probability Density Function", tabName = "FCE_PDF", icon = icon("bar-chart"), selected = F),
                            menuSubItem("Cumulative Distribution", tabName = "FCE_ECDF", icon = icon("line-chart")),
-                           menuSubItem("Cumulative Difference Plor", tabName = "FCE_CDP", icon = icon("line-chart")),
+                           menuSubItem("Cumulative Difference", tabName = "FCE_CDP", icon = icon("area-chart")),
                            menuSubItem("Algorithm Parameters", tabName = "FCE_PARAMETER", icon = icon('file-text-o'), selected = F),
                            menuSubItem('Statistics', tabName = "FCE_Statistics_single", icon = icon('file-text-o'))
                        ),

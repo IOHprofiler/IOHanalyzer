@@ -1460,6 +1460,7 @@ Plot.Performviz <- function(DSC_rank_result) {
 #' @param isMinimizationProblem A boolean that should be TRUE when lower is better.
 #' @param alpha 1 minus the confidence level of the confidence band.
 #' @param EPSILON If abs(x-y) < EPSILON, then we assume that x = y.
+#' @param dataAlreadyComputed If false, generate_data.CDP will be called to process the data.
 #' @param nOfBootstrapSamples The number of bootstrap samples used in the estimation.
 #' @return A cumulative difference plot.
 #' @export
@@ -1468,9 +1469,17 @@ Plot.Performviz <- function(DSC_rank_result) {
 #' dsl_sub <- subset(dsl, funcId == 1)
 #' runtime <- 15
 #' Plot.cumulative_difference_plot(dsl_sub, runtime, isMinimizationProblem=FALSE)
-Plot.cumulative_difference_plot <- function(dsList, runtime, isMinimizationProblem=NULL, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3)
+Plot.cumulative_difference_plot <- function(dsList, runtime, isMinimizationProblem=NULL, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3, dataAlreadyComputed=FALSE)
 {
-  data <- generate_data.CDP(dsList, runtime, isMinimizationProblem, alpha,  EPSILON, nOfBootstrapSamples)
+  if(dataAlreadyComputed)
+  {
+    data <- dsList
+  }
+  else
+  {
+    data <- generate_data.CDP(dsList, runtime, isMinimizationProblem, alpha,  EPSILON, nOfBootstrapSamples)
+  }
+
 
 
   subds <- get_FV_sample(dsList, runtime, output='long')

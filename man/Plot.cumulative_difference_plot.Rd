@@ -10,7 +10,8 @@ Plot.cumulative_difference_plot(
   isMinimizationProblem = NULL,
   alpha = 0.05,
   EPSILON = 1e-80,
-  nOfBootstrapSamples = 1000
+  nOfBootstrapSamples = 1000,
+  dataAlreadyComputed = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ Plot.cumulative_difference_plot(
 \item{EPSILON}{If abs(x-y) < EPSILON, then we assume that x = y.}
 
 \item{nOfBootstrapSamples}{The number of bootstrap samples used in the estimation.}
+
+\item{dataAlreadyComputed}{If false, generate_data.CDP will be called to process the data.}
 }
 \value{
 A cumulative difference plot.

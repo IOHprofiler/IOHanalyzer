@@ -70,27 +70,40 @@ output$FCE_HIST <- renderPlotly({
   render_FV_HIST()
 })
 
-# --------------------------- Cumulative difference plot
+# --------------------------- Cumulative difference plot FV
 
 
 
 get_data_FV_CDP <- reactive({
   runtime <- input$FCEPDF.CDP.Runtime %>% as.numeric
   data <- subset(DATA(), ID %in% input$FCEPDF.CDP.Algs)
-  generate_data.CDP(data, runtime, isMinimizationProblem = TRUE)
+  mode <- NULL
+  if(input$FCEPDF.CDP.Mode == "max.")
+  {
+    mode <- FALSE
+  }
+  else if(input$FCEPDF.CDP.Mode == "min.")
+  {
+    mode <- TRUE
+  }
+  else
+  {
+    return(NULL)
+  }
+
+  confidence <- input$FCEPDF.CDP.Confidence %>% as.numeric
+  generate_data.CDP(data, runtime, isFixedBudget = TRUE, isMinimizationProblem = mode, alpha = 1 - confidence)
 })
 
 
 render_FV_CDP <- reactive({
   req(input$FCEPDF.CDP.Runtime != "", length(DATA()) > 0)   # require non-empty input
+  req(input$FCEPDF.CDP.Mode != "Choose one") # Require that ether max. or min. is choosen
   withProgress({
     subplot_attr <- if (input$FCEPDF.CDP.Mode == 'subplot') 'ID' else NULL
     runtime <- input$FCEPDF.CDP.Runtime %>% as.numeric
     data <- subset(DATA(), ID %in% input$FCEPDF.CDP.Algs)
-    Plot.cumulative_difference_plot(data, 0, isMinimizationProblem=TRUE, dataAlreadyComputed = TRUE, precomputedData = get_data_FV_CDP())
-    # runtime <- input$FCEPDF.Hist.Runtime %>% as.numeric
-    # data <- subset(DATA(), algId %in% input$FCEPDF.Hist.Algs)
-    # Plot.FV.Histogram(data, runtime, plot_mode = input$FCEPDF.Hist.Mode, use.equal.bins = input$FCEPDF.Hist.Equal)
+    Plot.cumulative_difference_plot(data, 0, isFixedBudget = TRUE, isMinimizationProblem=NULL, dataAlreadyComputed = TRUE, precomputedData = get_data_FV_CDP())
   },
   message = "Creating plot")
 })
@@ -108,4 +121,7 @@ output$FCEPDF.CDP.Download <- downloadHandler(
 output$FCE_CDP <- renderPlotly({
   render_FV_CDP()
 })
+
+
+
 

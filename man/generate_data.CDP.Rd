@@ -6,7 +6,8 @@
 \usage{
 generate_data.CDP(
   dsList,
-  runtime,
+  runtime_or_target_value,
+  isFixedBudget,
   isMinimizationProblem = NULL,
   alpha = 0.05,
   EPSILON = 1e-80,
@@ -18,7 +19,9 @@ generate_data.CDP(
 Note that the `cumulative_difference_plot` can only compare two algorithms
 in a single problem of dimension one.}
 
-\item{runtime}{The target runtime}
+\item{runtime_or_target_value}{The target runtime or the target value}
+
+\item{isFixedBudget}{Should be TRUE when target runtime is used. False otherwise.}
 
 \item{isMinimizationProblem}{A boolean that should be TRUE when lower is better.}
 

@@ -6,18 +6,22 @@
 \usage{
 Plot.cumulative_difference_plot(
   dsList,
-  runtime,
+  runtime_or_target_value,
+  isFixedBudget,
   isMinimizationProblem = NULL,
   alpha = 0.05,
   EPSILON = 1e-80,
   nOfBootstrapSamples = 1000,
-  dataAlreadyComputed = FALSE
+  dataAlreadyComputed = FALSE,
+  precomputedData = NULL
 )
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function and dimension and two algorithms).}
 
-\item{runtime}{The target runtime}
+\item{runtime_or_target_value}{The target runtime or the target value}
+
+\item{isFixedBudget}{Should be TRUE when target runtime is used. False otherwise.}
 
 \item{isMinimizationProblem}{A boolean that should be TRUE when lower is better.}
 
@@ -27,7 +31,9 @@ Plot.cumulative_difference_plot(
 
 \item{nOfBootstrapSamples}{The number of bootstrap samples used in the estimation.}
 
-\item{dataAlreadyComputed}{If false, generate_data.CDP will be called to process the data.}
+\item{dataAlreadyComputed}{If false, `generate_data.CDP` will be called to process the data.}
+
+\item{precomputedData}{only needed when dataAlreadyComputed=TRUE. The result of `generate_data.CDP`.}
 }
 \value{
 A cumulative difference plot.

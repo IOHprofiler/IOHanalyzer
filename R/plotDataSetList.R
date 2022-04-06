@@ -1456,7 +1456,8 @@ Plot.Performviz <- function(DSC_rank_result) {
 #' Plot the cumulative difference plot given a DataSetList and a runtime.
 #'
 #' @param dsList A DataSetList (should consist of only one function and dimension and two algorithms).
-#' @param runtime The target runtime
+#' @param runtime_or_target_value The target runtime or the target value
+#' @param isFixedBudget Should be TRUE when target runtime is used. False otherwise.
 #' @param isMinimizationProblem A boolean that should be TRUE when lower is better.
 #' @param alpha 1 minus the confidence level of the confidence band.
 #' @param EPSILON If abs(x-y) < EPSILON, then we assume that x = y.
@@ -1470,23 +1471,33 @@ Plot.Performviz <- function(DSC_rank_result) {
 #' dsl_sub <- subset(dsl, funcId == 1)
 #' runtime <- 15
 #' Plot.cumulative_difference_plot(dsl_sub, runtime, isMinimizationProblem=FALSE)
-Plot.cumulative_difference_plot <- function(dsList, runtime, isMinimizationProblem=NULL, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3, dataAlreadyComputed=FALSE, precomputedData=NULL)
+Plot.cumulative_difference_plot <- function(dsList, runtime_or_target_value, isFixedBudget, isMinimizationProblem=NULL, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3, dataAlreadyComputed=FALSE, precomputedData=NULL)
 {
   if(dataAlreadyComputed)
   {
     if(is.null(precomputedData))
     {
-      stop("ERROR: precomputedData must not be NULL when dataAlreadyComputed=TRUE.")
+      return(NULL)
     }
     data <- precomputedData
   }
   else
   {
-    data <- generate_data.CDP(dsList, runtime, isMinimizationProblem, alpha,  EPSILON, nOfBootstrapSamples)
+    data <- generate_data.CDP(dsList, runtime_or_target_value, isFixedBudget, isMinimizationProblem, alpha,  EPSILON, nOfBootstrapSamples)
   }
 
-  subds <- get_FV_sample(dsList, runtime, output='long')
-  algorithms <- unique(subds$ID)
+  if (isFixedBudget)
+  {
+    subds <- get_FV_sample(dsList, runtime_or_target_value, output='long')
+
+    algorithms <- unique(subds$ID)
+  }
+  else
+  {
+    subds <- get_RT_sample(dsList, runtime_or_target_value, output='long')
+
+    algorithms <- unique(subds$ID)
+  }
 
 
 

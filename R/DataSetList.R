@@ -1576,7 +1576,8 @@ generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
 #' @param dsList The DataSetList object.
 #' Note that the `cumulative_difference_plot` can only compare two algorithms
 #' in a single problem of dimension one.
-#' @param runtime The target runtime
+#' @param runtime_or_target_value The target runtime or the target value
+#' @param isFixedBudget Should be TRUE when target runtime is used. False otherwise.
 #' @param isMinimizationProblem A boolean that should be TRUE when lower is better.
 #' @param alpha 1 minus the confidence level of the confidence band.
 #' @param EPSILON If abs(x-y) < EPSILON, then we assume that x = y.
@@ -1587,8 +1588,12 @@ generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
 #' @examples
 #'
 #' generate_data.CDP(subset(dsl, funcId == 1), 25, isMinimizationProblem=FALSE)
-generate_data.CDP <- function(dsList, runtime, isMinimizationProblem=NULL, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3)
+generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, isMinimizationProblem=NULL, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3)
 {
+      if(isMinimizationProblem == -1)
+      {
+        return(NULL)
+      }
 
       if (!requireNamespace("RVCompare", quietly = TRUE)) {
         stop("Package \"RVCompare\" needed for this function to work. Please install it.",
@@ -1598,11 +1603,24 @@ generate_data.CDP <- function(dsList, runtime, isMinimizationProblem=NULL, alpha
       if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1) return(NULL)
       if (length(get_id(dsList)) != 2) return(NULL)
 
-      subds <- get_FV_sample(dsList, runtime, output='long')
+      if (isFixedBudget)
+      {
+        subds <- get_FV_sample(dsList, runtime_or_target_value, output='long')
 
-      algorithms <- unique(subds$ID)
-      X_A <- subds[subds$ID == algorithms[1]]$`f(x)`
-      X_B <- subds[subds$ID == algorithms[2]]$`f(x)`
+        algorithms <- unique(subds$ID)
+        X_A <- subds[subds$ID == algorithms[1]]$`f(x)`
+        X_B <- subds[subds$ID == algorithms[2]]$`f(x)`
+      }
+      else
+      {
+        subds <- get_RT_sample(dsList, runtime_or_target_value, output='long')
+
+        algorithms <- unique(subds$ID)
+        X_A <- subds[subds$ID == algorithms[1]]$`RT`
+        X_B <- subds[subds$ID == algorithms[2]]$`RT`
+        print(subds[subds$ID == algorithms[1]])
+        print(names(subds[subds$ID == algorithms[1]]))
+      }
 
       res <- data.frame(X_A,X_B)
       colnames(res) <- algorithms

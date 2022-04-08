@@ -1453,7 +1453,7 @@ Plot.Performviz <- function(DSC_rank_result) {
   )
 }
 
-#' Plot the cumulative difference plot given a DataSetList and a runtime.
+#' Plot the cumulative difference plot given a DataSetList.
 #'
 #' @param dsList A DataSetList (should consist of only one function and dimension and two algorithms).
 #' @param runtime_or_target_value The target runtime or the target value
@@ -1470,9 +1470,17 @@ Plot.Performviz <- function(DSC_rank_result) {
 #' dsl
 #' dsl_sub <- subset(dsl, funcId == 1)
 #' runtime <- 15
-#' Plot.cumulative_difference_plot(dsl_sub, runtime, isMinimizationProblem=FALSE)
+#' target <- 15
+#'
+#' Plot.cumulative_difference_plot(dsl_sub, runtime, TRUE , isMinimizationProblem = FALSE)
+#' Plot.cumulative_difference_plot(dsl_sub, target, FALSE , isMinimizationProblem = TRUE)
 Plot.cumulative_difference_plot <- function(dsList, runtime_or_target_value, isFixedBudget, isMinimizationProblem=NULL, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3, dataAlreadyComputed=FALSE, precomputedData=NULL)
 {
+  if (!requireNamespace("RVCompare", quietly = TRUE)) {
+    stop("Package \"RVCompare\" needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
+
   if(dataAlreadyComputed)
   {
     if(is.null(precomputedData))

@@ -1571,7 +1571,7 @@ generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
 #' Generate data for the cumulative difference plot.
 #'
 #' This function generates a dataframe that can be used to generate
-#' the `cumulative_difference_plot`-function
+#' the `cumulative_difference_plot`.
 #'
 #' @param dsList The DataSetList object.
 #' Note that the `cumulative_difference_plot` can only compare two algorithms
@@ -1587,10 +1587,16 @@ generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
 #' @export
 #' @examples
 #'
-#' generate_data.CDP(subset(dsl, funcId == 1), 25, isMinimizationProblem=FALSE)
+#' dsl
+#' dsl_sub <- subset(dsl, funcId == 1)
+#' runtime <- 15
+#' target <- 15
+#'
+#' generate_data.CDP(dsl_sub, runtime, TRUE , isMinimizationProblem = FALSE)
+#' generate_data.CDP(dsl_sub, target, FALSE , isMinimizationProblem = TRUE)
 generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, isMinimizationProblem=NULL, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3)
 {
-      if(isMinimizationProblem == -1)
+      if(is.null(isMinimizationProblem))
       {
         return(NULL)
       }

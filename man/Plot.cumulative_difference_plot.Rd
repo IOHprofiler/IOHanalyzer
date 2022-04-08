@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotDataSetList.R
 \name{Plot.cumulative_difference_plot}
 \alias{Plot.cumulative_difference_plot}
-\title{Plot the cumulative difference plot given a DataSetList and a runtime.}
+\title{Plot the cumulative difference plot given a DataSetList.}
 \usage{
 Plot.cumulative_difference_plot(
   dsList,
@@ -39,11 +39,14 @@ Plot.cumulative_difference_plot(
 A cumulative difference plot.
 }
 \description{
-Plot the cumulative difference plot given a DataSetList and a runtime.
+Plot the cumulative difference plot given a DataSetList.
 }
 \examples{
 dsl
 dsl_sub <- subset(dsl, funcId == 1)
 runtime <- 15
-Plot.cumulative_difference_plot(dsl_sub, runtime, isMinimizationProblem=FALSE)
+target <- 15
+
+Plot.cumulative_difference_plot(dsl_sub, runtime, TRUE , isMinimizationProblem = FALSE)
+Plot.cumulative_difference_plot(dsl_sub, target, FALSE , isMinimizationProblem = TRUE)
 }

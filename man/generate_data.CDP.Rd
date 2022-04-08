@@ -36,9 +36,15 @@ A dataframe with the data to generate the cumulative difference plot.
 }
 \description{
 This function generates a dataframe that can be used to generate
-the `cumulative_difference_plot`-function
+the `cumulative_difference_plot`.
 }
 \examples{
 
-generate_data.CDP(subset(dsl, funcId == 1), 25, isMinimizationProblem=FALSE)
+dsl
+dsl_sub <- subset(dsl, funcId == 1)
+runtime <- 15
+target <- 15
+
+generate_data.CDP(dsl_sub, runtime, TRUE , isMinimizationProblem = FALSE)
+generate_data.CDP(dsl_sub, target, FALSE , isMinimizationProblem = TRUE)
 }

@@ -1,5 +1,6 @@
-# FCEPDF.Hist.Runtime -> FCEPDF.CDP.Runtime
-# FCE_HIST -> FCE_CDP
+# downloadButton('FCEECDF.AUC.Download', label = 'Download the figure'),
+
+
 
 fv_CDP_box <- function(width = 12, collapsible = T, collapsed = T) {
   box(title = 'Cumulative Difference Plot of Fixed-Budget Function Values',
@@ -42,7 +43,9 @@ fv_CDP_box <- function(width = 12, collapsible = T, collapsed = T) {
                         )
                     ),
         hr(),
-        downloadButton('FCEPDF.CDP.Download', label = 'Download the figure')
+        selectInput('FCEPDF.CDP.Format', label = 'select the figure format',
+                    choices = supported_fig_format, selected = supported_fig_format[[1]]),
+        downloadButton('FCEPDF.CDP.Download', label = 'Download the figure'),
 
       ),
 
@@ -118,8 +121,9 @@ rt_CDP_box <- function(width = 12, collapsible = T, collapsed = T) {
                         )
                     ),
         hr(),
-        downloadButton('RTPMF.CDP.Download', label = 'Download the figure')
-
+        selectInput('RTPMF.CDP.Format', label = 'select the figure format',
+                    choices = supported_fig_format, selected = supported_fig_format[[1]]),
+        downloadButton('RTPMF.CDP.Download', label = 'Download the figure'),
       ),
 
       mainPanel(

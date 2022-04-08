@@ -54,5 +54,6 @@ Suggests:
   kableExtra,
   markdown,
   igraph,
-  shinydashboard
+  shinydashboard,
+  RVCompare
 Depends: R (>= 2.10)

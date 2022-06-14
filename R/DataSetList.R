@@ -1624,8 +1624,6 @@ generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, is
         algorithms <- unique(subds$ID)
         X_A <- subds[subds$ID == algorithms[1]]$`RT`
         X_B <- subds[subds$ID == algorithms[2]]$`RT`
-        print(subds[subds$ID == algorithms[1]])
-        print(names(subds[subds$ID == algorithms[1]]))
       }
 
       res <- data.frame(X_A,X_B)

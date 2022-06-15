@@ -24,14 +24,16 @@ fv_CDP_box <- function(width = 12, collapsible = T, collapsed = T) {
                     ),
         hr(),
         HTML('Select confidence level.'),
-        selectInput('FCEPDF.CDP.Confidence', label = '',
-                    choices = c(0.9, 0.95, 0.99), selected = 0.95)%>% shinyInput_label_embed(
+        sliderInput("FCEPDF.CDP.Confidence", label='',
+                    min = 0.5, max = 0.99,
+                    value = 0.95, step = 0.01) %>% shinyInput_label_embed(
                       custom_icon() %>%
                         bs_embed_popover(
                           title = "Confidence level", content = "Choose the confidence level of the confidence band.",
                           placement = "auto"
                         )
                     ),
+
         hr(),
         selectInput('FCEPDF.CDP.Format', label = 'select the figure format',
                     choices = supported_fig_format, selected = supported_fig_format[[1]]),
@@ -99,14 +101,16 @@ rt_CDP_box <- function(width = 12, collapsible = T, collapsed = T) {
                     ),
         hr(),
         HTML('Select confidence level.'),
-        selectInput('RTPMF.CDP.Confidence', label = '',
-                    choices = c(0.9, 0.95, 0.99), selected = 0.95)%>% shinyInput_label_embed(
+        sliderInput("RTPMF.CDP.Confidence", label='',
+                    min = 0.5, max = 0.99,
+                    value = 0.95, step = 0.01) %>% shinyInput_label_embed(
                       custom_icon() %>%
                         bs_embed_popover(
                           title = "Confidence level", content = "Choose the confidence level of the confidence band.",
                           placement = "auto"
                         )
                     ),
+
         hr(),
         selectInput('RTPMF.CDP.Format', label = 'select the figure format',
                     choices = supported_fig_format, selected = supported_fig_format[[1]]),

@@ -68,6 +68,9 @@ fv_CDP_box <- function(width = 12, collapsible = T, collapsed = T) {
                plot, the curve is in the side of that algorithm), or better at
                avoiding bad values (if in the right part of the plot, the curve is
                in the side of that algorithm).
+
+               For more information, refer to <a href="https://arxiv.org/abs/2203.07889">the paper</a>
+               or <a href="https://github.com/EtorArza/RVCompare">the GitHub repo</a>.
               </p>'),
           plotlyOutput.IOHanalyzer('FCE_CDP')
         )
@@ -143,7 +146,12 @@ rt_CDP_box <- function(width = 12, collapsible = T, collapsed = T) {
                plot, the curve is in the side of that algorithm), or better at
                avoiding long runtimes (if in the right part of the plot, the curve is
                in the side of that algorithm).
-              </p>'),
+
+               For more information, refer to <a href="https://arxiv.org/abs/2203.07889">the paper</a>
+               or <a href="https://github.com/EtorArza/RVCompare">the GitHub repo</a>.
+
+
+               </p>'),
           plotlyOutput.IOHanalyzer('RT_CDP')
         )
       )

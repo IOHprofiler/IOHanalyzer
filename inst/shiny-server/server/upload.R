@@ -531,10 +531,15 @@ observe({
   updateSelectInput(session, 'FCEPlot.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FCEPDF.Bar.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FCEPDF.Hist.Algs', choices = IDs, selected = IDs)
-  updateSelectInput(session, 'FCEPDF.CDP.Algs', choices = IDs, selected = IDs)
+
+  if(length(IDs) >= 2)
+  {
+    updateSelectInput(session, 'RTPMF.CDP.Algs', choices = IDs, selected = c(IDs[1], IDs[2]))
+    updateSelectInput(session, 'FCEPDF.CDP.Algs', choices = IDs, selected = c(IDs[1], IDs[2]))
+  }
+
   updateSelectInput(session, 'RTPMF.Bar.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RTPMF.Hist.Algs', choices = IDs, selected = IDs)
-  updateSelectInput(session, 'RTPMF.CDP.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV_PAR.Summary.Param', choices = parIds, selected = 'all')
   updateSelectInput(session, 'FV_PAR.Sample.Param', choices = parIds, selected = 'all')
   updateSelectInput(session, 'RT_PAR.Summary.Param', choices = parIds, selected = 'all')

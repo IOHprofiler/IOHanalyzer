@@ -23,16 +23,6 @@ fv_CDP_box <- function(width = 12, collapsible = T, collapsed = T) {
                         )
                     ),
         hr(),
-        HTML('Select maximization or minimization.'),
-        selectInput('FCEPDF.CDP.Mode', label = '',
-                    choices = c("max.", "min.","Choose one"), selected = "Choose one")%>% shinyInput_label_embed(
-                      custom_icon() %>%
-                        bs_embed_popover(
-                          title = "max. or min.", content = "Choose maximization when higher is better and minimization when lower is better.",
-                          placement = "auto"
-                        )
-                    ),
-        hr(),
         HTML('Select confidence level.'),
         selectInput('FCEPDF.CDP.Confidence', label = '',
                     choices = c(0.9, 0.95, 0.99), selected = 0.95)%>% shinyInput_label_embed(
@@ -55,18 +45,15 @@ fv_CDP_box <- function(width = 12, collapsible = T, collapsed = T) {
           width = 12, align = "center",
           HTML('<p align="left" "font-size:120%;">
                The cumulative difference plot can be useful when box/violin-plots
-               fail to provide a clear result. Generating this plot has two requirements:
-               </p>
-
-               <p align="left" "font-size:120%;">
-               - Select exactly two algorithms (two IDs)<br>
-               - Select max. (when higher is better) or min. (when lower is better)
+               fail to provide a clear result. The plot can be used to compare exactly
+               two algorithms (two IDs).
                </p>
 
                <p align="left" "font-size:120%;">
                The cumulative difference plot compares the samples from two algorithms
                through the first order stochastic dominance. In the left side of the x-axis,
-               the best values that the algorithms produced are compared. While in the right side,
+               the best values (small in minimization tasks, large in maximization tasks)
+               that the algorithms produced are compared. In the right side,
                the worst values are compared.
                </p>
 
@@ -132,8 +119,8 @@ rt_CDP_box <- function(width = 12, collapsible = T, collapsed = T) {
           width = 12, align = "center",
           HTML('<p align="left" "font-size:120%;">
                The cumulative difference plot can be useful when box/violin-plots
-               fail to provide a clear result. Generating this plot requires exactly
-               two algorithms (two IDs) to be selected.
+               fail to provide a clear result. The plot can be used to compare exactly
+               two algorithms (two IDs).
                </p>
 
                <p align="left" "font-size:120%;">

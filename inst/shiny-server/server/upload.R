@@ -531,6 +531,13 @@ observe({
   updateSelectInput(session, 'FCEPlot.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FCEPDF.Bar.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FCEPDF.Hist.Algs', choices = IDs, selected = IDs)
+
+  if(length(IDs) >= 2)
+  {
+    updateSelectInput(session, 'RTPMF.CDP.Algs', choices = IDs, selected = c(IDs[1], IDs[2]))
+    updateSelectInput(session, 'FCEPDF.CDP.Algs', choices = IDs, selected = c(IDs[1], IDs[2]))
+  }
+
   updateSelectInput(session, 'RTPMF.Bar.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RTPMF.Hist.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV_PAR.Summary.Param', choices = parIds, selected = 'all')
@@ -676,6 +683,7 @@ observe({
   setTextInput(session, 'RTECDF.Multi.Step', name, alternative = format_FV(step))
   setTextInput(session, 'RTPMF.Bar.Target', name, alternative = format_FV(median(v)))
   setTextInput(session, 'RTPMF.Hist.Target', name, alternative = format_FV(median(v)))
+  setTextInput(session, 'RTPMF.CDP.Target', name, alternative = format_FV(median(v)))
   setTextInput(session, 'ERTPlot.Min', name, alternative = format_FV(start))
   setTextInput(session, 'ERTPlot.Max', name, alternative = format_FV(stop))
   setTextInput(session, 'ERTPlot.Aggr.Targets', name, alternative = "")
@@ -722,6 +730,7 @@ observe({
   setTextInput(session, 'FCESummary.Sample.Max', name, alternative = max(v))
   setTextInput(session, 'FCESummary.Sample.Step', name, alternative = step)
   setTextInput(session, 'FCEPDF.Hist.Runtime', name, alternative = median(v))
+  setTextInput(session, 'FCEPDF.CDP.Runtime', name, alternative = median(v))
   setTextInput(session, 'FCEPDF.Bar.Runtime', name, alternative = median(v))
   setTextInput(session, 'FCEPlot.Min', name, alternative = start)
   setTextInput(session, 'FCEPlot.Max', name, alternative = stop)

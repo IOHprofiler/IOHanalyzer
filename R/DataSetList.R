@@ -1564,3 +1564,88 @@ generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
   colnames(winrates_aggr) <- get_id(dsList)
   winrates_aggr
 }
+
+
+
+
+#' Generate data for the cumulative difference plot.
+#'
+#' This function generates a dataframe that can be used to generate
+#' the `cumulative_difference_plot`.
+#'
+#' @param dsList The DataSetList object.
+#' Note that the `cumulative_difference_plot` can only compare two algorithms
+#' in a single problem of dimension one.
+#' @param runtime_or_target_value The target runtime or the target value
+#' @param isFixedBudget Should be TRUE when target runtime is used. False otherwise.
+#' @param isMinimizationProblem A boolean that should be TRUE when lower is better.
+#' @param alpha 1 minus the confidence level of the confidence band.
+#' @param EPSILON If abs(x-y) < EPSILON, then we assume that x = y.
+#' @param nOfBootstrapSamples The number of bootstrap samples used in the estimation.
+#' @return A dataframe with the data to generate the cumulative difference plot.
+#'
+#' @export
+#' @examples
+#'
+#' dsl
+#' dsl_sub <- subset(dsl, funcId == 1)
+#' runtime <- 15
+#' target <- 15
+#'
+#' generate_data.CDP(dsl_sub, runtime, TRUE , isMinimizationProblem = FALSE)
+#' generate_data.CDP(dsl_sub, target, FALSE , isMinimizationProblem = TRUE)
+generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, isMinimizationProblem=NULL, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3)
+{
+      if(is.null(isMinimizationProblem))
+      {
+        return(NULL)
+      }
+
+      if (!requireNamespace("RVCompare", quietly = TRUE)) {
+        stop("Package \"RVCompare\" needed for this function to work. Please install it.",
+          call. = FALSE)
+      }
+
+      if (length(get_dim(dsList)) != 1 || length(get_funcId(dsList)) != 1) return(NULL)
+      if (length(get_id(dsList)) != 2) return(NULL)
+
+      if (isFixedBudget)
+      {
+        subds <- get_FV_sample(dsList, runtime_or_target_value, output='long')
+
+        algorithms <- unique(subds$ID)
+        X_A <- subds[subds$ID == algorithms[1]]$`f(x)`
+        X_B <- subds[subds$ID == algorithms[2]]$`f(x)`
+      }
+      else
+      {
+        subds <- get_RT_sample(dsList, runtime_or_target_value, output='long')
+
+        algorithms <- unique(subds$ID)
+        X_A <- subds[subds$ID == algorithms[1]]$`RT`
+        X_B <- subds[subds$ID == algorithms[2]]$`RT`
+      }
+
+      res <- data.frame(X_A,X_B)
+      colnames(res) <- algorithms
+
+
+      if(!isTRUE(isMinimizationProblem) && !isFALSE(isMinimizationProblem))
+      {
+        stop("ERROR: To compute the cumulative difference-plot, isMinimizationProblem needs to be TRUE or FALSE.
+         isMinimizationProblem=TRUE needs to be used when low values are prefered to high values.
+         isMinimizationProblem=FALSE needs to be used when high values are preferred to low values.")
+      }
+      else if (isFALSE(isMinimizationProblem))
+      {
+        X_A <- - X_A
+        X_B <- - X_B
+      }
+
+      res <- RVCompare::get_Y_AB_bounds_bootstrap(X_A, X_B, ignoreMinimumLengthCheck = TRUE, alpha=alpha,  EPSILON=EPSILON, nOfBootstrapSamples=1e3)
+
+      return(data.frame(res))
+}
+
+
+

@@ -84,16 +84,21 @@ observeEvent(input$repository.load_button, {
     return(NULL)
   }
 
-  if (! all(attr(DataList$data, 'ID_attributes') %in% get_static_attributes(data))) {
+  if (length(DataList$data) > 0 &&
+      !all(attr(DataList$data, 'ID_attributes') %in% get_static_attributes(data))) {
     shinyjs::alert(paste0("Attempting to add data with different ID-attributes.
                           Please check that the attributes to create the ID
                           are present in the data you are loading."))
     return(NULL)  }
 
-  data <- change_id(data, attr(DataList$data, 'ID_attributes'))
-  temp_data <- c(DataList$data, data)
+  if (length(DataList$data) > 0) {
+    data <- change_id(data, attr(DataList$data, 'ID_attributes'))
+    temp_data <- c(DataList$data, data)
 
-  temp_data <- clean_DataSetList(temp_data)
+    temp_data <- clean_DataSetList(temp_data)
+  } else {
+    temp_data <- change_id(data, 'algId')
+  }
   # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
   update_menu_visibility(attr(temp_data, 'suite'))
   # set_format_func(attr(DataList$data, 'suite'))

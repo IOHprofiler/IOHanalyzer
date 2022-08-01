@@ -503,6 +503,8 @@ get_FV_sample <- function(ds, ...) UseMethod("get_FV_sample", ds)
 #'
 #' @param ds A DataSet or DataSetList object
 #' @param runtime A Numerical vector. Runtimes at which function values are reached
+#' @param include_geom_mean Boolean to indicate whether to include the geometric mean.
+#' Only works in fixed_budget mode. Negative values cause NaN, zeros cause output to be completely 0. Defaults to False.
 #' @param ... Arguments passed to other methods
 #'
 #' @return A data.table containing the function value statistics for each provided
@@ -874,7 +876,7 @@ fast_RT_samples <- function(RT_mat, target, maximization = F) {
 #' @rdname get_FV_summary
 #' @export
 #'
-get_FV_summary.DataSet <- function(ds, runtime, ...) {
+get_FV_summary.DataSet <- function(ds, runtime, include_geom_mean = F, ...) {
   data <- ds$FV
   NC <- ncol(data)
   NR <- nrow(data)
@@ -900,13 +902,19 @@ get_FV_summary.DataSet <- function(ds, runtime, ...) {
   matched <- sapply(runtime, function(r) rev(idx[r >= RT])[1])
   data <- data[matched, , drop = FALSE]
 
-  cbind(ID, runtime, NC,
+  dt <- cbind(ID, runtime, NC,
         apply(data, 1, .mean),
         apply(data, 1, .median),
         apply(data, 1, .sd),
         as.data.table(t(apply(data, 1, IOHanalyzer_env$C_quantile)))) %>%
     set_colnames(c('ID', 'runtime', 'runs', 'mean', 'median', 'sd',
                     paste0(getOption("IOHanalyzer.quantiles") * 100, '%')))
+
+  if (include_geom_mean) {
+    dt <- cbind(dt, apply(data, 1, function(x) {exp(mean(log(x)))} ))
+    setnames(dt, 'V2', 'geometric mean')
+  }
+  return(dt)
 }
 
 #' @rdname get_FV_sample

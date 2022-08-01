@@ -4,13 +4,28 @@
 \alias{plot_general_data}
 \title{General function for plotting within IOHanalyzer}
 \usage{
-plot_general_data(df, x_attr = "ID", y_attr = "vals",
-  type = "violin", legend_attr = "ID", scale.xlog = F,
-  scale.ylog = F, scale.reverse = F, p = NULL, x_title = NULL,
-  y_title = NULL, plot_title = NULL, upper_attr = NULL,
-  lower_attr = NULL, subplot_attr = NULL, show.legend = F,
-  inf.action = "none", violin.showpoints = F, subplot_shareX = F,
-  ...)
+plot_general_data(
+  df,
+  x_attr = "ID",
+  y_attr = "vals",
+  type = "violin",
+  legend_attr = "ID",
+  scale.xlog = F,
+  scale.ylog = F,
+  scale.reverse = F,
+  p = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  plot_title = NULL,
+  upper_attr = NULL,
+  lower_attr = NULL,
+  subplot_attr = NULL,
+  show.legend = F,
+  inf.action = "none",
+  violin.showpoints = F,
+  subplot_shareX = F,
+  ...
+)
 }
 \arguments{
 \item{df}{The dataframe containing the data to plot. It should contain at least two columns:

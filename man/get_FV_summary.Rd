@@ -8,7 +8,7 @@
 \usage{
 get_FV_summary(ds, ...)
 
-\method{get_FV_summary}{DataSet}(ds, runtime, ...)
+\method{get_FV_summary}{DataSet}(ds, runtime, include_geom_mean = F, ...)
 
 \method{get_FV_summary}{DataSetList}(ds, runtime, algorithm = "all", ...)
 }

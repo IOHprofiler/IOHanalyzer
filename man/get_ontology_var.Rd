@@ -4,8 +4,7 @@
 \alias{get_ontology_var}
 \title{Get the list of available options for data from the OPTION ontology}
 \usage{
-get_ontology_var(varname, datasource = NULL, study = NULL,
-  algs = NULL, ...)
+get_ontology_var(varname, datasource = NULL, study = NULL, algs = NULL, ...)
 }
 \arguments{
 \item{varname}{The variable for which to get the options. Restricted to [Fid, Iid, DIM, AlgId, Suite]}

@@ -487,7 +487,7 @@ get_maxRT.DataSetList <- function(ds, algorithm = 'all', ...) {
 #' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.
 #' @export
 #'
-get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
+get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', include_geom_mean = F, ...) {
     if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
@@ -496,7 +496,7 @@ get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
       res <-
         cbind(attr(ds, 'DIM'),
               attr(ds, 'funcId'),
-              get_FV_summary(ds, runtime))
+              get_FV_summary(ds, runtime, include_geom_mean))
       colnames(res)[1] <- 'DIM'
       colnames(res)[2] <- 'funcId'
       res
@@ -972,13 +972,16 @@ get_ECDF_targets <- function(dsList, type = "log-linear", number_targets = 10) {
 #' the generated datapoints
 #' @param budget Optional; overwrites the budget of each individual algorithm when doing ERT calculations. Only works
 #' in fixed_target mode.
+#' @param include_geom_mean Boolean to indicate whether to include the geometric mean.
+#' Only works in fixed_budget mode. Negative values cause NaN, zeros cause output to be completely 0. Defaults to False.
 #'
 #' @export
 #' @examples
 #' generate_data.Single_Function(subset(dsl, funcId == 1), which = 'by_RT')
 generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL,
                                           scale_log = F, which = 'by_RT',
-                                          include_opts = F, budget = NULL) {
+                                          include_opts = F, budget = NULL,
+                                          include_geom_mean = F) {
 
   if (length(get_funcId(dsList)) != 1 || length(get_dim(dsList)) != 1 ) {
     #Required because target generation is included in this function,
@@ -1023,7 +1026,7 @@ generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL,
       }
       Xseq <- unique(sort(Xseq))
     }
-    dt <- get_FV_summary(dsList, Xseq)
+    dt <- get_FV_summary(dsList, Xseq, include_geom_mean = include_geom_mean)
   }
 
 

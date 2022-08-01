@@ -4,8 +4,7 @@
 \alias{glicko2_ranking}
 \title{Glicko2 raning of algorithms}
 \usage{
-glicko2_ranking(dsl, nr_rounds = 100, which = "by_FV",
-  target_dt = NULL)
+glicko2_ranking(dsl, nr_rounds = 100, which = "by_FV", target_dt = NULL)
 }
 \arguments{
 \item{dsl}{The DataSetList, can contain multiple functions and dimensions, but should have the

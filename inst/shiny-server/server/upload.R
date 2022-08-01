@@ -84,15 +84,24 @@ observeEvent(input$repository.load_button, {
     return(NULL)
   }
 
-  DataList$data <- c(DataList$data, data)
-  DataList$data <- clean_DataSetList(DataList$data)
+  if (! all(attr(DataList$data, 'ID_attributes') %in% get_static_attributes(data))) {
+    shinyjs::alert(paste0("Attempting to add data with different ID-attributes.
+                          Please check that the attributes to create the ID
+                          are present in the data you are loading."))
+    return(NULL)  }
+
+  data <- change_id(data, attr(DataList$data, 'ID_attributes'))
+  temp_data <- c(DataList$data, data)
+
+  temp_data <- clean_DataSetList(temp_data)
   # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
-  update_menu_visibility(attr(DataList$data, 'suite'))
+  update_menu_visibility(attr(temp_data, 'suite'))
   # set_format_func(attr(DataList$data, 'suite'))
-  IDs <- get_id(DataList$data)
+  IDs <- get_id(temp_data)
   if (!all(IDs %in% get_color_scheme_dt()[['ids']])) {
     set_color_scheme("Default", IDs)
   }
+  DataList$data <- temp_data
 })
 
 # decompress zip files recursively and return the root directory of extracted files

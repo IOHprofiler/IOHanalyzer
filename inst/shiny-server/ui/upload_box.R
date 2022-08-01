@@ -1,5 +1,5 @@
 upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: find a way to include all potential arguments
-                       height = '75vh') {
+                       height = '85vh') {
   box(
     title = HTML('<p style="font-size:120%;">Upload Data</p>'),
     width = width, height = height, collapsed = collapsed, collapsible = collapsible,
@@ -48,7 +48,9 @@ upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: fin
       actionButton('upload.remove_data',
                    label = HTML('<p align="center" style="margin-bottom:0;"><b>
                    Remove all the data</b></p>'))
-      )
+      ),
+    downloadButton('upload.Download_processed',
+                   label = 'Download RDS of loaded data.')
     )
 }
 
@@ -103,7 +105,7 @@ welcome_bar <- function(width = 12, collapsible = T, collapsed = F) {
 
 
 overal_loading_box <- function(width = 12, collapsible = T,
-                               collapsed = F, height='75vh') {
+                               collapsed = F, height='85vh') {
   box(
     title = HTML('<p style="font-size:120%;">Load from repositories</p>'),
     width = width,

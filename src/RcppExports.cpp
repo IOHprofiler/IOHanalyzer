@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // align_by_target_inner_loop
 NumericVector align_by_target_inner_loop(double t, int idxEvals, int idxTarget, List data, NumericVector index, NumericMatrix next_lines, NumericVector curr_eval, bool maximization);
 RcppExport SEXP _IOHanalyzer_align_by_target_inner_loop(SEXP tSEXP, SEXP idxEvalsSEXP, SEXP idxTargetSEXP, SEXP dataSEXP, SEXP indexSEXP, SEXP next_linesSEXP, SEXP curr_evalSEXP, SEXP maximizationSEXP) {

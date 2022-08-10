@@ -169,6 +169,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
   attr(object, 'maximization') <- maximization
   attr(object, 'ID') <- attr(object, 'algId')
   attr(object, 'ID_attributes') <- c('algId')
+  attr(object, 'constrained') <- any(unlist(lapply(object, function(x) {attr(x, 'constrained')})))
   if (full_aggregation)
     clean_DataSetList(object)
   else
@@ -254,7 +255,7 @@ c.DataSetList <- function(...) {
   )
 
   # These attributes NEED to be the same across the datasetlist
-  for (attr_str in c('maximization', 'ID_attributes')) {
+  for (attr_str in c('maximization', 'ID_attributes', 'constrained')) {
     temp <- unique(
         unlist(lapply(dsl, function(x) attr(x, attr_str)))
     )
@@ -706,16 +707,16 @@ get_parId <- function(dsList, which = 'by_FV') {
 get_funvals <- function(dsList) {
   if (length(dsList) == 0)
     return(NULL)
-  if (length(dsList[[1]]$RT) == 0) {
+  if (length(get_RT(dsList[[1]])) == 0) {
     x <- sort(unique(as.numeric(unlist(
       lapply(dsList, function(x)
-        as.vector(x$FV))
+        as.vector(get_FV(x)))
     ))))
   }
   else
     x <- (sort(unique(as.numeric(unlist(
       lapply(dsList, function(x)
-        rownames(x$RT))
+        rownames(get_RT(x)))
     )))))
   x[!is.na(x) & !is.infinite(x)]
 }

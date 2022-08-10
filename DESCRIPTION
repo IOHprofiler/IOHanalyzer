@@ -1,7 +1,7 @@
 Package: IOHanalyzer
 Type: Package
 Title: Data Analysis Part of 'IOHprofiler'
-Version: 0.1.6.3
+Version: 0.1.7
 Author: Hao Wang [cre, aut], Diederick Vermetten [aut], Carola Doerr [aut], Thomas Bäck [aut]
 Maintainer: Diederick Vermetten <d.l.vermetten@liacs.leidenuniv.nl>
 Authors@R: c(

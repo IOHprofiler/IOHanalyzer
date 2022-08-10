@@ -84,7 +84,7 @@ read_index_file__IOH <- function(fname) {
           value <- ans[[name]]
           ans[[name]] <- gsub("'", '', value)
 
-          if (name == 'maximization')
+          if (name == 'maximization' || name == 'constrained')
             value <- as.logical(value)
           else
             value <- suppressWarnings(as.numeric(value)) # convert quoted numeric values to numeric

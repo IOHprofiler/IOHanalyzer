@@ -159,12 +159,20 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
       info$instance <- seq(length(RT_raw))
     }
 
-    do.call(
+    temp <- do.call(
       function(...)
         structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
       c(info, list(maxRT = maxRT, finalFV = finalFV, format = format,
                    maximization = maximization, suite = suite, ID = info$algId))
     )
+    if (isTRUE(info$constrained)) {
+      FV_raw_mat <- matrix(nrow = nrow(FV), ncol = length(FV_raw))
+      for (idx in seq(length(FV_raw))) {
+        FV_raw_mat[,idx] = FV_raw[[idx]][,2]
+      }
+      temp$FV_raw_mat <- FV_raw_mat
+    }
+    return(temp)
   }
   else
     structure(list(), class = c('DataSet', 'list'))
@@ -613,10 +621,43 @@ get_overview <- function(ds, ...) UseMethod("get_overview", ds)
 #' @export
 get_id <- function(ds, ...) UseMethod("get_id", ds)
 
+#' Get function value matrix of the used dataset.
+#'
+#' To be used instead of accessing ds$FV directly, since in the case of constrained
+#' problems, the violation handling should be applied before using the function values
+#' Constraint penalty function should be set in global options, as IOHanalyzer.Violation_Function
+#'
+#'
+#' @param ds The DataSet
+#' @param ... Arguments passed to other methods
+#'
+#' @return The matrix of FV values in the dataset, penalized if applicable.
+#' @examples
+#' get_FV(dsl[[1]])
+#' @export
+get_FV <- function(ds, ...) UseMethod("get_FV", ds)
+
+#' Get runtime matrix of the used dataset.
+#'
+#' To be used instead of accessing ds$RT directly, since in the case of constrained
+#' problems, the violation handling should be applied before using the function values
+#' Constraint penalty function should be set in global options, as IOHanalyzer.Violation_Function
+#'
+#'
+#' @param ds The DataSet
+#' @param ... Arguments passed to other methods
+#'
+#' @return The matrix of FV values in the dataset, penalized if applicable.
+#' @examples
+#' get_RT(dsl[[1]])
+#' @export
+get_RT <- function(ds, ...) UseMethod("get_RT", ds)
+
+
 #' @rdname get_FV_overview
 #' @export
 get_FV_overview.DataSet <- function(ds, ...) {
-  data <- ds$FV
+  data <- get_FV(ds)
   runs <- ncol(data)
   last_row <- data[nrow(data), ]
   budget <- max(attr(ds, 'maxRT'))
@@ -651,7 +692,7 @@ get_FV_overview.DataSet <- function(ds, ...) {
 get_RT_overview.DataSet <- function(ds, ...) {
 
   if (!is.null(attr(ds, "format")) && attr(ds, "format") == NEVERGRAD) {
-    data <- ds$FV
+    data <- get_FV(ds)
     budget <- max(attr(ds, 'maxRT'))
     runs <- ncol(data)
     min_rt <- rownames(data) %>% as.integer %>% min
@@ -659,7 +700,7 @@ get_RT_overview.DataSet <- function(ds, ...) {
   }
 
   else{
-    data <- ds$RT
+    data <- get_RT(ds)
     runs <- ncol(data)
     budget <- max(attr(ds, 'maxRT'))
     min_rt <- min(data, na.rm = T)
@@ -679,12 +720,12 @@ get_RT_overview.DataSet <- function(ds, ...) {
 #' @export
 #'
 get_overview.DataSet <- function(ds, ...) {
-  data <- ds$FV
+  data <- get_FV(ds)
   runs <- ncol(data)
 
   budget <- max(attr(ds, 'maxRT'))
-  if (!is.null(ds$RT) && length(ds$RT) > 0) {
-    max_rt <- max(ds$RT, na.rm = T)
+  if (!is.null(get_RT(ds)) && length(get_RT(ds)) > 0) {
+    max_rt <- max(get_RT(ds), na.rm = T)
     budget <- max(budget, max_rt)
   }
   else max_rt <- budget
@@ -722,7 +763,7 @@ get_overview.DataSet <- function(ds, ...) {
 #' @export
 #'
 get_ERT.DataSet <- function(ds, ftarget, budget = NULL, ...) {
-  data <- ds$RT
+  data <- get_RT(ds)
   if (is.null(budget) || is.na(budget)) maxRT <- attr(ds, 'maxRT')
   else maxRT <- as.numeric(budget)
   algId <- attr(ds, 'algId')
@@ -748,7 +789,7 @@ get_ERT.DataSet <- function(ds, ftarget, budget = NULL, ...) {
 #' @export
 #'
 get_RT_summary.DataSet <- function(ds, ftarget, budget = NULL, ...) {
-  data <- ds$RT
+  data <- get_RT(ds)
   if (is.null(budget) || is.na(budget)) maxRT <- max(attr(ds, 'maxRT'))
   else maxRT <- as.numeric(budget)
   ID <- get_id(ds)
@@ -809,7 +850,7 @@ get_maxRT <- function(ds, ...) UseMethod("get_maxRT", ds)
 #'
 get_maxRT.DataSet <- function(ds, output = 'wide', ...) {
   ID <- get_id(ds)
-  N <- ncol(ds$RT)
+  N <- ncol(get_RT(ds))
   res <- t(c(ID, attr(ds, 'maxRT'))) %>%
     as.data.table %>%
     set_colnames(c('ID', paste0('run.', seq(N))))
@@ -827,7 +868,7 @@ get_maxRT.DataSet <- function(ds, output = 'wide', ...) {
 #' @param output A character determining the format of output data.table: 'wide' or 'long'
 #' @export
 get_RT_sample.DataSet <- function(ds, ftarget, output = 'wide', ...) {
-  data <- ds$RT
+  data <- get_RT(ds)
   N <- ncol(data)
   ID <- get_id(ds)
   maximization <- attr(ds, 'maximization')
@@ -877,7 +918,7 @@ fast_RT_samples <- function(RT_mat, target, maximization = F) {
 #' @export
 #'
 get_FV_summary.DataSet <- function(ds, runtime, include_geom_mean = F, ...) {
-  data <- ds$FV
+  data <- get_FV(ds)
   NC <- ncol(data)
   NR <- nrow(data)
   ID <- get_id(ds)
@@ -923,7 +964,7 @@ get_FV_summary.DataSet <- function(ds, runtime, include_geom_mean = F, ...) {
 #' @export
 #'
 get_FV_sample.DataSet <- function(ds, runtime, output = 'wide', ...) {
-  data <- ds$FV
+  data <- get_FV(ds)
   N <- ncol(data)
   n_row <- nrow(data)
   ID <- get_id(ds)
@@ -960,12 +1001,12 @@ get_PAR_name.DataSet <- function(ds, which = 'by_FV') {
 #' @export
 get_PAR_summary.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV', ...) {
   if (which == 'by_FV') {
-    RefValues <- as.numeric(rownames(ds$RT))
+    RefValues <- as.numeric(rownames(get_RT(ds)))
     ds_par <- ds$PAR$by_FV
     idx_name <- 'target'
   }
   else if (which == 'by_RT') {
-    RefValues <- as.numeric(rownames(ds$FV))
+    RefValues <- as.numeric(rownames(get_FV(ds)))
     ds_par <- ds$PAR$by_RT
     idx_name <- 'runtime'
   }
@@ -1020,12 +1061,12 @@ get_PAR_sample.DataSet <- function(ds, idxValue, parId = 'all', which = 'by_FV',
                                    output = 'wide', ...) {
   N <- length(attr(ds, 'instance'))
   if (which == 'by_FV') {
-    RefValues <- as.numeric(rownames(ds$RT))
+    RefValues <- as.numeric(rownames(get_RT(ds)))
     ds_par <- ds$PAR$by_FV
     idx_name <- 'target'
   }
   else if (which == 'by_RT') {
-    RefValues <- as.numeric(rownames(ds$FV))
+    RefValues <- as.numeric(rownames(get_FV(ds)))
     ds_par <- ds$PAR$by_RT
     idx_name <- 'runtime'
   }
@@ -1077,3 +1118,30 @@ get_id.DataSet <- function(ds, ...) {
   }
   return(unique(temp))
 }
+
+#' @rdname get_FV
+#' @export
+get_FV.DataSet <- function(ds, ...) {
+  if (isTRUE(attr(ds, 'constrained'))) {
+    FV <- getOption("IOHanalyzer.Violation_Function",
+                     default = function(x,y) {x}
+                     )(ds$FV, ds$PAR$by_RT$Violation)
+    return(do.call(cbind, lapply(seq(ncol(FV)), function(x) cummin(FV[,x]))))
+  } else return(ds$FV)
+}
+
+#' @rdname get_RT
+#' @export
+get_RT.DataSet <- function(ds, ...) {
+  if (isTRUE(attr(ds, 'constrained'))) {
+    data <- getOption("IOHanalyzer.Violation_Function",
+                      default = function(x,y) {x}
+    )(ds$FV, ds$PAR$by_RT$Violation)
+    FV <- sort(unique(data), decreasing = !attr(ds, 'maximization'))
+    index <- as.numeric(rownames(data))
+    RT <- c_align_running_time_matrix(data, FV, as.numeric(index), F)
+    rownames(RT) <- FV
+    return(RT)
+  } else return(ds$RT)
+}
+

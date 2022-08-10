@@ -62,7 +62,7 @@ NumericVector c_impute(NumericVector x, NumericVector y, NumericVector rowname) 
       }
     // if the query value is larger than the last runtime value `y[L - 1]`
     } else if (j == L - 1 && rowname[i] >= y[j]) {
-      res[i] = x[j]; 
+      res[i] = x[j];
     // take the previous function value if the next runtime in y[j] is not reached
     } else if (rowname[i] < y[j] && j > 0) {
       res[i] = x[j - 1];
@@ -141,6 +141,35 @@ List c_align_running_time(List data, NumericVector FV, NumericVector idxValue, b
       NumericMatrix aux = res[k];
       aux(_, i) = tmp(_, k);
     }
+  }
+  return res;
+}
+
+
+//' Align a matrix of data set by function values
+//'
+//' @param data the data
+//' @param FV Function values
+//' @param IdxValues The index values
+//' @param maximization Boolean
+//' @noRd
+// [[Rcpp::export]]
+NumericMatrix c_align_running_time_matrix(NumericMatrix data, NumericVector FV, NumericVector IdxValues, bool maximization) {
+  int NC = data.ncol();
+  int NR = FV.size();
+
+
+  NumericMatrix res(NR, NC);
+
+  for (int i = 0; i < NC; i++) {
+    NumericMatrix aux(NR, 1);
+    aux( _, 0) = data( _ , i );
+
+    NumericMatrix aux_idx(NR, 1);
+    aux_idx( _, 0) = IdxValues;
+
+    NumericVector tmp = NumericVector(c_impute_running_time(aux, aux_idx, FV, maximization));
+    res(_, i) = tmp;
   }
   return res;
 }

@@ -566,6 +566,13 @@ observe({
   invalid_choices <- c('funcId', 'DIM', 'ID')
   updateSelectInput(session, 'Settings.ID.Variables', choices = attr_choices[!attr_choices %in% invalid_choices],
                     selected = attr(data, 'ID_attributes'))
+
+  if (isTRUE(attr(data, 'constrained'))) {
+    shinyjs::show(id = "Settings.Constrained")
+    shinyjs::alert("The data you loaded seems to come from a constrained optimization problem.
+                   We have added support for these types of problems by allowing for post-hoc
+                   analysis of different penalization techniques (see the 'settings' page).")
+  } else {shinyjs::hide(id = "Settings.Constrained")}
 })
 
 

@@ -42,14 +42,14 @@ plot_color_example <- function(){
   if (schemename == "Custom" && !is.null(input$Settings.Color.Upload)) {
     schemename <- paste0(schemename, ": ", input$Settings.Color.Upload$datapath)
   }
-  
+
   x <- c(rep(1, length(algnames)),rep(2, length(algnames)))
   y <- seq_len(length(algnames))
   dt <- data.table(ID = rep(algnames, 2), x, y)
-  
+
   p <- plot_general_data(dt, 'x', 'y', 'line', show.legend = T,
                          x_title = 'X-title', y_title = 'Y-title', plot_title = 'Plot Title')
-  
+
   p
 }
 
@@ -68,11 +68,22 @@ selected_color_congfig <- observe({
 })
 
 observe({
- input$Settings.General.Probs %>% 
-    strsplit(.,',') %>% 
-    .[[1]] %>% 
+ input$Settings.General.Probs %>%
+    strsplit(.,',') %>%
+    .[[1]] %>%
     as.numeric %>%
     options("IOHanalyzer.quantiles" = .)
+})
+
+observe({
+  factor <- eval(input$Settings.Constrained.Factor)
+  violation_func <- switch (input$Settings.Constrained.Method,
+    "Ignore" = function(x,y) {x},
+    "Penalize Relative"  = function(x,y) {x + factor * y},
+    "Set to value"  = function(x,y) {ifelse(y < 0, x, factor)},
+    "Penalize Absolute"  = function(x,y) {x + factor},
+  )
+  options("IOHanalyzer.Violation_Function" = violation_func)
 })
 
 observe({
@@ -184,7 +195,7 @@ observe({
     options("IOHanalyzer.ID_vars" = input$Settings.ID.Variables)
     DataList$data <- change_id(DataList$data, input$Settings.ID.Variables)
   }
-  if ('algId' %in% id_vars) 
+  if ('algId' %in% id_vars)
     shinyjs::hide(id = "overall_algid_box")
   else
     shinyjs::show(id = "overall_algid_box")
@@ -220,7 +231,7 @@ observe({
     updateNumericInput(session, 'Settings.Font.Tick', value = 9)
     updateNumericInput(session, 'Settings.Font.Legend', value = 10)
     updateNumericInput(session, 'Settings.Font.Title', value = 13)
-    updateNumericInput(session, 'Settings.Font.Label', value = 13)    
+    updateNumericInput(session, 'Settings.Font.Label', value = 13)
   }
   else if (setting_preset == "Paper-2col") {
     updateNumericInput(session, 'Settings.Download.Width', value = 900)
@@ -228,7 +239,7 @@ observe({
     updateNumericInput(session, 'Settings.Font.Tick', value = 11)
     updateNumericInput(session, 'Settings.Font.Legend', value = 12)
     updateNumericInput(session, 'Settings.Font.Title', value = 16)
-    updateNumericInput(session, 'Settings.Font.Label', value = 15)    
+    updateNumericInput(session, 'Settings.Font.Label', value = 15)
   }
 })
 

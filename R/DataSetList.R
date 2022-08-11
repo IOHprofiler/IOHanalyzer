@@ -1349,6 +1349,40 @@ generate_data.Parameters <- function(dsList, which = 'by_RT', scale_log = F) {
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
 }
 
+#' Generate dataframe of exactly 2 parameters, matched by running time
+#'
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
+#'
+#' @param dsList The DataSetList object
+#' @param par1 The first parameter. Either a parameter name or 'f(x)'
+#' @param par2 The second parameter. Either a parameter name or 'f(x)'
+#'
+#' @export
+#' @examples
+#' generate_data.Parameter_correlation(subset(dsl, funcId == 1), 'f(x)', 'f(x)')
+generate_data.Parameter_correlation <- function(dsList, par1, par2) {
+  dt <- rbindlist(lapply(dsList, function(ds) {
+    if (par1 == 'f(x)' ) {
+      dt1 <- ds$FV_raw_mat %>% reshape2::melt()
+    } else {
+      dt1 <- ds$PAR$by_RT[[par1]] %>% reshape2::melt()
+    }
+    if (par2 == 'f(x)' ) {
+      dt2 <- ds$FV_raw_mat %>% reshape2::melt()
+    } else {
+      dt2 <- ds$PAR$by_RT[[par2]] %>% reshape2::melt()
+    }
+
+    colnames(dt1) <- c('runtime', 'run', par1)
+    colnames(dt2) <- c('runtime', 'run', par2)
+
+    dt <- merge(dt1, dt2)
+    dt$ID <- get_id(ds)
+    dt
+  }))
+  return(dt)
+}
+
 #' Generate dataframe of a single function/dimension pair
 #'
 #' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function

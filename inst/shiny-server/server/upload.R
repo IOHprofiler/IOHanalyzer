@@ -529,6 +529,7 @@ observe({
   updateSelectInput(session, 'FCESummary.Overview.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RTSummary.Sample.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV_PAR.Plot.Algs', choices = IDs, selected = IDs)
+  updateSelectInput(session, 'FV_PAR.CorrPlot.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RT_PAR.Plot.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FCESummary.Statistics.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FCESummary.Sample.ID', choices = IDs, selected = IDs)
@@ -559,6 +560,8 @@ observe({
   updateSelectInput(session, 'FCEECDF.Mult.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FCEECDF.AUC.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'ParCoordPlot.Algs', choices = IDs, selected = IDs[[1]])
+  updateSelectInput(session, 'FV_PAR.CorrPlot.Param1', choices = c(parIds_, 'f(x)'), selected = 'f(x)')
+  updateSelectInput(session, 'FV_PAR.CorrPlot.Param2', choices = c(parIds_, 'f(x)'), selected = parIds_[[1]])
   updateSelectInput(session, 'FV_PAR.Plot.Params', choices = parIds_, selected = parIds_)
   updateSelectInput(session, 'RT_PAR.Plot.Params', choices = parIds_, selected = parIds_)
 

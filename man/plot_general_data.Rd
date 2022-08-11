@@ -23,6 +23,8 @@ plot_general_data(
   show.legend = F,
   inf.action = "none",
   violin.showpoints = F,
+  frame_attr = "frame",
+  symbol_attr = "run_nr",
   subplot_shareX = F,
   ...
 )

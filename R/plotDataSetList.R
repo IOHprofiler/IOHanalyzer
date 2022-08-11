@@ -1009,13 +1009,14 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                               scale.reverse = F, p = NULL, x_title = NULL,
                               y_title = NULL, plot_title = NULL, upper_attr = NULL,
                               lower_attr = NULL, subplot_attr = NULL, show.legend = F,
-                              inf.action = 'none', violin.showpoints = F,
+                              inf.action = 'none', violin.showpoints = F, frame_attr = 'frame', symbol_attr = 'run_nr',
                               subplot_shareX = F, ...) {
 
   l <- x <- isinf <- y <- text <- l_orig <- NULL #Set local binding to remove warnings
 
   #Only allow valid plot types
-  if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon', 'bar'))) {
+  if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon',
+                    'bar', 'anim-scatter', 'scatter'))) {
     stop(paste0("Provided plot type ('", type, "') is not supported"))
   }
 
@@ -1379,6 +1380,35 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
           if (is_new_plot) {
             p %<>% layout(xaxis = list(tickfont = f3(), ticklen = 3),
                           yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
+          }
+        },
+        'anim-scatter' = {
+          colnames(df)[colnames(df) == frame_attr] <- "frame"
+          colnames(df)[colnames(df) == symbol_attr] <- "s"
+          colors = add_transparancy(colors, 0.9)
+          df = df[order(frame), ]
+          for (xv in xs){
+            df_sub = df[l==xv,]
+            p %<>% add_trace(data = df_sub, x = ~x, y = ~y, type = 'scatter',
+                             mode = 'markers', marker = list(color = colors[xv],
+                                                             symbol = ~s),
+                             legendgroup = xv, frame = ~frame, showlegend = F,
+                             name = xv)
+          }
+          p %<>% animation_opts(transition = 0)
+
+        },
+        'scatter' = {
+          colnames(df)[colnames(df) == symbol_attr] <- "s"
+          colors = add_transparancy(colors, 0.9)
+          df = df[order(frame), ]
+          for (xv in xs){
+            df_sub = df[l==xv,]
+            p %<>% add_trace(data = df_sub, x = ~x, y = ~y, type = 'scatter',
+                             mode = 'markers', marker = list(color = colors[xv],
+                                                             symbol = ~s),
+                             legendgroup = xv, showlegend = F,
+                             name = xv)
           }
         }
   )

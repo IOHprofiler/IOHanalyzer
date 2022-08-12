@@ -17,7 +17,7 @@
 #' @importFrom stringi stri_detect_regex stri_detect_fixed stri_locate_all stri_replace
 #' @importFrom stringi stri_rand_strings stri_sub
 #' @importFrom httr POST GET add_headers content authenticate
-#' @importFrom reshape2 acast
+#' @importFrom reshape2 acast dcast
 #' @importFrom knitr kable
 #' @importFrom methods hasArg
 #' @useDynLib IOHanalyzer

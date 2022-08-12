@@ -1086,3 +1086,101 @@ convert_from_OPTION <- function(dt, source, ...) {
   attr(res, 'maximization') <- F
   clean_DataSetList(res)
 }
+
+
+#' Read Nevergrad data
+#'
+#' Read .csv files in arbitrary format
+#'
+#' @param path The path to the .csv file
+#' @param neval_name The name of the column to use for the evaluation count
+#' @param fval_name The name of the column to use for the function values
+#' @param fname_name The name of the column to use for the function name
+#' @param algname_name The name of the column to use for the algorithm name
+#' @param dim_name The name of the column to use for the dimension
+#' @param run_name The name of the column to use for the run number
+#' @param maximization Boolean indicating whether the data is resulting from maximization or minimization
+#'
+#' @return The DataSetList extracted from the .csv file provided
+#' @export
+read_pure_csv <- function(path, neval_name, fval_name, fname_name,
+                          algname_name, dim_name, run_name, maximization = F){
+  dt <- fread(path)
+
+  if (!all(c(neval_name, run_name) %in% colnames(dt))) {
+    warning("One or more specified column names do not exist
+            in the provided file!")
+    return(NULL)
+  }
+
+  colnames(dt)[colnames(dt) == neval_name] <- "neval"
+  colnames(dt)[colnames(dt) == fval_name] <- "fval"
+  colnames(dt)[colnames(dt) == fname_name] <- "fname"
+  colnames(dt)[colnames(dt) == algname_name] <- "algname"
+  colnames(dt)[colnames(dt) == dim_name] <- "dim"
+  colnames(dt)[colnames(dt) == run_name] <- "run"
+
+  triplets <- unique(dt[, .(fname, dim, algname)])
+
+  algIds <- unique(triplets$algname)
+  DIMs <- unique(triplets$dim)
+  funcIds <- unique(triplets$fname)
+
+
+  res <- list()
+
+  idx <- 1
+
+  for (i in seq(nrow(triplets))) {
+    algId <- triplets$algname[i]
+    DIM <- triplets$dim[i]
+    funcId <- triplets$fname[i]
+
+    data <- dt[algname == algId & dim == DIM & fname == funcId,
+               .(neval, fval, run)]
+
+    dt_for_allign <- dcast(data, neval ~ run, value.var = 'fval')
+
+    FV_mat <- as.matrix(dt_for_allign[,2:ncol(dt_for_allign)])
+    runtimes <- dt_for_allign$neval
+
+    if (maximization) {
+      FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummax(FV_mat[,x])))
+      FV <- apply(FV, 2, function(x) {x[is.na(x)] <- max(x, na.rm = T); x})
+    }
+    else {
+      FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummin(FV_mat[,x])))
+      FV <- apply(FV, 2, function(x) {x[is.na(x)] <- min(x, na.rm = T); x})
+    }
+    rownames(FV) <- runtimes
+
+
+
+    FV_temp <- sort(unique(FV_mat), decreasing = !maximization)
+    index <- as.numeric(runtimes)
+    RT <- c_align_running_time_matrix(FV_mat, FV_temp, as.numeric(index), maximization)
+    rownames(RT) <- FV_temp
+    RT[RT < 1] <- NA #Avoids weird values from impossible imputes at the end
+
+    ds <-  structure(list(RT = RT, FV = FV),
+                     class = c('DataSet', 'list'),
+                     maxRT = max(runtimes),
+                     finalFV = min(FV),
+                     format = 'Custom',
+                     maximization = maximization,
+                     algId = algId,
+                     funcId = funcId,
+                     DIM = DIM,
+                     ID = algId)
+    res[[idx]] <- ds
+    idx <- idx + 1
+  }
+  class(res) %<>% c('DataSetList')
+  attr(res, 'DIM') <- DIMs
+  attr(res, 'funcId') <- funcIds
+  attr(res, 'algId') <- algIds
+  attr(res, 'suite') <- 'Custom'
+  attr(res, 'maximization') <- maximization
+  res
+
+}

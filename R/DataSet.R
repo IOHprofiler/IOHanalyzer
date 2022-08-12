@@ -1125,7 +1125,9 @@ get_FV.DataSet <- function(ds, ...) {
   if (isTRUE(attr(ds, 'constrained'))) {
     FV <- getOption("IOHanalyzer.Violation_Function",
                      default = function(x,y) {x}
-                     )(ds$FV, ds$PAR$by_RT$Violation)
+                     )(ds$FV_raw_mat, ds$PAR$by_RT$Violation)
+    if (attr(ds, 'maximization'))
+      return(do.call(cbind, lapply(seq(ncol(FV)), function(x) cummax(FV[,x]))))
     return(do.call(cbind, lapply(seq(ncol(FV)), function(x) cummin(FV[,x]))))
   } else return(ds$FV)
 }
@@ -1136,10 +1138,10 @@ get_RT.DataSet <- function(ds, ...) {
   if (isTRUE(attr(ds, 'constrained'))) {
     data <- getOption("IOHanalyzer.Violation_Function",
                       default = function(x,y) {x}
-    )(ds$FV, ds$PAR$by_RT$Violation)
+    )(ds$FV_raw_mat, ds$PAR$by_RT$Violation)
     FV <- sort(unique(data), decreasing = !attr(ds, 'maximization'))
     index <- as.numeric(rownames(data))
-    RT <- c_align_running_time_matrix(data, FV, as.numeric(index), F)
+    RT <- c_align_running_time_matrix(data, FV, as.numeric(index), attr(ds, 'maximization'))
     rownames(RT) <- FV
     return(RT)
   } else return(ds$RT)

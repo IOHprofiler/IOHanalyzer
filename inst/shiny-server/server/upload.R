@@ -274,6 +274,70 @@ observeEvent(selected_folders(), {
   }, message = "Processing data, this might take some time")
 })
 
+#Load data from custom csv
+observeEvent(input$upload.custom_csv, {
+
+  tryCatch({
+    datapath <- input$upload.custom_csv$datapath
+    found_columns <-  colnames(fread(datapath, nrows=0))
+
+    updateSelectInput(session, 'upload.neval_name', choices = found_columns, selected = found_columns[[1]])
+    updateSelectInput(session, 'upload.fval_name', choices = found_columns, selected = found_columns[[2]])
+    updateSelectInput(session, 'upload.fname_name', choices = found_columns, selected = found_columns[[3]])
+    updateSelectInput(session, 'upload.algname_name', choices = found_columns, selected = found_columns[[4]])
+    updateSelectInput(session, 'upload.dim_name', choices = found_columns, selected = found_columns[[5]])
+    updateSelectInput(session, 'upload.run_name', choices = found_columns, selected = found_columns[[6]])
+    datapath
+  }, error = function(e) shinyjs::alert(paste0("The following error occured when processing the uploaded data: ", e))
+  )
+})
+
+# load, process the data folders, and update DataSetList
+observeEvent(input$upload.process_csv, {
+  fname <- input$upload.custom_csv$datapath
+  if (is.null(fname)) { return(NULL)}
+  data <- read_pure_csv(path = fname,
+                        neval_name = input$upload.neval_name,
+                        fval_name = input$upload.fval_name,
+                        fname_name = input$upload.fname_name,
+                        algname_name = input$upload.algname_name,
+                        dim_name = input$upload.dim_name,
+                        run_name = input$upload.run_name,
+                        maximization = input$upload.maximization)
+
+  if (length(DataList$data) > 0 && attr(data, 'maximization') != attr(DataList$data, 'maximization')) {
+    shinyjs::alert(paste0("Attempting to add data from a different optimization type to the currently",
+                          " loaded data.\nPlease either remove the currently loaded data or",
+                          " choose a different dataset to load."))
+    return(NULL)
+  }
+
+  if (length(DataList$data) > 0 &&
+      !all(attr(DataList$data, 'ID_attributes') %in% get_static_attributes(data))) {
+    shinyjs::alert(paste0("Attempting to add data with different ID-attributes.
+                          Please check that the attributes to create the ID
+                          are present in the data you are loading."))
+    return(NULL)  }
+
+  if (length(DataList$data) > 0) {
+    data <- change_id(data, attr(DataList$data, 'ID_attributes'))
+    temp_data <- c(DataList$data, data)
+
+    temp_data <- clean_DataSetList(temp_data)
+  } else {
+    temp_data <- change_id(data, 'algId')
+  }
+  # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
+  update_menu_visibility(attr(temp_data, 'suite'))
+  # set_format_func(attr(DataList$data, 'suite'))
+  IDs <- get_id(temp_data)
+  if (!all(IDs %in% get_color_scheme_dt()[['ids']])) {
+    set_color_scheme("Default", IDs)
+  }
+  DataList$data <- temp_data
+})
+
+
 update_menu_visibility <- function(suite){
   if (all(suite == NEVERGRAD)) {
     #TODO: Better way of doing this such that these pages are not even populated with data instead of just being hidden

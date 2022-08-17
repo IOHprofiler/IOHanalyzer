@@ -40,7 +40,7 @@ scan_index_file <- function(folder) {
 #' info <- read_index_file(file.path(path,"IOHprofiler_f1_i1.info"))
 read_index_file <- function(fname) {
   format <- tools::file_ext(fname)
-  if (format == 'json') 
+  if (format == 'json')
     read_index_file__json(fname)
   else {
     tryCatch(
@@ -58,10 +58,11 @@ read_index_file <- function(fname) {
 #' @return The data contained in the json info-file
 #' @noRd
 read_index_file__json <- function(fname) {
-  
+
   json_data <- fromJSON(file = fname)
+  base_dir <- dirname(fname)
   exp_attrs <- sapply(json_data$experiment_attributes, function(x) {x})
-  
+
   data <- list()
   tryCatch({
     fid <- json_data$function_id
@@ -70,16 +71,17 @@ read_index_file__json <- function(fname) {
     maximization <- json_data$maximization
     algid <- json_data$algorithm$name
   }, error = function(e) {return(NULL)})
-  
+
   data <- lapply(json_data$scenarios, function(scenario) {
-    
+
     run_attrs <- list()
-    
+
     for (run_attr in json_data$run_attributes) {
       attr(run_attrs, run_attr) <- sapply(scenario$runs, function(x) x$run_attr)
     }
 
-    
+    datafile <- file.path(base_dir, scenario$path)
+
     temp <- c(list(
       funcId = fid,
       funcName = fname,
@@ -87,14 +89,14 @@ read_index_file__json <- function(fname) {
       maximization = maximization,
       algId = algid,
       DIM = scenario$dimension,
-      datafile = scenario$path,
+      datafile = datafile,
       instance = sapply(scenario$runs, function(x) x$instance),
       maxRT = sapply(scenario$runs, function(x) x$evals),
       finalFV = sapply(scenario$runs, function(x) x$best$y),
       final_pos = sapply(scenario$runs, function(x) x$best$x)
-    ), run_attrs, 
+    ), run_attrs,
     exp_attrs)
-    
+
   })
   data
 }
@@ -135,12 +137,12 @@ read_index_file__IOH <- function(fname) {
         for (name in .[1, ]) {
           value <- ans[[name]]
           ans[[name]] <- gsub("'", '', value)
-          
+
           if (name == 'maximization')
             value <- as.logical(value)
           else
             value <- suppressWarnings(as.numeric(value)) # convert quoted numeric values to numeric
-          
+
           if (!is.na(value)) ans[[name]] <- value
         }
         ans
@@ -156,7 +158,7 @@ read_index_file__IOH <- function(fname) {
       maxRTs <- NULL
     } else {
       res <- matrix(unlist(strsplit(record[-1], ':')), nrow = 2)
-      info <- matrix(unlist(strsplit(res[2, ], '\\|')), nrow = 2)  
+      info <- matrix(unlist(strsplit(res[2, ], '\\|')), nrow = 2)
       #Check for incorrect usages of reset_problem and remove them
       maxRTs <- as.numeric(info[1,])
       idx_correct <- which(maxRTs > 0)
@@ -164,7 +166,7 @@ read_index_file__IOH <- function(fname) {
       instances <- as.numeric(res[1,])[idx_correct]
       maxRTs <- maxRTs[idx_correct]
     }
-    
+
     record[1] <- gsub("\\\\", "/", record[1])
     datafile <- file.path(path, record[1])
 
@@ -196,14 +198,14 @@ read_index_file__COCO <- function(fname) {
   data <- list()
   i <- 1
   while (TRUE) {
-    
+
     lines <- suppressWarnings(readLines(f, n = 3))  # read header and comments
     if (length(lines) < 3) {
       break
     }
     comment <- lines[2]
     name_value <- as.vector(unlist(as.list(read.csv(text = lines[1], header = F, quote = "'"))))
-    
+
     header <- trimws(name_value) %>% {
       regmatches(., regexpr("=", .), invert = T)  # match the first appearance of '='
     } %>%
@@ -221,11 +223,11 @@ read_index_file__COCO <- function(fname) {
         }
         ans
       }
-    
+
     names(header) <- gsub('algorithm', 'algId', names(header))
-    
+
     record <- strsplit(lines[3], ',')[[1]] %>% trimws
-    
+
     if (length(record) < 2) {
       warning(sprintf('File %s is incomplete!', fname))
       res <- NULL
@@ -234,14 +236,14 @@ read_index_file__COCO <- function(fname) {
       res <- matrix(unlist(strsplit(record[-c(1)], ':')), nrow = 2)
       info <- matrix(as.numeric(unlist(strsplit(res[2, ], '\\|'))), nrow = 2)
     }
-    
+
     record[1] <-  gsub("\\\\", "/", record[1])
     if ('folder' %in% names(header))
       datafile <- file.path(path, header$folder, record[1])
     else
       datafile <- file.path(path, record[1])
-    
-    
+
+
     # TODO: check the name of the attributes and fix them!
     data[[i]] <- c(
       header,
@@ -360,14 +362,14 @@ read_index_file__BIOBJ_COCO <- function(fname) {
 check_format <- function(path) {
   if (sub('[^\\.]*\\.', '', basename(path), perl = T) == "csv")
     return(NEVERGRAD)
-  
+
   if (sub('[^\\.]*\\.', '', basename(path), perl = T) == "rds")
     return("RDS")
-  
+
   index_files <- scan_index_file(path)
-  if (length(index_files) == 0) 
+  if (length(index_files) == 0)
     return(SOS)
-  
+
   info <- unlist(lapply(index_files, read_index_file), recursive = F)
   datafile <- sapply(info, function(item) item$datafile)
 
@@ -408,7 +410,7 @@ check_format <- function(path) {
   csv_files <- file.path(path, list.files(path, pattern = '.csv', recursive = T))
   if (length(csv_files) > 0)
     format <- c(format, NEVERGRAD)
-  
+
   txt_files <- file.path(path, list.files(path, pattern = '.txt', recursive = T))
   if (length(txt_files) > 0)
     format <- c(format, SOS)
@@ -693,7 +695,7 @@ read_nevergrad <- function(path){
   if (!'name' %in% colnames(dt)) {
     dt[, name := function_class]
   }
-  
+
   triplets <- unique(dt[, .(optimizer_name, dimension, name)])
   algIds <- unique(triplets$optimizer_name)
   DIMs <- unique(triplets$dimension)
@@ -770,7 +772,7 @@ read_nevergrad <- function(path){
 }
 
 #' Read single DataSet of SOS-based data
-#' 
+#'
 #' Read single .txt files in SOS format and extract information as a DataSet
 #'
 #' @param file The path to the .txt file
@@ -778,9 +780,9 @@ read_nevergrad <- function(path){
 #' @noRd
 read_single_file_SOS <- function(file) {
   V1 <- NULL #Local binding to remove CRAN warnings
-  
+
   algId <- substr(basename(file), 1,  stringi::stri_locate_last(basename(file), fixed = 'D')[[1]] - 1)
-  
+
   dt <- fread(file, header = F)
   header <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
   splitted <- header %>% trimws %>% strsplit("\\s+") %>% .[[1]] %>% .[2:length(.)]
@@ -793,7 +795,7 @@ read_single_file_SOS <- function(file) {
     names(temp) <- name
     info <- c(info, temp)
   }
-  
+
   dim <- as.numeric(info$DIM)
   #Hardcoded fix for SB-related data
   if (is.null(dim) || length(dim) == 0) {
@@ -801,28 +803,28 @@ read_single_file_SOS <- function(file) {
     dim <- 30
     info$DIM <- dim
   }
-  
+
   RT_raw <- dt[[colnames(dt)[[ncol(dt) - dim - 1]]]]
   names(RT_raw) <- dt[[colnames(dt)[[ncol(dt) - dim - 2]]]]
   RT <- as.matrix(RT_raw)
   mode(RT) <- 'integer'
-  
+
   FV_raw <- dt[[colnames(dt)[[ncol(dt) - dim - 2]]]]
   names(FV_raw) <- dt[[colnames(dt)[[ncol(dt) - dim - 1]]]]
   FV <- as.matrix(FV_raw)
-  
-  
+
+
   pos <- dt[, (ncol(dt) - dim + 1):ncol(dt)]
   colnames(pos) <- as.character(seq_len(dim))
-  
+
   maxRT <- max(RT)
   finalFV <- min(FV)
-  
+
   idxs_avail <- dt[['V1']]
   idxs_replaced <- dt[['V6']]
-  
+
   idxs_final <- setdiff(idxs_avail, idxs_replaced)
-  
+
   idx_final_best <- idxs_final[[which.min(FV[idxs_final])]]
   final_pos <- as.numeric(pos[idx_final_best, ])
   # if (sum(FV == finalFV) > 1) {
@@ -843,16 +845,16 @@ read_single_file_SOS <- function(file) {
   # else {
   #   final_pos <- as.numeric(pos[which.min(FV), ])
   # }
-  
+
   PAR <- list(
     # 'position' = list(pos),
     'final_position' = list(final_pos),
     'by_FV' = NULL,
     'by_RT' = NULL
   )
-  
-  
-  
+
+
+
   object <- list()
   class(object) <- c('DataSet', class(object))
   object$RT <- RT
@@ -872,7 +874,7 @@ read_single_file_SOS <- function(file) {
 
 
 #' Read DataSetList of SOS-based data
-#' 
+#'
 #' Read directory containing .txt files in SOS format and extract information as a DataSetList
 #'
 #' @param dir The path to the directory file
@@ -887,21 +889,21 @@ read_datasetlist_SOS <- function(dir, corrections_files = NULL) {
   algIds <- list()
   suites <- list()
   maximizations <- list()
-  
+
   idx <- 1
-  
+
   corrs <- as.data.table(rbindlist(lapply(corrections_files, fread)))
-  
+
   for (f in list.files(dir, recursive = T, pattern = "*.txt", full.names = T)) {
     if (f %in% corrections_files) next
     ds <- read_single_file_SOS(f)
-    
+
     dims[[idx]] <- attr(ds, 'DIM')
     funcIds[[idx]] <- attr(ds, 'funcId')
     algIds[[idx]] <- attr(ds, 'algId')
     suites[[idx]] <- attr(ds, 'suite')
     maximizations[[idx]] <- attr(ds, 'maximization')
-    
+
     if (nrow(corrs) > 0) {
       fn <- substr(basename(f), 1, nchar(basename(f)) - 4)
       corr_opts <- corrs[V1 == fn, ]
@@ -920,7 +922,7 @@ read_datasetlist_SOS <- function(dir, corrections_files = NULL) {
       else
         warning(paste0("No boundary corrections ratio found for ", fn))
     }
-    
+
     res[[idx]] <- ds
     idx <- idx + 1
   }
@@ -929,13 +931,13 @@ read_datasetlist_SOS <- function(dir, corrections_files = NULL) {
   attr(res, 'funcId') <- funcIds
   attr(res, 'algId') <- algIds
   attr(res, 'ID_attributes') <- c('algId')
-  
+
   suite <- unique(suites)
   maximization <- unique(maximizations)
   if (length(suite) != 1 || length(maximization) != 1) {
     warning("Multipe different suites detected!")
   }
-  
+
   attr(res, 'suite') <- suite
   attr(res, 'maximization') <- maximization
   res
@@ -943,7 +945,7 @@ read_datasetlist_SOS <- function(dir, corrections_files = NULL) {
 }
 
 #' Find corrections-files in SOS-based folder
-#' 
+#'
 #' Read directory containing .txt files in SOS format and extract the corrections-files
 #'
 #' @param path The path to the directory file

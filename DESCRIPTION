@@ -34,7 +34,8 @@ Imports:
   stringi,
   httr,
   knitr,
-  methods
+  methods,
+  rjson
 LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 7.1.2

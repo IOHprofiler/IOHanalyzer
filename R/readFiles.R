@@ -17,8 +17,8 @@ limit.data <- function(df, n) {
 
 #' Scan *.info files for IOHProfiler or COCO
 #'
-#' @param folder The folder containing the .info files
-#' @return The paths to all found .info-files
+#' @param folder The folder containing the .info or .json files
+#' @return The paths to all found .info and .json-files
 #' @export
 #' @note This automatically filetrs our files of size 0
 #' @examples
@@ -26,7 +26,7 @@ limit.data <- function(df, n) {
 #' scan_index_file(path)
 scan_index_file <- function(folder) {
   folder <- trimws(folder)
-  files <- list.files(folder, pattern = '.info$', recursive = T, full.names = T)
+  files <- list.files(folder, pattern = '.(info|json)$', recursive = T, full.names = T)
   files[file.size(files) > 0]
 }
 
@@ -39,12 +39,66 @@ scan_index_file <- function(folder) {
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
 #' info <- read_index_file(file.path(path,"IOHprofiler_f1_i1.info"))
 read_index_file <- function(fname) {
-  tryCatch(
-    read_index_file__IOH(fname),
-    warning = function(e) read_index_file__COCO(fname),
-    error = function(e) read_index_file__COCO(fname),
-    finally = function(e) stop(paste0('Error in reading .info files ', e))
-  )
+  format <- tools::file_ext(fname)
+  if (format == 'json')
+    read_index_file__json(fname)
+  else {
+    tryCatch(
+      read_index_file__IOH(fname),
+      warning = function(e) read_index_file__COCO(fname),
+      error = function(e) read_index_file__COCO(fname),
+      finally = function(e) stop(paste0('Error in reading .info files ', e))
+    )
+  }
+}
+
+#' Read IOHprofiler-based .json files and extract information
+#'
+#' @param fname The path to the json info-file
+#' @return The data contained in the json info-file
+#' @noRd
+read_index_file__json <- function(fname) {
+
+  json_data <- fromJSON(file = fname)
+  base_dir <- dirname(fname)
+  exp_attrs <- sapply(json_data$experiment_attributes, function(x) {x})
+
+  data <- list()
+  tryCatch({
+    fid <- json_data$function_id
+    fname <- json_data$function_name
+    suite <- json_data$suite
+    maximization <- json_data$maximization
+    algid <- json_data$algorithm$name
+  }, error = function(e) {return(NULL)})
+
+  data <- lapply(json_data$scenarios, function(scenario) {
+
+    run_attrs <- list()
+
+    for (run_attr in json_data$run_attributes) {
+      attr(run_attrs, run_attr) <- sapply(scenario$runs, function(x) x$run_attr)
+    }
+
+    datafile <- file.path(base_dir, scenario$path)
+
+    temp <- c(list(
+      funcId = fid,
+      funcName = fname,
+      suite = suite,
+      maximization = maximization,
+      algId = algid,
+      DIM = scenario$dimension,
+      datafile = datafile,
+      instance = sapply(scenario$runs, function(x) x$instance),
+      maxRT = sapply(scenario$runs, function(x) x$evals),
+      finalFV = sapply(scenario$runs, function(x) x$best$y),
+      final_pos = sapply(scenario$runs, function(x) x$best$x)
+    ), run_attrs,
+    exp_attrs)
+
+  })
+  data
 }
 
 #' Read IOHprofiler-based .info files and extract information

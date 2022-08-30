@@ -7,10 +7,10 @@
 scan_index_file(folder)
 }
 \arguments{
-\item{folder}{The folder containing the .info files}
+\item{folder}{The folder containing the .info or .json files}
 }
 \value{
-The paths to all found .info-files
+The paths to all found .info and .json-files
 }
 \description{
 Scan *.info files for IOHProfiler or COCO

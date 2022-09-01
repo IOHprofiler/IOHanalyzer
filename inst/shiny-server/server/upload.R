@@ -281,12 +281,19 @@ observeEvent(input$upload.custom_csv, {
     datapath <- input$upload.custom_csv$datapath
     found_columns <-  colnames(fread(datapath, nrows=0))
 
-    updateSelectInput(session, 'upload.neval_name', choices = found_columns, selected = found_columns[[1]])
-    updateSelectInput(session, 'upload.fval_name', choices = found_columns, selected = found_columns[[2]])
-    updateSelectInput(session, 'upload.fname_name', choices = found_columns, selected = found_columns[[3]])
-    updateSelectInput(session, 'upload.algname_name', choices = found_columns, selected = found_columns[[4]])
-    updateSelectInput(session, 'upload.dim_name', choices = found_columns, selected = found_columns[[5]])
-    updateSelectInput(session, 'upload.run_name', choices = found_columns, selected = found_columns[[6]])
+    options <- c(found_columns, 'None')
+
+    if (length(found_columns) == 1)
+      selected <- c('None', found_columns[[1]], 'None', 'None', 'None', 'None')
+    else
+      selected <- c(found_columns, 'None', 'None', 'None', 'None')
+
+    updateSelectInput(session, 'upload.neval_name', choices = options, selected = selected[[1]])
+    updateSelectInput(session, 'upload.fval_name', choices = options, selected = selected[[2]])
+    updateSelectInput(session, 'upload.fname_name', choices = options, selected = selected[[3]])
+    updateSelectInput(session, 'upload.algname_name', choices = options, selected = selected[[4]])
+    updateSelectInput(session, 'upload.dim_name', choices = options, selected = selected[[5]])
+    updateSelectInput(session, 'upload.run_name', choices = options, selected = selected[[6]])
     datapath
   }, error = function(e) shinyjs::alert(paste0("The following error occured when processing the uploaded data: ", e))
   )
@@ -294,16 +301,36 @@ observeEvent(input$upload.custom_csv, {
 
 # load, process the data folders, and update DataSetList
 observeEvent(input$upload.process_csv, {
-  fname <- input$upload.custom_csv$datapath
-  if (is.null(fname)) { return(NULL)}
-  data <- read_pure_csv(path = fname,
-                        neval_name = input$upload.neval_name,
-                        fval_name = input$upload.fval_name,
-                        fname_name = input$upload.fname_name,
-                        algname_name = input$upload.algname_name,
-                        dim_name = input$upload.dim_name,
-                        run_name = input$upload.run_name,
-                        maximization = input$upload.maximization)
+  file_name <- input$upload.custom_csv$datapath
+  if (is.null(file_name)) { return(NULL)}
+
+  neval_name <- input$upload.neval_name
+  fval_name <- input$upload.fval_name
+  fname_name <- input$upload.fname_name
+  algname_name <- input$upload.algname_name
+  dim_name <- input$upload.dim_name
+  run_name <- input$upload.run_name
+
+  static_attrs <- list()
+  if (neval_name == 'None') neval_name <- NULL
+  if (run_name == 'None') run_name <- NULL
+  if (fname_name == 'None') {
+    fname_name <- NULL
+    static_attrs$fname <- input$upload.fname_static
+  }
+  if (algname_name == 'None') {
+    algname_name <- NULL
+    static_attrs$algname <- input$upload.algname_static
+  }
+  if (dim_name == 'None') {
+    dim_name <- NULL
+    static_attrs$dim <- input$upload.dim_static
+  }
+
+  data <- read_pure_csv(file_name, neval_name, fval_name,
+                        fname_name, algname_name, dim_name,
+                        run_name, maximization = input$upload.maximization,
+                        static_attrs = static_attrs)
 
   if (length(DataList$data) > 0 && attr(data, 'maximization') != attr(DataList$data, 'maximization')) {
     shinyjs::alert(paste0("Attempting to add data from a different optimization type to the currently",

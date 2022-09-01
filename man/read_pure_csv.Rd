@@ -12,13 +12,15 @@ read_pure_csv(
   algname_name,
   dim_name,
   run_name,
-  maximization = F
+  maximization = F,
+  static_attrs = NULL
 )
 }
 \arguments{
 \item{path}{The path to the .csv file}
 
-\item{neval_name}{The name of the column to use for the evaluation count}
+\item{neval_name}{The name of the column to use for the evaluation count.
+If NULL, will be assumed to be sequential}
 
 \item{fval_name}{The name of the column to use for the function values}
 
@@ -31,6 +33,10 @@ read_pure_csv(
 \item{run_name}{The name of the column to use for the run number}
 
 \item{maximization}{Boolean indicating whether the data is resulting from maximization or minimization}
+
+\item{static_attrs}{Named list containing the static values for missing columns.
+When a parameter is not present in the csv file, its name-parameter should
+be set to NULL, and the static value should be added to this static_attrs list.}
 }
 \value{
 The DataSetList extracted from the .csv file provided

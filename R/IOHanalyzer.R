@@ -1,4 +1,4 @@
-#' @importFrom stats dt ecdf integrate median quantile sd rgeom ks.test p.adjust
+#' @importFrom stats dt ecdf integrate median quantile sd rgeom ks.test p.adjust ave
 #' @importFrom grDevices col2rgb colors nclass.FD
 #' @importFrom graphics hist
 #' @importFrom utils data head read.csv tail type.convert write.csv

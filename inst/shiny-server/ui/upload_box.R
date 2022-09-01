@@ -26,22 +26,65 @@ upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: fin
                  value = F),
            selectInput('upload.neval_name',
                          label = "Column to use for evaluation count",
-                         choices = NULL, selected = NULL),
+                         choices = NULL, selected = NULL) %>%
+               shinyInput_label_embed(
+                 custom_icon("info") %>%
+                   bs_embed_tooltip(
+                     title = "When set to 'None', it will be assumed to be sequential for each run."
+                   )
+               ),
            selectInput('upload.fval_name',
                        label = "Column to use for function values",
                        choices = NULL, selected = NULL),
+           hr()
            selectInput('upload.fname_name',
                        label = "Column to use for function ID",
-                       choices = NULL, selected = NULL),
+                       choices = NULL, selected = NULL) %>%
+             shinyInput_label_embed(
+               custom_icon("info") %>%
+                 bs_embed_tooltip(
+                   title = "When set to 'None', you can enter a fixed function ID"
+                 )
+             ),
+           conditionalPanel("input['upload.fname_name'] == 'None'",
+                            textInput("upload.fname_static", "Function ID", "Fname")
+                            ),
+           hr(),
            selectInput('upload.algname_name',
                        label = "Column to use for algorithm ID",
-                       choices = NULL, selected = NULL),
+                       choices = NULL, selected = NULL) %>%
+             shinyInput_label_embed(
+               custom_icon("info") %>%
+                 bs_embed_tooltip(
+                   title = "When set to 'None', you can enter a fixed algorithm ID"
+                 )
+             ),
+           conditionalPanel("input['upload.algname_name'] == 'None'",
+                            textInput("upload.algname_static", "Algorithm ID", "Alg1")
+           ),
+           hr(),
            selectInput('upload.dim_name',
                        label = "Column to use for problem dimension",
-                       choices = NULL, selected = NULL),
+                       choices = NULL, selected = NULL) %>%
+             shinyInput_label_embed(
+               custom_icon("info") %>%
+                 bs_embed_tooltip(
+                   title = "When set to 'None', you can enter a fixed dimension."
+                 )
+             ),
+           conditionalPanel("input['upload.dim_name'] == 'None'",
+                            numericInput("upload.dim_static", "Dimension", 2)
+           ),
+           hr(),
            selectInput('upload.run_name',
                        label = "Column to use for run ID",
-                       choices = NULL, selected = NULL),
+                       choices = NULL, selected = NULL) %>%
+             shinyInput_label_embed(
+               custom_icon("info") %>%
+                 bs_embed_tooltip(
+                   title = "When set to 'None', it will be assumed there is only one run for each function,algorithm,dimension triplet."
+                 )
+             ),
            actionButton('upload.process_csv',
                         label = HTML('<p align="center" style="margin-bottom:0;"><b>
                    Process uploaded file with selected settings</b></p>')),

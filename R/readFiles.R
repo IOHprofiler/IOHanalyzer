@@ -1147,33 +1147,74 @@ convert_from_OPTION <- function(dt, source, ...) {
 #' Read .csv files in arbitrary format
 #'
 #' @param path The path to the .csv file
-#' @param neval_name The name of the column to use for the evaluation count
+#' @param neval_name The name of the column to use for the evaluation count.
+#' If NULL, will be assumed to be sequential
 #' @param fval_name The name of the column to use for the function values
 #' @param fname_name The name of the column to use for the function name
 #' @param algname_name The name of the column to use for the algorithm name
 #' @param dim_name The name of the column to use for the dimension
 #' @param run_name The name of the column to use for the run number
 #' @param maximization Boolean indicating whether the data is resulting from maximization or minimization
+#' @param static_attrs Named list containing the static values for missing columns.
+#' When a parameter is not present in the csv file, its name-parameter should
+#' be set to NULL, and the static value should be added to this static_attrs list.
 #'
 #' @return The DataSetList extracted from the .csv file provided
 #' @export
 read_pure_csv <- function(path, neval_name, fval_name, fname_name,
-                          algname_name, dim_name, run_name, maximization = F){
+                          algname_name, dim_name, run_name, maximization = F,
+                          static_attrs = NULL){
   fname <- algname <- neval <- fval <- NULL #Ugly fix for CRAN warnings
   dt <- fread(path)
 
-  if (!all(c(neval_name, run_name) %in% colnames(dt))) {
-    warning("One or more specified column names do not exist
-            in the provided file!")
+  #If columns are not specified, check if they have static values or should be imputed
+  impute_evalnrs <- is.null(neval_name)
+
+
+  if (!fval_name %in% colnames(dt)) {
+    warning(paste0("The function value column named ", fval_name, " does not exist
+            in the provided file!"))
     return(NULL)
   }
-
-  colnames(dt)[colnames(dt) == neval_name] <- "neval"
   colnames(dt)[colnames(dt) == fval_name] <- "fval"
-  colnames(dt)[colnames(dt) == fname_name] <- "fname"
-  colnames(dt)[colnames(dt) == algname_name] <- "algname"
-  colnames(dt)[colnames(dt) == dim_name] <- "dim"
-  colnames(dt)[colnames(dt) == run_name] <- "run"
+
+  if (is.null(run_name)) {
+    dt$run <- 1
+  } else {
+    colnames(dt)[colnames(dt) == run_name] <- "run"
+  }
+
+  if (is.null(fname_name)) {
+    dt$fname <- static_attrs$fname
+  } else {
+    colnames(dt)[colnames(dt) == fname_name] <- "fname"
+  }
+
+  if (is.null(algname_name)) {
+    dt$algname <- static_attrs$algname
+  } else {
+    colnames(dt)[colnames(dt) == algname_name] <- "algname"
+  }
+
+  if (is.null(dim_name)) {
+    dt$dim <- static_attrs$dim
+  } else {
+    colnames(dt)[colnames(dt) == dim_name] <- "dim"
+  }
+
+
+  # if (!all(c(neval_name, run_name) %in% colnames(dt))) {
+  #   warning("One or more specified column names do not exist
+  #           in the provided file!")
+  #   return(NULL)
+  # }
+  #
+  # colnames(dt)[colnames(dt) == neval_name] <- "neval"
+  # colnames(dt)[colnames(dt) == fval_name] <- "fval"
+  # colnames(dt)[colnames(dt) == fname_name] <- "fname"
+  # colnames(dt)[colnames(dt) == algname_name] <- "algname"
+  # colnames(dt)[colnames(dt) == dim_name] <- "dim"
+  # colnames(dt)[colnames(dt) == run_name] <- "run"
 
   triplets <- unique(dt[, .(fname, dim, algname)])
 
@@ -1191,8 +1232,14 @@ read_pure_csv <- function(path, neval_name, fval_name, fname_name,
     DIM <- triplets$dim[i]
     funcId <- triplets$fname[i]
 
-    data <- dt[algname == algId & dim == DIM & fname == funcId,
-               .(neval, fval, run)]
+    # data <- dt[algname == algId & dim == DIM & fname == funcId,
+    #            .(neval, fval, run)]
+
+    data <- dt[algname == algId & dim == DIM & fname == funcId,]
+
+    if (impute_evalnrs) {
+      data$neval <-  ave(data$fval, data$run, FUN = seq_along)
+    }
 
     dt_for_allign <- dcast(data, neval ~ run, value.var = 'fval')
 

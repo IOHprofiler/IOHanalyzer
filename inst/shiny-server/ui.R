@@ -401,7 +401,8 @@ body <- dashboardBody(
         column(
           width = 12,
           rt_histogram_box(collapsed = F),
-          rt_pmf_box()
+          rt_pmf_box(),
+          rt_CDP_box()
         )
       )
     ),
@@ -531,7 +532,8 @@ body <- dashboardBody(
         column(
           width = 12,
           fv_histgram_box(collapsed = F),
-          fv_pdf_box()
+          fv_pdf_box(),
+          fv_CDP_box(collapsed = T)
         )
       )
     ),
@@ -548,6 +550,7 @@ body <- dashboardBody(
         )
       )
     ),
+
 
     # Parameter tab -------
     tabItem(

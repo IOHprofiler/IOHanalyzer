@@ -567,7 +567,12 @@ observe({
   updateSelectInput(session, 'RTportfolio.Shapley.Dims', choices = DIMs, selected = DIMs)
   updateNumericInput(session, 'RTportfolio.Shapley.Permsize', min = 2, max = length(IDs),
                      value = min(10, length(IDs)))
-
+                     
+  if(length(IDs) >= 2)
+  {
+    updateSelectInput(session, 'RTPMF.CDP.Algs', choices = IDs, selected = c(IDs[1], IDs[2]))
+    updateSelectInput(session, 'FCEPDF.CDP.Algs', choices = IDs, selected = c(IDs[1], IDs[2]))
+  }
 
   updateSelectInput(session, 'RT.MultiERT.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RT.MultiERT.FuncId', choices = funcIds, selected = funcIds)
@@ -791,6 +796,7 @@ observe({
   setTextInput(session, 'RTECDF.Multi.Step', name, alternative = format_FV(step))
   setTextInput(session, 'RTPMF.Bar.Target', name, alternative = format_FV(median(v)))
   setTextInput(session, 'RTPMF.Hist.Target', name, alternative = format_FV(median(v)))
+  setTextInput(session, 'RTPMF.CDP.Target', name, alternative = format_FV(median(v)))
   setTextInput(session, 'ERTPlot.Min', name, alternative = format_FV(start))
   setTextInput(session, 'ERTPlot.Max', name, alternative = format_FV(stop))
   setTextInput(session, 'ERTPlot.Aggr.Targets', name, alternative = "")
@@ -838,6 +844,7 @@ observe({
   setTextInput(session, 'FCESummary.Sample.Step', name, alternative = step)
   setTextInput(session, 'FCEPDF.Hist.Runtime', name, alternative = median(v))
   setTextInput(session, 'FCEPDF.Bar.Runtime', name, alternative = median(v))
+  setTextInput(session, 'FCEPDF.CDP.Runtime', name, alternative = median(v))
   setTextInput(session, 'FCEPlot.Min', name, alternative = start)
   setTextInput(session, 'FCEPlot.Max', name, alternative = stop)
   setTextInput(session, 'FCEECDF.Mult.Min', name, alternative = min(v))
@@ -865,4 +872,3 @@ output$upload.Download_processed <- downloadHandler(
     saveRDS(DATA_RAW(), file = file)
   }
 )
-

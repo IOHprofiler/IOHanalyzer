@@ -36,7 +36,7 @@ upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: fin
            selectInput('upload.fval_name',
                        label = "Column to use for function values",
                        choices = NULL, selected = NULL),
-           hr()
+           hr(),
            selectInput('upload.fname_name',
                        label = "Column to use for function ID",
                        choices = NULL, selected = NULL) %>%

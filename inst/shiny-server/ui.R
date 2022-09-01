@@ -293,12 +293,6 @@ body <- dashboardBody(
     )
   ),
 
-  if (suppressWarnings(require("dashboardthemes", quietly = T))) {
-    shinyDashboardThemes(
-      theme = "grey_light"
-    )
-  },
-
   # load MathJax
   # TODO: download MathJax and its license and include it in our package
   HTML("<head><script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML'

@@ -9,7 +9,7 @@
 #' @importFrom colorRamps primary.colors
 #' @importFrom data.table as.data.table rbindlist data.table fread := melt is.data.table
 #' @importFrom data.table setorderv frank setnames rbindlist copy transpose setDT
-#' @importFrom plotly add_annotations add_trace orca plot_ly rename_ subplot layout
+#' @importFrom plotly add_annotations add_trace orca plot_ly rename_ subplot layout animation_opts
 #' @importFrom ggplot2 aes geom_jitter geom_line geom_ribbon geom_violin ggplot element_text
 #' @importFrom ggplot2 guides scale_color_manual scale_colour_manual scale_fill_manual
 #' @importFrom ggplot2 scale_x_continuous scale_x_log10 facet_wrap theme_set theme_grey theme

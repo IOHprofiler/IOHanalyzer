@@ -1159,6 +1159,7 @@ convert_from_OPTION <- function(dt, source, ...) {
 #' @export
 read_pure_csv <- function(path, neval_name, fval_name, fname_name,
                           algname_name, dim_name, run_name, maximization = F){
+  fname <- algname <- neval <- fval <- NULL #Ugly fix for CRAN warnings
   dt <- fread(path)
 
   if (!all(c(neval_name, run_name) %in% colnames(dt))) {

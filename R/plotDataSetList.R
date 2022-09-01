@@ -1001,6 +1001,8 @@ add_transparancy <- function(colors, percentage){
 #' @param show.legend Whether or not to include a legend
 #' @param inf.action How to deal with infinite values. Can be 'none', 'overlap' or 'jitter'
 #' @param violin.showpoints Wheteher or not to show individual points when making a violinplot
+#' @param frame_attr Which attribute of the dataframe to use for the time element of the animation
+#' @param symbol_attr Which attribute of the dataframe to use for the scatter symbol
 #' @param ... Additional parameters for the add_trace function
 #'
 #' @export
@@ -1009,10 +1011,10 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                               scale.reverse = F, p = NULL, x_title = NULL,
                               y_title = NULL, plot_title = NULL, upper_attr = NULL,
                               lower_attr = NULL, subplot_attr = NULL, show.legend = F,
-                              inf.action = 'none', violin.showpoints = F, frame_attr = 'frame', symbol_attr = 'run_nr',
-                              subplot_shareX = F, ...) {
+                              inf.action = 'none', violin.showpoints = F, frame_attr = 'frame',
+                              symbol_attr = 'run_nr', subplot_shareX = F, ...) {
 
-  l <- x <- isinf <- y <- text <- l_orig <- NULL #Set local binding to remove warnings
+  l <- x <- isinf <- y <- text <- l_orig <- frame <- NULL #Set local binding to remove warnings
 
   #Only allow valid plot types
   if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon',

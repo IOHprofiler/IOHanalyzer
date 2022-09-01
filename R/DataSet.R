@@ -17,6 +17,8 @@
 #' Set to NULL to determine automatically based on format
 #' @param format A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL"
 #' @param subsampling Logical. Whether *.cdat files are subsampled?
+#' @param full_sampling Logical. Whether the raw (unaligned) FV matrix should be stored.
+#' Currenlt only useful when a correlation plot between function values and parameters should be made
 #'
 #' @return A S3 object 'DataSet'
 #' @export
@@ -25,7 +27,7 @@
 #' info <- read_index_file(file.path(path, 'IOHprofiler_f1_i1.info'))
 #' DataSet(info[[1]])
 DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler,
-                    subsampling = FALSE) {
+                    subsampling = FALSE, full_sampling = FALSE) {
   if (!is.null(info)) {
     path <- dirname(info$datafile)
     suite <- toupper(info$suite)
@@ -165,12 +167,16 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
       c(info, list(maxRT = maxRT, finalFV = finalFV, format = format,
                    maximization = maximization, suite = suite, ID = info$algId))
     )
-    if (isTRUE(info$constrained)) {
+    if (isTRUE(info$constrained) || full_sampling) {
       FV_raw_mat <- matrix(nrow = nrow(FV), ncol = length(FV_raw))
       for (idx in seq(length(FV_raw))) {
         FV_raw_mat[,idx] = FV_raw[[idx]][,2]
       }
       temp$FV_raw_mat <- FV_raw_mat
+      attr(temp, 'contains_full_FV') <- TRUE
+    }
+    else {
+      attr(temp, 'contains_full_FV') <- FALSE
     }
     return(temp)
   }

@@ -70,6 +70,10 @@ Only works in combination with`upper_attr` and `type` == 'ribbon'}
 
 \item{violin.showpoints}{Wheteher or not to show individual points when making a violinplot}
 
+\item{frame_attr}{Which attribute of the dataframe to use for the time element of the animation}
+
+\item{symbol_attr}{Which attribute of the dataframe to use for the scatter symbol}
+
 \item{subplot_shareX}{Whether or not to share X-axis when using subplots}
 
 \item{...}{Additional parameters for the add_trace function}

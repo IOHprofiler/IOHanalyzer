@@ -1363,11 +1363,17 @@ generate_data.Parameters <- function(dsList, which = 'by_RT', scale_log = F) {
 generate_data.Parameter_correlation <- function(dsList, par1, par2) {
   dt <- rbindlist(lapply(dsList, function(ds) {
     if (par1 == 'f(x)' ) {
+      if (!isTRUE(attr(ds, 'contains_full_FV'))) {
+        return(NULL)
+      }
       dt1 <- ds$FV_raw_mat %>% reshape2::melt()
     } else {
       dt1 <- ds$PAR$by_RT[[par1]] %>% reshape2::melt()
     }
     if (par2 == 'f(x)' ) {
+      if (!isTRUE(attr(ds, 'contains_full_FV'))) {
+        return(NULL)
+      }
       dt2 <- ds$FV_raw_mat %>% reshape2::melt()
     } else {
       dt2 <- ds$PAR$by_RT[[par2]] %>% reshape2::melt()

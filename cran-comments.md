@@ -1,9 +1,9 @@
 ## Submission status
-This is a resubmission after a newly occuring warning on m1mac and no-ld checks.
-This warning should now be resolved. 
+This is a new feature update submission, increasing to version 0.1.7 
 
-In addition, this release implements several new features, including new 
-visualization options.
+This release implements several new features, including new 
+visualization options, custom csv-file support and basic functionality for 
+constrained optimization.
 
 ## Test environments
 *   Local Windows install, R 4.1.2

@@ -196,7 +196,9 @@ get_data_PAR_Corr <- reactive({
 render_FV_Corr <- reactive({
   withProgress({
     dt <- get_data_PAR_Corr()
-
+    if (is.null(dt)) {
+      return(NULL)
+    }
     if (input$FV_PAR.CorrPlot.Animated){
       dt[,generation := ceiling(runtime/input$FV_PAR.CorrPlot.WindowSize)]
       p <- plot_general_data(dt, input$FV_PAR.CorrPlot.Param1,

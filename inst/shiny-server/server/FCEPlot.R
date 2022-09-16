@@ -91,10 +91,12 @@ output$FCEPlot.Multi.Plot <- renderPlotly(
 
 get_data_FCE_multi_func_bulk <- reactive({
   data <- subset(DATA_RAW(), DIM == input$Overall.Dim)
+  start <-  if (input$FCEPlot.Multi.Limitx) as.numeric(input$FCEPlot.Multi.Min) else NULL
+  end <-  if (input$FCEPlot.Multi.Limitx) as.numeric(input$FCEPlot.Multi.Max) else NULL
   if (length(get_id(data)) < 20) { #Arbitrary limit for the time being
     rbindlist(lapply(get_funcId(data), function(fid) {
       generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$FCEPlot.Multi.Logx,
-                                    which = 'by_FV')
+                                    which = 'by_FV', start = start, stop = end)
     }))
   }
   else
@@ -115,9 +117,11 @@ get_data_FCEPlot_multi <- reactive({
                    ID %in% isolate(input$FCEPlot.Multi.Algs),
                    funcId %in% isolate(input$FCEPlot.Multi.Funcs),
                    DIM == input$Overall.Dim)
+    start <-  if (input$FCEPlot.Multi.Limitx) as.numeric(input$FCEPlot.Multi.Min) else NULL
+    end <-  if (input$FCEPlot.Multi.Limitx) as.numeric(input$FCEPlot.Multi.Max) else NULL
     rbindlist(lapply(get_funcId(data), function(fid) {
       generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$FCEPlot.Multi.Logx,
-                                    which = 'by_FV')
+                                    which = 'by_FV', start = start, stop = end)
     }))
   }
 })

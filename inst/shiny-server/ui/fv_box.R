@@ -106,6 +106,13 @@ fv_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed 
           checkboxInput('FCEPlot.Multi.Logx',
                         label = 'Scale x axis \\(\\log_{10}\\)',
                         value = T),
+          checkboxInput('FCEPlot.Multi.Limitx',
+                        label = 'Set Bounds X-axis',
+                        value = F),
+          conditionalPanel(condition = 'input["FCEPlot.Multi.Limitx"]',
+                           textInput('FCEPlot.Multi.Min', label = RT_MIN_LABEL, value = ''),
+                           textInput('FCEPlot.Multi.Max', label = RT_MAX_LABEL, value = ''),
+          ),
 
           checkboxInput('FCEPlot.Multi.Logy',
                         label = 'Scale y axis \\(\\log_{10}\\)',

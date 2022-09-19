@@ -4,7 +4,7 @@
 \alias{read_IOH_v1plus}
 \title{Read Nevergrad data}
 \usage{
-read_IOH_v1plus(info, subsampling = F)
+read_IOH_v1plus(info)
 }
 \arguments{
 \item{info}{A List containing all meta-data about the dataset to create}

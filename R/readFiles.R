@@ -1303,7 +1303,7 @@ read_pure_csv <- function(path, neval_name, fval_name, fname_name,
 #'
 #' @return The DataSetList extracted from the .csv file provided
 #' @export
-read_IOH_v1plus <- function(info, subsampling = F){
+read_IOH_v1plus <- function(info){
 
   df <- fread(info$datafile, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
   colnames(df) <- as.character(df[1, ])

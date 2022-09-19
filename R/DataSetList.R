@@ -113,9 +113,12 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
         }
 
         copy_flag <- TRUE
-        data <- DataSet(info, maximization = maximization,
-                        format = format, subsampling = subsampling)
-
+        if (isTRUE(info$version >= "1.0.0")) {
+          data <- read_IOH_v1plus(info, subsampling = subsampling)
+        } else {
+          data <- DataSet(info, maximization = maximization,
+                          format = format, subsampling = subsampling)
+        }
         DIM[i] <- attr(data, 'DIM')
         funcId[i] <- attr(data, 'funcId')
         algId[i] <- attr(data, 'algId')

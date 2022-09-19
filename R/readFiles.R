@@ -70,6 +70,8 @@ read_index_file__json <- function(fname) {
     suite <- json_data$suite
     maximization <- json_data$maximization
     algid <- json_data$algorithm$name
+    attributes <- json_data$attributes
+    version <- json_data$version
   }, error = function(e) {return(NULL)})
 
   data <- lapply(json_data$scenarios, function(scenario) {
@@ -89,6 +91,8 @@ read_index_file__json <- function(fname) {
       maximization = maximization,
       algId = algid,
       DIM = scenario$dimension,
+      attributes = attributes,
+      version = version,
       datafile = datafile,
       instance = sapply(scenario$runs, function(x) x$instance),
       maxRT = sapply(scenario$runs, function(x) x$evals),
@@ -425,6 +429,10 @@ check_format <- function(path) {
     return(SOS)
 
   info <- unlist(lapply(index_files, read_index_file), recursive = F)
+  if (all(unlist(lapply(info, function(x) isTRUE(x$version >="1.0.0"))))) {
+    return(IOHprofiler)
+  }
+
   datafile <- sapply(info, function(item) item$datafile)
 
   format <- lapply(datafile, function(file) {
@@ -445,7 +453,7 @@ check_format <- function(path) {
       COCO
     else if (startsWith(first_line, '\"function')) {
       n_col <- ncol(fread(file, header = FALSE, sep = ' ',
-                         colClasses = 'character', fill = T, nrows = 1))
+                          colClasses = 'character', fill = T, nrows = 1))
       if (n_col == 2)
         TWO_COL
       else
@@ -1284,5 +1292,99 @@ read_pure_csv <- function(path, neval_name, fval_name, fname_name,
   attr(res, 'suite') <- 'Custom'
   attr(res, 'maximization') <- maximization
   res
+
+}
+
+#' Read Nevergrad data
+#'
+#' Read .csv files in arbitrary format
+#'
+#' @param info A List containing all meta-data about the dataset to create
+#'
+#' @return The DataSetList extracted from the .csv file provided
+#' @export
+read_IOH_v1plus <- function(info, subsampling = F){
+
+  df <- fread(info$datafile, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
+  colnames(df) <- as.character(df[1, ])
+  idx <- which(!grepl('\\d+', df[[1]], perl = T))
+
+  # check for data consistence
+  header_len <- min(apply(df[idx, ] != "", 1, sum))
+  idx <- c(idx, nrow(df) + 1)
+  df <- df[, 1:header_len]
+
+  # turn off the warnings of the data coersion below
+  options(warn = -1)
+  # TOOD: this opeartor is the bottelneck
+  df <- sapply(df, function(c) {class(c) <- 'numeric'; c})
+  options(warn = 0)
+
+  data <- rbindlist(lapply(seq(length(idx) - 1), function(i) {
+    i1 <- idx[i] + 1
+    i2 <- idx[i + 1] - 1
+    ans <- df[i1:i2, ]
+    if (i1 == i2)
+      ans <- as.matrix(t(ans))
+    data.table(ans, runnr = i)
+  }))
+
+
+  runnr <- evaluations <- raw_y <- NULL #Ugly fix for CRAN warnings
+
+  #If columns are not specified, check if they have static values or should be imputed
+  impute_evalnrs <- 'evaluations' %in% info$attributes
+
+  algId <- info$algId
+  DIM <- info$dim
+  funcId <- info$funcId
+
+  if (impute_evalnrs) {
+    data$evaluations <-  ave(data$raw_y, data$runnr, FUN = seq_along)
+  }
+
+  dt_for_allign <- dcast(data, evaluations ~ runnr, value.var = 'raw_y')
+
+  FV_mat <- as.matrix(dt_for_allign[,2:ncol(dt_for_allign)])
+  runtimes <- dt_for_allign$evaluations
+
+  if (info$maximization) {
+    FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummax(FV_mat[,x])))
+    FV <- apply(FV, 2, function(x) {x[is.na(x)] <- max(x, na.rm = T); x})
+  }
+  else {
+    FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummin(FV_mat[,x])))
+    FV <- apply(FV, 2, function(x) {x[is.na(x)] <- min(x, na.rm = T); x})
+  }
+  rownames(FV) <- runtimes
+
+
+
+  FV_temp <- unique(sort(FV_mat, decreasing = !info$maximization))
+  index <- as.numeric(runtimes)
+  RT <- c_align_running_time_matrix(FV_mat, FV_temp, as.numeric(index), info$maximization)
+  rownames(RT) <- FV_temp
+  RT[RT < 1] <- NA #Avoids weird values from impossible imputes at the end
+
+  paramnames <- info$attributes[!info$attributes %in% c("evaluations", "raw_y")]
+
+  PAR <- lapply(paramnames, function(parname) {
+      dt_for_allign <- dcast(data, evaluations ~ runnr, value.var = parname)
+
+      mat_temp <- as.matrix(dt_for_allign[,2:ncol(dt_for_allign)])
+      rownames(mat_temp) <- runtimes
+      mat_temp
+    })
+  names(PAR) <- paramnames
+
+
+  ds <- do.call(
+    function(...)
+      structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
+    c(info, list(maxRT = max(runtimes), finalFV = min(FV), format = IOHprofiler,
+                 ID = info$algId))
+  )
+
+  return(ds)
 
 }

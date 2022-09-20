@@ -1300,10 +1300,12 @@ read_pure_csv <- function(path, neval_name, fval_name, fname_name,
 #' Read .csv files in arbitrary format
 #'
 #' @param info A List containing all meta-data about the dataset to create
+#' @param full_sampling Logical. Whether the raw (unaligned) FV matrix should be stored.
+#' Currently only useful when a correlation plot between function values and parameters should be made
 #'
 #' @return The DataSetList extracted from the .csv file provided
 #' @export
-read_IOH_v1plus <- function(info){
+read_IOH_v1plus <- function(info, full_sampling = FALSE){
 
   df <- fread(info$datafile, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
   colnames(df) <- as.character(df[1, ])
@@ -1368,14 +1370,14 @@ read_IOH_v1plus <- function(info){
 
   paramnames <- info$attributes[!info$attributes %in% c("evaluations", "raw_y")]
 
-  PAR <- lapply(paramnames, function(parname) {
+  PAR <- list('by_FV' = lapply(paramnames, function(parname) {
       dt_for_allign <- dcast(data, evaluations ~ runnr, value.var = parname)
 
       mat_temp <- as.matrix(dt_for_allign[,2:ncol(dt_for_allign)])
       rownames(mat_temp) <- runtimes
       mat_temp
-    })
-  names(PAR) <- paramnames
+    }))
+  names(PAR$by_FV) <- paramnames
 
 
   ds <- do.call(
@@ -1384,6 +1386,11 @@ read_IOH_v1plus <- function(info){
     c(info, list(maxRT = max(runtimes), finalFV = min(FV), format = IOHprofiler,
                  ID = info$algId))
   )
+
+  if (full_sampling || 'violation' %in% info$attributes) {
+    ds$FV_raw_mat <- FV_mat
+    attr(ds, 'contains_full_FV') <- TRUE
+  }
 
   return(ds)
 

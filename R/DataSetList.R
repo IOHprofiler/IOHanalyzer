@@ -113,7 +113,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
         }
 
         copy_flag <- TRUE
-        if (isTRUE(info$version >= "1.0.0")) {
+        if (isTRUE(info$version >= "0.3.3")) {
           data <- read_IOH_v1plus(info)
         } else {
           data <- DataSet(info, maximization = maximization,

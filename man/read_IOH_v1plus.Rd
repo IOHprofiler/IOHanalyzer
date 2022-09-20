@@ -4,10 +4,13 @@
 \alias{read_IOH_v1plus}
 \title{Read Nevergrad data}
 \usage{
-read_IOH_v1plus(info)
+read_IOH_v1plus(info, full_sampling = FALSE)
 }
 \arguments{
 \item{info}{A List containing all meta-data about the dataset to create}
+
+\item{full_sampling}{Logical. Whether the raw (unaligned) FV matrix should be stored.
+Currently only useful when a correlation plot between function values and parameters should be made}
 }
 \value{
 The DataSetList extracted from the .csv file provided

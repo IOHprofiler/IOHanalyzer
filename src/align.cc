@@ -156,19 +156,19 @@ List c_align_running_time(List data, NumericVector FV, NumericVector idxValue, b
 // [[Rcpp::export]]
 NumericMatrix c_align_running_time_matrix(NumericMatrix data, NumericVector FV, NumericVector IdxValues, bool maximization) {
   int NC = data.ncol();
-  int NR = FV.size();
+  int NR = IdxValues.size();
 
+  NumericMatrix res(FV.size(), NC);
 
-  NumericMatrix res(NR, NC);
+  IdxValues.attr("dim") = Dimension(NR, 1);
+  NumericMatrix aux_idx = as<NumericMatrix>(IdxValues);
 
   for (int i = 0; i < NC; i++) {
     NumericMatrix aux(NR, 1);
     aux( _, 0) = data( _ , i );
 
-    NumericMatrix aux_idx(NR, 1);
-    aux_idx( _, 0) = IdxValues;
-
     NumericVector tmp = NumericVector(c_impute_running_time(aux, aux_idx, FV, maximization));
+
     res(_, i) = tmp;
   }
   return res;

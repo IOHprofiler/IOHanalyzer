@@ -80,7 +80,7 @@ observe({
   violation_func <- switch (input$Settings.Constrained.Method,
     "Ignore" = function(x,y) {x},
     "Penalize Relative"  = function(x,y) {x + factor * y},
-    "Set to value"  = function(x,y) {ifelse(y < 0, x, factor)},
+    "Set to value"  = function(x,y) {ifelse(y <= 0, x, factor)},
     "Penalize Absolute"  = function(x,y) {x + factor},
   )
   options("IOHanalyzer.Violation_Function" = violation_func)

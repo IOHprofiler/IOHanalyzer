@@ -59,7 +59,7 @@ options(shiny.port = 4242)
     IOHanalyzer.annotation_y = 1,
     IOHanalyzer.margin_horizontal = 0.02,
     IOHanalyzer.margin_vertical = 0.02,
-    IOHanalyzer.Violation_Function = function(x,y) {x + y}
+    IOHanalyzer.Violation_Function = NULL
   )
   toset <- !(names(op.IOHanalyzer) %in% names(op))
   if (any(toset)) options(op.IOHanalyzer[toset])

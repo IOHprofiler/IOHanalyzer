@@ -1388,6 +1388,7 @@ read_IOH_v1plus <- function(info, full_sampling = FALSE){
 
 
   if (full_sampling || 'violation' %in% info$attributes) {
+    rownames(FV_mat) <- runtimes
     ds$FV_raw_mat <- FV_mat
     attr(ds, 'contains_full_FV') <- TRUE
   }

@@ -1128,7 +1128,7 @@ get_id.DataSet <- function(ds, ...) {
 #' @rdname get_FV
 #' @export
 get_FV.DataSet <- function(ds, ...) {
-  if (isTRUE(attr(ds, 'constrained'))) {
+  if (isTRUE(attr(ds, 'constrained')) && !is.null(getOption("IOHanalyzer.Violation_Function"))) {
     FV <- getOption("IOHanalyzer.Violation_Function",
                      default = function(x,y) {x}
                      )(ds$FV_raw_mat, ds$PAR$by_RT$violation)
@@ -1141,11 +1141,11 @@ get_FV.DataSet <- function(ds, ...) {
 #' @rdname get_RT
 #' @export
 get_RT.DataSet <- function(ds, ...) {
-  if (isTRUE(attr(ds, 'constrained'))) {
+  if (isTRUE(attr(ds, 'constrained')) && !is.null(getOption("IOHanalyzer.Violation_Function"))) {
     data <- getOption("IOHanalyzer.Violation_Function",
                       default = function(x,y) {x}
     )(ds$FV_raw_mat, ds$PAR$by_RT$violation)
-    FV <- sort(unique(data), decreasing = !attr(ds, 'maximization'))
+    FV <- unique(sort(data, decreasing = !attr(ds, 'maximization')))
     index <- as.numeric(rownames(data))
     RT <- c_align_running_time_matrix(data, FV, as.numeric(index), attr(ds, 'maximization'))
     rownames(RT) <- FV

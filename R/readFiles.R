@@ -429,7 +429,7 @@ check_format <- function(path) {
     return(SOS)
 
   info <- unlist(lapply(index_files, read_index_file), recursive = F)
-  if (all(unlist(lapply(info, function(x) isTRUE(x$version >="1.0.0"))))) {
+  if (all(unlist(lapply(info, function(x) isTRUE(x$version >="0.3.3"))))) {
     return(IOHprofiler)
   }
 
@@ -1361,24 +1361,23 @@ read_IOH_v1plus <- function(info, full_sampling = FALSE){
   rownames(FV) <- runtimes
 
 
-
   FV_temp <- unique(sort(FV_mat, decreasing = !info$maximization))
   index <- as.numeric(runtimes)
   RT <- c_align_running_time_matrix(FV_mat, FV_temp, as.numeric(index), info$maximization)
   rownames(RT) <- FV_temp
   RT[RT < 1] <- NA #Avoids weird values from impossible imputes at the end
 
+
   paramnames <- info$attributes[!info$attributes %in% c("evaluations", "raw_y")]
 
-  PAR <- list('by_FV' = lapply(paramnames, function(parname) {
+  PAR <- list('by_RT' = lapply(paramnames, function(parname) {
       dt_for_allign <- dcast(data, evaluations ~ runnr, value.var = parname)
 
       mat_temp <- as.matrix(dt_for_allign[,2:ncol(dt_for_allign)])
       rownames(mat_temp) <- runtimes
       mat_temp
     }))
-  names(PAR$by_FV) <- paramnames
-
+  names(PAR$by_RT) <- paramnames
 
   ds <- do.call(
     function(...)
@@ -1387,9 +1386,14 @@ read_IOH_v1plus <- function(info, full_sampling = FALSE){
                  ID = info$algId))
   )
 
+
   if (full_sampling || 'violation' %in% info$attributes) {
     ds$FV_raw_mat <- FV_mat
     attr(ds, 'contains_full_FV') <- TRUE
+  }
+
+  if ('violation' %in% info$attributes) {
+    attr(ds, 'constrained') <- TRUE
   }
 
   return(ds)

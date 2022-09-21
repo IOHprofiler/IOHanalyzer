@@ -1371,7 +1371,7 @@ generate_data.Parameter_correlation <- function(dsList, par1, par2) {
       }
       dt1 <- ds$FV_raw_mat %>% reshape2::melt()
     } else {
-      if (!(par1 %in% get_PAR_name(ds))) return(NULL)
+      if (!(par1 %in% get_PAR_name(ds, which = 'by_RT'))) return(NULL)
       dt1 <- ds$PAR$by_RT[[par1]] %>% reshape2::melt()
     }
     if (par2 == 'f(x)' ) {
@@ -1380,7 +1380,7 @@ generate_data.Parameter_correlation <- function(dsList, par1, par2) {
       }
       dt2 <- ds$FV_raw_mat %>% reshape2::melt()
     } else {
-      if (!(par2 %in% get_PAR_name(ds))) return(NULL)
+      if (!(par2 %in% get_PAR_name(ds, which = 'by_RT'))) return(NULL)
       dt2 <- ds$PAR$by_RT[[par2]] %>% reshape2::melt()
     }
 

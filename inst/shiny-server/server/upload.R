@@ -131,7 +131,7 @@ unzip_fct_recursive <- function(zipfile, exdir, print_fun = print, alert_fun = p
   }
   print_fun(paste0('<p style="color:blue;">Succesfully unzipped ', basename(zipfile), '.<br>'))
 
-  folders <- grep('*.info|csv|txt', files, value = T) %>%
+  folders <- grep('*.info|csv|txt|json', files, value = T) %>%
     dirname %>%
     unique %>%
     grep('__MACOSX', ., value = T, invert = T) %>%  # to get rid of __MACOSX folder on MAC..
@@ -451,6 +451,9 @@ observe({
   # algIds <- c(IDs, 'all')
   parIds_ <- get_parId(data)
   parIds <- c(parIds_, 'all')
+
+  parIds_RT_ <- get_parId(data, which = 'by_RT')
+
   funcIds <- get_funcId(data)
   DIMs <- get_dim(data)
   algIds <- get_algId(data)
@@ -569,11 +572,11 @@ observe({
   updateSelectInput(session, 'FCEECDF.Mult.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FCEECDF.AUC.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'ParCoordPlot.Algs', choices = IDs, selected = IDs[[1]])
-  updateSelectInput(session, 'FV_PAR.CorrPlot.Param1', choices = c(parIds_, 'f(x)'), selected = 'f(x)')
-  if (length(parIds_) == 0)
-    updateSelectInput(session, 'FV_PAR.CorrPlot.Param2', choices = c(parIds_, 'f(x)'), selected = 'f(x)')
+  updateSelectInput(session, 'FV_PAR.CorrPlot.Param1', choices = c(parIds_RT_, 'f(x)'), selected = 'f(x)')
+  if (length(parIds_RT_) == 0)
+    updateSelectInput(session, 'FV_PAR.CorrPlot.Param2', choices = c(parIds_RT_, 'f(x)'), selected = 'f(x)')
   else
-    updateSelectInput(session, 'FV_PAR.CorrPlot.Param2', choices = c(parIds_, 'f(x)'), selected = parIds_[[1]])
+    updateSelectInput(session, 'FV_PAR.CorrPlot.Param2', choices = c(parIds_RT_, 'f(x)'), selected = parIds_RT_[[1]])
   updateSelectInput(session, 'FV_PAR.Plot.Params', choices = parIds_, selected = parIds_)
   updateSelectInput(session, 'RT_PAR.Plot.Params', choices = parIds_, selected = parIds_)
 

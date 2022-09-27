@@ -1,4 +1,4 @@
-#' @importFrom stats dt ecdf integrate median quantile sd rgeom ks.test p.adjust
+#' @importFrom stats dt ecdf integrate median quantile sd rgeom ks.test p.adjust ave
 #' @importFrom grDevices col2rgb colors nclass.FD
 #' @importFrom graphics hist
 #' @importFrom utils data head read.csv tail type.convert write.csv
@@ -9,7 +9,7 @@
 #' @importFrom colorRamps primary.colors
 #' @importFrom data.table as.data.table rbindlist data.table fread := melt is.data.table
 #' @importFrom data.table setorderv frank setnames rbindlist copy transpose setDT
-#' @importFrom plotly add_annotations add_trace orca plot_ly rename_ subplot layout
+#' @importFrom plotly add_annotations add_trace orca plot_ly rename_ subplot layout animation_opts
 #' @importFrom ggplot2 aes geom_jitter geom_line geom_ribbon geom_violin ggplot element_text
 #' @importFrom ggplot2 guides scale_color_manual scale_colour_manual scale_fill_manual
 #' @importFrom ggplot2 scale_x_continuous scale_x_log10 facet_wrap theme_set theme_grey theme
@@ -17,9 +17,10 @@
 #' @importFrom stringi stri_detect_regex stri_detect_fixed stri_locate_all stri_replace
 #' @importFrom stringi stri_rand_strings stri_sub
 #' @importFrom httr POST GET add_headers content authenticate
-#' @importFrom reshape2 acast
+#' @importFrom reshape2 acast dcast
 #' @importFrom knitr kable
 #' @importFrom methods hasArg
+#' @importFrom rjson fromJSON
 #' @useDynLib IOHanalyzer
 NULL
 # Ugly hack, but appears to be required to appease CRAN
@@ -57,7 +58,8 @@ options(shiny.port = 4242)
     IOHanalyzer.annotation_x = 0.5,
     IOHanalyzer.annotation_y = 1,
     IOHanalyzer.margin_horizontal = 0.02,
-    IOHanalyzer.margin_vertical = 0.02
+    IOHanalyzer.margin_vertical = 0.02,
+    IOHanalyzer.Violation_Function = NULL
   )
   toset <- !(names(op.IOHanalyzer) %in% names(op))
   if (any(toset)) options(op.IOHanalyzer[toset])

@@ -4,8 +4,14 @@
 \alias{DataSet}
 \title{Constructor of S3 class 'DataSet'}
 \usage{
-DataSet(info, verbose = F, maximization = NULL, format = IOHprofiler,
-  subsampling = FALSE)
+DataSet(
+  info,
+  verbose = F,
+  maximization = NULL,
+  format = IOHprofiler,
+  subsampling = FALSE,
+  full_sampling = FALSE
+)
 }
 \arguments{
 \item{info}{A List. Contains a set of in a *.info file.}
@@ -18,6 +24,9 @@ Set to NULL to determine automatically based on format}
 \item{format}{A character. The format of data source, either 'IOHProfiler', 'COCO' or 'TWO_COL"}
 
 \item{subsampling}{Logical. Whether *.cdat files are subsampled?}
+
+\item{full_sampling}{Logical. Whether the raw (unaligned) FV matrix should be stored.
+Currenlt only useful when a correlation plot between function values and parameters should be made}
 }
 \value{
 A S3 object 'DataSet'

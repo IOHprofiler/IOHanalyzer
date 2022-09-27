@@ -113,9 +113,17 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
         }
 
         copy_flag <- TRUE
-        data <- DataSet(info, maximization = maximization,
-                        format = format, subsampling = subsampling)
-
+        if (isTRUE(info$version >= "0.3.3")) {
+          tryCatch(
+          data <- read_IOH_v1plus(info),
+          error = function(e) {
+            print(e)
+            return(NULL)}
+          )
+        } else {
+          data <- DataSet(info, maximization = maximization,
+                          format = format, subsampling = subsampling)
+        }
         DIM[i] <- attr(data, 'DIM')
         funcId[i] <- attr(data, 'funcId')
         algId[i] <- attr(data, 'algId')
@@ -169,6 +177,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
   attr(object, 'maximization') <- maximization
   attr(object, 'ID') <- attr(object, 'algId')
   attr(object, 'ID_attributes') <- c('algId')
+  attr(object, 'constrained') <- any(unlist(lapply(object, function(x) {attr(x, 'constrained')})))
   if (full_aggregation)
     clean_DataSetList(object)
   else
@@ -254,7 +263,7 @@ c.DataSetList <- function(...) {
   )
 
   # These attributes NEED to be the same across the datasetlist
-  for (attr_str in c('maximization', 'ID_attributes')) {
+  for (attr_str in c('maximization', 'ID_attributes', 'constrained')) {
     temp <- unique(
         unlist(lapply(dsl, function(x) attr(x, attr_str)))
     )
@@ -487,7 +496,7 @@ get_maxRT.DataSetList <- function(ds, algorithm = 'all', ...) {
 #' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.
 #' @export
 #'
-get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
+get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', include_geom_mean = F, ...) {
     if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
@@ -496,7 +505,7 @@ get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', ...) {
       res <-
         cbind(attr(ds, 'DIM'),
               attr(ds, 'funcId'),
-              get_FV_summary(ds, runtime))
+              get_FV_summary(ds, runtime, include_geom_mean))
       colnames(res)[1] <- 'DIM'
       colnames(res)[2] <- 'funcId'
       res
@@ -706,16 +715,16 @@ get_parId <- function(dsList, which = 'by_FV') {
 get_funvals <- function(dsList) {
   if (length(dsList) == 0)
     return(NULL)
-  if (length(dsList[[1]]$RT) == 0) {
+  if (length(get_RT(dsList[[1]])) == 0) {
     x <- sort(unique(as.numeric(unlist(
       lapply(dsList, function(x)
-        as.vector(x$FV))
+        as.vector(get_FV(x)))
     ))))
   }
   else
     x <- (sort(unique(as.numeric(unlist(
       lapply(dsList, function(x)
-        rownames(x$RT))
+        rownames(get_RT(x)))
     )))))
   x[!is.na(x) & !is.infinite(x)]
 }
@@ -972,13 +981,16 @@ get_ECDF_targets <- function(dsList, type = "log-linear", number_targets = 10) {
 #' the generated datapoints
 #' @param budget Optional; overwrites the budget of each individual algorithm when doing ERT calculations. Only works
 #' in fixed_target mode.
+#' @param include_geom_mean Boolean to indicate whether to include the geometric mean.
+#' Only works in fixed_budget mode. Negative values cause NaN, zeros cause output to be completely 0. Defaults to False.
 #'
 #' @export
 #' @examples
 #' generate_data.Single_Function(subset(dsl, funcId == 1), which = 'by_RT')
 generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL,
                                           scale_log = F, which = 'by_RT',
-                                          include_opts = F, budget = NULL) {
+                                          include_opts = F, budget = NULL,
+                                          include_geom_mean = F) {
 
   if (length(get_funcId(dsList)) != 1 || length(get_dim(dsList)) != 1 ) {
     #Required because target generation is included in this function,
@@ -1023,7 +1035,7 @@ generate_data.Single_Function <- function(dsList, start = NULL, stop = NULL,
       }
       Xseq <- unique(sort(Xseq))
     }
-    dt <- get_FV_summary(dsList, Xseq)
+    dt <- get_FV_summary(dsList, Xseq, include_geom_mean = include_geom_mean)
   }
 
 
@@ -1345,6 +1357,48 @@ generate_data.Parameters <- function(dsList, which = 'by_RT', scale_log = F) {
   dt[, `:=`(upper = mean + sd, lower = mean - sd)]
 }
 
+#' Generate dataframe of exactly 2 parameters, matched by running time
+#'
+#' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
+#'
+#' @param dsList The DataSetList object
+#' @param par1 The first parameter. Either a parameter name or 'f(x)'
+#' @param par2 The second parameter. Either a parameter name or 'f(x)'
+#'
+#' @export
+#' @examples
+#' generate_data.Parameter_correlation(subset(dsl, funcId == 1), 'f(x)', 'f(x)')
+generate_data.Parameter_correlation <- function(dsList, par1, par2) {
+  dt <- rbindlist(lapply(dsList, function(ds) {
+    if (par1 == 'f(x)' ) {
+      if (!isTRUE(attr(ds, 'contains_full_FV'))) {
+        return(NULL)
+      }
+      dt1 <- ds$FV_raw_mat %>% reshape2::melt()
+    } else {
+      if (!(par1 %in% get_PAR_name(ds, which = 'by_RT'))) return(NULL)
+      dt1 <- ds$PAR$by_RT[[par1]] %>% reshape2::melt()
+    }
+    if (par2 == 'f(x)' ) {
+      if (!isTRUE(attr(ds, 'contains_full_FV'))) {
+        return(NULL)
+      }
+      dt2 <- ds$FV_raw_mat %>% reshape2::melt()
+    } else {
+      if (!(par2 %in% get_PAR_name(ds, which = 'by_RT'))) return(NULL)
+      dt2 <- ds$PAR$by_RT[[par2]] %>% reshape2::melt()
+    }
+
+    colnames(dt1) <- c('runtime', 'run', par1)
+    colnames(dt2) <- c('runtime', 'run', par2)
+
+    dt <- merge(dt1, dt2)
+    dt$ID <- get_id(ds)
+    dt
+  }))
+  return(dt)
+}
+
 #' Generate dataframe of a single function/dimension pair
 #'
 #' This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
@@ -1565,9 +1619,6 @@ generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
   winrates_aggr
 }
 
-
-
-
 #' Generate data for the cumulative difference plot.
 #'
 #' This function generates a dataframe that can be used to generate
@@ -1578,7 +1629,6 @@ generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
 #' in a single problem of dimension one.
 #' @param runtime_or_target_value The target runtime or the target value
 #' @param isFixedBudget Should be TRUE when target runtime is used. False otherwise.
-#' @param isMinimizationProblem A boolean that should be TRUE when lower is better.
 #' @param alpha 1 minus the confidence level of the confidence band.
 #' @param EPSILON If abs(x-y) < EPSILON, then we assume that x = y.
 #' @param nOfBootstrapSamples The number of bootstrap samples used in the estimation.
@@ -1590,17 +1640,10 @@ generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
 #' dsl
 #' dsl_sub <- subset(dsl, funcId == 1)
 #' runtime <- 15
-#' target <- 15
 #'
-#' generate_data.CDP(dsl_sub, runtime, TRUE , isMinimizationProblem = FALSE)
-#' generate_data.CDP(dsl_sub, target, FALSE , isMinimizationProblem = TRUE)
-generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, isMinimizationProblem=NULL, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3)
+#' generate_data.CDP(dsl_sub, runtime, TRUE)
+generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3)
 {
-      if(is.null(isMinimizationProblem))
-      {
-        return(NULL)
-      }
-
       if (!requireNamespace("RVCompare", quietly = TRUE)) {
         stop("Package \"RVCompare\" needed for this function to work. Please install it.",
           call. = FALSE)
@@ -1630,13 +1673,7 @@ generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, is
       colnames(res) <- algorithms
 
 
-      if(!isTRUE(isMinimizationProblem) && !isFALSE(isMinimizationProblem))
-      {
-        stop("ERROR: To compute the cumulative difference-plot, isMinimizationProblem needs to be TRUE or FALSE.
-         isMinimizationProblem=TRUE needs to be used when low values are prefered to high values.
-         isMinimizationProblem=FALSE needs to be used when high values are preferred to low values.")
-      }
-      else if (isFALSE(isMinimizationProblem))
+      if (isFixedBudget && attr(dsList, 'maximization'))
       {
         X_A <- - X_A
         X_B <- - X_B
@@ -1646,6 +1683,3 @@ generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, is
 
       return(data.frame(res))
 }
-
-
-

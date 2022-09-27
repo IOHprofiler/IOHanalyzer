@@ -13,22 +13,35 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
                   multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                     custom_icon() %>%
                       bs_embed_popover(
-                        title = "ID selection", content = alg_select_info, 
+                        title = "ID selection", content = alg_select_info,
                         placement = "auto"
                       )
                   ),
       checkboxInput('FCEPlot.show.mean',
-                    label = 'Show/hide mean',
+                    label = 'Show/hide (aritmetic) mean',
                     value = T),
+
+      checkboxInput('FCEPlot.show.geom_mean',
+                    label = 'Show/hide Geometric mean',
+                    value = F) %>%
+        shinyInput_label_embed(
+          custom_icon("exclamation-triangle") %>%
+            bs_embed_popover(
+              title = "Geometric Mean", content = "The geometric mean does not
+              work when function values are negative. When any run produces a value
+              of 0, the geometric mean is set to 0.",
+              placement = "auto"
+            )
+        ),
 
       checkboxInput('FCEPlot.show.median',
                     label = 'Show/hide median',
                     value = F),
-      
+
       checkboxInput('FCEPlot.show.CI',
                     label = 'Show/hide mean +/- sd',
                     value = F),
-      
+
       checkboxInput('FCEPlot.show.IQR',
                     label = 'Show/hide interquartile range',
                     value = F),
@@ -42,15 +55,15 @@ fv_per_fct_box <- function(width = 12, collapsible = T, collapsed = T) {
                     value = T),
       checkboxInput('FCEPlot.show.runs',
                     label = 'Show individual runs',
-                    value = F) %>% 
+                    value = F) %>%
         shinyInput_label_embed(
           custom_icon("exclamation-triangle") %>%
             bs_embed_popover(
               title = "Individual runs", content = "This procedure can be slow when many
-                              runs are present in the data. Please use with caution.", 
+                              runs are present in the data. Please use with caution.",
               placement = "auto"
             )
-        ), 
+        ),
 
       hr(),
       selectInput('FCEPlot.Format', label = 'Select the figure format',
@@ -84,15 +97,22 @@ fv_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed 
                       multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                         custom_icon() %>%
                           bs_embed_popover(
-                            title = "ID selection", content = alg_select_info, 
+                            title = "ID selection", content = alg_select_info,
                             placement = "auto"
                           )
                       ),
-          selectInput('FCEPlot.Multi.Funcs', label = 'Select which Functions to include:', 
+          selectInput('FCEPlot.Multi.Funcs', label = 'Select which Functions to include:',
                       multiple = T, selected = NULL, choices = NULL),
           checkboxInput('FCEPlot.Multi.Logx',
                         label = 'Scale x axis \\(\\log_{10}\\)',
                         value = T),
+          checkboxInput('FCEPlot.Multi.Limitx',
+                        label = 'Set Bounds X-axis',
+                        value = F),
+          conditionalPanel(condition = 'input["FCEPlot.Multi.Limitx"]',
+                           textInput('FCEPlot.Multi.Min', label = RT_MIN_LABEL, value = ''),
+                           textInput('FCEPlot.Multi.Max', label = RT_MAX_LABEL, value = ''),
+          ),
 
           checkboxInput('FCEPlot.Multi.Logy',
                         label = 'Scale y axis \\(\\log_{10}\\)',
@@ -128,7 +148,7 @@ fv_comparison_box <- function(width = 12, collapsible = T, collapsed = T) {
                       multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                         custom_icon() %>%
                           bs_embed_popover(
-                            title = "ID selection", content = alg_select_info, 
+                            title = "ID selection", content = alg_select_info,
                             placement = "auto"
                           )
                       ),

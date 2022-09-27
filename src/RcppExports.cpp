@@ -70,6 +70,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// c_align_running_time_matrix
+NumericMatrix c_align_running_time_matrix(NumericMatrix data, NumericVector FV, NumericVector IdxValues, bool maximization);
+RcppExport SEXP _IOHanalyzer_c_align_running_time_matrix(SEXP dataSEXP, SEXP FVSEXP, SEXP IdxValuesSEXP, SEXP maximizationSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type FV(FVSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type IdxValues(IdxValuesSEXP);
+    Rcpp::traits::input_parameter< bool >::type maximization(maximizationSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_align_running_time_matrix(data, FV, IdxValues, maximization));
+    return rcpp_result_gen;
+END_RCPP
+}
 // c_read_dat
 List c_read_dat(std::string dat, int NC, std::string leading);
 RcppExport SEXP _IOHanalyzer_c_read_dat(SEXP datSEXP, SEXP NCSEXP, SEXP leadingSEXP) {
@@ -89,6 +103,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IOHanalyzer_c_impute", (DL_FUNC) &_IOHanalyzer_c_impute, 3},
     {"_IOHanalyzer_c_impute_running_time", (DL_FUNC) &_IOHanalyzer_c_impute_running_time, 4},
     {"_IOHanalyzer_c_align_running_time", (DL_FUNC) &_IOHanalyzer_c_align_running_time, 5},
+    {"_IOHanalyzer_c_align_running_time_matrix", (DL_FUNC) &_IOHanalyzer_c_align_running_time_matrix, 4},
     {"_IOHanalyzer_c_read_dat", (DL_FUNC) &_IOHanalyzer_c_read_dat, 3},
     {NULL, NULL, 0}
 };

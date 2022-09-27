@@ -4,9 +4,16 @@
 \alias{get_dsc_rank}
 \title{Get the matrix of rankings using the DSCtool api for a DataSetList}
 \usage{
-get_dsc_rank(dsList, targets = NULL, which = "by_RT",
-  test_type = "AD", alpha = 0.05, epsilon = 0,
-  monte_carlo_iterations = 0, na.correction = NULL)
+get_dsc_rank(
+  dsList,
+  targets = NULL,
+  which = "by_RT",
+  test_type = "AD",
+  alpha = 0.05,
+  epsilon = 0,
+  monte_carlo_iterations = 0,
+  na.correction = NULL
+)
 }
 \arguments{
 \item{dsList}{The DataSetList object}

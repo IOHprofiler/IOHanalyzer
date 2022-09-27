@@ -1,5 +1,5 @@
 upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: find a way to include all potential arguments
-                       height = '75vh') {
+                       height = '85vh') {
   box(
     title = HTML('<p style="font-size:120%;">Upload Data</p>'),
     width = width, height = height, collapsed = collapsed, collapsible = collapsible,
@@ -8,47 +8,137 @@ upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: fin
       width = 12,
 
       HTML_P('<b>IOHexperimenter, Nevergrad, and BBOB/COCO data files are accepted.
-             For alternative data files, please convert them to the format described</b> <a href="https://iohprofiler.github.io/IOHanalyzer/data/">here</a>.'),
+             For alternative data files, please convert them to the format described <a href="https://iohprofiler.github.io/IOHanalyzer/data/">here</a>,
+             or use a single csv-file.</b>'),
 
-      selectInput(
-        'upload.data_format',
-        label = "Please choose the format of your datasets",
-        choices = c(AUTOMATIC, TWO_COL),
-        selected = AUTOMATIC, width = '60%'
-      ) %>%
-        shinyInput_label_embed(
-          custom_icon("info") %>%
-            bs_embed_tooltip(
-              title = "The IOHprofiler, COCO and Nevergrad formats can be automatically detected."
-            )
-        ),
-
-      selectInput('upload.maximization',
-                  label = "Maximization or minimization?",
-                  choices = c(AUTOMATIC,"MAXIMIZE", "MINIMIZE"),
-                  selected = AUTOMATIC, width = '60%') ,
-
-      HTML('<p align="justify" style="font-size:120%;">When the dataset is huge,
-           the alignment can take a very long time. In this case, you could toggle
-           the efficient mode to subsample the dataset. However,
-           the precision of data will be compromised.</p>'),
-
-      checkboxInput('upload.subsampling',
+      checkboxInput('upload.use_custom_csv',
                     label = HTML('<p align="left">
-                                 Efficient mode</p>'),
+                                 Use custom csv format</p>'),
                     value = F),
 
-      fileInput("upload.add_zip",
-                label = HTML('<p align="left">
-                             Please choose a <i>zip file</i> containing the
-                             benchmark data</p>'),
-                multiple = TRUE, accept = c("Application/zip", ".zip",
-                                            ".csv", 'bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz')),
+      conditionalPanel(condition = "input['upload.use_custom_csv']",
+           fileInput("upload.custom_csv",
+                 label = HTML('<p align="left">
+               Please upload a single <i>csv file</i> containing the
+               benchmark data</p>'), multiple = FALSE, accept = c(".csv")),
+           checkboxInput('upload.maximization',
+                 label = "Is the data from a maximization setting?",
+                 value = F),
+           selectInput('upload.neval_name',
+                         label = "Column to use for evaluation count",
+                         choices = NULL, selected = NULL) %>%
+               shinyInput_label_embed(
+                 custom_icon("info") %>%
+                   bs_embed_tooltip(
+                     title = "When set to 'None', it will be assumed to be sequential for each run."
+                   )
+               ),
+           selectInput('upload.fval_name',
+                       label = "Column to use for function values",
+                       choices = NULL, selected = NULL),
+           hr(),
+           selectInput('upload.fname_name',
+                       label = "Column to use for function ID",
+                       choices = NULL, selected = NULL) %>%
+             shinyInput_label_embed(
+               custom_icon("info") %>%
+                 bs_embed_tooltip(
+                   title = "When set to 'None', you can enter a fixed function ID"
+                 )
+             ),
+           conditionalPanel("input['upload.fname_name'] == 'None'",
+                            textInput("upload.fname_static", "Function ID", "Fname")
+                            ),
+           hr(),
+           selectInput('upload.algname_name',
+                       label = "Column to use for algorithm ID",
+                       choices = NULL, selected = NULL) %>%
+             shinyInput_label_embed(
+               custom_icon("info") %>%
+                 bs_embed_tooltip(
+                   title = "When set to 'None', you can enter a fixed algorithm ID"
+                 )
+             ),
+           conditionalPanel("input['upload.algname_name'] == 'None'",
+                            textInput("upload.algname_static", "Algorithm ID", "Alg1")
+           ),
+           hr(),
+           selectInput('upload.dim_name',
+                       label = "Column to use for problem dimension",
+                       choices = NULL, selected = NULL) %>%
+             shinyInput_label_embed(
+               custom_icon("info") %>%
+                 bs_embed_tooltip(
+                   title = "When set to 'None', you can enter a fixed dimension."
+                 )
+             ),
+           conditionalPanel("input['upload.dim_name'] == 'None'",
+                            numericInput("upload.dim_static", "Dimension", 2)
+           ),
+           hr(),
+           selectInput('upload.run_name',
+                       label = "Column to use for run ID",
+                       choices = NULL, selected = NULL) %>%
+             shinyInput_label_embed(
+               custom_icon("info") %>%
+                 bs_embed_tooltip(
+                   title = "When set to 'None', it will be assumed there is only one run for each function,algorithm,dimension triplet."
+                 )
+             ),
+           actionButton('upload.process_csv',
+                        label = HTML('<p align="center" style="margin-bottom:0;"><b>
+                   Process uploaded file with selected settings</b></p>')),
+           hr()
+                       ),
+      conditionalPanel(condition = "!input['upload.use_custom_csv']",
+         fileInput("upload.add_zip",
+                   label = HTML('<p align="left">
+               Please choose one or more files containing the
+               benchmark data</p>'),
+                   multiple = TRUE, accept = c("Application/zip", ".zip",
+                                               ".csv", 'bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz')),
+
+
+
+      ),
+
+
+      # selectInput(
+      #   'upload.data_format',
+      #   label = "Please choose the format of your datasets",
+      #   choices = c(AUTOMATIC, TWO_COL),
+      #   selected = AUTOMATIC, width = '60%'
+      # ) %>%
+      #   shinyInput_label_embed(
+      #     custom_icon("info") %>%
+      #       bs_embed_tooltip(
+      #         title = "The IOHprofiler, COCO and Nevergrad formats can be automatically detected."
+      #       )
+      #   ),
+      #
+      # selectInput('upload.maximization',
+      #             label = "Maximization or minimization?",
+      #             choices = c(AUTOMATIC,"MAXIMIZE", "MINIMIZE"),
+      #             selected = AUTOMATIC, width = '60%') ,
+      #
+      # HTML('<p align="justify" style="font-size:120%;">When the dataset is huge,
+      #      the alignment can take a very long time. In this case, you could toggle
+      #      the efficient mode to subsample the dataset. However,
+      #      the precision of data will be compromised.</p>'),
+      #
+      # checkboxInput('upload.subsampling',
+      #               label = HTML('<p align="left">
+      #                            Efficient mode</p>'),
+      #               value = F),
+
+
 
       actionButton('upload.remove_data',
                    label = HTML('<p align="center" style="margin-bottom:0;"><b>
                    Remove all the data</b></p>'))
-      )
+      ),
+    downloadButton('upload.Download_processed',
+                   label = 'Download RDS of loaded data.')
     )
 }
 
@@ -103,7 +193,7 @@ welcome_bar <- function(width = 12, collapsible = T, collapsed = F) {
 
 
 overal_loading_box <- function(width = 12, collapsible = T,
-                               collapsed = F, height='75vh') {
+                               collapsed = F, height='85vh') {
   box(
     title = HTML('<p style="font-size:120%;">Load from repositories</p>'),
     width = width,

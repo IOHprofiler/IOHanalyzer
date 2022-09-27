@@ -1001,6 +1001,8 @@ add_transparancy <- function(colors, percentage){
 #' @param show.legend Whether or not to include a legend
 #' @param inf.action How to deal with infinite values. Can be 'none', 'overlap' or 'jitter'
 #' @param violin.showpoints Wheteher or not to show individual points when making a violinplot
+#' @param frame_attr Which attribute of the dataframe to use for the time element of the animation
+#' @param symbol_attr Which attribute of the dataframe to use for the scatter symbol
 #' @param ... Additional parameters for the add_trace function
 #'
 #' @export
@@ -1009,13 +1011,14 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                               scale.reverse = F, p = NULL, x_title = NULL,
                               y_title = NULL, plot_title = NULL, upper_attr = NULL,
                               lower_attr = NULL, subplot_attr = NULL, show.legend = F,
-                              inf.action = 'none', violin.showpoints = F,
-                              subplot_shareX = F, ...) {
+                              inf.action = 'none', violin.showpoints = F, frame_attr = 'frame',
+                              symbol_attr = 'run_nr', subplot_shareX = F, ...) {
 
-  l <- x <- isinf <- y <- text <- l_orig <- NULL #Set local binding to remove warnings
+  l <- x <- isinf <- y <- text <- l_orig <- frame <- NULL #Set local binding to remove warnings
 
   #Only allow valid plot types
-  if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon', 'bar'))) {
+  if (!(type %in% c('violin', 'line', 'radar', 'hist', 'ribbon', 'line+ribbon',
+                    'bar', 'anim-scatter', 'scatter'))) {
     stop(paste0("Provided plot type ('", type, "') is not supported"))
   }
 
@@ -1380,6 +1383,35 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
             p %<>% layout(xaxis = list(tickfont = f3(), ticklen = 3),
                           yaxis = list(type = yscale, tickfont = f3(), ticklen = 3))
           }
+        },
+        'anim-scatter' = {
+          colnames(df)[colnames(df) == frame_attr] <- "frame"
+          colnames(df)[colnames(df) == symbol_attr] <- "s"
+          colors = add_transparancy(colors, 0.9)
+          df = df[order(frame), ]
+          for (xv in xs){
+            df_sub = df[l==xv,]
+            p %<>% add_trace(data = df_sub, x = ~x, y = ~y, type = 'scatter',
+                             mode = 'markers', marker = list(color = colors[xv],
+                                                             symbol = ~s),
+                             legendgroup = xv, frame = ~frame, showlegend = F,
+                             name = xv)
+          }
+          p %<>% animation_opts(transition = 0)
+
+        },
+        'scatter' = {
+          colnames(df)[colnames(df) == symbol_attr] <- "s"
+          colors = add_transparancy(colors, 0.9)
+          df = df[order(frame), ]
+          for (xv in xs){
+            df_sub = df[l==xv,]
+            p %<>% add_trace(data = df_sub, x = ~x, y = ~y, type = 'scatter',
+                             mode = 'markers', marker = list(color = colors[xv],
+                                                             symbol = ~s),
+                             legendgroup = xv, showlegend = F,
+                             name = xv)
+          }
         }
   )
   return(p)
@@ -1458,7 +1490,6 @@ Plot.Performviz <- function(DSC_rank_result) {
 #' @param dsList A DataSetList (should consist of only one function and dimension and two algorithms).
 #' @param runtime_or_target_value The target runtime or the target value
 #' @param isFixedBudget Should be TRUE when target runtime is used. False otherwise.
-#' @param isMinimizationProblem A boolean that should be TRUE when lower is better.
 #' @param alpha 1 minus the confidence level of the confidence band.
 #' @param EPSILON If abs(x-y) < EPSILON, then we assume that x = y.
 #' @param nOfBootstrapSamples The number of bootstrap samples used in the estimation.
@@ -1469,12 +1500,10 @@ Plot.Performviz <- function(DSC_rank_result) {
 #' @examples
 #' dsl
 #' dsl_sub <- subset(dsl, funcId == 1)
-#' runtime <- 15
 #' target <- 15
 #'
-#' Plot.cumulative_difference_plot(dsl_sub, runtime, TRUE , isMinimizationProblem = FALSE)
-#' Plot.cumulative_difference_plot(dsl_sub, target, FALSE , isMinimizationProblem = TRUE)
-Plot.cumulative_difference_plot <- function(dsList, runtime_or_target_value, isFixedBudget, isMinimizationProblem=NULL, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3, dataAlreadyComputed=FALSE, precomputedData=NULL)
+#' Plot.cumulative_difference_plot(dsl_sub, target, FALSE)
+Plot.cumulative_difference_plot <- function(dsList, runtime_or_target_value, isFixedBudget, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3, dataAlreadyComputed=FALSE, precomputedData=NULL)
 {
   if (!requireNamespace("RVCompare", quietly = TRUE)) {
     stop("Package \"RVCompare\" needed for this function to work. Please install it.",
@@ -1491,7 +1520,7 @@ Plot.cumulative_difference_plot <- function(dsList, runtime_or_target_value, isF
   }
   else
   {
-    data <- generate_data.CDP(dsList, runtime_or_target_value, isFixedBudget, isMinimizationProblem, alpha,  EPSILON, nOfBootstrapSamples)
+    data <- generate_data.CDP(dsList, runtime_or_target_value, isFixedBudget, alpha,  EPSILON, nOfBootstrapSamples)
   }
 
   if (isFixedBudget)
@@ -1562,5 +1591,4 @@ Plot.cumulative_difference_plot <- function(dsList, runtime_or_target_value, isF
 
   return(fig)
 }
-
 

@@ -25,6 +25,17 @@ c_align_running_time <- function(data, FV, idxValue, maximization, idxTarget) {
     .Call('_IOHanalyzer_c_align_running_time', PACKAGE = 'IOHanalyzer', data, FV, idxValue, maximization, idxTarget)
 }
 
+#' Align a matrix of data set by function values
+#'
+#' @param data the data
+#' @param FV Function values
+#' @param IdxValues The index values
+#' @param maximization Boolean
+#' @noRd
+c_align_running_time_matrix <- function(data, FV, IdxValues, maximization) {
+    .Call('_IOHanalyzer_c_align_running_time_matrix', PACKAGE = 'IOHanalyzer', data, FV, IdxValues, maximization)
+}
+
 c_read_dat <- function(dat, NC, leading) {
     .Call('_IOHanalyzer_c_read_dat', PACKAGE = 'IOHanalyzer', dat, NC, leading)
 }

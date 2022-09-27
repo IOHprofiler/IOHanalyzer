@@ -6,39 +6,39 @@ sidebar_menu <- function() {
               #          selected = T),
               menuItem("General Overview", tabName = "overview", icon = icon("table")),
 
-              menuItem("Fixed-Target Results", tabName = "ERT", icon = icon("file-text-o"),
-                       menuItem("Single Function", tabName = "RT_single", icon = icon("line-chart"), selected = F,
+              menuItem("Fixed-Target Results", tabName = "ERT", icon = icon("file"),
+                       menuItem("Single Function", tabName = "RT_single", icon = icon("chart-line"), selected = F,
                             menuSubItem("Data Summary", tabName = "ERT_data", icon = icon("table")),
-                            menuSubItem("Expected Runtime", tabName = "ERT_convergence_single", icon = icon("line-chart"), selected = F),
-                            menuSubItem("Probability Mass Function", tabName = "RT_PMF", icon = icon("area-chart"), selected = F),
-                            menuSubItem("Cumulative Distribution", tabName = "RT_ECDF_single", icon = icon("line-chart"), selected = F),
-                            menuSubItem("Algorithm Parameters", tabName = "RT_PARAMETER", icon = icon('file-text-o'), selected = F),
-                            menuSubItem("Statistics", tabName = "RT_Statistics_single", icon = icon("file-text-o"), selected = F)
+                            menuSubItem("Expected Runtime", tabName = "ERT_convergence_single", icon = icon("chart-line"), selected = F),
+                            menuSubItem("Probability Mass Function", tabName = "RT_PMF", icon = icon("chart-area"), selected = F),
+                            menuSubItem("Cumulative Distribution", tabName = "RT_ECDF_single", icon = icon("chart-line"), selected = F),
+                            menuSubItem("Algorithm Parameters", tabName = "RT_PARAMETER", icon = icon('bars'), selected = F),
+                            menuSubItem("Statistics", tabName = "RT_Statistics_single", icon = icon("search-plus"), selected = F)
                        ),
-                       menuItem("Multiple Functions", tabName = "RT_aggr", icon = icon("bar-chart"), selected = F,
+                       menuItem("Multiple Functions", tabName = "RT_aggr", icon = icon("chart-bar"), selected = F,
                             menuSubItem("Data Summary", tabName = "RT_table_multi", icon = icon("table"), selected = F),
-                            menuSubItem("Expected Runtime", tabName = "ERT_convergence_aggr", icon = icon("line-chart"), selected = F),
-                            menuSubItem("Cumulative Distribution", tabName = "RT_ECDF_aggr", icon = icon("line-chart"), selected = F),
+                            menuSubItem("Expected Runtime", tabName = "ERT_convergence_aggr", icon = icon("chart-line"), selected = F),
+                            menuSubItem("Cumulative Distribution", tabName = "RT_ECDF_aggr", icon = icon("chart-line"), selected = F),
                             menuSubItem("Deep Statistics", tabName = "RT_DSC", icon = icon("not-equal"), selected = F),
-                            menuSubItem("Ranking", tabName = "RT_Statistics_aggr", icon = icon("file-text-o"), selected = F),
-                            menuSubItem("Portfolio", tabName = "RT_portfolio", icon = icon("bar-chart"), selected = F)
+                            menuSubItem("Ranking", tabName = "RT_Statistics_aggr", icon = icon("project-diagram"), selected = F),
+                            menuSubItem("Portfolio", tabName = "RT_portfolio", icon = icon("chart-bar"), selected = F)
                        )
                        ),
 
-              menuItem("Fixed-Budget Results", tabName = "FCE", icon = icon("file-text-o"),
-                       menuItem("Single Function", tabName = "FCE_single", icon = icon("line-chart"), selected = F,
+              menuItem("Fixed-Budget Results", tabName = "FCE", icon = icon("file"),
+                       menuItem("Single Function", tabName = "FCE_single", icon = icon("chart-line"), selected = F,
                            menuSubItem("Data Summary", tabName = "FCE_DATA", icon = icon("table")),
-                           menuSubItem("Expected Target Value", tabName = "FCE_convergence_single", icon = icon("bar-chart")),
-                           menuSubItem("Probability Density Function", tabName = "FCE_PDF", icon = icon("area-chart"), selected = F),
-                           menuSubItem("Cumulative Distribution", tabName = "FCE_ECDF", icon = icon("line-chart")),
-                           menuSubItem("Algorithm Parameters", tabName = "FCE_PARAMETER", icon = icon('file-text-o'), selected = F),
-                           menuSubItem('Statistics', tabName = "FCE_Statistics_single", icon = icon('file-text-o'))
+                           menuSubItem("Expected Target Value", tabName = "FCE_convergence_single", icon = icon("chart-bar")),
+                           menuSubItem("Probability Density Function", tabName = "FCE_PDF", icon = icon("chart-area"), selected = F),
+                           menuSubItem("Cumulative Distribution", tabName = "FCE_ECDF", icon = icon("chart-line")),
+                           menuSubItem("Algorithm Parameters", tabName = "FCE_PARAMETER", icon = icon('bars'), selected = F),
+                           menuSubItem('Statistics', tabName = "FCE_Statistics_single", icon = icon('search-plus'))
                        ),
-                       menuItem("Multiple Functions", tabName = "RT_aggr", icon = icon("bar-chart"), selected = F,
+                       menuItem("Multiple Functions", tabName = "RT_aggr", icon = icon("chart-bar"), selected = F,
                            menuSubItem("Data Summary", tabName = "FV_table_multi", icon = icon("table"), selected = F),
-                           menuSubItem("Expected Target Value", tabName = "FCE_convergence_aggr", icon = icon("bar-chart")),
+                           menuSubItem("Expected Target Value", tabName = "FCE_convergence_aggr", icon = icon("chart-bar")),
                            menuSubItem('Deep Statistics', tabName = "FCE_DSC", icon = icon('not-equal')),
-                           menuSubItem('Ranking', tabName = "FCE_Statistics_aggr", icon = icon('file-text-o'))
+                           menuSubItem('Ranking', tabName = "FCE_Statistics_aggr", icon = icon('project-diagram'))
                        )
                        ),
               menuItem("Position Information", tabName = "Positions", icon = icon("arrows-alt")),

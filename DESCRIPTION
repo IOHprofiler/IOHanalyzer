@@ -1,12 +1,11 @@
 Package: IOHanalyzer
 Type: Package
 Title: Data Analysis Part of 'IOHprofiler'
-Version: 0.1.6.3
-Author: Hao Wang [cre, aut], Diederick Vermetten [aut], Carola Doerr [aut], Thomas Bäck [aut]
+Version: 0.1.7
 Maintainer: Diederick Vermetten <d.l.vermetten@liacs.leidenuniv.nl>
 Authors@R: c(
-    person("Hao", "Wang", email = "h.wang@liacs.leidenuniv.nl", role = c("cre","aut"), comment = c(ORCID = "0000-0002-4933-5181")),
-    person("Diederick", "Vermetten", email="d.l.vermetten@liacs.leidenuniv.nl", role = "aut", comment = c(ORCID = "0000-0003-3040-7162")),
+    person("Hao", "Wang", email = "h.wang@liacs.leidenuniv.nl", role = "aut", comment = c(ORCID = "0000-0002-4933-5181")),
+    person("Diederick", "Vermetten", email="d.l.vermetten@liacs.leidenuniv.nl", role = c("cre","aut"), comment = c(ORCID = "0000-0003-3040-7162")),
     person("Carola", "Doerr", email = "Carola.Doerr@mpi-inf.mpg.de", role = "aut", comment = c(ORCID = "0000-0002-4981-3227")),
     person("Thomas", "Bäck", email="t.h.w.baeck@liacs.leidenuniv.nl", role = "aut", comment = c(ORCID = "0000-0001-6768-1478")))
 Description: The data analysis module for the Iterative Optimization Heuristics
@@ -34,7 +33,8 @@ Imports:
   stringi,
   httr,
   knitr,
-  methods
+  methods,
+  rjson
 LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 7.1.2
@@ -57,3 +57,4 @@ Suggests:
   shinydashboard,
   RVCompare
 Depends: R (>= 2.10)
+

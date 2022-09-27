@@ -10,25 +10,25 @@ fv_par_expected_value_box <- function(width = 12, collapsible = T, collapsed = T
       textInput('FV_PAR.Plot.Min', label = RT_MIN_LABEL, value = ''),
       textInput('FV_PAR.Plot.Max', label = RT_MAX_LABEL, value = ''),
       selectInput('FV_PAR.Plot.Params', 'Parameters', choices = NULL, selected = NULL, multiple = T),
-      
+
       selectInput('FV_PAR.Plot.Algs', 'Select which IDs to include:', choices = NULL, selected = NULL, multiple = T) %>% shinyInput_label_embed(
         custom_icon() %>%
           bs_embed_popover(
-            title = "ID selection", content = alg_select_info, 
+            title = "ID selection", content = alg_select_info,
             placement = "auto"
           )
       ),
       selectInput('FV_PAR.Plot.show.mean', label = 'Mean/median',
                   choices = c('mean', 'median'),
                   selected = 'mean'),
-      selectInput('FV_PAR.Plot.CI', "Show standard deviations or quantiles", 
-                    choices = c('Standard Deviation', 'Outer Quantiles', 'None'), 
-                    selected = 'None') %>% 
+      selectInput('FV_PAR.Plot.CI', "Show standard deviations or quantiles",
+                    choices = c('Standard Deviation', 'Outer Quantiles', 'None'),
+                    selected = 'None') %>%
         shinyInput_label_embed(
           custom_icon() %>%
             bs_embed_popover(
-              title = "Outer quantiles", content = "This method uses the highest and lowest quantiles, which are 
-                  2% and 98% by default. This can be changed in the settings-tab.", 
+              title = "Outer quantiles", content = "This method uses the highest and lowest quantiles, which are
+                  2% and 98% by default. This can be changed in the settings-tab.",
               placement = "auto"
             )
         ),
@@ -64,6 +64,65 @@ fv_par_expected_value_box <- function(width = 12, collapsible = T, collapsed = T
       )
     )
    )
+}
+
+par_scatter_box <- function(width = 12, collapsible = T, collapsed = T) {
+  box(
+    title = HTML('<p style="font-size:120%;">Correlation of parameters over time</p>'),
+    width = width, collapsible = collapsible, collapsed = collapsed,
+    solidHeader = TRUE, status = "primary",
+    sidebarPanel(
+      width = 3,
+
+      selectInput('FV_PAR.CorrPlot.Param1', 'Parameter X', choices = NULL, selected = NULL, multiple = F),
+      selectInput('FV_PAR.CorrPlot.Param2', 'Parameter Y', choices = NULL, selected = NULL, multiple = F),
+
+      selectInput('FV_PAR.CorrPlot.Algs', 'Select which IDs to include:', choices = NULL, selected = NULL, multiple = T) %>% shinyInput_label_embed(
+        custom_icon() %>%
+          bs_embed_popover(
+            title = "ID selection", content = alg_select_info,
+            placement = "auto"
+          )
+      ),
+
+      checkboxInput('FV_PAR.CorrPlot.Animated',
+                    label = 'Use runtime for animation',
+                    value = T),
+
+      conditionalPanel("input['FV_PAR.CorrPlot.Animated']",
+                       numericInput('FV_PAR.CorrPlot.WindowSize',
+                                    'Size of runtime window', value = 50,
+                                    min = 0)),
+
+      checkboxInput('FV_PAR.CorrPlot.Logx',
+                    label = 'Scale x axis \\(\\log_{10}\\)',
+                    value = T),
+
+      checkboxInput('FV_PAR.CorrPlot.Logy',
+                    label = 'Scale y axis \\(\\log_{10}\\)',
+                    value = F) %>%
+        shinyInput_label_embed(
+          custom_icon("exclamation-triangle") %>%
+            bs_embed_tooltip(
+              title = "Be mindful of using logarithmic scaling when the parameter-values can be <= 0"
+            )
+        ),
+
+      # hr(),
+      # selectInput('FV_PAR.CorrPlot.Format', label = 'Select the figure format',
+      #             choices = supported_fig_format, selected = supported_fig_format[[1]]),
+      # downloadButton('FV_PAR.CorrPlot.Download', label = 'Download the figure')
+    ),
+
+    mainPanel(
+      width = 9,
+      column(
+        width = 12, align = "center",
+        HTML_P('The .'),
+        plotlyOutput.IOHanalyzer('FV_PAR.CorrPlot.Figure')
+      )
+    )
+  )
 }
 
 fv_par_summary_box <- function(width = 12, collapsible = T, collapsed = T) {

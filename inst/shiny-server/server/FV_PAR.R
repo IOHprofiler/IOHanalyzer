@@ -10,14 +10,14 @@ render_FV_PAR_PER_FUN <- reactive({
     #TODO: use these parameters
     rt_min <- as.numeric(input$FV_PAR.Plot.Min)
     rt_max <- as.numeric(input$FV_PAR.Plot.Max)
-    
+
     dt <- get_data_FV_PAR_PER_FUN()
     dt <- dt[parId %in% input$FV_PAR.Plot.Params]
     sub_attr <- if (length(input$FV_PAR.Plot.Params) > 1) 'parId' else NULL
-    
+
     lower <- 'lower'
     upper <- 'upper'
-    if (input$FV_PAR.Plot.CI == 'None') type <- 'line' 
+    if (input$FV_PAR.Plot.CI == 'None') type <- 'line'
     else {
       type <- 'line+ribbon'
       if (input$FV_PAR.Plot.CI == 'Outer Quantiles') {
@@ -29,20 +29,20 @@ render_FV_PAR_PER_FUN <- reactive({
     if (is.null(sub_attr) && type == 'line+ribbon') {
       p <- plot_general_data(dt, 'runtime', input$FV_PAR.Plot.show.mean, 'line',
                              subplot_attr = sub_attr, scale.xlog = input$FV_PAR.Plot.Logx,
-                             scale.ylog = input$FV_PAR.Plot.Logy, 
-                             lower_attr = lower, upper_attr = upper, show.legend = T, 
+                             scale.ylog = input$FV_PAR.Plot.Logy,
+                             lower_attr = lower, upper_attr = upper, show.legend = T,
                              x_title = 'Function Evaluations', y_title = "Mean Parameter Value")
       p <- plot_general_data(dt, 'runtime', input$FV_PAR.Plot.show.mean, 'ribbon',
                              subplot_attr = sub_attr, scale.xlog = input$FV_PAR.Plot.Logx,
-                             scale.ylog = input$FV_PAR.Plot.Logy, 
-                             lower_attr = lower, upper_attr = upper, show.legend = F, p = p, 
+                             scale.ylog = input$FV_PAR.Plot.Logy,
+                             lower_attr = lower, upper_attr = upper, show.legend = F, p = p,
                              x_title = 'Function Evaluations', y_title = "Mean Parameter Value")
     }
     else {
       p <- plot_general_data(dt, 'runtime', input$FV_PAR.Plot.show.mean, type,
                         subplot_attr = sub_attr, scale.xlog = input$FV_PAR.Plot.Logx,
-                        scale.ylog = input$FV_PAR.Plot.Logy, 
-                        lower_attr = lower, upper_attr = upper, 
+                        scale.ylog = input$FV_PAR.Plot.Logy,
+                        lower_attr = lower, upper_attr = upper,
                         x_title = 'Function Evaluations', y_title = "Mean Parameter Value")
     }
     p
@@ -85,32 +85,32 @@ output$FV_PAR.Plot.Figure <- renderPlotly({
 
 fv_parameter_summary <- reactive({
   req(input$FV_PAR.Summary.Min, input$FV_PAR.Summary.Max, input$FV_PAR.Summary.Step)
-  
-  rtstart <- as.numeric(input$FV_PAR.Summary.Min) 
+
+  rtstart <- as.numeric(input$FV_PAR.Summary.Min)
   rtstop <- as.numeric(input$FV_PAR.Summary.Max)
   rtstep <- as.numeric(input$FV_PAR.Summary.Step)
   data <- DATA()
   data <- subset(data, ID %in% input$FV_PAR.Summary.ID)
-  
+
   if (!input$FV_PAR.Summary.Single) {
     req(rtstart <= rtstop, rtstep <= rtstop - rtstart)
     rtall <- get_runtimes(data)
     rtseq <- seq_RT(rtall, rtstart, rtstop, by = rtstep)
     req(rtseq)
   }
-  else 
+  else
     rtseq <- rtstart
-  
+
   dt <- get_PAR_summary(data, rtseq, parId = input$FV_PAR.Summary.Param, which = 'by_RT')
   req(length(dt) != 0)
-  
+
   dt$runs %<>% as.integer
   dt$mean %<>% format(digits = 2, nsmall = 2)
   dt$median %<>% format(digits = 2, nsmall = 2)
   dt$sd %<>% format(digits = 2, nsmall = 2)
-  
+
   probs <- getOption("IOHanalyzer.quantiles")
-  
+
   # format the integers
   for (p in paste0(probs * 100, '%')) {
     dt[[p]] %<>% format(digits = 2, nsmall = 2)
@@ -122,13 +122,13 @@ fv_parameter_sample <- reactive({
   req(input$FV_PAR.Sample.ID, input$FV_PAR.Sample.Max,
       input$FV_PAR.Sample.Step, input$FV_PAR.Sample.Min,
       input$FV_PAR.Sample.Param)
-  
-  rtstart <- as.numeric(input$FV_PAR.Sample.Min) 
+
+  rtstart <- as.numeric(input$FV_PAR.Sample.Min)
   rtstop <- as.numeric(input$FV_PAR.Sample.Max)
   rtstep <- as.numeric(input$FV_PAR.Sample.Step)
   data <- DATA()
   data <- subset(data, ID %in% input$FV_PAR.Sample.ID)
-  
+
   if (!input$FV_PAR.Sample.Single) {
     req(rtstart <= rtstop, rtstep <= rtstop - rtstart)
     rtall <- get_runtimes(data)
@@ -137,15 +137,15 @@ fv_parameter_sample <- reactive({
   }
   else
     rtseq <- rtstart
-  
+
   df <- get_PAR_sample(data, idxValue = rtseq,
                        parId = input$FV_PAR.Sample.Param,
                        output = input$FV_PAR.Sample.Format,
                        which = 'by_RT')
-  
+
   for (p in paste0('run.', seq(ncol(data[[1]]$FV))))
     df[[p]] %<>% format(digits = 2, nsmall = 2)
-  
+
   df
 })
 
@@ -183,3 +183,49 @@ output$FV_PAR.Summary.Download <- downloadHandler(
     save_table(df, file)
   }
 )
+
+
+### Scatter plot of parameter correlation
+# Expected Evolution of parameters in the algorithm
+get_data_PAR_Corr <- reactive({
+  data <- subset(DATA(), ID %in% input$FV_PAR.CorrPlot.Algs)
+  generate_data.Parameter_correlation(data, par1 = input$FV_PAR.CorrPlot.Param1,
+                                      par2 = input$FV_PAR.CorrPlot.Param2)
+})
+
+render_FV_Corr <- reactive({
+  withProgress({
+    dt <- get_data_PAR_Corr()
+    if (is.null(dt)) {
+      return(NULL)
+    }
+    if (input$FV_PAR.CorrPlot.Animated){
+      dt[,generation := ceiling(runtime/input$FV_PAR.CorrPlot.WindowSize)]
+      p <- plot_general_data(dt, input$FV_PAR.CorrPlot.Param1,
+                             input$FV_PAR.CorrPlot.Param2, 'anim-scatter',
+                             'ID', frame_attr = 'generation', symbol_attr = 'run')
+    } else {
+      p <- plot_general_data(dt, input$FV_PAR.CorrPlot.Param1,
+                             input$FV_PAR.CorrPlot.Param2, 'scatter',
+                             'ID', symbol_attr = 'run')
+    }
+
+    p
+  },
+  message = "Creating plot")
+})
+
+# output$FV_PAR.Plot.Download <- downloadHandler(
+#   filename = function() {
+#     eval(FIG_NAME_FV_PAR_PER_FUN)
+#   },
+#   content = function(file) {
+#     save_plotly(render_FV_Corr(), file)
+#   },
+#   contentType = paste0('image/', input$FV_PAR.Plot.Format)
+# )
+#
+
+output$FV_PAR.CorrPlot.Figure <- renderPlotly({
+  render_FV_Corr()
+})

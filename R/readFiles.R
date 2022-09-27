@@ -17,8 +17,8 @@ limit.data <- function(df, n) {
 
 #' Scan *.info files for IOHProfiler or COCO
 #'
-#' @param folder The folder containing the .info files
-#' @return The paths to all found .info-files
+#' @param folder The folder containing the .info or .json files
+#' @return The paths to all found .info and .json-files
 #' @export
 #' @note This automatically filetrs our files of size 0
 #' @examples
@@ -26,7 +26,7 @@ limit.data <- function(df, n) {
 #' scan_index_file(path)
 scan_index_file <- function(folder) {
   folder <- trimws(folder)
-  files <- list.files(folder, pattern = '.info$', recursive = T, full.names = T)
+  files <- list.files(folder, pattern = '.(info|json)$', recursive = T, full.names = T)
   files[file.size(files) > 0]
 }
 
@@ -39,12 +39,70 @@ scan_index_file <- function(folder) {
 #' path <- system.file("extdata", "ONE_PLUS_LAMDA_EA", package="IOHanalyzer")
 #' info <- read_index_file(file.path(path,"IOHprofiler_f1_i1.info"))
 read_index_file <- function(fname) {
-  tryCatch(
-    read_index_file__IOH(fname),
-    warning = function(e) read_index_file__COCO(fname),
-    error = function(e) read_index_file__COCO(fname),
-    finally = function(e) stop(paste0('Error in reading .info files ', e))
-  )
+  format <- tools::file_ext(fname)
+  if (format == 'json')
+    read_index_file__json(fname)
+  else {
+    tryCatch(
+      read_index_file__IOH(fname),
+      warning = function(e) read_index_file__COCO(fname),
+      error = function(e) read_index_file__COCO(fname),
+      finally = function(e) stop(paste0('Error in reading .info files ', e))
+    )
+  }
+}
+
+#' Read IOHprofiler-based .json files and extract information
+#'
+#' @param fname The path to the json info-file
+#' @return The data contained in the json info-file
+#' @noRd
+read_index_file__json <- function(fname) {
+
+  json_data <- fromJSON(file = fname)
+  base_dir <- dirname(fname)
+  exp_attrs <- sapply(json_data$experiment_attributes, function(x) {x})
+
+  data <- list()
+  tryCatch({
+    fid <- json_data$function_id
+    fname <- json_data$function_name
+    suite <- json_data$suite
+    maximization <- json_data$maximization
+    algid <- json_data$algorithm$name
+    attributes <- json_data$attributes
+    version <- json_data$version
+  }, error = function(e) {return(NULL)})
+
+  data <- lapply(json_data$scenarios, function(scenario) {
+
+    run_attrs <- list()
+
+    for (run_attr in json_data$run_attributes) {
+      attr(run_attrs, run_attr) <- sapply(scenario$runs, function(x) x$run_attr)
+    }
+
+    datafile <- file.path(base_dir, scenario$path)
+
+    temp <- c(list(
+      funcId = fid,
+      funcName = fname,
+      suite = suite,
+      maximization = maximization,
+      algId = algid,
+      DIM = scenario$dimension,
+      attributes = attributes,
+      version = version,
+      datafile = datafile,
+      instance = sapply(scenario$runs, function(x) x$instance),
+      maxRT = sapply(scenario$runs, function(x) x$evals),
+      finalFV = sapply(scenario$runs, function(x) x$best$y),
+      final_pos = sapply(scenario$runs, function(x) x$best$x)
+    ), run_attrs,
+    exp_attrs)
+
+  })
+  data
 }
 
 #' Read IOHprofiler-based .info files and extract information
@@ -83,12 +141,12 @@ read_index_file__IOH <- function(fname) {
         for (name in .[1, ]) {
           value <- ans[[name]]
           ans[[name]] <- gsub("'", '', value)
-          
-          if (name == 'maximization')
+
+          if (name == 'maximization' || name == 'constrained')
             value <- as.logical(value)
           else
             value <- suppressWarnings(as.numeric(value)) # convert quoted numeric values to numeric
-          
+
           if (!is.na(value)) ans[[name]] <- value
         }
         ans
@@ -98,7 +156,7 @@ read_index_file__IOH <- function(fname) {
     if (length(record) == 1){
       next
     }
-      
+
     has_dynattr <- !is.null(header$dynamicAttribute)
 
     # TODO: this must also be removed...
@@ -109,16 +167,16 @@ read_index_file__IOH <- function(fname) {
       maxRTs <- NULL
     } else {
       res <- matrix(unlist(strsplit(record[-1], ':')), nrow = 2)
-      info <- matrix(unlist(strsplit(res[2, ], '\\|')), nrow = 2)  
+      info <- matrix(unlist(strsplit(res[2, ], '\\|')), nrow = 2)
       #Check for incorrect usages of reset_problem and remove them
       maxRTs <- as.numeric(info[1,])
       idx_correct <- which(maxRTs > 0)
       if (has_dynattr){
         info_split <- strsplit(info[2,], ';')
-        finalFVs <- as.numeric(info_split[[1]][[1]])[idx_correct]
-        
-        dynamic_attrs <- info_split[[1]][[2]]
-        dynamic_attrs <- dynamic_attrs[idx_correct]
+        finalFVs <- as.numeric(sapply(info_split, `[[`, 1))[idx_correct]
+
+        dynamic_attrs <- sapply(info_split, `[[`, 2)[idx_correct]
+        # dynamic_attrs <- dynamic_attrs[idx_correct
       }
       else {
         finalFVs <- as.numeric(info[2,])[idx_correct]
@@ -126,10 +184,10 @@ read_index_file__IOH <- function(fname) {
       instances <- as.numeric(res[1,])[idx_correct]
       maxRTs <- maxRTs[idx_correct]
     }
-    
+
     record[1] <- gsub("\\\\", "/", record[1])
     datafile <- file.path(path, record[1])
-    
+
     attr_list = list(
       comment = lines[2],
       datafile = datafile,
@@ -137,9 +195,9 @@ read_index_file__IOH <- function(fname) {
       maxRT = maxRTs,
       finalFV = finalFVs
     )
-    
-    
-    
+
+
+
     if (has_dynattr){
       attr_list[header$dynamicAttribute] = dynamic_attrs
     }
@@ -149,14 +207,14 @@ read_index_file__IOH <- function(fname) {
       header,
       attr_list
     )
-    
+
     i <- i + 1
   }
   close(f)
   datafiles <- unlist(lapply(data, function(x) x$datafile))
   if (length(datafiles) > length(unique(datafiles)))
     return(merge_indexinfo(data))
-  else 
+  else
     return(data)
 }
 
@@ -198,14 +256,14 @@ read_index_file__COCO <- function(fname) {
   data <- list()
   i <- 1
   while (TRUE) {
-    
+
     lines <- suppressWarnings(readLines(f, n = 3))  # read header and comments
     if (length(lines) < 3) {
       break
     }
     comment <- lines[2]
     name_value <- as.vector(unlist(as.list(read.csv(text = lines[1], header = F, quote = "'"))))
-    
+
     header <- trimws(name_value) %>% {
       regmatches(., regexpr("=", .), invert = T)  # match the first appearance of '='
     } %>%
@@ -223,11 +281,11 @@ read_index_file__COCO <- function(fname) {
         }
         ans
       }
-    
+
     names(header) <- gsub('algorithm', 'algId', names(header))
-    
+
     record <- strsplit(lines[3], ',')[[1]] %>% trimws
-    
+
     if (length(record) < 2) {
       warning(sprintf('File %s is incomplete!', fname))
       res <- NULL
@@ -236,14 +294,14 @@ read_index_file__COCO <- function(fname) {
       res <- matrix(unlist(strsplit(record[-c(1)], ':')), nrow = 2)
       info <- matrix(as.numeric(unlist(strsplit(res[2, ], '\\|'))), nrow = 2)
     }
-    
+
     record[1] <-  gsub("\\\\", "/", record[1])
     if ('folder' %in% names(header))
       datafile <- file.path(path, header$folder, record[1])
     else
       datafile <- file.path(path, record[1])
-    
-    
+
+
     # TODO: check the name of the attributes and fix them!
     data[[i]] <- c(
       header,
@@ -362,15 +420,19 @@ read_index_file__BIOBJ_COCO <- function(fname) {
 check_format <- function(path) {
   if (sub('[^\\.]*\\.', '', basename(path), perl = T) == "csv")
     return(NEVERGRAD)
-  
+
   if (sub('[^\\.]*\\.', '', basename(path), perl = T) == "rds")
     return("RDS")
-  
+
   index_files <- scan_index_file(path)
-  if (length(index_files) == 0) 
+  if (length(index_files) == 0)
     return(SOS)
-  
+
   info <- unlist(lapply(index_files, read_index_file), recursive = F)
+  if (all(unlist(lapply(info, function(x) isTRUE(x$version >="0.3.3"))))) {
+    return(IOHprofiler)
+  }
+
   datafile <- sapply(info, function(item) item$datafile)
 
   format <- lapply(datafile, function(file) {
@@ -391,7 +453,7 @@ check_format <- function(path) {
       COCO
     else if (startsWith(first_line, '\"function')) {
       n_col <- ncol(fread(file, header = FALSE, sep = ' ',
-                         colClasses = 'character', fill = T, nrows = 1))
+                          colClasses = 'character', fill = T, nrows = 1))
       if (n_col == 2)
         TWO_COL
       else
@@ -410,7 +472,7 @@ check_format <- function(path) {
   csv_files <- file.path(path, list.files(path, pattern = '.csv', recursive = T))
   if (length(csv_files) > 0)
     format <- c(format, NEVERGRAD)
-  
+
   txt_files <- file.path(path, list.files(path, pattern = '.txt', recursive = T))
   if (length(txt_files) > 0)
     format <- c(format, SOS)
@@ -695,7 +757,7 @@ read_nevergrad <- function(path){
   if (!'name' %in% colnames(dt)) {
     dt[, name := function_class]
   }
-  
+
   triplets <- unique(dt[, .(optimizer_name, dimension, name)])
   algIds <- unique(triplets$optimizer_name)
   DIMs <- unique(triplets$dimension)
@@ -772,7 +834,7 @@ read_nevergrad <- function(path){
 }
 
 #' Read single DataSet of SOS-based data
-#' 
+#'
 #' Read single .txt files in SOS format and extract information as a DataSet
 #'
 #' @param file The path to the .txt file
@@ -780,9 +842,9 @@ read_nevergrad <- function(path){
 #' @noRd
 read_single_file_SOS <- function(file) {
   V1 <- NULL #Local binding to remove CRAN warnings
-  
+
   algId <- substr(basename(file), 1,  stringi::stri_locate_last(basename(file), fixed = 'D')[[1]] - 1)
-  
+
   dt <- fread(file, header = F)
   header <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
   splitted <- header %>% trimws %>% strsplit("\\s+") %>% .[[1]] %>% .[2:length(.)]
@@ -795,7 +857,7 @@ read_single_file_SOS <- function(file) {
     names(temp) <- name
     info <- c(info, temp)
   }
-  
+
   dim <- as.numeric(info$DIM)
   #Hardcoded fix for SB-related data
   if (is.null(dim) || length(dim) == 0) {
@@ -803,28 +865,28 @@ read_single_file_SOS <- function(file) {
     dim <- 30
     info$DIM <- dim
   }
-  
+
   RT_raw <- dt[[colnames(dt)[[ncol(dt) - dim - 1]]]]
   names(RT_raw) <- dt[[colnames(dt)[[ncol(dt) - dim - 2]]]]
   RT <- as.matrix(RT_raw)
   mode(RT) <- 'integer'
-  
+
   FV_raw <- dt[[colnames(dt)[[ncol(dt) - dim - 2]]]]
   names(FV_raw) <- dt[[colnames(dt)[[ncol(dt) - dim - 1]]]]
   FV <- as.matrix(FV_raw)
-  
-  
+
+
   pos <- dt[, (ncol(dt) - dim + 1):ncol(dt)]
   colnames(pos) <- as.character(seq_len(dim))
-  
+
   maxRT <- max(RT)
   finalFV <- min(FV)
-  
+
   idxs_avail <- dt[['V1']]
   idxs_replaced <- dt[['V6']]
-  
+
   idxs_final <- setdiff(idxs_avail, idxs_replaced)
-  
+
   idx_final_best <- idxs_final[[which.min(FV[idxs_final])]]
   final_pos <- as.numeric(pos[idx_final_best, ])
   # if (sum(FV == finalFV) > 1) {
@@ -845,16 +907,16 @@ read_single_file_SOS <- function(file) {
   # else {
   #   final_pos <- as.numeric(pos[which.min(FV), ])
   # }
-  
+
   PAR <- list(
     # 'position' = list(pos),
     'final_position' = list(final_pos),
     'by_FV' = NULL,
     'by_RT' = NULL
   )
-  
-  
-  
+
+
+
   object <- list()
   class(object) <- c('DataSet', class(object))
   object$RT <- RT
@@ -874,7 +936,7 @@ read_single_file_SOS <- function(file) {
 
 
 #' Read DataSetList of SOS-based data
-#' 
+#'
 #' Read directory containing .txt files in SOS format and extract information as a DataSetList
 #'
 #' @param dir The path to the directory file
@@ -889,21 +951,21 @@ read_datasetlist_SOS <- function(dir, corrections_files = NULL) {
   algIds <- list()
   suites <- list()
   maximizations <- list()
-  
+
   idx <- 1
-  
+
   corrs <- as.data.table(rbindlist(lapply(corrections_files, fread)))
-  
+
   for (f in list.files(dir, recursive = T, pattern = "*.txt", full.names = T)) {
     if (f %in% corrections_files) next
     ds <- read_single_file_SOS(f)
-    
+
     dims[[idx]] <- attr(ds, 'DIM')
     funcIds[[idx]] <- attr(ds, 'funcId')
     algIds[[idx]] <- attr(ds, 'algId')
     suites[[idx]] <- attr(ds, 'suite')
     maximizations[[idx]] <- attr(ds, 'maximization')
-    
+
     if (nrow(corrs) > 0) {
       fn <- substr(basename(f), 1, nchar(basename(f)) - 4)
       corr_opts <- corrs[V1 == fn, ]
@@ -922,7 +984,7 @@ read_datasetlist_SOS <- function(dir, corrections_files = NULL) {
       else
         warning(paste0("No boundary corrections ratio found for ", fn))
     }
-    
+
     res[[idx]] <- ds
     idx <- idx + 1
   }
@@ -931,13 +993,13 @@ read_datasetlist_SOS <- function(dir, corrections_files = NULL) {
   attr(res, 'funcId') <- funcIds
   attr(res, 'algId') <- algIds
   attr(res, 'ID_attributes') <- c('algId')
-  
+
   suite <- unique(suites)
   maximization <- unique(maximizations)
   if (length(suite) != 1 || length(maximization) != 1) {
     warning("Multipe different suites detected!")
   }
-  
+
   attr(res, 'suite') <- suite
   attr(res, 'maximization') <- maximization
   res
@@ -945,7 +1007,7 @@ read_datasetlist_SOS <- function(dir, corrections_files = NULL) {
 }
 
 #' Find corrections-files in SOS-based folder
-#' 
+#'
 #' Read directory containing .txt files in SOS format and extract the corrections-files
 #'
 #' @param path The path to the directory file
@@ -957,13 +1019,13 @@ locate_corrections_files <- function(path) {
 }
 
 #' Read DataSetList of OPTION-based data
-#' 
+#'
 #' Processes the data.table object created from the OPTION response into a DataSetList object
 #'
 #' @param dt The data.table object created from the OPTION request
 #' @param source The type of data which is loaded, currently either BBOB or Nevergrad
 #' @param ... Additional parameters to add to each DataSet object (e.g. function suite of nevergrad data)
-#' 
+#'
 #' @return The DataSetList extracted from the data.table provided
 #' @noRd
 convert_from_OPTION <- function(dt, source, ...) {
@@ -971,32 +1033,32 @@ convert_from_OPTION <- function(dt, source, ...) {
   algorithm_name <- dimensionality <- benchmark_problem <- NULL
   instance_id <- num_experiment_run <- num_function_run <- NULL
   precision_value <- elapsed_budget <- rotated <- NULL
-  
-  
+
+
   triplets <- unique(dt[, .(algorithm_name, dimensionality, benchmark_problem )])
   algIds <- list()
   DIMs <- list()
   funcIds <- list()
-  
+
   res <- list()
-  
+
   idx <- 1
-  
+
   for (i in seq(nrow(triplets))) {
     algId <- triplets$algorithm_name[i]
     DIM <- as.numeric(triplets$dimensionality[i])
     funcId <- triplets$benchmark_problem[i]
-    
+
     if (source == "BBOB") {
       data <- dt[algorithm_name == algId & dimensionality == DIM & benchmark_problem == funcId,
                  .(instance_id, num_experiment_run, num_function_run, precision_value)]
-      
+
       funcId_no_f <- as.numeric(stri_sub(funcId, 2))
-      
+
       for (iid in unique(data$instance_id)) {
         for (rep in unique(data$num_experiment_run)) {
-          data_reduced <- data[instance_id == iid & num_experiment_run == rep, 
-                               .(num_function_run = as.numeric(num_function_run), 
+          data_reduced <- data[instance_id == iid & num_experiment_run == rep,
+                               .(num_function_run = as.numeric(num_function_run),
                                  precision_value =  as.numeric(precision_value))]
 
           rows <- unique(data_reduced$num_function_run) %>% sort
@@ -1007,10 +1069,10 @@ convert_from_OPTION <- function(dt, source, ...) {
           ) %>%
             do.call(rbind, .) %>%
             set_rownames(rows)
-          
+
           data_twocol <- as.matrix(data_reduced[order(num_function_run)])
           RT <- align_running_time(list(data_twocol), TWO_COL, maximization = F, include_param = F)
-          
+
           ds <-  structure(list(RT = RT$RT, FV = FV),
                            class = c('DataSet', 'list'),
                            maxRT = max(rows),
@@ -1034,13 +1096,13 @@ convert_from_OPTION <- function(dt, source, ...) {
     else {
       data <- dt[algorithm_name == algId & dimensionality == DIM & benchmark_problem == funcId,
                  .(elapsed_budget, precision_value, rotated, noise_level)]
-      
+
       for (rotation in unique(data$rotated)) {
         for (noise_level in unique(data$noise_level)) {
           data_reduced <- data[rotated == rotation & noise_level == noise_level,
-                               .(num_function_run = as.numeric(elapsed_budget), 
+                               .(num_function_run = as.numeric(elapsed_budget),
                                  precision_value =  as.numeric(precision_value))]
-          
+
           rows <- unique(data_reduced$num_function_run) %>% sort
           FV <- lapply(rows,
                        function(b) {
@@ -1049,10 +1111,10 @@ convert_from_OPTION <- function(dt, source, ...) {
           ) %>%
             do.call(rbind, .) %>%
             set_rownames(rows)
-          
+
           data_twocol <- as.matrix(data_reduced[order(num_function_run)])
           RT <- align_running_time(list(data_twocol), TWO_COL, maximization = F)
-          
+
           ds <-  structure(list(RT = RT$RT, FV = FV),
                            class = c('DataSet', 'list'),
                            maxRT = max(rows),
@@ -1063,8 +1125,8 @@ convert_from_OPTION <- function(dt, source, ...) {
                            algId = algId,
                            funcId = as.character(funcId),
                            DIM = DIM,
-                           ID = algId, 
-                           rotated = rotation, 
+                           ID = algId,
+                           rotated = rotation,
                            noise_level = noise_level)
           res[[idx]] <- ds
           idx <- idx + 1
@@ -1085,4 +1147,256 @@ convert_from_OPTION <- function(dt, source, ...) {
   attr(res, 'suite') <- source
   attr(res, 'maximization') <- F
   clean_DataSetList(res)
+}
+
+
+#' Read Nevergrad data
+#'
+#' Read .csv files in arbitrary format
+#'
+#' @param path The path to the .csv file
+#' @param neval_name The name of the column to use for the evaluation count.
+#' If NULL, will be assumed to be sequential
+#' @param fval_name The name of the column to use for the function values
+#' @param fname_name The name of the column to use for the function name
+#' @param algname_name The name of the column to use for the algorithm name
+#' @param dim_name The name of the column to use for the dimension
+#' @param run_name The name of the column to use for the run number
+#' @param maximization Boolean indicating whether the data is resulting from maximization or minimization
+#' @param static_attrs Named list containing the static values for missing columns.
+#' When a parameter is not present in the csv file, its name-parameter should
+#' be set to NULL, and the static value should be added to this static_attrs list.
+#'
+#' @return The DataSetList extracted from the .csv file provided
+#' @export
+read_pure_csv <- function(path, neval_name, fval_name, fname_name,
+                          algname_name, dim_name, run_name, maximization = F,
+                          static_attrs = NULL){
+  fname <- algname <- neval <- fval <- NULL #Ugly fix for CRAN warnings
+  dt <- fread(path)
+
+  #If columns are not specified, check if they have static values or should be imputed
+  impute_evalnrs <- is.null(neval_name)
+
+
+  if (!fval_name %in% colnames(dt)) {
+    warning(paste0("The function value column named ", fval_name, " does not exist
+            in the provided file!"))
+    return(NULL)
+  }
+  colnames(dt)[colnames(dt) == fval_name] <- "fval"
+
+  if (is.null(run_name)) {
+    dt$run <- 1
+  } else {
+    colnames(dt)[colnames(dt) == run_name] <- "run"
+  }
+
+  if (is.null(fname_name)) {
+    dt$fname <- static_attrs$fname
+  } else {
+    colnames(dt)[colnames(dt) == fname_name] <- "fname"
+  }
+
+  if (is.null(algname_name)) {
+    dt$algname <- static_attrs$algname
+  } else {
+    colnames(dt)[colnames(dt) == algname_name] <- "algname"
+  }
+
+  if (is.null(dim_name)) {
+    dt$dim <- static_attrs$dim
+  } else {
+    colnames(dt)[colnames(dt) == dim_name] <- "dim"
+  }
+
+
+  # if (!all(c(neval_name, run_name) %in% colnames(dt))) {
+  #   warning("One or more specified column names do not exist
+  #           in the provided file!")
+  #   return(NULL)
+  # }
+  #
+  # colnames(dt)[colnames(dt) == neval_name] <- "neval"
+  # colnames(dt)[colnames(dt) == fval_name] <- "fval"
+  # colnames(dt)[colnames(dt) == fname_name] <- "fname"
+  # colnames(dt)[colnames(dt) == algname_name] <- "algname"
+  # colnames(dt)[colnames(dt) == dim_name] <- "dim"
+  # colnames(dt)[colnames(dt) == run_name] <- "run"
+
+  triplets <- unique(dt[, .(fname, dim, algname)])
+
+  algIds <- unique(triplets$algname)
+  DIMs <- unique(triplets$dim)
+  funcIds <- unique(triplets$fname)
+
+
+  res <- list()
+
+  idx <- 1
+
+  for (i in seq(nrow(triplets))) {
+    algId <- triplets$algname[i]
+    DIM <- triplets$dim[i]
+    funcId <- triplets$fname[i]
+
+    # data <- dt[algname == algId & dim == DIM & fname == funcId,
+    #            .(neval, fval, run)]
+
+    data <- dt[algname == algId & dim == DIM & fname == funcId,]
+
+    if (impute_evalnrs) {
+      data$neval <-  ave(data$fval, data$run, FUN = seq_along)
+    }
+
+    dt_for_allign <- dcast(data, neval ~ run, value.var = 'fval')
+
+    FV_mat <- as.matrix(dt_for_allign[,2:ncol(dt_for_allign)])
+    runtimes <- dt_for_allign$neval
+
+    if (maximization) {
+      FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummax(FV_mat[,x])))
+      FV <- apply(FV, 2, function(x) {x[is.na(x)] <- max(x, na.rm = T); x})
+    }
+    else {
+      FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummin(FV_mat[,x])))
+      FV <- apply(FV, 2, function(x) {x[is.na(x)] <- min(x, na.rm = T); x})
+    }
+    rownames(FV) <- runtimes
+
+
+
+    FV_temp <- sort(unique(FV_mat), decreasing = !maximization)
+    index <- as.numeric(runtimes)
+    RT <- c_align_running_time_matrix(FV_mat, FV_temp, as.numeric(index), maximization)
+    rownames(RT) <- FV_temp
+    RT[RT < 1] <- NA #Avoids weird values from impossible imputes at the end
+
+    ds <-  structure(list(RT = RT, FV = FV),
+                     class = c('DataSet', 'list'),
+                     maxRT = max(runtimes),
+                     finalFV = min(FV),
+                     format = 'Custom',
+                     maximization = maximization,
+                     algId = algId,
+                     funcId = funcId,
+                     DIM = DIM,
+                     ID = algId)
+    res[[idx]] <- ds
+    idx <- idx + 1
+  }
+  class(res) %<>% c('DataSetList')
+  attr(res, 'DIM') <- DIMs
+  attr(res, 'funcId') <- funcIds
+  attr(res, 'algId') <- algIds
+  attr(res, 'suite') <- 'Custom'
+  attr(res, 'maximization') <- maximization
+  res
+
+}
+
+#' Read Nevergrad data
+#'
+#' Read .csv files in arbitrary format
+#'
+#' @param info A List containing all meta-data about the dataset to create
+#' @param full_sampling Logical. Whether the raw (unaligned) FV matrix should be stored.
+#' Currently only useful when a correlation plot between function values and parameters should be made
+#'
+#' @return The DataSetList extracted from the .csv file provided
+#' @export
+read_IOH_v1plus <- function(info, full_sampling = FALSE){
+
+  df <- fread(info$datafile, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
+  colnames(df) <- as.character(df[1, ])
+  idx <- which(!grepl('\\d+', df[[1]], perl = T))
+
+  # check for data consistence
+  header_len <- min(apply(df[idx, ] != "", 1, sum))
+  idx <- c(idx, nrow(df) + 1)
+  df <- df[, 1:header_len]
+
+  # turn off the warnings of the data coersion below
+  options(warn = -1)
+  # TOOD: this opeartor is the bottelneck
+  df <- sapply(df, function(c) {class(c) <- 'numeric'; c})
+  options(warn = 0)
+
+  data <- rbindlist(lapply(seq(length(idx) - 1), function(i) {
+    i1 <- idx[i] + 1
+    i2 <- idx[i + 1] - 1
+    ans <- df[i1:i2, ]
+    if (i1 == i2)
+      ans <- as.matrix(t(ans))
+    data.table(ans, runnr = i)
+  }))
+
+
+  runnr <- evaluations <- raw_y <- NULL #Ugly fix for CRAN warnings
+
+  #If columns are not specified, check if they have static values or should be imputed
+  impute_evalnrs <- 'evaluations' %in% info$attributes
+
+  algId <- info$algId
+  DIM <- info$dim
+  funcId <- info$funcId
+
+  if (impute_evalnrs) {
+    data$evaluations <-  ave(data$raw_y, data$runnr, FUN = seq_along)
+  }
+
+  dt_for_allign <- dcast(data, evaluations ~ runnr, value.var = 'raw_y')
+
+  FV_mat <- as.matrix(dt_for_allign[,2:ncol(dt_for_allign)])
+  runtimes <- dt_for_allign$evaluations
+
+  if (info$maximization) {
+    FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummax(FV_mat[,x])))
+    FV <- apply(FV, 2, function(x) {x[is.na(x)] <- max(x, na.rm = T); x})
+  }
+  else {
+    FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummin(FV_mat[,x])))
+    FV <- apply(FV, 2, function(x) {x[is.na(x)] <- min(x, na.rm = T); x})
+  }
+  rownames(FV) <- runtimes
+
+
+  FV_temp <- unique(sort(FV_mat, decreasing = !info$maximization))
+  index <- as.numeric(runtimes)
+  RT <- c_align_running_time_matrix(FV_mat, FV_temp, as.numeric(index), info$maximization)
+  rownames(RT) <- FV_temp
+  RT[RT < 1] <- NA #Avoids weird values from impossible imputes at the end
+
+
+  paramnames <- info$attributes[!info$attributes %in% c("evaluations", "raw_y")]
+
+  PAR <- list('by_RT' = lapply(paramnames, function(parname) {
+      dt_for_allign <- dcast(data, evaluations ~ runnr, value.var = parname)
+
+      mat_temp <- as.matrix(dt_for_allign[,2:ncol(dt_for_allign)])
+      rownames(mat_temp) <- runtimes
+      mat_temp
+    }))
+  names(PAR$by_RT) <- paramnames
+
+  ds <- do.call(
+    function(...)
+      structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
+    c(info, list(maxRT = max(runtimes), finalFV = min(FV), format = IOHprofiler,
+                 ID = info$algId))
+  )
+
+
+  if (full_sampling || 'violation' %in% info$attributes) {
+    rownames(FV_mat) <- runtimes
+    ds$FV_raw_mat <- FV_mat
+    attr(ds, 'contains_full_FV') <- TRUE
+  }
+
+  if ('violation' %in% info$attributes) {
+    attr(ds, 'constrained') <- TRUE
+  }
+
+  return(ds)
+
 }

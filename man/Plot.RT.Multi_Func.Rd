@@ -5,11 +5,21 @@
 \alias{Plot.RT.Multi_Func.DataSetList}
 \title{Plot ERT-plots for multiple functions or dimensions}
 \usage{
-Plot.RT.Multi_Func(dsList, scale.xlog = F, scale.ylog = F,
-  scale.reverse = F, backend = NULL)
+Plot.RT.Multi_Func(
+  dsList,
+  scale.xlog = F,
+  scale.ylog = F,
+  scale.reverse = F,
+  backend = NULL
+)
 
-\method{Plot.RT.Multi_Func}{DataSetList}(dsList, scale.xlog = F,
-  scale.ylog = F, scale.reverse = F, backend = NULL)
+\method{Plot.RT.Multi_Func}{DataSetList}(
+  dsList,
+  scale.xlog = F,
+  scale.ylog = F,
+  scale.reverse = F,
+  backend = NULL
+)
 }
 \arguments{
 \item{dsList}{A DataSetList (should consist of only one function OR dimension).}

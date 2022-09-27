@@ -4,9 +4,18 @@
 \alias{get_ontology_data}
 \title{Get the list of available options for data from the OPTION ontology}
 \usage{
-get_ontology_data(datasource, fids, dims, algs, iids = NULL,
-  funcsuites = NULL, min_target = NULL, max_target = NULL,
-  min_budget = NULL, max_budget = NULL)
+get_ontology_data(
+  datasource,
+  fids,
+  dims,
+  algs,
+  iids = NULL,
+  funcsuites = NULL,
+  min_target = NULL,
+  max_target = NULL,
+  min_budget = NULL,
+  max_budget = NULL
+)
 }
 \arguments{
 \item{datasource}{The datasource: either BBOB or Nevergrad}

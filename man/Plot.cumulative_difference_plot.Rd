@@ -8,7 +8,6 @@ Plot.cumulative_difference_plot(
   dsList,
   runtime_or_target_value,
   isFixedBudget,
-  isMinimizationProblem = NULL,
   alpha = 0.05,
   EPSILON = 1e-80,
   nOfBootstrapSamples = 1000,
@@ -22,8 +21,6 @@ Plot.cumulative_difference_plot(
 \item{runtime_or_target_value}{The target runtime or the target value}
 
 \item{isFixedBudget}{Should be TRUE when target runtime is used. False otherwise.}
-
-\item{isMinimizationProblem}{A boolean that should be TRUE when lower is better.}
 
 \item{alpha}{1 minus the confidence level of the confidence band.}
 
@@ -44,9 +41,7 @@ Plot the cumulative difference plot given a DataSetList.
 \examples{
 dsl
 dsl_sub <- subset(dsl, funcId == 1)
-runtime <- 15
 target <- 15
 
-Plot.cumulative_difference_plot(dsl_sub, runtime, TRUE , isMinimizationProblem = FALSE)
-Plot.cumulative_difference_plot(dsl_sub, target, FALSE , isMinimizationProblem = TRUE)
+Plot.cumulative_difference_plot(dsl_sub, target, FALSE)
 }

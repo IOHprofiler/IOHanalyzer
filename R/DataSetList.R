@@ -1629,7 +1629,6 @@ generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
 #' in a single problem of dimension one.
 #' @param runtime_or_target_value The target runtime or the target value
 #' @param isFixedBudget Should be TRUE when target runtime is used. False otherwise.
-#' @param isMinimizationProblem A boolean that should be TRUE when lower is better.
 #' @param alpha 1 minus the confidence level of the confidence band.
 #' @param EPSILON If abs(x-y) < EPSILON, then we assume that x = y.
 #' @param nOfBootstrapSamples The number of bootstrap samples used in the estimation.
@@ -1641,17 +1640,10 @@ generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
 #' dsl
 #' dsl_sub <- subset(dsl, funcId == 1)
 #' runtime <- 15
-#' target <- 15
 #'
-#' generate_data.CDP(dsl_sub, runtime, TRUE , isMinimizationProblem = FALSE)
-#' generate_data.CDP(dsl_sub, target, FALSE , isMinimizationProblem = TRUE)
-generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, isMinimizationProblem=NULL, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3)
+#' generate_data.CDP(dsl_sub, runtime, TRUE)
+generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3)
 {
-      if(is.null(isMinimizationProblem))
-      {
-        return(NULL)
-      }
-
       if (!requireNamespace("RVCompare", quietly = TRUE)) {
         stop("Package \"RVCompare\" needed for this function to work. Please install it.",
           call. = FALSE)
@@ -1681,13 +1673,7 @@ generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, is
       colnames(res) <- algorithms
 
 
-      if(!isTRUE(isMinimizationProblem) && !isFALSE(isMinimizationProblem))
-      {
-        stop("ERROR: To compute the cumulative difference-plot, isMinimizationProblem needs to be TRUE or FALSE.
-         isMinimizationProblem=TRUE needs to be used when low values are prefered to high values.
-         isMinimizationProblem=FALSE needs to be used when high values are preferred to low values.")
-      }
-      else if (isFALSE(isMinimizationProblem))
+      if (isFixedBudget && attr(dsList, 'maximization'))
       {
         X_A <- - X_A
         X_B <- - X_B

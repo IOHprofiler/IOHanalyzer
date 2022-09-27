@@ -552,9 +552,9 @@ body <- dashboardBody(
       fluidRow(
         column(
           width = 12,
-          par_scatter_box(collapsed = F),
-          fv_par_expected_value_box(collapsed = T),
+          fv_par_expected_value_box(collapsed = F),
           fv_par_summary_box(),
+          par_scatter_box(collapsed = T),
           fv_par_sample_box()
         )
       )

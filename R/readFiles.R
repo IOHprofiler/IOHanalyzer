@@ -199,7 +199,7 @@ read_index_file__IOH <- function(fname) {
 
 
     if (has_dynattr){
-      attr_list[header$dynamicAttribute] = dynamic_attrs
+      attr_list[[header$dynamicAttribute]] <- dynamic_attrs
     }
 
     # TODO: Make this code more readable

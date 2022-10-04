@@ -116,7 +116,6 @@ unzip_fct_recursive <- function(zipfile, exdir, print_fun = print, alert_fun = p
     rev %>%
     `[`(1)
   folders <- list()
-
   if (filetype == 'zip')
     unzip_fct <- unzip
   else if (filetype %in% c('bz2', 'bz', 'gz', 'tar', 'tgz', 'tar.gz', 'xz'))
@@ -185,7 +184,7 @@ observeEvent(selected_folders(), {
     folders <- selected_folders()
     req(length(folders) != 0)
 
-    format_selected <- input$upload.data_format
+    # format_selected <- input$upload.data_format
     maximization <- input$upload.maximization
 
     if (maximization == "AUTOMATIC") maximization <- NULL
@@ -214,7 +213,6 @@ observeEvent(selected_folders(), {
 
     for (folder in folder_new) {
       indexFiles <- scan_index_file(folder)
-
       if (length(indexFiles) == 0 && !(format_detected %in% c(NEVERGRAD, "SOS", "RDS")))
         print_html(paste('<p style="color:red;">No .info-files detected in the
                          uploaded folder, while they were expected:</p>', folder))
@@ -228,11 +226,12 @@ observeEvent(selected_folders(), {
         }
         else {
           # read the data set and handle potential errors
-          new_data <- tryCatch(
+          new_data <- tryCatch({
+
             DataSetList(folder, print_fun = print_html,
                         maximization = maximization,
                         format = format_detected,
-                        subsampling = input$upload.subsampling),
+                        subsampling = F)},
             error = function(e) {
               print_html(paste('<p style="color:red;">The following error happened
                                when processing the data set:</p>'))

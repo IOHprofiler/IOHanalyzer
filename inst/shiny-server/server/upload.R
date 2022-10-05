@@ -185,9 +185,9 @@ observeEvent(selected_folders(), {
     req(length(folders) != 0)
 
     # format_selected <- input$upload.data_format
-    maximization <- input$upload.maximization
+    # maximization <- input$upload.maximization
 
-    if (maximization == "AUTOMATIC") maximization <- NULL
+    # if (maximization == "AUTOMATIC") maximization <- NULL
 
     if (length(folderList$data) == 0)
       folder_new <- folders
@@ -227,9 +227,8 @@ observeEvent(selected_folders(), {
         else {
           # read the data set and handle potential errors
           new_data <- tryCatch({
-
             DataSetList(folder, print_fun = print_html,
-                        maximization = maximization,
+                        maximization = NULL,
                         format = format_detected,
                         subsampling = F)},
             error = function(e) {

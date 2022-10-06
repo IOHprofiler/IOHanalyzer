@@ -4,7 +4,15 @@
 \alias{seq_FV}
 \title{Function for generating sequences of function values}
 \usage{
-seq_FV(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, scale = NULL)
+seq_FV(
+  FV,
+  from = NULL,
+  to = NULL,
+  by = NULL,
+  length.out = NULL,
+  scale = NULL,
+  force_limits = FALSE
+)
 }
 \arguments{
 \item{FV}{A list of function values}
@@ -21,6 +29,9 @@ seq_FV(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, scale = NULL)
 \item{scale}{Scaling of the sequence. Can be either 'linear' or 'log', indicating a
 linear or log-linear spacing respectively. If NULL, the scale will be predicted
 based on FV}
+
+\item{force_limits}{Whether the from and to values are hard, or should be modified
+based on detected FV values (default False)}
 }
 \value{
 A sequence of function values

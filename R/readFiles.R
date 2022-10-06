@@ -1335,7 +1335,7 @@ read_IOH_v1plus <- function(info, full_sampling = FALSE){
   runnr <- evaluations <- raw_y <- NULL #Ugly fix for CRAN warnings
 
   #If columns are not specified, check if they have static values or should be imputed
-  impute_evalnrs <- 'evaluations' %in% info$attributes
+  impute_evalnrs <- !('evaluations' %in% info$attributes)
 
   algId <- info$algId
   DIM <- info$dim

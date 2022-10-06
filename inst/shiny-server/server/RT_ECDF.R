@@ -223,7 +223,7 @@ output$RT_GRID <- renderPrint({
   data <- DATA()
   fall <- get_funvals(data)
 
-  cat(seq_FV(fall, fstart, fstop, by = fstep))
+  cat(seq_FV(fall, fstart, fstop, by = fstep, force_limits = T))
 })
 
 output$RT_ECDF_AGGR <- renderPlotly({

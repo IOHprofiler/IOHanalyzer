@@ -167,15 +167,22 @@ pairwise.test.DataSetList <- function(x, ftarget, bootstrap.size = 0, which = 'b
 #' @param scale Scaling of the sequence. Can be either 'linear' or 'log', indicating a
 #'   linear or log-linear spacing respectively. If NULL, the scale will be predicted
 #'   based on FV
+#' @param force_limits Whether the from and to values are hard, or should be modified
+#' based on detected FV values (default False)
 #'
 #' @return A sequence of function values
 #' @export
 #' @examples
 #' FVall <- get_runtimes(dsl)
 #' seq_FV(FVall, 10, 16, 1, scale='linear')
-seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, scale = NULL) {
-  from <- max(from, min(FV))
-  to <- min(to, max(FV))
+seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, scale = NULL, force_limits = FALSE) {
+
+  if (is.null(from) || !force_limits){
+    from <- max(from, min(FV))
+  }
+  if (is.null(to) || !force_limits){
+    to <- min(to, max(FV))
+  }
 
   rev_trans <- function(x) x
 

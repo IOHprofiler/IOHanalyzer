@@ -1186,6 +1186,10 @@ read_pure_csv <- function(path, neval_name, fval_name, fname_name,
   }
   colnames(dt)[colnames(dt) == fval_name] <- "fval"
 
+  if (!impute_evalnrs) {
+    colnames(dt)[colnames(dt) == neval_name] <- "neval"
+  }
+
   if (is.null(run_name)) {
     dt$run <- 1
   } else {

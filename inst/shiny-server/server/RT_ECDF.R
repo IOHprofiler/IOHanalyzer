@@ -215,15 +215,7 @@ output$AUC_GRID_GENERATED_FUNC <- DT::renderDataTable({
 output$RT_GRID <- renderPrint({
   req(input$RTECDF.Multi.Min, input$RTECDF.Multi.Max, input$RTECDF.Multi.Step)
 
-  fstart <- format_FV(input$RTECDF.Multi.Min) %>% as.numeric
-  fstop <- format_FV(input$RTECDF.Multi.Max) %>% as.numeric
-  fstep <- format_FV(input$RTECDF.Multi.Step) %>% as.numeric
-
-  req(fstart <= fstop, fstep <= fstop - fstart)
-  data <- DATA()
-  fall <- get_funvals(data)
-
-  cat(seq_FV(fall, fstart, fstop, by = fstep, force_limits = T))
+  cat(get_RT_ECDF_AGGR_Targets())
 })
 
 output$RT_ECDF_AGGR <- renderPlotly({
@@ -240,13 +232,23 @@ output$RTECDF.Multi.Download <- downloadHandler(
   contentType = paste0('image/', input$RTECDF.Multi.Format)
 )
 
-get_data_RT_ECDF_AGGR <- reactive({
-  req(input$RTECDF.Multi.Min, input$RTECDF.Multi.Max, input$RTECDF.Multi.Step)
+get_RT_ECDF_AGGR_Targets <- function() {
   fstart <- format_FV(input$RTECDF.Multi.Min) %>% as.numeric
   fstop <- format_FV(input$RTECDF.Multi.Max) %>% as.numeric
   fstep <- format_FV(input$RTECDF.Multi.Step) %>% as.numeric
+
+  req(fstart <= fstop, fstep <= fstop - fstart)
   data <- subset(DATA(), ID %in% input$RTECDF.Multi.Algs)
-  targets <- seq_FV(get_funvals(data), fstart, fstop, fstep)
+  fall <- get_funvals(data)
+
+  return(seq_FV(fall, fstart, fstop, by = fstep, force_limits = T))
+}
+
+get_data_RT_ECDF_AGGR <- reactive({
+  req(input$RTECDF.Multi.Min, input$RTECDF.Multi.Max, input$RTECDF.Multi.Step)
+
+  data <- subset(DATA(), ID %in% input$RTECDF.Multi.Algs)
+  targets <- get_RT_ECDF_AGGR_Targets()
   generate_data.ECDF(data, targets, input$RTECDF.Multi.Logx)
 })
 

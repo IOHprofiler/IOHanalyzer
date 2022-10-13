@@ -136,7 +136,7 @@ unzip_fct_recursive <- function(zipfile, exdir, print_fun = print, alert_fun = p
     grep('__MACOSX', ., value = T, invert = T) %>%  # to get rid of __MACOSX folder on MAC..
     c(folders)
 
-  zip_files <- grep('.*zip|bz2|bz|gz|tar|tgz|tar\\.gz|xz', files, value = T, perl = T) %>%
+  zip_files <- grep('.*\\.zip|\\.bz2|\\.bz|\\.gz|\\.tar|\\.tgz|\\.tar\\.gz|\\.xz', files, value = T, perl = T) %>%
     grep('__MACOSX', ., value = T, invert = T)
 
   if (depth <= 3) { # only allow for 4 levels of recursions

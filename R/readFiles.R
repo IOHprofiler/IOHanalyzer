@@ -1355,12 +1355,14 @@ read_IOH_v1plus <- function(info, full_sampling = FALSE){
   runtimes <- dt_for_allign$evaluations
 
   if (info$maximization) {
+    FV_mat <- apply(FV_mat, 2, function(x) {x[is.na(x)] <- min(x, na.rm = T); x})
     FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummax(FV_mat[,x])))
-    FV <- apply(FV, 2, function(x) {x[is.na(x)] <- max(x, na.rm = T); x})
+    # FV <- apply(FV, 2, function(x) {x[is.na(x)] <- max(x, na.rm = T); x})
   }
   else {
+    FV_mat <- apply(FV_mat, 2, function(x) {x[is.na(x)] <- max(x, na.rm = T); x})
     FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummin(FV_mat[,x])))
-    FV <- apply(FV, 2, function(x) {x[is.na(x)] <- min(x, na.rm = T); x})
+    # FV <- apply(FV, 2, function(x) {x[is.na(x)] <- max(x, na.rm = T); x})
   }
   rownames(FV) <- runtimes
 

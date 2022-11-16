@@ -16,14 +16,14 @@ f2 <- list(
 f3 <- function() {
   list(
     family = 'Old Standard TT, serif',
-    size = getOption("IOHanalyzer.tick_fontsize", default = 12), 
+    size = getOption("IOHanalyzer.tick_fontsize", default = 12),
     color = 'black'
   )
 }
 
 legend_right <- function() {
   list(x = 1.01, y = 1, orientation = 'v',
-       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18),
                    family = 'Old Standard TT, serif'))
 }
 
@@ -31,29 +31,29 @@ legend_inside <- function() {
   list(x = .01, y = 1, orientation = 'v',
        bgcolor = 'rgba(255, 255, 255, 0)',
        bordercolor = 'rgba(255, 255, 255, 0)',
-       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18),
                    family = 'Old Standard TT, serif'))
 }
 
-legend_inside2 <- function() { 
+legend_inside2 <- function() {
   list(x = 0.7, y = 0.1, orientation = 'v',
        bgcolor = 'rgba(255, 255, 255, 0.5)',
        bordercolor = 'rgba(255, 255, 255, 0.8)',
-       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18),
                   family = 'Old Standard TT, serif'))
 }
 
 #TODO: Make the y-value configurable
-legend_below <- function() { 
+legend_below <- function() {
   list(y = -0.2, orientation = 'h',
-       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18),
                    family = 'Old Standard TT, serif'))
 }
 
 legend_custom <- function() {
-  list(x = getOption("IOHanalyzer.custom_legend_x", default = 0.5), 
+  list(x = getOption("IOHanalyzer.custom_legend_x", default = 0.5),
        y = getOption("IOHanalyzer.custom_legend_y", default = -0.2), orientation = 'h',
-       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18), 
+       font = list(size = getOption("IOHanalyzer.legend_fontsize", default = 18),
                    family = 'Old Standard TT, serif'))
 }
 
@@ -72,17 +72,17 @@ legend_location <- function(){
 # TODO: create font object as above for title, axis...
 
 #' Template for creating plots in the IOHanalyzer-style
-#' 
+#'
 #' @param title Title for the plot
 #' @param x.title X-axis label
 #' @param y.title Y-axis label
-#' 
+#'
 #' @export
-#' @examples 
-#' IOH_plot_ly_default("Example plot","x-axis","y-axis") 
+#' @examples
+#' IOH_plot_ly_default("Example plot","x-axis","y-axis")
 IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
   plot_ly() %>%
-    layout(title = list(text = title, 
+    layout(title = list(text = title,
                         font = list(size = getOption("IOHanalyzer.title_fontsize", default = 16),
                                     family = 'Old Standard TT, serif')),
            autosize = T, hovermode = 'compare',
@@ -92,7 +92,7 @@ IOH_plot_ly_default <- function(title = NULL, x.title = NULL, y.title = NULL) {
            font = list(size = getOption("IOHanalyzer.label_fontsize", default = 16),
                        family = 'Old Standard TT, serif'),
            autosize = T,
-           showlegend = T, 
+           showlegend = T,
            xaxis = list(
                         # title = list(text = x.title, font = f3),
                         title = x.title,
@@ -182,7 +182,7 @@ IOHanalyzer_env$used_colorscheme <- Set2
 IOHanalyzer_env$id_colors <- NULL
 
 #' Set the colorScheme of the IOHanalyzer plots
-#' 
+#'
 #' @param schemename Three default colorschemes are implemented:
 #' \itemize{
 #' \item Default
@@ -192,11 +192,11 @@ IOHanalyzer_env$id_colors <- NULL
 #' }
 #' And it is also possible to select "Custom", which allows uploading of a custom set of colors
 #' @param ids The names of the algorithms (or custom ids, see `change_id`) for which to set the colors
-#' @param path The path to the file containing the colors to use. Only used if 
+#' @param path The path to the file containing the colors to use. Only used if
 #' schemename is "Custom"
-#'  
+#'
 #' @export
-#' 
+#'
 #' @examples
 #' set_color_scheme("Default", get_algId(dsl))
 set_color_scheme <- function(schemename, ids, path = NULL){
@@ -208,7 +208,7 @@ set_color_scheme <- function(schemename, ids, path = NULL){
     else
       IOHanalyzer_env$id_colors <- dt
     return()
-  } 
+  }
   else {
     if (schemename == "Default") {
       options(IOHanalyzer.max_colors = 2)
@@ -224,17 +224,17 @@ set_color_scheme <- function(schemename, ids, path = NULL){
 }
 
 #' Get datatable of current color (and linestyle) scheme to file
-#' 
+#'
 #' @return data.table object with 3 columns: ids, colors, linestyles
 #' @export
-#' @examples 
+#' @examples
 #' get_color_scheme_dt()
 get_color_scheme_dt <- function(){
   return(IOHanalyzer_env$id_colors)
 }
 
 #' Helper function to create default color scheme
-#' 
+#'
 #' @noRd
 create_color_scheme <- function(ids) {
   if (length(ids) == 0) {
@@ -246,11 +246,11 @@ create_color_scheme <- function(ids) {
 }
 
 #' Get colors according to the current colorScheme of the IOHanalyzer
-#' 
+#'
 #' @param ids_in List of algorithms (or custom ids, see `change_id`) for which to get colors
-#' 
+#'
 #' @export
-#' 
+#'
 #' @examples
 #' get_color_scheme(get_algId(dsl))
 get_color_scheme <- function(ids_in){
@@ -267,11 +267,11 @@ get_color_scheme <- function(ids_in){
 
 
 #' Get line styles according to the current styleScheme of the IOHanalyzer
-#' 
+#'
 #' @param ids_in List of algorithms (or custom ids, see `change_id`) for which to get linestyles
-#' 
+#'
 #' @export
-#' 
+#'
 #' @examples
 #' get_line_style(get_algId(dsl))
 get_line_style <- function(ids_in){
@@ -280,7 +280,7 @@ get_line_style <- function(ids_in){
   cdt <- IOHanalyzer_env$id_colors
   linestyles <- subset(cdt, ids %in% ids_in)[['linestyles']]
   if (is.null(linestyles) || length(linestyles) != length(ids_in)) {
-    return(rep(c("solid", "dot", "dash", "longdash", "dashdot", "longdashdot"), 
+    return(rep(c("solid", "dot", "dash", "longdash", "dashdot", "longdashdot"),
                ceiling(length(ids_in)/3))[1:length(ids_in)])
   }
   return(linestyles)
@@ -342,33 +342,46 @@ save_plotly <- function(p, file, width = NULL, height = NULL, ...) {
     stop("Package \"withr\" needed for this function to work. Please install it.",
       call. = FALSE)
   }
+
+
+
   des <- dirname(file)
   file <- basename(file)
-  format <- tools::file_ext(file)
-  
+
   pwd <- tempdir()
   if (is.null(width)) width <- getOption("IOHanalyzer.figure_width", default = NULL)
   if (is.null(height)) height <- getOption("IOHanalyzer.figure_height", default = NULL)
-  
-  more_args <- NULL
-  if (!getOption("IOHanalyzer.orca_use_gpu", TRUE)) {
-    more_args <- c('--disable-gpu')
-  }
-  
-  if (format %in% c('svg', 'png', 'jpeg', 'webp', 'pdf', 'eps'))
-    withr::with_dir(pwd, orca(p, file, format = format, width = width, height = height, more_args = more_args, ...))
-  else {
-    file_svg <- paste0(file, '.svg')
-    withr::with_dir(pwd, orca(p, file_svg, format = 'svg', width = width, height = height, more_args = more_args, ...))
-    invisible(
-      system(
-        paste(
-          'inkscape', file.path(pwd,file_svg),
-          paste0('--export-', format, ' ', file.path(pwd, file))
-        ),
-        intern = T
-      )
-    )
-  }
+
+
+  if (!requireNamespace("reticulate", quietly = TRUE) || !reticulate::py_module_available('kaleido')) {
+    reticulate::py_run_string("import sys")
+    withr::with_dir(pwd, save_image(p, file, width = width, height = height, ...))
+  } else {
+      tryCatch({
+      more_args <- NULL
+      format <- tools::file_ext(file)
+
+      if (!getOption("IOHanalyzer.orca_use_gpu", TRUE)) {
+        more_args <- c('--disable-gpu')
+      }
+
+      if (format %in% c('svg', 'png', 'jpeg', 'webp', 'pdf', 'eps'))
+        withr::with_dir(pwd, orca(p, file, format = format, width = width, height = height, more_args = more_args, ...))
+      else {
+        file_svg <- paste0(file, '.svg')
+        withr::with_dir(pwd, orca(p, file_svg, format = 'svg', width = width, height = height, more_args = more_args, ...))
+        invisible(
+          system(
+            paste(
+              'inkscape', file.path(pwd,file_svg),
+              paste0('--export-', format, ' ', file.path(pwd, file))
+            ),
+            intern = T
+          )
+        )
+      }
+      }, error = function(e) {stop("Image saving failed. Please ensure that either kaleido or orca is available.")})
+    }
+
   file.rename(file.path(pwd, file), file.path(des, file))
 }

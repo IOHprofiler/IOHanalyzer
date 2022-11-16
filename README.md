@@ -45,7 +45,7 @@ A free server [http://iohprofiler.liacs.nl](http://iohprofiler.liacs.nl) running
 ### Software dependency
 
 * [mandatory] `R` As __IOHanalyzer__ is written as a `R` package, the `R` environment has to be installed first. The binary file and installation manual for R can be found here [https://cran.r-project.org/](https://cran.r-project.org/).
-* [optional] `orca` required to download plotly figures. Please see [https://github.com/plotly/orca](https://github.com/plotly/orca) for the installation instruction.
+* [optional] either `kaleido` (recommended) or `orca` (will be depricated) is required to download plotly figures. Please see [Kaleido](https://github.com/plotly/Kaleido) or [Orca](https://github.com/plotly/orca) for their respective installation instructions.
 
 ### Stable version
 

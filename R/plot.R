@@ -352,12 +352,21 @@ save_plotly <- function(p, file, width = NULL, height = NULL, ...) {
   if (is.null(width)) width <- getOption("IOHanalyzer.figure_width", default = NULL)
   if (is.null(height)) height <- getOption("IOHanalyzer.figure_height", default = NULL)
 
+  use_kaleido <- T
 
-  if (!requireNamespace("reticulate", quietly = TRUE) || !reticulate::py_module_available('kaleido')) {
+  if (!requireNamespace("reticulate", quietly = TRUE)) {
+    use_kaleido <- F
+  }
+
+  if (use_kaleido) {
+    use_kaleido <- reticulate::py_module_available('kaleido')
+  }
+
+  if (use_kaleido) {
     reticulate::py_run_string("import sys")
     withr::with_dir(pwd, save_image(p, file, width = width, height = height, ...))
   } else {
-      tryCatch({
+    tryCatch({
       more_args <- NULL
       format <- tools::file_ext(file)
 
@@ -380,8 +389,8 @@ save_plotly <- function(p, file, width = NULL, height = NULL, ...) {
           )
         )
       }
-      }, error = function(e) {stop("Image saving failed. Please ensure that either kaleido or orca is available.")})
-    }
+    }, error = function(e) {stop("Image saving failed. Please ensure that either kaleido or orca is available.")})
+  }
 
   file.rename(file.path(pwd, file), file.path(des, file))
 }

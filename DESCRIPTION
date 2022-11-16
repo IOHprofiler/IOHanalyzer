@@ -55,6 +55,7 @@ Suggests:
   markdown,
   igraph,
   shinydashboard,
-  RVCompare
+  RVCompare,
+  reticulate
 Depends: R (>= 2.10)
 

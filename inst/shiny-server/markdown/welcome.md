@@ -1,11 +1,11 @@
 This the **analyzer** for the empirical performance of _Iterative Optimization Heuristics_ (IOHs). It provides _two perspectives_ to look at the empirical performance:
 
-* <a href="#shiny-tab-ERT_data", data-toggle="tab">Fixed-Target running time</a>: focuses on the distribution of **running time** (a.k.a. the number of function evaluations) at various given target values (thus called "fixed-target"), functions and dimensions.
-* <a href="#shiny-tab-FCE_DATA", data-toggle="tab">Fixed-Budget results</a>: focuses on the distribution of the **best function value** at various given budget values (thus called "fixed-budget"), functions and dimensions.
+* <a href="#shiny-tab-ERT_data" data-toggle="tab">Fixed-Target running time</a>: focuses on the distribution of **running time** (a.k.a. the number of function evaluations) at various given target values (thus called "fixed-target"), functions and dimensions.
+* <a href="#shiny-tab-FCE_DATA" data-toggle="tab">Fixed-Budget results</a>: focuses on the distribution of the **best function value** at various given budget values (thus called "fixed-budget"), functions and dimensions.
 
 To get started, you could
 
-* **upload** your own dataset using the _Upload Data_ box on the bottom left. The supported format is specified in the <a href="#shiny-tab-dataformat", data-toggle="tab">data format tab</a>.
+* **upload** your own dataset using the _Upload Data_ box on the bottom left. The supported format is specified in the <a href="#shiny-tab-dataformat" data-toggle="tab">data format tab</a>.
 * or **choose** one of the pre-loaded datasets in the _Load Data from Repository_ box on the bottom right and directly explore the analyzer.
 
 In details, the following functionalities are provided:

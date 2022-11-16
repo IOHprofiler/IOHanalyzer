@@ -18,7 +18,7 @@ And it is also possible to select "Custom", which allows uploading of a custom s
 
 \item{ids}{The names of the algorithms (or custom ids, see `change_id`) for which to set the colors}
 
-\item{path}{The path to the file containing the colors to use. Only used if 
+\item{path}{The path to the file containing the colors to use. Only used if
 schemename is "Custom"}
 }
 \description{

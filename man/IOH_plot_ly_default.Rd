@@ -17,5 +17,5 @@ IOH_plot_ly_default(title = NULL, x.title = NULL, y.title = NULL)
 Template for creating plots in the IOHanalyzer-style
 }
 \examples{
-IOH_plot_ly_default("Example plot","x-axis","y-axis") 
+IOH_plot_ly_default("Example plot","x-axis","y-axis")
 }

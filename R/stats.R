@@ -827,7 +827,7 @@ convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT',
       return(list(name = paste0("F", attr(ds, 'funcId'), "_", attr(ds, 'DIM'),"D"),
                   data = data))
     })
-    return(list(ID = id, problems = problems))
+    return(list(algorithm = id, problems = problems))
   })
 
 
@@ -861,7 +861,7 @@ convert_to_dsc_compliant <- function(dsList, targets = NULL, which = 'by_RT',
 #'
 #' @export
 #' @examples
-#' get_dsc_rank(dsl)
+#' get_dsc_rank(dsl, na.correction = 'PAR-10')
 get_dsc_rank <- function(dsList, targets = NULL, which = 'by_RT', test_type = "AD", alpha = 0.05,
                          epsilon = 0, monte_carlo_iterations = 0, na.correction = NULL) {
   if (!check_dsc_configured()) return(NULL)
@@ -893,7 +893,7 @@ get_dsc_rank <- function(dsList, targets = NULL, which = 'by_RT', test_type = "A
 #'
 #' @export
 #' @examples
-#' get_dsc_omnibus(get_dsc_rank(dsl))
+#' get_dsc_omnibus(get_dsc_rank(dsl, na.correction = 'PAR-10'))
 get_dsc_omnibus <- function(res, method = NULL, alpha = 0.05) {
   if (!check_dsc_configured()) return(NULL)
   if (is.null(method)) method <- res$valid_methods[[1]]
@@ -931,7 +931,7 @@ get_dsc_omnibus <- function(res, method = NULL, alpha = 0.05) {
 #'
 #' @export
 #' @examples
-#' get_dsc_posthoc(get_dsc_omnibus(get_dsc_rank(dsl)), 2, 2)
+#' get_dsc_posthoc(get_dsc_omnibus(get_dsc_rank(dsl, na.correction = 'PAR-10')), 2, 2)
 get_dsc_posthoc <- function(omni_res, nr_algs, nr_problems, base_algorithm = NULL,
                             method = "friedman", alpha = 0.05) {
   if (!check_dsc_configured()) return(NULL)

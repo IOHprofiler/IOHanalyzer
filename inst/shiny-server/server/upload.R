@@ -699,11 +699,16 @@ observe({
   start <- fseq[1]
   stop <- fseq[length.out]
 
+  if (length(fseq) < 4) {
+    step <- 0
+  } else {
+
   #TODO: Make more general
   if (abs(2 * fseq[3] - fseq[2] - fseq[4]) < 1e-12) #arbitrary precision
     step <- fseq[3] - fseq[2]
   else
     step <- log10(fseq[3]) - log10(fseq[2])
+  }
 
   setTextInput(session, 'RTSummary.Statistics.Min', name, alternative = format_FV(start))
   setTextInput(session, 'RTSummary.Statistics.Max', name, alternative = format_FV(stop))

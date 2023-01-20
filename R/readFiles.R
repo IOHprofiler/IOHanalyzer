@@ -624,7 +624,9 @@ align_non_contiguous <- function(data, idx, rownames) {
   nrow <- length(rownames)
   lapply(data,
          function(d) {
-           c_impute(d[, idx], d[, idxEvals], rownames)
+           y <- d[, idxEvals]
+           y[is.na(y)] <- Inf #Prevent problems with NA when no improvements are found in a run
+           c_impute(d[, idx], y, rownames)
          }) %>%
     unlist %>%
     matrix(nrow = nrow, ncol = N) %>%
@@ -693,23 +695,19 @@ align_function_value <- function(data, include_param = TRUE, format = IOHprofile
   stopifnot(length(n_column) == 1)
 
   if (format == COCO) {
-    maximization <- FALSE
     idxTarget <- 3
     n_param <- 0
   }
   else if (format == IOHprofiler) {
-    maximization <- TRUE
     idxTarget <- 3
     n_param <- n_column - n_data_column
   }
   else if (format == BIBOJ_COCO) {  # bi-objective COCO format
-    maximization <- FALSE
     idxTarget <- 2
     n_data_column <- 2
     n_param <- 0                   # no parameter is allowed in this case
   }
   else if (format == TWO_COL) {
-    maximization <- TRUE
     idxTarget <- 2
     n_param <- 0
   }

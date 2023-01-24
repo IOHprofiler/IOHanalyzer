@@ -137,6 +137,8 @@ FCE_multi_func_name <- parse(text = "paste0('MultiFCE-', paste0(input$Overall.Di
                              '.', input$FCEPlot.Aggr.TableFormat)")
 RT_Glicko2_table_name <- parse(text = "paste0('RT_Glicko2', '.', input$RT_Stats.Glicko.TableFormat)")
 RT_Glicko2_figure_name <- parse(text = "paste0('RT_Glicko2', '.', input$RT_Stats.Glicko.Format)")
+FV_Glicko2_table_name <- parse(text = "paste0('FV_Glicko2', '.', input$FV_Stats.Glicko.TableFormat)")
+FV_Glicko2_figure_name <- parse(text = "paste0('FV_Glicko2', '.', input$FV_Stats.Glicko.Format)")
 
 RT_DSC_table_name <- parse(text = "paste0('RT_DSC', '.', input$RT_Stats.DSC.TableFormat)")
 RT_DSC_figure_name <- parse(text = "paste0('RT_DSC', '.', input$RT_Stats.DSC.Format)")
@@ -178,6 +180,7 @@ FIG_NAME_FV_AGGR <- parse(text = "paste0('FCE_Aggr-', Sys.Date(), '.', input$FCE
 FIG_NAME_FV_PDF <- parse(text = "paste0('FV_PMF-', Sys.Date(), '.', input$FCEPDF.Bar.Format)")
 FIG_NAME_FV_HIST <- parse(text = "paste0('FV_HIST-', Sys.Date(), '.', input$FCEPDF.Hist.Format)")
 FIG_NAME_FV_CDP <- parse(text = "paste0('FV_CDP-', Sys.Date(), '.', input$FCEPDF.CDP.Format)")
+FIG_NAME_FV_ECDF_SINGLE <- parse(text = "paste0('FV_ECDF_Single-', Sys.Date(), '.', input$FCEECDF.Single.Format)")
 FIG_NAME_FV_ECDF_AGGR <- parse(text = "paste0('FV_ECDF_AGGR-', Sys.Date(), '.', input$FCEECDF.Mult.Format)")
 FIG_NAME_FV_AUC <- parse(text = "paste0('FV_AUC-', Sys.Date(), '.', input$FCEECDF.AUC.Format)")
 

@@ -11,13 +11,18 @@ fv_ecdf_single_budget_box <- function(width = 12, collapsible = T, collapsed = T
                     multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                       custom_icon() %>%
                         bs_embed_popover(
-                          title = "ID selection", content = alg_select_info, 
+                          title = "ID selection", content = alg_select_info,
                           placement = "auto"
                         )
                     ),
         HTML('Select the budgets for which EDCF curves are displayed '),
         textInput('FCEECDF.Single.Target', label = HTML('<p>\\(B_1\\)</p>'), value = ''),
-        checkboxInput('FCEECDF.Single.Logx', label = 'Scale x axis \\(\\log_{10}\\)', value = F)
+        checkboxInput('FCEECDF.Single.Logx', label = 'Scale x axis \\(\\log_{10}\\)', value = F),
+        hr(),
+        selectInput('FCEECDF.Single.Format', label = 'Select the figure format',
+                    choices = supported_fig_format, selected = supported_fig_format[[1]]),
+        downloadButton('FCEECDF.Single.Download', label = 'Download the figure')
+
       ),
 
       mainPanel(
@@ -48,7 +53,7 @@ fv_ecdf_agg_budgets_box <- function(width = 12, collapsible = T, collapsed = T) 
                   multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                     custom_icon() %>%
                       bs_embed_popover(
-                        title = "ID selection", content = alg_select_info, 
+                        title = "ID selection", content = alg_select_info,
                         placement = "auto"
                       )
                   ),
@@ -58,7 +63,7 @@ fv_ecdf_agg_budgets_box <- function(width = 12, collapsible = T, collapsed = T) 
       textInput('FCEECDF.Mult.Min', label = RT_MIN_LABEL, value = ''),
       textInput('FCEECDF.Mult.Max', label = RT_MAX_LABEL, value = ''),
       textInput('FCEECDF.Mult.Step', label = RT_STEP_LABEL, value = ''),
-# 
+#
 #       checkboxInput('FCEECDF.Mult.Targets',
 #                     label = 'Show ECDF for each budget',
 #                     value = F),
@@ -103,10 +108,10 @@ fv_ecdf_auc_box <- function(width = 12, collapsible = T, collapsed = T) {
                   multiple = T, selected = NULL, choices = NULL) %>% shinyInput_label_embed(
                     custom_icon() %>%
                       bs_embed_popover(
-                        title = "ID selection", content = alg_select_info, 
+                        title = "ID selection", content = alg_select_info,
                         placement = "auto"
                       )
-                  ),      
+                  ),
       HTML('<p align="justify">Set the range and the granularity of the evenly spaced budgets.</p>'),
       textInput('FCEECDF.AUC.Min', label = RT_MIN_LABEL, value = ''),
       textInput('FCEECDF.AUC.Max', label = RT_MAX_LABEL, value = ''),

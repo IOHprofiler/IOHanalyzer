@@ -12,14 +12,24 @@ get_data_FV_ECDF_Single <- reactive({
 
 render_ecdf_per_target <- reactive({
   withProgress({
-    plot_general_data(get_data_FV_ECDF_Single(), 'x', 'mean', 'line', 
+    plot_general_data(get_data_FV_ECDF_Single(), 'x', 'mean', 'line',
                       x_title = "Target Value",
-                      y_title = "Proportion of runs", scale.xlog = input$FCEECDF.Single.Logx, 
+                      y_title = "Proportion of runs", scale.xlog = input$FCEECDF.Single.Logx,
                       show.legend = T,
                       scale.reverse = !attr(DATA()[[1]], 'maximization'))
   },
   message = "Creating plot")
 })
+
+output$FCEECDF.Single.Download <- downloadHandler(
+  filename = function() {
+    eval(FIG_NAME_FV_ECDF_SINGLE)
+  },
+  content = function(file) {
+    save_plotly(render_ecdf_per_target(), file)
+  },
+  contentType = paste0('image/', input$FCEECDF.Single.Format)
+)
 
 output$FCE_RT_GRID <- renderPrint({
   req(input$FCEECDF.Mult.Min, input$FCEECDF.Mult.Max, input$FCEECDF.Mult.Step, length(DATA()) > 0)
@@ -51,16 +61,16 @@ render_FV_ECDF_AGGR <- reactive({
   # rt_max <- input$FCEECDF.Mult.Max %>% as.numeric
   # rt_step <- input$FCEECDF.Mult.Step %>% as.numeric
   # data <- subset(DATA(), algId %in% input$FCEECDF.Mult.Algs)
-  # 
+  #
   # Plot.FV.ECDF_Single_Func(data,rt_min = rt_min,
   #                   rt_max = rt_max, rt_step = rt_step,
   #                   scale.xlog = input$FCEECDF.Mult.Logx,
   #                   # show.per_target = input$FCEECDF.Mult.Targets,
   #                   scale.reverse = !attr(DATA()[[1]],'maximization'))
-    plot_general_data(get_data_FV_ECDF_AGGR(), 'x', 'mean', 'line', 
+    plot_general_data(get_data_FV_ECDF_AGGR(), 'x', 'mean', 'line',
                       x_title = "Target Value",
-                      y_title = "Proportion of (run, target) pairs", 
-                      scale.xlog = input$FCEECDF.Mult.Logx, 
+                      y_title = "Proportion of (run, target) pairs",
+                      scale.xlog = input$FCEECDF.Mult.Logx,
                       scale.reverse = !attr(DATA()[[1]], 'maximization'), show.legend = T)
   },
   message = "Creating plot")
@@ -82,7 +92,7 @@ output$FCE_ECDF_AGGR <- renderPlotly({
 
 get_data_FV_AUC <- reactive({
   req(input$FCEECDF.AUC.Min, input$FCEECDF.AUC.Max, input$FCEECDF.AUC.Step, length(DATA()) > 0)
-  
+
   rt_min <- input$FCEECDF.AUC.Min %>% as.numeric
   rt_max <- input$FCEECDF.AUC.Max %>% as.numeric
   rt_step <- input$FCEECDF.AUC.Step %>% as.numeric
@@ -98,7 +108,7 @@ render_FV_AUC <- reactive({
   # rt_max <- input$FCEECDF.AUC.Max %>% as.numeric
   # rt_step <- input$FCEECDF.AUC.Step %>% as.numeric
   # data <- subset(DATA(), algId %in% input$FCEECDF.AUC.Algs)
-  # 
+  #
   # Plot.FV.ECDF_AUC(data, rt_min = rt_min,
   #             rt_max = rt_max, rt_step = rt_step)
   plot_general_data(get_data_FV_AUC(), 'x', 'AUC', 'radar')

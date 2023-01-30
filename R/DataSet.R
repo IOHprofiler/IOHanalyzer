@@ -265,7 +265,16 @@ c.DataSet <- function(...) {
     align_running_time(RT_raw,
                        format = "TWO_COL",
                        maximization = info$maximization)$RT
-  FV <- align_function_value(RT_raw, format = "TWO_COL")$FV
+  FV_mat <- as.matrix(align_function_value(RT_raw, format = "TWO_COL")$FV)
+
+  if (info$maximization) {
+    FV_mat <- apply(FV_mat, 2, function(x) {x[is.na(x)] <- min(x, na.rm = T); x})
+    FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummax(FV_mat[,x])))
+  }
+  else {
+    FV_mat <- apply(FV_mat, 2, function(x) {x[is.na(x)] <- max(x, na.rm = T); x})
+    FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummin(FV_mat[,x])))
+  }
 
   # TODO: to deal with cases where aligned parameters are present in original DataSets
   PAR <- list('by_FV' = RT[names(RT) != 'RT'],
@@ -857,7 +866,11 @@ get_maxRT <- function(ds, ...) UseMethod("get_maxRT", ds)
 get_maxRT.DataSet <- function(ds, output = 'wide', ...) {
   ID <- get_id(ds)
   N <- ncol(get_RT(ds))
-  res <- t(c(ID, attr(ds, 'maxRT'))) %>%
+  maxRT <- attr(ds, 'maxRT')
+  if (length(maxRT) < N) {
+    maxRT <- rep(maxRT, N)
+  }
+  res <- t(c(ID, maxRT)) %>%
     as.data.table %>%
     set_colnames(c('ID', paste0('run.', seq(N))))
 

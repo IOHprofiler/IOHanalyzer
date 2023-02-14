@@ -1197,8 +1197,10 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', 
     else
       targets_ <- targets
     m <- lapply(targets_, function(target) {
-      if (by_rt)
+      if (by_rt) {
         data <- get_RT_sample(df, target, output = 'long')$RT
+        data[is.na(data)] <- Inf
+      }
       else
         data <- get_FV_sample(df, target, output = 'long')$`f(x)`
 

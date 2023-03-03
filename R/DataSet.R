@@ -52,7 +52,8 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
           if (verbose)
             warning("maximization or minimization not specified in .info-file,
                     taking best guess based on the suite-name.")
-          if (grepl("\\w*bbob\\w*", suite, ignore.case = T) != 0)
+          if (grepl("\\w*bbob\\w*", suite, ignore.case = T) != 0 ||
+              suite == "SBOX-COST")
             maximization <- FALSE
           else
             maximization <- TRUE
@@ -90,6 +91,8 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     else if (file.exists(cdatFile))
       # TODO: perhaps turn on `subsampling` here as this would take quite some time
       rtFile <- cdatFile
+
+    if (suite == "SBOX-COST") fvFile <- rtFile
 
     read_raw <- switch(
       format,
@@ -528,6 +531,7 @@ get_FV_sample <- function(ds, ...) UseMethod("get_FV_sample", ds)
 #' @param runtime A Numerical vector. Runtimes at which function values are reached
 #' @param include_geom_mean Boolean to indicate whether to include the geometric mean.
 #' Only works in fixed_budget mode. Negative values cause NaN, zeros cause output to be completely 0. Defaults to False.
+#' @param include_limits Boolean to indicate whether to include the min and max.
 #' @param ... Arguments passed to other methods
 #'
 #' @return A data.table containing the function value statistics for each provided
@@ -936,7 +940,8 @@ fast_RT_samples <- function(RT_mat, target, maximization = F) {
 #' @rdname get_FV_summary
 #' @export
 #'
-get_FV_summary.DataSet <- function(ds, runtime, include_geom_mean = F, ...) {
+get_FV_summary.DataSet <- function(ds, runtime, include_geom_mean = F,
+                                   include_limits = F, ...) {
   data <- get_FV(ds)
   NC <- ncol(data)
   NR <- nrow(data)
@@ -973,6 +978,10 @@ get_FV_summary.DataSet <- function(ds, runtime, include_geom_mean = F, ...) {
   if (include_geom_mean) {
     dt <- cbind(dt, apply(data, 1, function(x) {exp(mean(log(x)))} ))
     setnames(dt, 'V2', 'geometric mean')
+  }
+  if (include_limits) {
+    dt <- cbind(dt, apply(data, 1, max), apply(data, 1, min))
+    setnames(dt, c('V2', 'V3'), c('max', 'min'))
   }
   return(dt)
 }

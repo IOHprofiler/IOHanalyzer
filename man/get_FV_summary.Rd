@@ -8,9 +8,16 @@
 \usage{
 get_FV_summary(ds, ...)
 
-\method{get_FV_summary}{DataSet}(ds, runtime, include_geom_mean = F, ...)
+\method{get_FV_summary}{DataSet}(ds, runtime, include_geom_mean = F, include_limits = F, ...)
 
-\method{get_FV_summary}{DataSetList}(ds, runtime, algorithm = "all", include_geom_mean = F, ...)
+\method{get_FV_summary}{DataSetList}(
+  ds,
+  runtime,
+  algorithm = "all",
+  include_geom_mean = F,
+  include_limits = F,
+  ...
+)
 }
 \arguments{
 \item{ds}{A DataSet or DataSetList object}
@@ -21,6 +28,8 @@ get_FV_summary(ds, ...)
 
 \item{include_geom_mean}{Boolean to indicate whether to include the geometric mean.
 Only works in fixed_budget mode. Negative values cause NaN, zeros cause output to be completely 0. Defaults to False.}
+
+\item{include_limits}{Boolean to indicate whether to include the min and max.}
 
 \item{algorithm}{DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.}
 }

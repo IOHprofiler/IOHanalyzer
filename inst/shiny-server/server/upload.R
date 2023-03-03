@@ -255,7 +255,7 @@ observeEvent(selected_folders(), {
       }
     }
 
-    DataList$data <- clean_DataSetList(DataList$data)
+    DataList$data <- DataList$data#clean_DataSetList(DataList$data)
     # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
     if (is.null(DataList$data)) {
       shinyjs::alert("An error occurred when processing the uploaded data.

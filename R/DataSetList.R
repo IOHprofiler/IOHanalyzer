@@ -496,7 +496,8 @@ get_maxRT.DataSetList <- function(ds, algorithm = 'all', ...) {
 #' @param algorithm DEPRECATED, will be removed in next release. Which algorithms in the DataSetList to consider.
 #' @export
 #'
-get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', include_geom_mean = F, ...) {
+get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all',
+                                       include_geom_mean = F, include_limits = F,...) {
     if (!missing("algorithm")) warning("Argument 'algorithm' is deprecated and will be removed in the next release of IOHanalyzer.")
     if (algorithm != 'all')
       ds <- subset(ds, algId == algorithm)
@@ -505,7 +506,7 @@ get_FV_summary.DataSetList <- function(ds, runtime, algorithm = 'all', include_g
       res <-
         cbind(attr(ds, 'DIM'),
               attr(ds, 'funcId'),
-              get_FV_summary(ds, runtime, include_geom_mean))
+              get_FV_summary(ds, runtime, include_geom_mean, include_limits))
       colnames(res)[1] <- 'DIM'
       colnames(res)[2] <- 'funcId'
       res

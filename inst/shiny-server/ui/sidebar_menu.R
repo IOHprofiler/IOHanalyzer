@@ -41,7 +41,10 @@ sidebar_menu <- function() {
                            menuSubItem('Ranking', tabName = "FCE_Statistics_aggr", icon = icon('project-diagram'))
                        )
                        ),
-              menuItem("Position Information", tabName = "Positions", icon = icon("arrows-alt")),
+              menuItem("Other Perspectives", tabName = "Other", icon = icon('file'),
+                       menuItem("Position Information", tabName = "Positions", icon = icon("arrows-alt")),
+                       menuItem("Biobjective Plots", tabName = "BiObj", icon = icon("project-diagram"))
+                       ),
               # menuItem("Data Format", tabName = "dataformat", icon = icon("fas fa-database")),
               menuItem("About", tabName = "about", icon = icon("question")),
               menuItem("Settings", tabName = "Settings", icon = icon("cog"))

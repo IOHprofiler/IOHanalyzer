@@ -600,6 +600,14 @@ body <- dashboardBody(
               )
             )
     ),
+    tabItem(tabName = 'BiObj',
+            fluidRow(
+              column(
+                width = 12,
+                BiObjDiff_box(collapsed = F)
+              )
+            )
+    ),
     tabItem(tabName = 'Positions',
             fluidRow(
               column(

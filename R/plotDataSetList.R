@@ -451,6 +451,30 @@ Plot.Stats.Glicko2_Candlestick <- function(dsList, nr_rounds = 100, glicko2_rank
                                            which = 'by_FV', target_dt = NULL)
   UseMethod("Plot.Stats.Glicko2_Candlestick", dsList)
 
+#' Create a candlestick plot of Glicko2-rankings
+#'
+#' @param dsList A DataSetList
+#' @param scale.xlog Whether or not to scale the x-axis logaritmically
+#' @param scale.ylog Whether or not to scale the y-axis logaritmically
+#' @param xmin The starting runtime (optional)
+#' @param xmax The final runtime (optional)
+#' @param ymin The minimal function value (optional)
+#' @param ymax The maximal function value (optional)
+#' @param show.min Whether or not to show the outline of the minimum reached
+#' function values across the considered algorithms
+#' @param show.max Whether or not to show the outline of the maximum reached
+#' function values across the considered algorithms
+#'
+#' @export
+#' @examples
+#' Plot.BiObj.Difference(subset(dsl, funcId == 2))
+Plot.BiObj.Difference <- function(dsList, xmin=NULL, xmax=NULL,
+                                  ymin=NULL, ymax=NULL,
+                                  scale.xlog = F, scale.ylog = F,
+                                  show.min = T, show.max = T)
+  UseMethod("Plot.BiObj.Difference", dsList)
+
+
 
 ##Implementations
 
@@ -962,6 +986,108 @@ Plot.Stats.Glicko2_Candlestick.DataSetList <- function(dsList, nr_rounds = 100, 
   p %<>% layout(xaxis = list(rangeslider = list(visible = F)))
   p
 }
+
+#' @rdname Plot.BiObj.Difference
+#' @export
+Plot.BiObj.Difference.DataSetList <- function(dsList,
+                                              xmin=NULL, xmax=NULL,
+                                              ymin=NULL, ymax=NULL,
+                                              scale.xlog = F, scale.ylog = F,
+                                              show.min = T, show.max = T) {
+
+  if (length(get_dim(dsList)) != 1 ||
+      length(get_funcId(dsList)) != 1 ||
+      length(get_id(dsList)) < 2)
+    return(NULL)
+
+  xscale <- if (scale.xlog) 'log' else 'linear'
+  yscale <- if (scale.ylog) 'log' else 'linear'
+
+  RT <- get_runtimes(dsList)
+  xmin <- max(xmin, min(RT))
+  xmax <- min(xmax, max(RT))
+
+  x <- unique(seq_RT(c(xmin, xmax), length.out = 50, scale = xscale))
+
+  FV <- get_funvals(dsList)
+  ymin <- max(ymin, min(FV))
+  ymax <- min(ymax, max(FV))
+  y <- rev(unique(seq_FV(c(ymin,ymax), length.out = 50, scale = yscale)))
+
+  algs <- get_id(dsList)
+
+  mats <- lapply(algs, function(alg) {
+    ds <- subset(dsList, ID == alg)
+    do.call(rbind, lapply(x, function(xval) {
+      temp <- unlist(get_RT_summary(ds, y, xval)$ps)
+      if (attr(ds, 'maximization'))
+        rev(temp)
+      else
+        temp
+      }))
+  })
+
+  names(mats) <- algs
+  fv_sum = get_FV_summary(dsList, x, include_limits = T)
+
+
+  ps <- lapply(algs, function(alg) {
+    mat_max <- Reduce(pmax, mats[algs[algs != alg]])
+    diff <- mats[alg][[1]] - mat_max
+    diff[diff<0] <- 0
+    p <- IOH_plot_ly_default('', 'Runtime', 'f(x)')
+    p %<>% add_trace(z = t(diff), type = "contour", x=x,y=y,
+                     line = list(smoothing = 0),
+                     contours = list(
+                       start = 0,
+                       end = 1
+                     ), name = alg)
+
+    yrange <- c(min(y), max(y))
+    if (scale.ylog) yrange <- log10(yrange)
+    p %<>% layout(yaxis = list(type = yscale, ticklen = 3, range=yrange))
+    p %<>% layout(xaxis = list(type = xscale, ticklen = 3))
+    if (alg != algs[[1]]) {
+      p %<>% hide_colorbar()
+    }
+
+    if (show.max)
+      p %<>% add_trace(x=x, y=fv_sum[ , .(max = max(max)), by = runtime]$max,
+                       color='white', type = "scatter", mode = "line",
+                       showlegend=F, alpha=0.4, name='max')
+    if (show.min)
+      p %<>% add_trace(x=x, y=fv_sum[ , .(min = min(min)), by = runtime]$min,
+                       color='white', type = "scatter", mode = "line",
+                       showlegend=F, alpha=0.4, name='min')
+
+    if (getOption("IOHanalyzer.annotation_x", 0.5) >= 0 &
+        getOption("IOHanalyzer.annotation_y", 1) >= 0) {
+      p %<>% layout(
+        annotations = list(
+          text = alg,
+          font = f2, showarrow = FALSE,
+          xref = "paper", yref = "paper",
+          x = getOption("IOHanalyzer.annotation_x", 0.5),
+          y = getOption("IOHanalyzer.annotation_y", 1)
+        )
+      )
+    }
+    p
+  })
+
+  n_cols <- 1 + ceiling(length(algs)/10)
+  n_rows <- ceiling(length(algs) / n_cols)
+  p <- subplot(
+    ps, nrows = n_rows, titleX = T, titleY = T,
+    margin = c(getOption("IOHanalyzer.margin_horizontal", 0.02),
+               getOption("IOHanalyzer.margin_vertical", 0.02),
+               getOption("IOHanalyzer.margin_horizontal", 0.02),
+               getOption("IOHanalyzer.margin_vertical", 0.02)),
+    shareX = T, shareY = T
+  )
+  p
+}
+
 
 ### _______________________ Rewritten plotting function ____________________ ###
 

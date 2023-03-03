@@ -191,6 +191,8 @@ FIG_NAME_RT_SHAPLEY <- parse(text = "paste0('RT-Shapley-', Sys.Date(), '.', inpu
 RT_NG_heatmap_name <- parse(text = "paste0('RT-NG_Heatmap-', Sys.Date(), '.', input$RT_NG.Heatmap.Format)")
 FV_NG_heatmap_name <- parse(text = "paste0('FV-NG_Heatmap-', Sys.Date(), '.', input$FV_NG.Heatmap.Format)")
 
+FIG_NAME_biobj_diff <- parse(text = "paste0('BiobjDiff-', Sys.Date(), '.', input$Biobj.Diff.Format)")
+
 # ID of the control widget, whose current value should de always recorded and restored ----
 # those control widget are switched on and off
 widget_id <- c('RTSummary.Statistics.Min',
@@ -244,7 +246,11 @@ widget_id <- c('RTSummary.Statistics.Min',
                'FCEECDF.AUC.Min',
                'FCEECDF.AUC.Max',
                'FCEECDF.AUC.Step',
-               'FCEECDF.Single.Target')
+               'FCEECDF.Single.Target',
+               'Biobj.Diff.xMin',
+               'Biobj.Diff.xMax',
+               'Biobj.Diff.yMin',
+               'Biobj.Diff.yMax')
 
 eventExpr <- parse(text = paste0('{', paste(paste0('input$', widget_id), collapse = "\n"), '}'))
 

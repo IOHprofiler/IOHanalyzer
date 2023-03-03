@@ -570,6 +570,7 @@ observe({
   updateSelectInput(session, 'FCEECDF.Mult.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FCEECDF.AUC.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'ParCoordPlot.Algs', choices = IDs, selected = IDs[[1]])
+  updateSelectInput(session, 'Biobj.Diff.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FV_PAR.CorrPlot.Param1', choices = c(parIds_RT_, 'f(x)'), selected = 'f(x)')
   if (length(parIds_RT_) == 0)
     updateSelectInput(session, 'FV_PAR.CorrPlot.Param2', choices = c(parIds_RT_, 'f(x)'), selected = 'f(x)')
@@ -741,6 +742,8 @@ observe({
   setTextInput(session, 'RT_Stats.Overview.Target', name, alternative = format_FV(stop))
   setTextInput(session, 'RT.Multisample.Target', name, alternative = format_FV(median(v)))
   setTextInput(session, 'RT.MultiERT.Target', name, alternative = format_FV(median(v)))
+  setTextInput(session, 'Biobj.Diff.yMin', name, alternative = format_FV(start))
+  setTextInput(session, 'Biobj.Diff.yMax', name, alternative = format_FV(stop))
 })
 
 # update the values for the grid of running times
@@ -789,6 +792,8 @@ observe({
   setTextInput(session, 'FV_Stats.Overview.Target', name, alternative = max(v))
   #TODO: remove q and replace by single number
   setTextInput(session, 'FCEECDF.Single.Target', name, alternative = q[2])
+  setTextInput(session, 'Biobj.Diff.xMin', name, alternative =  min(v))
+  setTextInput(session, 'Biobj.Diff.xMax', name, alternative = max(v))
 })
 
 output$upload.Download_processed <- downloadHandler(

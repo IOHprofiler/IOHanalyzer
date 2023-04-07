@@ -254,6 +254,7 @@ create_color_scheme <- function(ids) {
 #' @examples
 #' get_color_scheme(get_algId(dsl))
 get_color_scheme <- function(ids_in){
+  ids_in <- sort(ids_in)
   if (is.null(IOHanalyzer_env$id_colors))
     create_color_scheme(ids_in)
   cdt <- IOHanalyzer_env$id_colors
@@ -275,6 +276,7 @@ get_color_scheme <- function(ids_in){
 #' @examples
 #' get_line_style(get_algId(dsl))
 get_line_style <- function(ids_in){
+  ids_in <- sort(ids_in)
   if (is.null(IOHanalyzer_env$id_colors))
     create_color_scheme(ids_in)
   cdt <- IOHanalyzer_env$id_colors

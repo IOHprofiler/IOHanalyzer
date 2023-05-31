@@ -205,8 +205,10 @@ set_color_scheme <- function(schemename, ids, path = NULL){
     if (any(colnames(dt) != c("ids", "colors", "linestyles"))) {
       warning("Incorrect file-format has been uploaded.")
     }
-    else
+    else{
+      dt <- setorder(as.data.table(dt), cols='ids')
       IOHanalyzer_env$id_colors <- dt
+    }
     return()
   }
   else {
@@ -240,6 +242,7 @@ create_color_scheme <- function(ids) {
   if (length(ids) == 0) {
     return(NULL)
   }
+  ids <- sort(ids)
   colors <- color_palettes(length(ids))
   linestyles <- rep(c("solid", "dash", "dot"), ceiling(length(colors)/3))[1:length(colors)]
   IOHanalyzer_env$id_colors <- data.table(ids, colors, linestyles)

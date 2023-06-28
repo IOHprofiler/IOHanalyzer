@@ -38,5 +38,5 @@ A named list containing 4 types of analyses:
 Perform post-hoc processing on data from DSCtool
 }
 \examples{
-get_dsc_posthoc(get_dsc_omnibus(get_dsc_rank(dsl)), 2, 2)
+get_dsc_posthoc(get_dsc_omnibus(get_dsc_rank(dsl, na.correction = 'PAR-10')), 2, 2)
 }

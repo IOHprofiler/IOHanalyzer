@@ -113,7 +113,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
         }
 
         copy_flag <- TRUE
-        if (isTRUE(info$version >= "0.3.3")) {
+        if (ifelse(is.null(info$version), F, (compareVersion(info$version, "0.3.3") >= 0))) {
           tryCatch(
           data <- read_IOH_v1plus(info),
           error = function(e) {
@@ -125,7 +125,7 @@ DataSetList <- function(path = NULL, verbose = T, print_fun = NULL, maximization
                           format = format, subsampling = subsampling)
         }
         DIM[i] <- attr(data, 'DIM')
-        funcId[i] <- attr(data, 'funcId')
+        funcId[i] <- attr(data, getOption('IOHanalyzer.function_representation', 'funcId'))
         algId[i] <- attr(data, 'algId')
 
         # TODO: double-check the following treatment on `instance`!!!

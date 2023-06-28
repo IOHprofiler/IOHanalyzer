@@ -572,7 +572,7 @@ observe({
 
   updateSelectInput(session, 'EAF.Single.Algs', choices = IDs, selected = IDs[[1]])
   updateSelectInput(session, 'EAF.CDF.Algs', choices = IDs, selected = IDs[[1]])
-  updateSelectInput(session, 'EAF.Diff.Algs', choices = IDs, selected = IDs[[1]])
+  updateSelectInput(session, 'EAF.Diff.Algs', choices = IDs, selected = IDs)
 
   updateSelectInput(session, 'ParCoordPlot.Algs', choices = IDs, selected = IDs[[1]])
   updateSelectInput(session, 'FV_PAR.CorrPlot.Param1', choices = c(parIds_RT_, 'f(x)'), selected = 'f(x)')
@@ -787,6 +787,8 @@ observe({
 
   setTextInput(session, 'EAF.Single.Min', name, alternative = min(v))
   setTextInput(session, 'EAF.Single.Max', name, alternative = max(v))
+  setTextInput(session, 'EAF.Diff.Min', name, alternative = min(v))
+  setTextInput(session, 'EAF.Diff.Max', name, alternative = max(v))
   #TODO: remove q and replace by single number
   setTextInput(session, 'FCEECDF.Single.Target', name, alternative = q[2])
 })

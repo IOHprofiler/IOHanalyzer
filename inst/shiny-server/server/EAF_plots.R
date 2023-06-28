@@ -70,3 +70,37 @@ output$EAF.CDF.Download <- downloadHandler(
   },
   contentType = paste0('image/', input$EAF.CDF.Format)
 )
+
+### EAF-differences
+
+output$EAF.Diff_Plot <- renderPlotly({
+  req(length(DATA()) > 0)
+  render_EAFDiff_Plot()
+})
+
+get_data_EAFDiff <- reactive({
+  dsList <- subset(DATA(), ID %in% input$EAF.Diff.Algs)
+  matrices <- generate_data.EAF_diff_Approximate(dsList, input$EAF.Diff.Min, input$EAF.Diff.Max,
+                                                 input$EAF.Diff.yMin, input$EAF.Diff.yMax)
+
+  matrices
+})
+
+render_EAFDiff_Plot <- reactive({
+  withProgress({
+    plot_eaf_differences(get_data_EAFDiff(), scale.xlog = input$EAF.Diff.Logx,
+                         scale.ylog = input$EAF.Diff.Logy)
+  },
+  message = "Creating plot")
+})
+
+output$EAF.Diff.Download <- downloadHandler(
+  filename = function() {
+    eval(FIG_NAME_EAFDiff)
+  },
+  content = function(file) {
+    save_plotly(render_EAFDiff_Plot(), file)
+  },
+  contentType = paste0('image/', input$EAF.Diff.Format)
+)
+

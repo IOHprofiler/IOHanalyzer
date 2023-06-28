@@ -193,6 +193,7 @@ FV_NG_heatmap_name <- parse(text = "paste0('FV-NG_Heatmap-', Sys.Date(), '.', in
 
 FIG_NAME_EAF <- parse(text = "paste0('EAF-', Sys.Date(), '.', input$EAF.Single.Format)")
 FIG_NAME_EAFCDF <- parse(text = "paste0('EAFCDF-', Sys.Date(), '.', input$EAF.CDF.Format)")
+FIG_NAME_EAFDiff <- parse(text = "paste0('EAFDiff-', Sys.Date(), '.', input$EAF.Diff.Format)")
 
 
 # ID of the control widget, whose current value should de always recorded and restored ----

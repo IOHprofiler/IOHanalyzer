@@ -1839,14 +1839,14 @@ generate_data.EAF_diff_Approximate <- function(dsList, xmin, xmax, ymin, ymax,
                                           x.log=T, y.log=T) {
 
   RT <- get_runtimes(dsList)
-  xmin <- max(xmin, min(RT))
-  xmax <- min(xmax, max(RT))
+  xmin <- max(as.numeric(xmin), min(RT))
+  xmax <- min(as.numeric(xmax), max(RT))
 
   x <- unique(seq_RT(c(xmin, xmax), length.out = 50, scale = 'log'))
 
   FV <- get_funvals(dsList)
-  ymin <- max(ymin, min(FV))
-  ymax <- min(ymax, max(FV))
+  ymin <- max(as.numeric(ymin), min(FV))
+  ymax <- min(as.numeric(ymax), max(FV))
   y <- rev(unique(seq_FV(c(ymin,ymax), length.out = 50, scale = 'log')))
 
   algs <- get_algId(dsList)

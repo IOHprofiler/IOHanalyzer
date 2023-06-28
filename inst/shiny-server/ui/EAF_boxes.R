@@ -119,6 +119,8 @@ EAF_Diff_box <- function(width = 12, collapsible = T, collapsed = F) {
                   ),
       HTML('<p align="justify">Set the range of the budgets and targets
            taken into account in the EDiff curve.</p>'),
+      textInput('EAF.Diff.Min', label = RT_MIN_LABEL, value = ''),
+      textInput('EAF.Diff.Max', label = RT_MAX_LABEL, value = ''),
 
       textInput('EAF.Diff.yMin', label = F_MIN_LABEL, value = ''),
       textInput('EAF.Diff.yMax', label = F_MAX_LABEL, value = ''),

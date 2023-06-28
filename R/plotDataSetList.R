@@ -1736,3 +1736,82 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
 }
 
 
+
+#' Create EAF-difference contour plots
+#'
+#'
+#'
+#' @param matrices The dataframes containing the data to plot. This should come from `generate_data.EAF_diff_Approximate`
+#' @param scale.xlog Logarithmic scaling of x-axis
+#' @param scale.ylog Logarithmic scaling of y-axis
+#' @param ... Additional parameters for the add_trace function
+#'
+#' @return EAF difference plots
+#' @export
+#' @examples
+#' \dontrun{
+#' plot_eaf_differences(generate_data.EAF_diff_Approximate(subset(dsl, funcId == 1), 1, 50, 1, 16))
+#' }
+plot_eaf_differences <- function(matrices, scale.xlog = T, scale.ylog = F) {
+
+
+  xscale <- if (scale.xlog) 'log' else 'linear'
+  yscale <- if (scale.ylog) 'log' else 'linear'
+
+
+  show_colorbar <- T
+  ids <- names(matrices)
+  ps <- lapply(seq(length(ids)), function(idx) {
+    diff <- matrices[[idx]]
+    id <- ids[[idx]]
+    x <- as.numeric(colnames(diff))
+    y <- as.numeric(rownames(diff))
+
+    p <- IOH_plot_ly_default('', 'Runtime', 'f(x)')
+    p %<>% add_trace(z = diff, type = "contour", x=x,y=y,
+                     line = list(smoothing = 0),
+                     contours = list(
+                       start = 0,
+                       end = 1
+                     ), name = id)
+
+    p %<>% layout(yaxis = list(type = yscale, ticklen = 3))
+    p %<>% layout(xaxis = list(type = xscale, ticklen = 3))
+    if (show_colorbar) {
+      show_colorbar <<- F
+    } else {
+      p %<>% hide_colorbar()
+    }
+
+    if (getOption("IOHanalyzer.annotation_x", 0.5) >= 0 &
+        getOption("IOHanalyzer.annotation_y", 1) >= 0) {
+      p %<>% layout(
+        annotations = list(
+          text = id,
+          font = f2, showarrow = FALSE,
+          xref = "paper", yref = "paper",
+          x = getOption("IOHanalyzer.annotation_x", 0.5),
+          y = getOption("IOHanalyzer.annotation_y", 1)
+        )
+      )
+    }
+
+    # p %<>% add_trace(x=x, y=fv_sum[ , .(max = max(max)), by = runtime]$max, color='white', type = "scatter", mode = "line", showlegend=F, alpha=0.4, name='max')
+    # p %<>% add_trace(x=x, y=fv_sum[ , .(min = min(min)), by = runtime]$min, color='white', type = "scatter", mode = "line", showlegend=F, alpha=0.4, name='min')
+    p
+  })
+
+  n_cols <- 1 + ceiling(length(matrices)/10)
+  n_rows <- ceiling(length(matrices) / n_cols)
+  p <- subplot(
+    ps, nrows = n_rows, titleX = T, titleY = T,
+    margin = c(getOption("IOHanalyzer.margin_horizontal", 0.02),
+               getOption("IOHanalyzer.margin_vertical", 0.02),
+               getOption("IOHanalyzer.margin_horizontal", 0.02),
+               getOption("IOHanalyzer.margin_vertical", 0.02)),
+    shareX = T, shareY = T
+  )
+  p
+
+  return(p)
+}

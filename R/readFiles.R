@@ -429,7 +429,9 @@ check_format <- function(path) {
     return(SOS)
 
   info <- unlist(lapply(index_files, read_index_file), recursive = F)
-  if (all(unlist(lapply(info, function(x) isTRUE(x$version >="0.3.3"))))) {
+  if (all(unlist(lapply(info, function(x) {
+      return (ifelse(is.null(x$version), F, (compareVersion(x$version, "0.3.3") >= 0)))
+    })))) {
     return(IOHprofiler)
   }
 

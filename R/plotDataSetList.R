@@ -1592,3 +1592,147 @@ Plot.cumulative_difference_plot <- function(dsList, runtime_or_target_value, isF
   return(fig)
 }
 
+
+#' Create EAF-based polygon plots
+#'
+#'
+#'
+#' @param df The dataframe containing the data to plot. This should come from `generate_data.EAF`
+#' @param subplot_attr Which attribute of the dataframe to use for creating subplots
+#' @param subplot_shareX Whether or not to share X-axis when using subplots
+#' @param scale.xlog Logarithmic scaling of x-axis
+#' @param scale.ylog Logarithmic scaling of y-axis
+#' @param scale.reverse Decreasing or increasing x-axis
+#' @param x_title Title of x-axis. Defaults to x_attr
+#' @param y_title Title of x-axis. Defaults to x_attr
+#' @param plot_title Title of x-axis. Defaults to no title
+#' @param p A previously existing plot on which to add traces. If NULL, a new canvas is created
+#' @param show.legend Whether or not to include a legend
+#' @param ... Additional parameters for the add_trace function
+#'
+#' @return An EAF plot
+#' @export
+#' @examples
+#' \dontrun{
+#' plot_eaf_data(generate_data.EAF(subset(dsl, ID==get_id(dsl)[[1]])))
+#' }
+plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
+                              scale.reverse = F, p = NULL, x_title = NULL,
+                              xmin = NULL, xmax = NULL, ymin = NULL, ymax = NULL,
+                              y_title = NULL, plot_title = NULL, subplot_attr = NULL,
+                              show.legend = F, subplot_shareX = F, ...) {
+
+  l <- x <- isinf <- y <- text <- l_orig <- frame <- NULL #Set local binding to remove warnings
+
+  #Deal with subplots
+  if (!is.null(subplot_attr)) {
+    if (!subplot_attr %in% colnames(df)) {
+      stop("Provided subplot-attribut is not a colname of the selected data.table.")
+    }
+    colnames(df)[colnames(df) == subplot_attr] <- "subplot_attr"
+    attrs <- unique(df[, subplot_attr])
+    if (length(attrs) == 0) stop("Attempting to create subplots with fewer than 2 unique values of
+                                 `subplot_attrs`-column")
+    if (length(attrs) == 1) return(plot_eaf_data(df, scale.xlog=scale.xlog, scale.ylog=scale.ylog,
+                                                     scale.reverse=scale.reverse, p=p, x_title=x_title,
+                                                     xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
+                                                     y_title = y_title, show.legend = show.legend,
+                                                     subplot_attr = NULL, ...))
+
+    #Get some number of rows and columns
+    n_cols <- 1 + ceiling(length(attrs)/10)
+    n_rows <- ceiling(length(attrs) / n_cols)
+
+    p <- lapply(seq(length(attrs)), function(idx) {
+      attr_val <- attrs[[idx]]
+      df_sub <- df[subplot_attr == attr_val]
+      disp_y <-  idx %% n_cols == 1
+      disp_x <- idx > (length(attrs) - n_cols)
+      x.title = if (disp_x) x_title else ""
+      y.title = if (disp_y) y_title else ""
+
+      #Generate title for the subplots
+      if (stri_detect_regex(subplot_attr, "(?i)fun"))
+        sub_title <- paste0('F', attr_val)
+      else if (stri_detect_regex(subplot_attr, "(?i)dim"))
+        sub_title <- paste0('D', attr_val)
+      else
+        sub_title <- paste0(attr_val)
+      p <- NULL
+      p <- plot_eaf_data(df_sub, scale.xlog=scale.xlog, scale.ylog=scale.ylog,
+                         scale.reverse=scale.reverse, p=p, x_title=x_title,
+                         xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
+                         y_title = y_title, show.legend = F, subplot_attr = NULL, ...)
+      if (getOption("IOHanalyzer.annotation_x", 0.5) >= 0 &
+          getOption("IOHanalyzer.annotation_y", 1) >= 0) {
+        p %<>% layout(
+          annotations = list(
+            text = sub_title,
+            font = f2, showarrow = FALSE,
+            xref = "paper", yref = "paper",
+            x = getOption("IOHanalyzer.annotation_x", 0.5),
+            y = getOption("IOHanalyzer.annotation_y", 1)
+          )
+        )
+        p
+      }
+
+    })
+
+    p <- subplot(
+      p, nrows = n_rows, titleX = T, titleY = T,
+      margin = c(getOption("IOHanalyzer.margin_horizontal", 0.02),
+                 getOption("IOHanalyzer.margin_vertical", 0.02),
+                 getOption("IOHanalyzer.margin_horizontal", 0.02),
+                 getOption("IOHanalyzer.margin_vertical", 0.02)),
+      shareX = subplot_shareX
+    ) %>%
+      layout(title = plot_title)
+    return(p)
+  }
+
+  xscale <- if (scale.xlog) 'log' else 'linear'
+  yscale <- if (scale.ylog) 'log' else 'linear'
+
+
+
+
+  #If new plot is needed, create one. Store in bool to decide if axis scaling is needed.
+  is_new_plot <- F
+  if (is.null(p)) {
+    p <- IOH_plot_ly_default(x.title = x_title,
+                             y.title = y_title,
+                             title = plot_title)
+    is_new_plot <- T
+  }
+
+  eaf_sets <- df$`percentage`
+  uniq_eaf_sets <- unique(eaf_sets)
+  att_surfs <- split.data.frame(df[,.(`runtime`, `f(x)`)],
+                                factor(eaf_sets,
+                                       levels = uniq_eaf_sets,
+                                       labels = uniq_eaf_sets))
+  cols <- rev(viridis(length(att_surfs)))
+  if (maximization)
+    extreme = as.matrix(df[, .(runtime=max(`runtime`), `f(x)`=min(`f(x)`))])
+  else
+    extreme = as.matrix(df[, .(runtime=max(`runtime`), `f(x)`=max(`f(x)`))])
+
+  for (i in seq_along(att_surfs)) {
+    # extreme <- get.extremes(c(0,16),c(0,17),c(F,T), '')
+
+    poli <- add.extremes(points.steps(as.matrix(att_surfs[[i]])), as.matrix(extreme), c(F,maximization))
+    poli <- rbind(poli, extreme)
+
+    p %<>% add_polygons(poli[,'runtime'], poli[,'f(x)'], alpha=1, fillcolor=cols[i],
+                        line=list(width=0), name=names(att_surfs)[i], showlegend=F)
+  }
+  p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3),
+                yaxis = list(type = yscale, tickfont = f3(), ticklen = 3,
+                             autorange = ifelse(scale.reverse, "reversed", T)))
+  p
+
+  return(p)
+}
+
+

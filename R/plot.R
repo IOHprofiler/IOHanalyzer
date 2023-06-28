@@ -399,3 +399,27 @@ save_plotly <- function(p, file, width = NULL, height = NULL, ...) {
 
   file.rename(file.path(pwd, file), file.path(des, file))
 }
+
+#' Helper function from 'eaf' package
+#'
+#' @noRd
+add.extremes <- function(x, extremes, maximise)
+{
+  best1 <- if (maximise[1]) max else min
+  best2 <- if (maximise[2]) max else min
+  rbind(c(best1(x[,1]), extremes[2]), x, c(extremes[1], best2(x[,2])))
+}
+
+#' Helper function from 'eaf' package
+#'
+#' @noRd
+points.steps <- function(x)
+{
+  n <- nrow(x)
+  if (n == 1L) return(x)
+  x <- rbind(x, cbind(x=x[-1L, 1L, drop=FALSE], y=x[-n, 2L, drop=FALSE]))
+  idx <- c(as.vector(outer(c(0L, n), 1L:(n - 1L), "+")), n)
+  stopifnot(length(idx) == nrow(x))
+  stopifnot(!anyDuplicated(idx))
+  x[idx, ]
+}

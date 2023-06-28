@@ -21,6 +21,8 @@
 #' @importFrom knitr kable
 #' @importFrom methods hasArg
 #' @importFrom rjson fromJSON
+#' @importFrom eaf eafs eafdiff
+#' @importFrom viridis viridis
 #' @useDynLib IOHanalyzer
 NULL
 # Ugly hack, but appears to be required to appease CRAN

@@ -41,7 +41,12 @@ sidebar_menu <- function() {
                            menuSubItem('Ranking', tabName = "FCE_Statistics_aggr", icon = icon('project-diagram'))
                        )
                        ),
-              menuItem("Position Information", tabName = "Positions", icon = icon("arrows-alt")),
+              menuItem("Other perspectives", tabName = "Other", icon = icon('file'),
+                       menuItem("Empirical Attainment", tabName = "EAF", icon = icon("project-diagram")),
+                       menuItem("EAF Differences", tabName = "EAF_Diff", icon = icon("project-diagram")),
+                       menuItem("EAF-based CDF", tabName = "EAF_CDF", icon = icon("chart-line")),
+                       menuItem("Position Information", tabName = "Positions", icon = icon("arrows-alt"))
+              ),
               # menuItem("Data Format", tabName = "dataformat", icon = icon("fas fa-database")),
               menuItem("About", tabName = "about", icon = icon("question")),
               menuItem("Settings", tabName = "Settings", icon = icon("cog"))

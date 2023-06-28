@@ -569,6 +569,11 @@ observe({
   updateSelectInput(session, 'FCEECDF.Single.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FCEECDF.Mult.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FCEECDF.AUC.Algs', choices = IDs, selected = IDs)
+
+  updateSelectInput(session, 'EAF.Single.Algs', choices = IDs, selected = IDs[[1]])
+  updateSelectInput(session, 'EAF.CDF.Algs', choices = IDs, selected = IDs[[1]])
+  updateSelectInput(session, 'EAF.Diff.Algs', choices = IDs, selected = IDs[[1]])
+
   updateSelectInput(session, 'ParCoordPlot.Algs', choices = IDs, selected = IDs[[1]])
   updateSelectInput(session, 'FV_PAR.CorrPlot.Param1', choices = c(parIds_RT_, 'f(x)'), selected = 'f(x)')
   if (length(parIds_RT_) == 0)
@@ -723,6 +728,16 @@ observe({
   setTextInput(session, 'RT_Stats.Overview.Target', name, alternative = format_FV(stop))
   setTextInput(session, 'RT.Multisample.Target', name, alternative = format_FV(median(v)))
   setTextInput(session, 'RT.MultiERT.Target', name, alternative = format_FV(median(v)))
+
+  setTextInput(session, 'EAF.Single.yMin', name, alternative = format_FV(start))
+  setTextInput(session, 'EAF.Single.yMax', name, alternative = format_FV(stop))
+  setTextInput(session, 'EAF.CDF.yMin', name, alternative = format_FV(start))
+  setTextInput(session, 'EAF.CDF.yMax', name, alternative = format_FV(stop))
+  setTextInput(session, 'EAF.Diff.yMin', name, alternative = format_FV(start))
+  setTextInput(session, 'EAF.Diff.yMax', name, alternative = format_FV(stop))
+  setTextInput(session, 'RT.MultiERT.Target', name, alternative = format_FV(median(v)))
+  setTextInput(session, 'RT.MultiERT.Target', name, alternative = format_FV(median(v)))
+
 })
 
 # update the values for the grid of running times
@@ -769,6 +784,9 @@ observe({
   setTextInput(session, 'FV_PAR.Sample.Max', name, alternative = max(v))
   setTextInput(session, 'FV_PAR.Sample.Step', name, alternative = step)
   setTextInput(session, 'FV_Stats.Overview.Target', name, alternative = max(v))
+
+  setTextInput(session, 'EAF.Single.Min', name, alternative = min(v))
+  setTextInput(session, 'EAF.Single.Max', name, alternative = max(v))
   #TODO: remove q and replace by single number
   setTextInput(session, 'FCEECDF.Single.Target', name, alternative = q[2])
 })

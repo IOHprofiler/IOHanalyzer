@@ -202,8 +202,8 @@ seq_FV <- function(FV, from = NULL, to = NULL, by = NULL, length.out = NULL, sca
     rev_trans <- function(x) 10 ^ x
     # TODO: Better way to deal with negative values
     #       set lowest possible target globally instead of arbitrary 1e-12
-    from <- max(1e-12, from)
-    to <- max(1e-12 ,to)
+    from <- max(1e-12, from[from>0])
+    to <- max(1e-12 ,to[to>0])
     from <- trans(from)
     to <- trans(to)
   }

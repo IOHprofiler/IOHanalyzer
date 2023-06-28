@@ -50,5 +50,5 @@ this data. This can be further analyzed using `get_dsc_omnibus`
 Get the matrix of rankings using the DSCtool api for a DataSetList
 }
 \examples{
-get_dsc_rank(dsl)
+get_dsc_rank(dsl, na.correction = 'PAR-10')
 }

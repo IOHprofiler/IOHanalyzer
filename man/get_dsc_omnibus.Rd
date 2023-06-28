@@ -22,5 +22,5 @@ A named list containing the algorithm means
 Perform omnibus statistical tests on the matrix of rankings from the DSCtool api
 }
 \examples{
-get_dsc_omnibus(get_dsc_rank(dsl))
+get_dsc_omnibus(get_dsc_rank(dsl, na.correction = 'PAR-10'))
 }

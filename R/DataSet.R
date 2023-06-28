@@ -178,6 +178,9 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     else {
       attr(temp, 'contains_full_FV') <- FALSE
     }
+    if (getOption('IOHanalyzer.function_representation', 'funcId') == 'funcName') {
+      attr(temp, 'funcId') <- attr(temp, 'funcName')
+    }
     return(temp)
   }
   else

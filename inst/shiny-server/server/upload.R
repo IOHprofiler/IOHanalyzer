@@ -99,6 +99,13 @@ observeEvent(input$repository.load_button, {
   } else {
     temp_data <- change_id(data, 'algId')
   }
+
+  if (getOption('IOHanalyzer.function_representation', 'funcId') == 'funcName') {
+    for (ds in temp_data){
+      attr(ds, 'funcId') <- attr(ds, 'funcName')
+    }
+  }
+
   # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
   update_menu_visibility(attr(temp_data, 'suite'))
   # set_format_func(attr(DataList$data, 'suite'))
@@ -383,10 +390,6 @@ update_menu_visibility <- function(suite){
   else {
     session$sendCustomMessage(type = "manipulateMenuItem", message = list(action = "hide", tabName = "Positions"))
   }
-  if (!is.null(get_funcName(DataList$data)))
-    shinyjs::enable("Settings.Use_Funcname")
-  else
-    shinyjs::disable("Settings.Use_Funcname")
 }
 
 observeEvent(input$Upload.Add_to_repo, {
@@ -420,7 +423,6 @@ observeEvent(input$upload.remove_data, {
 
     updateSelectInput(session, 'Overall.Dim', choices = c(), selected = '')
     updateSelectInput(session, 'Overall.Funcid', choices = c(), selected = '')
-    updateSelectInput(session, 'Overall.Funcname', choices = c(), selected = '')
     updateSelectInput(session, 'Overall.ID', choices = c(), selected = '')
 
     print_html('<p style="color:red;">all data are removed!</p>')
@@ -465,8 +467,6 @@ observe({
 
   updateSelectInput(session, 'Overall.Dim', choices = DIMs, selected = selected_dim)
   updateSelectInput(session, 'Overall.Funcid', choices = funcIds, selected = selected_f)
-  if (input$Settings.Use_Funcname)
-    updateSelectInput(session, 'Overall.Funcname', choices = get_funcName(data), selected = get_funcName(data[1]))
 
   if ('algId' %in% input$Settings.ID.Variables)
     updateSelectInput(session, 'Overall.ID', choices = NULL, selected = NULL)
@@ -608,14 +608,10 @@ DATA <- reactive({
     if (!is.null(algid)) d <- subset(d, algId == algid)
   }
 
-  if (input$Settings.Use_Funcname) {
-    fname <- input$Overall.Funcname
-    if (!is.null(fname)) d <- subset(d, funcname == fname)
-  }
-  else {
+
     fid <- input$Overall.Funcid
     if (!is.null(fid)) d <- subset(d, funcId == fid)
-  }
+
 
   if (length(DataList$data) == 0) return(NULL)
 
@@ -628,20 +624,6 @@ DATA <- reactive({
 # TODO: give a different name for DATA and DATA_RAW
 DATA_RAW <- reactive({
   DataList$data
-})
-
-# This observe statement tries to match funcid and funcname seletions so funcId can still be used internally.
-# TODO: think of a better solution to ensure this matching doesn't break.
-observe({
-  req(length(DATA_RAW()) > 0)
-  fname <- input$Overall.Funcname
-  req(fname)
-  req(getOption('IOHanalyzer.function_representation', 'funcId') == 'funcname')
-  dsl_sub <- subset(DATA_RAW(), funcName == fname)
-  fids <- get_funcId(dsl_sub)
-  if (length(fids) == 1) {
-    updateSelectInput(session, 'Overall.Funcid', selected = fids)
-  }
 })
 
 MAX_ERTS_FUNC <- reactive({

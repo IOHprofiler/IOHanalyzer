@@ -204,13 +204,9 @@ observe({
 
 observe({
   if (input$Settings.Use_Funcname) {
-    shinyjs::show(id = "overall_funcname_box")
-    shinyjs::hide(id = "overall_funcid_box")
-    options('IOHanalyzer.function_representation' = 'funcname')
+    options('IOHanalyzer.function_representation' = 'funcName')
   }
   else {
-    shinyjs::hide(id = "overall_funcname_box")
-    shinyjs::show(id = "overall_funcid_box")
     options('IOHanalyzer.function_representation' = 'funcId')
   }
 })

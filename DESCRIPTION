@@ -1,7 +1,7 @@
 Package: IOHanalyzer
 Type: Package
 Title: Data Analysis Part of 'IOHprofiler'
-Version: 0.1.7.1
+Version: 0.1.7.4
 Maintainer: Diederick Vermetten <d.l.vermetten@liacs.leidenuniv.nl>
 Authors@R: c(
     person("Hao", "Wang", email = "h.wang@liacs.leidenuniv.nl", role = "aut", comment = c(ORCID = "0000-0002-4933-5181")),

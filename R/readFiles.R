@@ -1343,7 +1343,7 @@ read_IOH_v1plus <- function(info, full_sampling = FALSE){
 
   algId <- info$algId
   DIM <- info$dim
-  funcId <- info$funcId
+  funcId <- attr(info, getOption('IOHanalyzer.function_representation', 'funcId'))
 
   if (impute_evalnrs) {
     data$evaluations <-  ave(data$raw_y, data$runnr, FUN = seq_along)
@@ -1391,6 +1391,9 @@ read_IOH_v1plus <- function(info, full_sampling = FALSE){
     c(info, list(maxRT = max(runtimes), finalFV = min(FV), format = IOHprofiler,
                  ID = info$algId))
   )
+    if (getOption('IOHanalyzer.function_representation', 'funcId') == 'funcName') {
+      attr(ds, 'funcId') <- attr(ds, 'funcName')
+    }
 
 
   if (full_sampling || 'violation' %in% info$attributes) {

@@ -12,8 +12,6 @@ plot_eaf_differences(matrices, scale.xlog = T, scale.ylog = F)
 \item{scale.xlog}{Logarithmic scaling of x-axis}
 
 \item{scale.ylog}{Logarithmic scaling of y-axis}
-
-\item{...}{Additional parameters for the add_trace function}
 }
 \value{
 EAF difference plots

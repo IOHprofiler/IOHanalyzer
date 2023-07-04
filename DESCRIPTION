@@ -34,7 +34,9 @@ Imports:
   httr,
   knitr,
   methods,
-  rjson
+  rjson,
+  eaf,
+  viridis
 LinkingTo: Rcpp
 SystemRequirements: C++11
 RoxygenNote: 7.1.2

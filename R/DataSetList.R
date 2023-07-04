@@ -1748,7 +1748,7 @@ generate_data.EAF <- function(dsList, n_sets = 11) {
 #' @param normalize Whether to normalize the resulting integrals to [0,1] (Based on `min_val` and `max_va`)
 #' @export
 #' @examples
-#' generate_data.ECDF_From_EAF(generate_data.EAF(subset(dsl, funcId == 1)), 1, 16, T)
+#' generate_data.ECDF_From_EAF(generate_data.EAF(subset(dsl, funcId == 1)), 1, 16, maximization = TRUE)
 generate_data.ECDF_From_EAF <- function(eaf_table, min_val, max_val, maximization = F,
                                         scale_log = F, normalize = T) {
 
@@ -1804,7 +1804,7 @@ generate_data.EAF_Difference <- function(dsList1, dsList2) {
   x <- cbind(quals, runs)
   x <- x[!is.na(`f(x)`),.(`runtime`, `f(x)`, `runs`)]
 
-    dt <- get_FV_sample(ds2, get_runtimes(ds2), output='long')
+  dt <- get_FV_sample(dsList2, get_runtimes(dsList2), output='long')
   max_runs <- max(dt$run)
   dt_temp = dt[,.(temp=max_runs*funcId+ run, `f(x)`, `runtime`)]
 

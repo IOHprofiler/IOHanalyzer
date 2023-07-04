@@ -1602,6 +1602,11 @@ Plot.cumulative_difference_plot <- function(dsList, runtime_or_target_value, isF
 #' @param subplot_shareX Whether or not to share X-axis when using subplots
 #' @param scale.xlog Logarithmic scaling of x-axis
 #' @param scale.ylog Logarithmic scaling of y-axis
+#' @param xmin Minimum value for the x-axis
+#' @param xmax Maximum value for the x-axis
+#' @param ymin Minimum value for the y-axis
+#' @param ymax Maximum value for the y-axis
+#' @param maximization Whether the data comes from maximization or minimization
 #' @param scale.reverse Decreasing or increasing x-axis
 #' @param x_title Title of x-axis. Defaults to x_attr
 #' @param y_title Title of x-axis. Defaults to x_attr
@@ -1744,7 +1749,6 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
 #' @param matrices The dataframes containing the data to plot. This should come from `generate_data.EAF_diff_Approximate`
 #' @param scale.xlog Logarithmic scaling of x-axis
 #' @param scale.ylog Logarithmic scaling of y-axis
-#' @param ... Additional parameters for the add_trace function
 #'
 #' @return EAF difference plots
 #' @export

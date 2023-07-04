@@ -27,6 +27,8 @@ plot_eaf_data(
 \arguments{
 \item{df}{The dataframe containing the data to plot. This should come from `generate_data.EAF`}
 
+\item{maximization}{Whether the data comes from maximization or minimization}
+
 \item{scale.xlog}{Logarithmic scaling of x-axis}
 
 \item{scale.ylog}{Logarithmic scaling of y-axis}
@@ -36,6 +38,14 @@ plot_eaf_data(
 \item{p}{A previously existing plot on which to add traces. If NULL, a new canvas is created}
 
 \item{x_title}{Title of x-axis. Defaults to x_attr}
+
+\item{xmin}{Minimum value for the x-axis}
+
+\item{xmax}{Maximum value for the x-axis}
+
+\item{ymin}{Minimum value for the y-axis}
+
+\item{ymax}{Maximum value for the y-axis}
 
 \item{y_title}{Title of x-axis. Defaults to x_attr}
 

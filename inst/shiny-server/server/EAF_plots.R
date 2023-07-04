@@ -17,7 +17,8 @@ render_EAF_Plot <- reactive({
                   scale.xlog = input$EAF.Single.Logx, scale.ylog = input$EAF.Single.Logy,
                   xmin = input$EAF.Single.Min, xmax = input$EAF.Single.Min,
                   ymin = input$EAF.Single.yMin, ymax = input$EAF.Single.yMax,
-                  subplot_attr = 'ID')
+                  subplot_attr = 'ID', x_title = "Evaluations",
+                  y_title = "f(x)")
   },
   message = "Creating plot")
 })
@@ -56,7 +57,8 @@ get_data_EAFCDF <- reactive({
 render_EAFCDF_Plot <- reactive({
   withProgress({
     plot_general_data(get_data_EAFCDF(), 'runtime', 'fraction', 'line', 'ID',
-                  scale.xlog = input$EAF.CDF.Logx, scale.ylog = F)
+                  scale.xlog = input$EAF.CDF.Logx, scale.ylog = F, x_title = "Evaluations",
+                  y_title = "Fraction")
   },
   message = "Creating plot")
 })
@@ -89,7 +91,8 @@ get_data_EAFDiff <- reactive({
 render_EAFDiff_Plot <- reactive({
   withProgress({
     plot_eaf_differences(get_data_EAFDiff(), scale.xlog = input$EAF.Diff.Logx,
-                         scale.ylog = input$EAF.Diff.Logy)
+                         scale.ylog = input$EAF.Diff.Logy, x_title = "Evaluations",
+                         y_title = "f(x)")
   },
   message = "Creating plot")
 })
@@ -126,7 +129,8 @@ render_EAF_Plot <- reactive({
                   scale.xlog = input$EAF.Multi.Logx, scale.ylog = input$EAF.Multi.Logy,
                   xmin = input$EAF.Multi.Min, xmax = input$EAF.Multi.Min,
                   ymin = input$EAF.Multi.yMin, ymax = input$EAF.Multi.yMax,
-                  subplot_attr = 'ID')
+                  subplot_attr = 'ID', x_title = "Evaluations",
+                  y_title = "f(x)")
   },
   message = "Creating plot")
 })
@@ -165,7 +169,8 @@ get_data_EAFMultiCDF <- reactive({
 render_EAFMultiCDF_Plot <- reactive({
   withProgress({
     plot_general_data(get_data_EAFMultiCDF(), 'runtime', 'fraction', 'line', 'ID',
-                      scale.xlog = input$EAF.MultiCDF.Logx, scale.ylog = F)
+                      scale.xlog = input$EAF.MultiCDF.Logx, scale.ylog = F, x_title = "Evaluations",
+                      y_title = "Fraction")
   },
   message = "Creating plot")
 })

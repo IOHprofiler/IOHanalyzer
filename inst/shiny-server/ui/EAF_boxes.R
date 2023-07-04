@@ -13,9 +13,7 @@ EAF_box <- function(width = 12, collapsible = T, collapsed = F) {
                         placement = "auto"
                       )
                   ),
-      HTML('<p align="justify">Set the range and the granularity of the budgets
-           taken into account in the ECDF curve. The plot will show the ECDF curves
-           for evenly spaced budgets.</p>'),
+      HTML('<p align="justify">Set the ranges for the budgets and function values.</p>'),
       textInput('EAF.Single.Min', label = RT_MIN_LABEL, value = ''),
       textInput('EAF.Single.Max', label = RT_MAX_LABEL, value = ''),
 
@@ -170,10 +168,7 @@ EAF_mult_box <- function(width = 12, collapsible = T, collapsed = F) {
                         placement = "auto"
                       )
                   ),
-      HTML('<p align="justify">Set the range and the granularity of the budgets
-           taken into account in the ECDF curve. The plot will show the ECDF curves
-           for evenly spaced budgets.</p>'),
-      checkboxInput('EAF.Multi.CustomRanges'),
+      checkboxInput('EAF.Multi.CustomRanges', "Customize X and Y Ranges"),
       conditionalPanel(condition = "input['EAF.Multi.CustomRanges']",
         textInput('EAF.Multi.Min', label = RT_MIN_LABEL, value = ''),
         textInput('EAF.Multi.Max', label = RT_MAX_LABEL, value = ''),
@@ -231,7 +226,7 @@ EAF_CDF_mult_box <- function(width = 12, collapsible = T, collapsed = F) {
                   ),
       HTML('<p align="justify">Set the range of the budgets and targets
            taken into account in the ECDF curve.</p>'),
-      checkboxInput('EAF.MultiCDF.CustomRanges'),
+      checkboxInput('EAF.MultiCDF.CustomRanges', "Customize Y Range"),
       conditionalPanel(condition = "input['EAF.MultiCDF.CustomRanges']",
                        textInput('EAF.MultiCDF.yMin', label = F_MIN_LABEL, value = ''),
                        textInput('EAF.MultiCDF.yMax', label = F_MAX_LABEL, value = '')

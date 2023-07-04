@@ -1767,11 +1767,12 @@ generate_data.ECDF_From_EAF <- function(eaf_table, min_val, max_val, maximizatio
 
   ecdf <- rbindlist(lapply(runtimes, function(runtime_value) {
     temp <- eaf_table[runtime <= runtime_value , .(agg_fval = ext_func(`f(x)`)), by = c('percentage')]
+    agg_vals <- pmax(pmin(temp$agg_fval, max_val), min_val)
 
     if (maximization) {
-      partials <- rev(c(rev(temp$agg_fval), max_val) - c(min_val, rev(temp$agg_fval)))
+      partials <- rev(c(rev(agg_vals), max_val) - c(min_val, rev(agg_vals)))
     } else {
-      partials = c(temp$agg_fval, max_val) - c(min_val,temp$agg_fval)
+      partials <- c(agg_vals, max_val) - c(min_val,agg_vals)
     }
     list(runtime_value, sum(partials * c(0,temp$perc/100)))
   }))

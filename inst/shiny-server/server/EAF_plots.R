@@ -91,8 +91,7 @@ get_data_EAFDiff <- reactive({
 render_EAFDiff_Plot <- reactive({
   withProgress({
     plot_eaf_differences(get_data_EAFDiff(), scale.xlog = input$EAF.Diff.Logx,
-                         scale.ylog = input$EAF.Diff.Logy, x_title = "Evaluations",
-                         y_title = "f(x)")
+                         scale.ylog = input$EAF.Diff.Logy)
   },
   message = "Creating plot")
 })
@@ -114,18 +113,18 @@ output$EAF.Diff.Download <- downloadHandler(
 
 output$EAF.Multi_Plot <- renderPlotly({
   req(length(DATA_RAW()) > 0)
-  render_EAF_Plot()
+  render_EAF_multi_Plot()
 })
 
-get_data_EAF <- reactive({
+get_data_EAF_multi <- reactive({
   dsList <- subset(DATA_RAW(), ID %in% input$EAF.Multi.Algs, funcId %in% input$EAF.Multi.FuncIds )
 
   generate_data.EAF(dsList, n_sets = input$EAF.Multi.levels)
 })
 
-render_EAF_Plot <- reactive({
+render_EAF_multi_Plot <- reactive({
   withProgress({
-    plot_eaf_data(get_data_EAF(), attr(DATA_RAW(), 'maximization'),
+    plot_eaf_data(get_data_EAF_multi(), attr(DATA_RAW(), 'maximization'),
                   scale.xlog = input$EAF.Multi.Logx, scale.ylog = input$EAF.Multi.Logy,
                   xmin = input$EAF.Multi.Min, xmax = input$EAF.Multi.Min,
                   ymin = input$EAF.Multi.yMin, ymax = input$EAF.Multi.yMax,
@@ -140,7 +139,7 @@ output$EAF.Multi.Download <- downloadHandler(
     eval(FIG_NAME_EAF)
   },
   content = function(file) {
-    save_plotly(render_EAF_Plot(), file)
+    save_plotly(render_EAF_multi_Plot(), file)
   },
   contentType = paste0('image/', input$EAF.Multi.Format)
 )

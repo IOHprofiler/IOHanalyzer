@@ -42,10 +42,17 @@ sidebar_menu <- function() {
                        )
                        ),
               menuItem("Other perspectives", tabName = "Other", icon = icon('file'),
-                       menuItem("Empirical Attainment", tabName = "EAF", icon = icon("project-diagram")),
-                       menuItem("EAF Differences", tabName = "EAF_Diff", icon = icon("project-diagram")),
-                       menuItem("EAF-based CDF", tabName = "EAF_CDF", icon = icon("chart-line")),
+                       menuItem("Single Function", tabName = "EAF_single", icon = icon("chart-line"), selected = F,
+                         menuItem("Empirical Attainment", tabName = "EAF", icon = icon("project-diagram")),
+                         menuItem("EAF Differences", tabName = "EAF_Diff", icon = icon("project-diagram")),
+                         menuItem("EAF-based CDF", tabName = "EAF_CDF", icon = icon("chart-line"))
+                       ),
+                       menuItem("Multiple Functions", tabName = "EAF_aggr", icon = icon("chart-bar"), selected = F,
+                          menuItem("Empirical Attainment", tabName = "EAF_mult", icon = icon("project-diagram")),
+                          menuItem("EAF-based CDF", tabName = "EAF_CDF_mult", icon = icon("chart-line"))
+                       ),
                        menuItem("Position Information", tabName = "Positions", icon = icon("arrows-alt"))
+
               ),
               # menuItem("Data Format", tabName = "dataformat", icon = icon("fas fa-database")),
               menuItem("About", tabName = "about", icon = icon("question")),

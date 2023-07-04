@@ -533,6 +533,9 @@ observe({
   updateSelectInput(session, 'FV_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'FV_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
 
+  updateSelectInput(session, 'EAF.Multi.FuncIds', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'EAF.MultiCDF.FuncIds', choices = funcIds, selected = funcIds)
+
   updateSelectInput(session, 'FV_Stats.Overview.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RTSummary.Statistics.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RTSummary.Overview.ID', choices = IDs, selected = IDs)
@@ -572,6 +575,8 @@ observe({
 
   updateSelectInput(session, 'EAF.Single.Algs', choices = IDs, selected = IDs[[1]])
   updateSelectInput(session, 'EAF.CDF.Algs', choices = IDs, selected = IDs[[1]])
+  updateSelectInput(session, 'EAF.Multi.Algs', choices = IDs, selected = IDs[[1]])
+  updateSelectInput(session, 'EAF.MultiCDF.Algs', choices = IDs, selected = IDs[[1]])
   updateSelectInput(session, 'EAF.Diff.Algs', choices = IDs, selected = IDs)
 
   updateSelectInput(session, 'ParCoordPlot.Algs', choices = IDs, selected = IDs[[1]])

@@ -733,6 +733,7 @@ set_DSC_credentials <- function(username, password) {
             paste0(repo_dir, "/config.rds"))
   }
   else {
+    keyring::keyring_unlock(password="")
     keyring::key_set_with_value("DSCtool", password = password)
     keyring::key_set_with_value("DSCtool_name", password = username)
   }
@@ -756,6 +757,7 @@ get_DSC_credentials <- function() {
     return(list(name = data$DSCusername, pwd = data$DSCpassword))
   }
   else {
+    keyring::keyring_unlock(password="")
     return(list(name = keyring::key_get("DSCtool_name"),
                 pwd = keyring::key_get("DSCtool")))
   }

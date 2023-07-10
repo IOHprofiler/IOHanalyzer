@@ -1715,7 +1715,7 @@ generate_data.EAF <- function(dsList, n_sets = 11) {
     dsl <- subset(dsList, ID == id)
     dt <- get_FV_sample(dsl, get_runtimes(dsl), output='long')
     max_runs <- max(dt$run)
-    dt_temp = dt[,.(temp=max_runs*funcId+ run, `f(x)`, `runtime`)]
+    dt_temp <- dt[!is.na(`f(x)`),.(temp=max_runs*funcId+ run, `f(x)`, `runtime`)]
 
     if (attr(dsl, 'maximization')) {
       quals <- dt_temp[, .(`runtime`, `f(x)`=-1*`f(x)`)]

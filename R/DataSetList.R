@@ -1770,6 +1770,8 @@ generate_data.ECDF_From_EAF <- function(eaf_table, min_val, max_val, maximizatio
   max_val <- ifelse(max_val == "", max(fvals, na.rm = T), as.numeric(max_val))
 
   if (scale_log){
+    min_val <- max(min_val, 1e-12)
+    max_val <- max(max_val, 1e-12)
     eaf_table <- eaf_table[,.(`runtime`, `f(x)`=log10(pmax( min_val, pmin( `f(x)`, max_val))), `percentage`)]
     min_val <- log10(min_val)
     max_val <- log10(max_val)

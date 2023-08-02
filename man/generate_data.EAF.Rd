@@ -4,12 +4,18 @@
 \alias{generate_data.EAF}
 \title{Generate dataframe consisting of the levelsets of the EAF}
 \usage{
-generate_data.EAF(dsList, n_sets = 11)
+generate_data.EAF(dsList, n_sets = 11, subsampling = T, scale_xlog = F)
 }
 \arguments{
 \item{dsList}{The DataSetList object}
 
 \item{n_sets}{The number of level sets to calculate}
+
+\item{subsampling}{Whether to subsample the used runtime-values. Setting to False will make the calculations
+more precise at the cost of potentially much longer exectution times}
+
+\item{scale_xlog}{Only has effect when `subsampling` is True. The scaling of the subsampled runtimes
+When true, these are equally spaced in log-space, when false they are linearly spaced.}
 }
 \description{
 This function generates a dataframe which can be easily plotted using the `plot_eaf_data`-function

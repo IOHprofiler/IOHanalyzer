@@ -458,6 +458,7 @@ observe({
   DIMs <- get_dim(data)
   algIds <- get_algId(data)
   runtimes <- get_runtimes(data)
+  fvals <- get_funvals(data)
 
   selected_ds <- data[[1]]
   selected_f <- attr(selected_ds,'funcId')
@@ -595,6 +596,10 @@ observe({
   invalid_choices <- c('funcId', 'DIM', 'ID')
   updateSelectInput(session, 'Settings.ID.Variables', choices = attr_choices[!attr_choices %in% invalid_choices],
                     selected = attr(data, 'ID_attributes'))
+
+  updateTextInput(session, 'EAF.MultiCDF.yMin', value = min(fvals, na.rm = T))
+  updateTextInput(session, 'EAF.MultiCDF.yMax', value = max(fvals, na.rm = T))
+
 
   if (isTRUE(attr(data, 'constrained'))) {
     shinyjs::show(id = "Settings.Constrained")

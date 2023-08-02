@@ -1749,6 +1749,8 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
 #' @param matrices The dataframes containing the data to plot. This should come from `generate_data.EAF_diff_Approximate`
 #' @param scale.xlog Logarithmic scaling of x-axis
 #' @param scale.ylog Logarithmic scaling of y-axis
+#' @param zero_transparant Whether values of 0 should be made transparant or not
+#' @param show_negatives Whether to also show negative values or not
 #'
 #' @return EAF difference plots
 #' @export
@@ -1756,7 +1758,8 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
 #' \dontrun{
 #' plot_eaf_differences(generate_data.EAF_diff_Approximate(subset(dsl, funcId == 1), 1, 50, 1, 16))
 #' }
-plot_eaf_differences <- function(matrices, scale.xlog = T, scale.ylog = F) {
+plot_eaf_differences <- function(matrices, scale.xlog = T, scale.ylog = F, zero_transparant = F,
+                                 show_negatives = F) {
 
 
   xscale <- if (scale.xlog) 'log' else 'linear'
@@ -1767,17 +1770,24 @@ plot_eaf_differences <- function(matrices, scale.xlog = T, scale.ylog = F) {
   ids <- names(matrices)
   ps <- lapply(seq(length(ids)), function(idx) {
     diff <- matrices[[idx]]
+    if (!show_negatives)
+      diff[diff< 0 ] = 0
     id <- ids[[idx]]
     x <- as.numeric(colnames(diff))
     y <- as.numeric(rownames(diff))
 
     p <- IOH_plot_ly_default('', 'Runtime', 'f(x)')
+    if (zero_transparant)
+      diff[diff == 0] = NaN
+
     p %<>% add_trace(z = diff, type = "contour", x=x,y=y,
                      line = list(smoothing = 0),
                      contours = list(
-                       start = 0,
-                       end = 1
-                     ), name = id)
+                       start = ifelse(show_negatives, -1, 0),
+                       end = 1, coloring='fill', showlines=F
+                     ), colorscale = ifelse(show_negatives, 'BuRd_r' , 'Viridis'),
+                     reversescale=show_negatives,
+                     name = id)
 
     p %<>% layout(yaxis = list(type = yscale, ticklen = 3))
     p %<>% layout(xaxis = list(type = xscale, ticklen = 3))

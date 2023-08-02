@@ -20,6 +20,20 @@ EAF_box <- function(width = 12, collapsible = T, collapsed = F) {
       textInput('EAF.Single.yMin', label = F_MIN_LABEL, value = ''),
       textInput('EAF.Single.yMax', label = F_MAX_LABEL, value = ''),
 
+      checkboxInput('EAF.Single.Subsampling',
+                    label = 'Use Subsampling for EAF calculation',
+                    value = T) %>% shinyInput_label_embed(
+                      custom_icon() %>%
+                        bs_embed_popover(
+                          title = "Subsampling", content = "When disabled,
+                          all runtime values where improvements are present
+                          will be used, resulting in a more accurate EAF.
+                          This does come at the cost of longer execution time,
+                          particularly when many runs are present.",
+                          placement = "auto"
+                        )
+                    ),
+
       checkboxInput('EAF.Single.Logx',
                     label = 'Scale x axis \\(\\log_{10}\\)',
                     value = T),
@@ -71,10 +85,24 @@ EAF_CDF_box <- function(width = 12, collapsible = T, collapsed = F) {
 
       textInput('EAF.CDF.yMin', label = F_MIN_LABEL, value = ''),
       textInput('EAF.CDF.yMax', label = F_MAX_LABEL, value = ''),
+
       checkboxInput('EAF.CDF.Logy',
                     label = 'Scale y space \\(\\log_{10}\\) before calculating the partial integrals',
                     value = T),
       hr(),
+      checkboxInput('EAF.CDF.Subsampling',
+                    label = 'Use Subsampling for EAF calculation',
+                    value = T) %>% shinyInput_label_embed(
+                      custom_icon() %>%
+                        bs_embed_popover(
+                          title = "Subsampling", content = "When disabled,
+                          all runtime values where improvements are present
+                          will be used, resulting in a more accurate EAF.
+                          This does come at the cost of longer execution time,
+                          particularly when many runs are present.",
+                          placement = "auto"
+                        )
+                    ),
       checkboxInput('EAF.CDF.Logx',
                     label = 'Scale x axis \\(\\log_{10}\\)',
                     value = T),
@@ -132,6 +160,14 @@ EAF_Diff_box <- function(width = 12, collapsible = T, collapsed = F) {
 
       hr(),
 
+      checkboxInput('EAF.Diff.ZeroTransparant',
+                    label = 'Show values of 0 as transparant',
+                    value = T),
+      checkboxInput('EAF.Diff.ShowNegatives',
+                    label = 'Show negative differences on each subplot as well',
+                    value = F),
+      hr(),
+
       selectInput('EAF.Diff.Format', label = 'Select the figure format',
                   choices = supported_fig_format, selected = supported_fig_format[[1]]),
 
@@ -183,7 +219,19 @@ EAF_mult_box <- function(width = 12, collapsible = T, collapsed = F) {
                     label = 'Scale y axis \\(\\log_{10}\\)',
                     value = T),
       hr(),
-
+      checkboxInput('EAF.Multi.Subsampling',
+                    label = 'Use Subsampling for EAF calculation',
+                    value = T) %>% shinyInput_label_embed(
+                      custom_icon() %>%
+                        bs_embed_popover(
+                          title = "Subsampling", content = "When disabled,
+                          all runtime values where improvements are present
+                          will be used, resulting in a more accurate EAF.
+                          This does come at the cost of longer execution time,
+                          particularly when many runs are present.",
+                          placement = "auto"
+                        )
+                    ),
       numericInput('EAF.Multi.levels', label = 'Number of Levels in plot', value=11),
 
       hr(),
@@ -240,7 +288,19 @@ EAF_CDF_mult_box <- function(width = 12, collapsible = T, collapsed = F) {
                     label = 'Scale x axis \\(\\log_{10}\\)',
                     value = T),
 
-
+      checkboxInput('EAF.MultiCDF.Subsampling',
+                    label = 'Use Subsampling for EAF calculation',
+                    value = T) %>% shinyInput_label_embed(
+                      custom_icon() %>%
+                        bs_embed_popover(
+                          title = "Subsampling", content = "When disabled,
+                          all runtime values where improvements are present
+                          will be used, resulting in a more accurate EAF.
+                          This does come at the cost of longer execution time,
+                          particularly when many runs are present.",
+                          placement = "auto"
+                        )
+                    ),
       hr(),
 
       selectInput('EAF.MultiCDF.Format', label = 'Select the figure format',

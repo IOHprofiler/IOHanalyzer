@@ -1693,10 +1693,15 @@ generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, al
 #'
 #' @param dsList The DataSetList object
 #' @param n_sets The number of level sets to calculate
+#' @param subsampling Whether to subsample the used runtime-values. Setting to False will make the calculations
+#' more precise at the cost of potentially much longer exectution times
+#' @param scale_xlog Only has effect when `subsampling` is True. The scaling of the subsampled runtimes
+#' When true, these are equally spaced in log-space, when false they are linearly spaced.
+#'
 #' @export
 #' @examples
 #' generate_data.EAF(subset(dsl, funcId == 1))
-generate_data.EAF <- function(dsList, n_sets = 11) {
+generate_data.EAF <- function(dsList, n_sets = 11, subsampling = T, scale_xlog = F) {
   V1 <- NULL #Set local binding to remove warnings
 
   if (!requireNamespace("eaf", quietly = TRUE)) {
@@ -1713,7 +1718,11 @@ generate_data.EAF <- function(dsList, n_sets = 11) {
 
   temp <- lapply(ids, function(id) {
     dsl <- subset(dsList, ID == id)
-    dt <- get_FV_sample(dsl, get_runtimes(dsl), output='long')
+    runtimes <- get_runtimes(dsl)
+    if (subsampling){
+      runtimes <- seq_RT(runtimes, length.out = 100, scale=ifelse(scale_xlog, 'log', 'linear'))
+    }
+    dt <- get_FV_sample(dsl, runtimes, output='long')
     max_runs <- max(dt$run)
     dt_temp <- dt[!is.na(`f(x)`),.(temp=max_runs*funcId+ run, `f(x)`, `runtime`)]
 
@@ -1756,8 +1765,9 @@ generate_data.ECDF_From_EAF <- function(eaf_table, min_val, max_val, maximizatio
 
   ext_func <- ifelse(maximization, max, min)
 
-  min_val <- as.numeric(min_val)
-  max_val <- as.numeric(max_val)
+  fvals <-  sort(unique(eaf_table[,`f(x)`]))
+  min_val <- ifelse(min_val == "", min(fvals, na.rm = T), as.numeric(min_val))
+  max_val <- ifelse(max_val == "", max(fvals, na.rm = T), as.numeric(max_val))
 
   if (scale_log){
     eaf_table <- eaf_table[,.(`runtime`, `f(x)`=log10(pmax( min_val, pmin( `f(x)`, max_val))), `percentage`)]
@@ -1863,7 +1873,7 @@ generate_data.EAF_diff_Approximate <- function(dsList, xmin, xmax, ymin, ymax,
   matrices_diffs <- lapply(algs, function(alg) {
     mat_max <- Reduce(pmax, mats[algs[algs != alg]])
     diff <- mats[alg][[1]] - mat_max
-    diff[diff<0] <- 0
+    # diff[diff<0] <- 0
     rownames(diff) <- x
     colnames(diff) <- y
     return(t(diff))

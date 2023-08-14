@@ -1619,7 +1619,7 @@ Plot.cumulative_difference_plot <- function(dsList, runtime_or_target_value, isF
 #' @export
 #' @examples
 #' \dontrun{
-#' plot_eaf_data(generate_data.EAF(subset(dsl, ID==get_id(dsl)[[1]])))
+#' plot_eaf_data(generate_data.EAF(subset(dsl, ID==get_id(dsl)[[1]])), maximization=T)
 #' }
 plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
                               scale.reverse = F, p = NULL, x_title = NULL,

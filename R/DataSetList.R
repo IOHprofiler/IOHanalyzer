@@ -1693,15 +1693,15 @@ generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, al
 #'
 #' @param dsList The DataSetList object
 #' @param n_sets The number of level sets to calculate
-#' @param subsampling Whether to subsample the used runtime-values. Setting to False will make the calculations
-#' more precise at the cost of potentially much longer exectution times
+#' @param subsampling Level of subsampling to use for runtime-values (number of runtimes to consider).
+#'  Setting to 0 will make the calculations more precise at the cost of potentially much longer exectution times
 #' @param scale_xlog Only has effect when `subsampling` is True. The scaling of the subsampled runtimes
 #' When true, these are equally spaced in log-space, when false they are linearly spaced.
 #'
 #' @export
 #' @examples
 #' generate_data.EAF(subset(dsl, funcId == 1))
-generate_data.EAF <- function(dsList, n_sets = 11, subsampling = T, scale_xlog = F) {
+generate_data.EAF <- function(dsList, n_sets = 11, subsampling = 100, scale_xlog = F) {
   V1 <- NULL #Set local binding to remove warnings
 
   if (!requireNamespace("eaf", quietly = TRUE)) {
@@ -1719,8 +1719,8 @@ generate_data.EAF <- function(dsList, n_sets = 11, subsampling = T, scale_xlog =
   temp <- lapply(ids, function(id) {
     dsl <- subset(dsList, ID == id)
     runtimes <- get_runtimes(dsl)
-    if (subsampling){
-      runtimes <- seq_RT(runtimes, length.out = 100, scale=ifelse(scale_xlog, 'log', 'linear'))
+    if (subsampling > 0){
+      runtimes <- seq_RT(runtimes, length.out = subsampling, scale=ifelse(scale_xlog, 'log', 'linear'))
     }
     dt <- get_FV_sample(dsl, runtimes, output='long')
     max_runs <- max(dt$run)

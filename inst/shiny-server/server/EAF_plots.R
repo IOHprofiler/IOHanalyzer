@@ -9,7 +9,7 @@ get_data_EAF <- reactive({
   dsList <- subset(DATA(), ID %in% input$EAF.Single.Algs)
 
   generate_data.EAF(dsList, n_sets = input$EAF.Single.levels,
-                    subsampling = input$EAF.Single.Subsampling,
+                    subsampling = 50*input$EAF.Single.Subsampling,
                     scale_xlog = input$EAF.Single.Logx)
 })
 
@@ -45,7 +45,7 @@ output$EAF.CDF_Plot <- renderPlotly({
 get_data_EAFCDF <- reactive({
   dsList <- subset(DATA(), ID %in% input$EAF.CDF.Algs)
   dt_eaf <- generate_data.EAF(dsList,
-                              subsampling = input$EAF.CDF.Subsampling,
+                              subsampling = 50*input$EAF.CDF.Subsampling,
                               scale_xlog = input$EAF.CDF.Logx)
 
   dt_ecdf <- rbindlist(lapply(input$EAF.CDF.Algs, function(id) {
@@ -124,7 +124,7 @@ output$EAF.Multi_Plot <- renderPlotly({
 get_data_EAF_multi <- reactive({
   dsList <- subset(DATA_RAW(), ID %in% input$EAF.Multi.Algs, funcId %in% input$EAF.Multi.FuncIds )
 
-  generate_data.EAF(dsList, n_sets = input$EAF.Multi.levels, subsampling = input$EAF.Multi.Subsampling,
+  generate_data.EAF(dsList, n_sets = input$EAF.Multi.levels, subsampling = 50*input$EAF.Multi.Subsampling,
                     scale_xlog = input$EAF.Multi.Logx)
 })
 
@@ -159,7 +159,7 @@ output$EAF.MultiCDF_Plot <- renderPlotly({
 
 get_data_EAFMultiCDF <- reactive({
   dsList <- subset(DATA_RAW(), ID %in% input$EAF.MultiCDF.Algs, funcId %in% input$EAF.MultiCDF.FuncIds )
-  dt_eaf <- generate_data.EAF(dsList, subsampling = input$EAF.MultiCDF.Subsampling,
+  dt_eaf <- generate_data.EAF(dsList, subsampling = 50*input$EAF.MultiCDF.Subsampling,
                               scale_xlog = input$EAF.MultiCDF.Logx)
 
   dt_eMultiCDF <- rbindlist(lapply(input$EAF.MultiCDF.Algs, function(id) {

@@ -122,7 +122,7 @@ output$EAF.Multi_Plot <- renderPlotly({
 })
 
 get_data_EAF_multi <- reactive({
-  dsList <- subset(DATA_RAW(), ID %in% input$EAF.Multi.Algs, funcId %in% input$EAF.Multi.FuncIds )
+  dsList <- subset(DATA_RAW(), ID %in% input$EAF.Multi.Algs, funcId %in% input$EAF.Multi.FuncIds, DIM == input$Overall.Dim )
 
   generate_data.EAF(dsList, n_sets = input$EAF.Multi.levels, subsampling = 50*input$EAF.Multi.Subsampling,
                     scale_xlog = input$EAF.Multi.Logx)
@@ -158,7 +158,7 @@ output$EAF.MultiCDF_Plot <- renderPlotly({
 })
 
 get_data_EAFMultiCDF <- reactive({
-  dsList <- subset(DATA_RAW(), ID %in% input$EAF.MultiCDF.Algs, funcId %in% input$EAF.MultiCDF.FuncIds )
+  dsList <- subset(DATA_RAW(), ID %in% input$EAF.MultiCDF.Algs, funcId %in% input$EAF.MultiCDF.FuncIds, DIM == input$Overall.Dim)
   dt_eaf <- generate_data.EAF(dsList, subsampling = 50*input$EAF.MultiCDF.Subsampling,
                               scale_xlog = input$EAF.MultiCDF.Logx, xmin = input$EAF.MultiCDF.xMin,
                               xmax = input$EAF.MultiCDF.xMax)
@@ -205,7 +205,11 @@ output$EAF.AUC.Table.Download <- downloadHandler(
 
 auc_eaf_grid_table <- reactive({
   dt_ecdf <- get_data_EAFMultiCDF()
-  generate_data.AUC(NULL, NULL, dt_ecdf = dt_ecdf[,list('mean'=fraction,'x'=runtime, 'ID'=ID)], normalize = input$EAF.MultiCDF.Normalize_AUC)
+  df <- generate_data.AUC(NULL, NULL, dt_ecdf = dt_ecdf[,list('mean'=fraction,'x'=runtime, 'ID'=ID)], normalize = input$EAF.MultiCDF.Normalize_AUC)
+  if (input$EAF.MultiCDF.Normalize_AUC)
+    df$aoc <- 1-df$auc
+  else
+    df$aoc <- df$x-df$auc
 })
 
 output$AUC_EAF_GRID_GENERATED <- DT::renderDataTable({

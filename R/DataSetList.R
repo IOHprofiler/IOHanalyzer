@@ -1157,7 +1157,7 @@ generate_data.hist <- function(dsList, target, use.equal.bins = F, which = 'by_R
 generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', use_full_range = TRUE) {
   by_rt <- which == 'by_RT'
   if (by_rt) {
-    maximization <- attr(df, "maximization")
+    maximization <- attr(dsList, "maximization")
     RT <- get_runtimes(dsList)
     if (!use_full_range) {
       if (length(unique(get_funcId(dsList))) > 1 || length(unique(get_dim(dsList))) > 1) {

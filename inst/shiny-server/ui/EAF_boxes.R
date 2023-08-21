@@ -315,11 +315,11 @@ EAF_CDF_mult_box <- function(width = 12, collapsible = T, collapsed = F) {
 
       hr(),
 
-      checkboxInput("EAF.MultiCDF.Normalize_AUC", "Normalize AUC values", value = T) %>%
+      checkboxInput("EAF.MultiCDF.Normalize_AUC", "Normalize AOC / AUC values", value = T) %>%
         shinyInput_label_embed(
           custom_icon() %>%
             bs_embed_popover(
-              title = "Normalization of AUC", content = "By default, the AUC values are
+              title = "Normalization of AOC / AUC", content = "By default, the AUC values are
               approximated based on the trapezium rule using the x-values as
               present in the ECDF-plot. This value can then be normalized to [0,1]
               by dividing by the maximum x-value (if no custom x-bounds are set,
@@ -331,7 +331,7 @@ EAF_CDF_mult_box <- function(width = 12, collapsible = T, collapsed = F) {
         ),
 
       selectInput('EAF.AUC.Table.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
-      downloadButton('EAF.AUC.Table.Download', label = 'Download the AUC table')
+      downloadButton('EAF.AUC.Table.Download', label = 'Download the AOC table')
 
     ),
 
@@ -342,7 +342,7 @@ EAF_CDF_mult_box <- function(width = 12, collapsible = T, collapsed = F) {
         HTML_P('For more information on the EAF, please see https://mlopez-ibanez.github.io/eaf/'),
 
         plotlyOutput.IOHanalyzer('EAF.MultiCDF_Plot'),
-        HTML_P('The approximated Area Under the EAF is:'),
+        HTML_P('The approximated Area Over / Under the EAF is:'),
         DT::dataTableOutput('AUC_EAF_GRID_GENERATED'),
       )
     )

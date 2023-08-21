@@ -3,6 +3,7 @@
 \docType{package}
 \name{IOHanalyzer}
 \alias{IOHanalyzer}
+\alias{IOHanalyzer-package}
 \title{IOHanalyzer: Data Analysis Part of IOHprofiler}
 \description{
 The data analysis module for the Iterative Optimization Heuristics Profiler (IOHprofiler).
@@ -32,4 +33,24 @@ Plot.RT.Single_Func(dsList[1])
 \dontrun{
 runServer()
 }
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{http://iohprofiler.liacs.nl}
+  \item \url{https://github.com/IOHprofiler/IOHAnalyzer}
+  \item Report bugs at \url{https://github.com/IOHprofiler/IOHAnalyzer/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Diederick Vermetten \email{d.l.vermetten@liacs.leidenuniv.nl} (\href{https://orcid.org/0000-0003-3040-7162}{ORCID})
+
+Authors:
+\itemize{
+  \item Hao Wang \email{h.wang@liacs.leidenuniv.nl} (\href{https://orcid.org/0000-0002-4933-5181}{ORCID})
+  \item Carola Doerr \email{Carola.Doerr@mpi-inf.mpg.de} (\href{https://orcid.org/0000-0002-4981-3227}{ORCID})
+  \item Thomas Bäck \email{t.h.w.baeck@liacs.leidenuniv.nl} (\href{https://orcid.org/0000-0001-6768-1478}{ORCID})
+}
+
 }

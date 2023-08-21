@@ -136,4 +136,4 @@ SOS <- 'SOS'
 #' \dontrun{
 #' runServer()
 #' }
-NULL
+"_PACKAGE"

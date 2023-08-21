@@ -1155,9 +1155,9 @@ generate_data.hist <- function(dsList, target, use.equal.bins = F, which = 'by_R
 #' @examples
 #' generate_data.ECDF(subset(dsl, funcId == 1), c(10, 15, 16))
 generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', use_full_range = TRUE) {
-  V1 <- NULL #Set local binding to remove warnings
   by_rt <- which == 'by_RT'
   if (by_rt) {
+    maximization <- attr(df, "maximization")
     RT <- get_runtimes(dsList)
     if (!use_full_range) {
       if (length(unique(get_funcId(dsList))) > 1 || length(unique(get_dim(dsList))) > 1) {
@@ -1188,6 +1188,8 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', 
     x <- unique(seq_FV(FV, length.out = 50, scale = ifelse(scale_log, 'log', 'linear')))
   }
 
+
+
   dt <- as.data.table(rbindlist(lapply(dsList, function(df) {
     ID <- get_id(df)
     if (by_rt) {
@@ -1196,28 +1198,26 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', 
     }
     else
       targets_ <- targets
-    m <- lapply(targets_, function(target) {
-      if (by_rt) {
-        data <- get_RT_sample(df, target, output = 'long')$RT
-        data[is.na(data)] <- Inf
-      }
+
+
+    if (by_rt) {
+      data <- get_FV_sample(df, x, output = 'long')
+      if (maximization)
+        data$frac <- unlist(lapply(data$`f(x)`, function(temp) mean(temp > targets_)))
       else
-        data <- get_FV_sample(df, target, output = 'long')$`f(x)`
-
-      if (all(is.na(data)))
-        return(rep(0, length(x)))
-      fun <- ecdf(data)
-      if (is.function(fun)) fun(x) else NA
-    }) %>%
-      do.call(rbind, .)
-
-    data.frame(x = x,
-               mean = apply(m, 2, . %>% mean(na.rm = T)),
-               sd = apply(m, 2, . %>% sd(na.rm = T))) %>%
-      mutate(upper = mean + sd, lower = mean - sd, ID = ID)
+        data$frac <- unlist(lapply(data$`f(x)`, function(temp) mean(temp < targets_)))
+      res <- data[, .(x=runtime, mean=mean(frac), sd=sd(frac)), by='runtime']
+    } else {
+      data <- get_RT_sample(df, x, output = 'long')
+      data[is.na(data)] <- Inf
+      data$frac <- unlist(lapply(data$RT, function(temp) mean(temp < targets_)))
+      res <- data[, .(mean=mean(frac), sd=sd(frac)), by='target']
+    }
+    mutate(res, upper = mean + sd, lower = mean - sd, ID = ID)
   })))
   dt[, mean(mean), by = .(x, ID)][, .(mean = V1, ID = ID, x = x)]
 }
+
 
 
 #' Generate dataframe containing the AUC for any ECDF-curves
@@ -1246,21 +1246,35 @@ generate_data.AUC <- function(dsList, targets, scale_log = F, which = 'by_RT', d
       return(NULL)
     dt_ecdf <- generate_data.ECDF(dsList, targets, scale_log, which)
   }
-  max_idx <- nrow(unique(dt_ecdf[,'x']))
-  dt_ecdf[, idx := seq(max_idx), by = 'ID']
-  dt3 = copy(dt_ecdf)
-  dt3[, idx := idx - 1]
-  dt_merged = merge(dt_ecdf, dt3, by = c('ID', 'idx'))
-  colnames(dt_merged) <- c("ID", "idx", "mean_pre", "x_pre", "mean_post", "x")
-  dt_merged[, auc_contrib := ((mean_pre + mean_post)/2)*(x - x_pre)]
-  if (normalize){
-  dt_merged[, auc := cumsum(auc_contrib)/x, by = 'ID']
-  } else {
-    dt_merged[, auc := cumsum(auc_contrib), by = 'ID']
-  }
-  if (multiple_x)
-    return(dt_merged[, c('ID','x','auc') ])
-  return(dt_merged[idx == (max_idx - 1), c('ID','x','auc') ])
+  rt_max <- max(dt_ecdf[,'x'])
+  dt_merged <- rbindlist(lapply(unique(dt_ecdf$ID), function(id) {
+    dt_part <- dt_ecdf[ID == id, ]
+    max_idx <- nrow(unique(dt_part[,'x']))
+    dt_part[, idx := seq(max_idx), by = 'ID']
+    dt3 = copy(dt_part)
+    dt3[, idx := idx - 1]
+    dt_merged_part = merge(dt_part, dt3, by = c('ID', 'idx'))
+    colnames(dt_merged_part) <- c("ID", "idx", "mean_pre", "x_pre", "mean_post", "x")
+    if (max(dt_part[,'x']) < rt_max){
+      extreme <- data.table("ID" = id, "idx" = max_idx+1,
+                            "x_pre" = max(dt_part[,'x']),
+                            "x" = rt_max,
+                            "mean_pre" = max(dt_part[,'mean']),
+                            "mean_post" = max(dt_part[,'mean']))
+      max_idx <- max_idx + 1
+      dt_merged_part <- rbind(dt_merged_part, extreme)
+    }
+    dt_merged_part[, auc_contrib := ((mean_pre + mean_post)/2)*(x - x_pre)]
+    if (normalize){
+      dt_merged_part[, auc := cumsum(auc_contrib)/x, by = 'ID']
+    } else {
+      dt_merged_part[, auc := cumsum(auc_contrib), by = 'ID']
+    }
+    if (multiple_x)
+      return(dt_merged_part[, c('ID','x','auc') ])
+    return(dt_merged_part[idx == (max_idx - 1), c('ID','x','auc') ])
+  }))
+  return(dt_merged)
 }
 
 
@@ -1697,11 +1711,14 @@ generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, al
 #'  Setting to 0 will make the calculations more precise at the cost of potentially much longer exectution times
 #' @param scale_xlog Only has effect when `subsampling` is True. The scaling of the subsampled runtimes
 #' When true, these are equally spaced in log-space, when false they are linearly spaced.
+#' @param xmin Minimum runtime value
+#' @param xmax Maximum runtime value
 #'
 #' @export
 #' @examples
 #' generate_data.EAF(subset(dsl, funcId == 1))
-generate_data.EAF <- function(dsList, n_sets = 11, subsampling = 100, scale_xlog = F) {
+generate_data.EAF <- function(dsList, n_sets = 11, subsampling = 100, scale_xlog = F,
+                              xmin = "", xmax = "") {
   V1 <- NULL #Set local binding to remove warnings
 
   if (!requireNamespace("eaf", quietly = TRUE)) {
@@ -1714,14 +1731,21 @@ generate_data.EAF <- function(dsList, n_sets = 11, subsampling = 100, scale_xlog
   #   Please call this function for each individual ID instead.")
   # }
   ids <- get_id(dsList)
+  runtimes <- get_runtimes(dsList)
+  xmin <- ifelse(xmin == "", min(runtimes, na.rm = T), as.numeric(xmin))
+  xmax <- ifelse(xmax == "", max(runtimes, na.rm = T), as.numeric(xmax))
 
+  if (subsampling > 0){
+    runtimes <- seq_RT(c(xmin,xmax), from=xmin, to=xmax, length.out = subsampling, scale=ifelse(scale_xlog, 'log', 'linear'))
+  } else {
+    runtimes <- runtimes[runtimes > xmin]
+    runtimes <- runtimes[runtimes < xmax]
+  }
 
   temp <- lapply(ids, function(id) {
     dsl <- subset(dsList, ID == id)
-    runtimes <- get_runtimes(dsl)
-    if (subsampling > 0){
-      runtimes <- seq_RT(runtimes, length.out = subsampling, scale=ifelse(scale_xlog, 'log', 'linear'))
-    }
+
+
     dt <- get_FV_sample(dsl, runtimes, output='long')
     max_runs <- max(dt$run)
     dt_temp <- dt[!is.na(`f(x)`),.(temp=max_runs*funcId+ run, `f(x)`, `runtime`)]

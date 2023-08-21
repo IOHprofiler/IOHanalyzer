@@ -67,6 +67,6 @@ Create EAF-based polygon plots
 }
 \examples{
 \dontrun{
-plot_eaf_data(generate_data.EAF(subset(dsl, ID==get_id(dsl)[[1]])))
+plot_eaf_data(generate_data.EAF(subset(dsl, ID==get_id(dsl)[[1]])), maximization=T)
 }
 }

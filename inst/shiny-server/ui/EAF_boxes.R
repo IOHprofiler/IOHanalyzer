@@ -279,6 +279,11 @@ EAF_CDF_mult_box <- function(width = 12, collapsible = T, collapsed = F) {
                        textInput('EAF.MultiCDF.yMin', label = F_MIN_LABEL, value = ''),
                        textInput('EAF.MultiCDF.yMax', label = F_MAX_LABEL, value = '')
                        ),
+      checkboxInput('EAF.MultiCDF.CustomRangeX', "Customize X Range"),
+      conditionalPanel(condition = "input['EAF.MultiCDF.CustomRangeX']",
+                       textInput('EAF.MultiCDF.xMin', label = RT_MIN_LABEL, value = ''),
+                       textInput('EAF.MultiCDF.xMax', label = RT_MAX_LABEL, value = '')
+      ),
 
       checkboxInput('EAF.MultiCDF.Logy',
                     label = 'Scale y space \\(\\log_{10}\\) before calculating the partial integrals',
@@ -306,7 +311,28 @@ EAF_CDF_mult_box <- function(width = 12, collapsible = T, collapsed = F) {
       selectInput('EAF.MultiCDF.Format', label = 'Select the figure format',
                   choices = supported_fig_format, selected = supported_fig_format[[1]]),
 
-      downloadButton('EAF.MultiCDF.Download', label = 'Download the figure')
+      downloadButton('EAF.MultiCDF.Download', label = 'Download the figure'),
+
+      hr(),
+
+      checkboxInput("EAF.MultiCDF.Normalize_AUC", "Normalize AUC values", value = T) %>%
+        shinyInput_label_embed(
+          custom_icon() %>%
+            bs_embed_popover(
+              title = "Normalization of AUC", content = "By default, the AUC values are
+              approximated based on the trapezium rule using the x-values as
+              present in the ECDF-plot. This value can then be normalized to [0,1]
+              by dividing by the maximum x-value (if no custom x-bounds are set,
+              note that this is the maximum budget across all selected algorithms!).
+              Please note that the AUC values generated are only comparable to other
+              AUC values if the used target boundaries and scaling are identical!",
+              placement = "auto"
+            )
+        ),
+
+      selectInput('EAF.AUC.Table.Format', 'Format', choices = supported_table_format, selected = supported_table_format[[1]]),
+      downloadButton('EAF.AUC.Table.Download', label = 'Download the AUC table')
+
     ),
 
     mainPanel(
@@ -315,7 +341,9 @@ EAF_CDF_mult_box <- function(width = 12, collapsible = T, collapsed = F) {
         width = 12, align = "center",
         HTML_P('For more information on the EAF, please see https://mlopez-ibanez.github.io/eaf/'),
 
-        plotlyOutput.IOHanalyzer('EAF.MultiCDF_Plot')
+        plotlyOutput.IOHanalyzer('EAF.MultiCDF_Plot'),
+        HTML_P('The approximated Area Under the EAF is:'),
+        DT::dataTableOutput('AUC_EAF_GRID_GENERATED'),
       )
     )
   )

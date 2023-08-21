@@ -160,7 +160,8 @@ output$EAF.MultiCDF_Plot <- renderPlotly({
 get_data_EAFMultiCDF <- reactive({
   dsList <- subset(DATA_RAW(), ID %in% input$EAF.MultiCDF.Algs, funcId %in% input$EAF.MultiCDF.FuncIds )
   dt_eaf <- generate_data.EAF(dsList, subsampling = 50*input$EAF.MultiCDF.Subsampling,
-                              scale_xlog = input$EAF.MultiCDF.Logx)
+                              scale_xlog = input$EAF.MultiCDF.Logx, xmin = input$EAF.MultiCDF.xMin,
+                              xmax = input$EAF.MultiCDF.xMax)
 
   dt_eMultiCDF <- rbindlist(lapply(input$EAF.MultiCDF.Algs, function(id) {
     dt_sub <- dt_eaf[ID == id, ]
@@ -190,4 +191,39 @@ output$EAF.MultiCDF.Download <- downloadHandler(
     save_plotly(render_EAFMultiCDF_Plot(), file)
   },
   contentType = paste0('image/', input$EAF.MultiCDF.Format)
+)
+
+
+output$EAF.AUC.Table.Download <- downloadHandler(
+  filename = function() {
+    eval(AUC_ECDF_aggr_name)
+  },
+  content = function(file) {
+    save_table(auc_eaf_grid_table(), file)
+  }
+)
+
+auc_eaf_grid_table <- reactive({
+  dt_ecdf <- get_data_EAFMultiCDF()
+  generate_data.AUC(NULL, NULL, dt_ecdf = dt_ecdf[,list('mean'=fraction,'x'=runtime, 'ID'=ID)], normalize = input$EAF.MultiCDF.Normalize_AUC)
+})
+
+output$AUC_EAF_GRID_GENERATED <- DT::renderDataTable({
+  req(length(DATA_RAW()) > 0)
+  auc_eaf_grid_table()
+},
+editable = FALSE,
+rownames = FALSE,
+options = list(
+  pageLength = 10,
+  lengthMenu = c(5, 10, 25, -1),
+  scrollX = T,
+  server = T,
+  columnDefs = list(
+    list(
+      className = 'dt-right', targets = "_all"
+    )
+  )
+),
+filter = 'top'
 )

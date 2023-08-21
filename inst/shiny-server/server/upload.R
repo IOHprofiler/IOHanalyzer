@@ -600,7 +600,6 @@ observe({
   updateTextInput(session, 'EAF.MultiCDF.yMin', value = min(fvals, na.rm = T))
   updateTextInput(session, 'EAF.MultiCDF.yMax', value = max(fvals, na.rm = T))
 
-
   if (isTRUE(attr(data, 'constrained'))) {
     shinyjs::show(id = "Settings.Constrained")
     shinyjs::alert("The data you loaded seems to come from a constrained optimization problem.

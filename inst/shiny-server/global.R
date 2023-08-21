@@ -106,6 +106,7 @@ print_html <- function(s, widget_id = 'process_data_promt')
 
 # download file names: csv, image ---------------------
 AUC_ECDF_aggr_name <- parse(text = "paste0('AUC_ECDF_MULTI.', input$RTECDF.AUC.Table.Format)")
+AUC_EAF_ECDF_aggr_name <- parse(text = "paste0('AUC_EAF.', input$EAF.AUC.Table.Format)")
 overview_single_name <- parse(text = "paste0('Overview-', paste0(input$Overall.Dim, 'D'),
                              paste0('F', input$Overall.Funcid), '.', input$Overview.Single.Format)")
 overview_all_name <- parse(text = "paste0('Overview-All-', '.', input$Overview.All.Format)")

@@ -176,7 +176,7 @@ get_data_EAFMultiCDF <- reactive({
 
 render_EAFMultiCDF_Plot <- reactive({
   withProgress({
-    plot_general_data(get_data_EAFMultiCDF(), 'runtime', 'fraction', 'line', 'ID',
+    plot_general_data(get_data_EAFMultiCDF(), 'x', 'mean', 'line', 'ID',
                       scale.xlog = input$EAF.MultiCDF.Logx, scale.ylog = F, x_title = "Evaluations",
                       y_title = "Fraction")
   },
@@ -196,7 +196,7 @@ output$EAF.MultiCDF.Download <- downloadHandler(
 
 output$EAF.AUC.Table.Download <- downloadHandler(
   filename = function() {
-    eval(AUC_ECDF_aggr_name)
+    eval(AUC_ECDFEAF_aggr_name)
   },
   content = function(file) {
     save_table(auc_eaf_grid_table(), file)
@@ -205,11 +205,13 @@ output$EAF.AUC.Table.Download <- downloadHandler(
 
 auc_eaf_grid_table <- reactive({
   dt_ecdf <- get_data_EAFMultiCDF()
-  df <- generate_data.AUC(NULL, NULL, dt_ecdf = dt_ecdf[,list('mean'=fraction,'x'=runtime, 'ID'=ID)], normalize = input$EAF.MultiCDF.Normalize_AUC)
+  df <- generate_data.AUC(NULL, NULL, dt_ecdf = dt_ecdf, normalize = input$EAF.MultiCDF.Normalize_AUC)
   if (input$EAF.MultiCDF.Normalize_AUC)
     df$aoc <- 1-df$auc
   else
     df$aoc <- df$x-df$auc
+  colnames(df) <- c("ID", "Runtime", "AUC", "AOC")
+  df
 })
 
 output$AUC_EAF_GRID_GENERATED <- DT::renderDataTable({

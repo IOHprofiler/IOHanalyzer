@@ -1246,6 +1246,7 @@ generate_data.AUC <- function(dsList, targets, scale_log = F, which = 'by_RT', d
       return(NULL)
     dt_ecdf <- generate_data.ECDF(dsList, targets, scale_log, which)
   }
+  dt_ecdf <- dt_ecdf[, c('mean', 'ID', 'x')]
   rt_max <- max(dt_ecdf[,'x'])
   dt_merged <- rbindlist(lapply(unique(dt_ecdf$ID), function(id) {
     dt_part <- dt_ecdf[ID == id, ]
@@ -1796,28 +1797,32 @@ generate_data.ECDF_From_EAF <- function(eaf_table, min_val, max_val, maximizatio
   if (scale_log){
     min_val <- max(min_val, 1e-12)
     max_val <- max(max_val, 1e-12)
-    eaf_table <- eaf_table[,.(`runtime`, `f(x)`=log10(pmax( min_val, pmin( `f(x)`, max_val))), `percentage`)]
+    eaf_table <- eaf_table[,.(`runtime`, `f(x)`=log10(pmax( min_val, pmin( `f(x)`, max_val))), `percentage`, `ID`)]
     min_val <- log10(min_val)
     max_val <- log10(max_val)
   }
 
-  ecdf <- rbindlist(lapply(runtimes, function(runtime_value) {
-    temp <- eaf_table[runtime <= runtime_value , .(agg_fval = ext_func(`f(x)`)), by = c('percentage')]
-    agg_vals <- pmax(pmin(temp$agg_fval, max_val), min_val)
+  ecdf_full <- rbindlist(lapply(unlist(unique(eaf_table[,'ID'])), function(id) {
+    ecdf <- rbindlist(lapply(runtimes, function(runtime_value) {
+      temp <- eaf_table[runtime <= runtime_value , .(agg_fval = ext_func(`f(x)`)), by = c('percentage')]
+      agg_vals <- pmax(pmin(temp$agg_fval, max_val), min_val)
 
-    if (maximization) {
-      partials <- rev(c(rev(agg_vals), max_val) - c(min_val, rev(agg_vals)))
-    } else {
-      partials <- c(agg_vals, max_val) - c(min_val,agg_vals)
+      if (maximization) {
+        partials <- rev(c(rev(agg_vals), max_val) - c(min_val, rev(agg_vals)))
+      } else {
+        partials <- c(agg_vals, max_val) - c(min_val,agg_vals)
+      }
+      list(runtime_value, sum(partials * c(0,temp$perc/100)))
+    }))
+    if (normalize) {
+      ecdf[,2] = ecdf[,2]/(max_val-min_val)
     }
-    list(runtime_value, sum(partials * c(0,temp$perc/100)))
+    ecdf <- as.data.table(ecdf)
+    colnames(ecdf) <- c('x', 'mean')
+    ecdf$ID <- id
+    ecdf
   }))
-  if (normalize) {
-    ecdf[,2] = ecdf[,2]/(max_val-min_val)
-  }
-  ecdf <- as.data.table(ecdf)
-  colnames(ecdf) <- c('runtime', 'fraction')
-  return(ecdf)
+  return(ecdf_full)
 }
 
 

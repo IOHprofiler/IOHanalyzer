@@ -1211,7 +1211,7 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', 
       data <- get_RT_sample(df, x, output = 'long')
       data[is.na(data)] <- Inf
       data$frac <- unlist(lapply(data$RT, function(temp) mean(temp < targets_)))
-      res <- data[, .(mean=mean(frac), sd=sd(frac)), by='target']
+      res <- data[, .(x=target, mean=mean(frac), sd=sd(frac)), by='target']
     }
     mutate(res, upper = mean + sd, lower = mean - sd, ID = ID)
   })))

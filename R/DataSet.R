@@ -159,8 +159,8 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
                    maximization = maximization, suite = suite, ID = info$algId))
     )
     if (isTRUE(info$constrained) || full_sampling) {
-      FV_raw_mat <- matrix(nrow = nrow(FV), ncol = length(FV_raw))
-      for (idx in seq(length(FV_raw))) {
+      FV_raw_mat <- matrix(nrow = nrow(FV), ncol = length(RT_raw))
+      for (idx in seq(length(RT_raw))) {
         FV_raw_mat[,idx] = FV_raw[[idx]][,2]
       }
       temp$FV_raw_mat <- FV_raw_mat

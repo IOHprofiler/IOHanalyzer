@@ -20,6 +20,8 @@ EAF_box <- function(width = 12, collapsible = T, collapsed = F) {
       textInput('EAF.Single.yMin', label = F_MIN_LABEL, value = ''),
       textInput('EAF.Single.yMax', label = F_MAX_LABEL, value = ''),
 
+      actionButton('EAF.Single.Refresh', 'Force refresh plot'),
+
       checkboxInput('EAF.Single.Subsampling',
                     label = 'Use Subsampling for EAF calculation',
                     value = T) %>% shinyInput_label_embed(
@@ -56,7 +58,10 @@ EAF_box <- function(width = 12, collapsible = T, collapsed = F) {
       width = 9,
       column(
         width = 12, align = "center",
-        HTML_P('For more information on the EAF, please see https://mlopez-ibanez.github.io/eaf/'),
+        HTML_P('The empirical attainment function (EAF) estimates the percentage
+                of runs that attain an arbitrary target value not later than a given
+               runtime. \n
+               For more information on the EAF, please see https://mlopez-ibanez.github.io/eaf/'),
 
         plotlyOutput.IOHanalyzer('EAF.Single_Plot')
       )
@@ -120,7 +125,12 @@ EAF_CDF_box <- function(width = 12, collapsible = T, collapsed = F) {
       width = 9,
       column(
         width = 12, align = "center",
-        HTML_P('For more information on the EAF, please see https://mlopez-ibanez.github.io/eaf/'),
+        HTML_P('The empirical attainment function (EAF) estimates the percentage
+                of runs that attain an arbitrary target value not later than a given
+               runtime. Taking the partial integral of the EAF results in a more
+               accurate version of the Empirical Cumulative Distribution Function,
+               since it does not rely on discritization of the targets.\n
+               For more information on the EAF, please see https://mlopez-ibanez.github.io/eaf/'),
 
         plotlyOutput.IOHanalyzer('EAF.CDF_Plot')
       )
@@ -178,7 +188,12 @@ EAF_Diff_box <- function(width = 12, collapsible = T, collapsed = F) {
       width = 9,
       column(
         width = 12, align = "center",
-        HTML_P('For more information on the EAF, please see https://mlopez-ibanez.github.io/eaf/'),
+        HTML_P('The empirical attainment function (EAF) estimates the percentage
+                of runs that attain an arbitrary target value not later than a given
+               runtime. By taking the difference between two EAFs, we can see
+               areas of the (runtime, target)-space where one algorithm
+               dominates other algorithms.\n
+               For more information on the EAF, please see https://mlopez-ibanez.github.io/eaf/'),
 
         plotlyOutput.IOHanalyzer('EAF.Diff_Plot')
       )
@@ -212,6 +227,8 @@ EAF_mult_box <- function(width = 12, collapsible = T, collapsed = F) {
         textInput('EAF.Multi.yMin', label = F_MIN_LABEL, value = ''),
         textInput('EAF.Multi.yMax', label = F_MAX_LABEL, value = '')
       ),
+      actionButton('EAF.Multi.Refresh', 'Force refresh plot'),
+
       checkboxInput('EAF.Multi.Logx',
                     label = 'Scale x axis \\(\\log_{10}\\)',
                     value = T),
@@ -246,7 +263,10 @@ EAF_mult_box <- function(width = 12, collapsible = T, collapsed = F) {
       width = 9,
       column(
         width = 12, align = "center",
-        HTML_P('For more information on the EAF, please see https://mlopez-ibanez.github.io/eaf/'),
+        HTML_P('The empirical attainment function (EAF) estimates the percentage
+                of runs that attain an arbitrary target value not later than a given
+               runtime.\n
+               For more information on the EAF, please see https://mlopez-ibanez.github.io/eaf/'),
 
         plotlyOutput.IOHanalyzer('EAF.Multi_Plot')
       )
@@ -306,6 +326,8 @@ EAF_CDF_mult_box <- function(width = 12, collapsible = T, collapsed = F) {
                           placement = "auto"
                         )
                     ),
+      actionButton('EAF.MultiCDF.Refresh', 'Force refresh plot'),
+
       hr(),
 
       selectInput('EAF.MultiCDF.Format', label = 'Select the figure format',
@@ -339,7 +361,12 @@ EAF_CDF_mult_box <- function(width = 12, collapsible = T, collapsed = F) {
       width = 9,
       column(
         width = 12, align = "center",
-        HTML_P('For more information on the EAF, please see https://mlopez-ibanez.github.io/eaf/'),
+        HTML_P('The empirical attainment function (EAF) estimates the percentage
+                of runs that attain an arbitrary target value not later than a given
+               runtime. Taking the partial integral of the EAF results in a more
+               accurate version of the Empirical Cumulative Distribution Function,
+               since it does not rely on discritization of the targets.\n
+               For more information on the EAF, please see https://mlopez-ibanez.github.io/eaf/'),
 
         plotlyOutput.IOHanalyzer('EAF.MultiCDF_Plot'),
         HTML_P('The approximated Area Over / Under the EAF is:'),

@@ -1780,6 +1780,16 @@ plot_eaf_differences <- function(matrices, scale.xlog = T, scale.ylog = F, zero_
     if (zero_transparant)
       diff[diff == 0] = NaN
 
+    if (all(is.na(diff))) {
+      p %<>% add_trace(z = 0, type = "contour", x=x,y=y,
+                       line = list(smoothing = 0),
+                       contours = list(
+                         start = ifelse(show_negatives, -1, 0),
+                         end = 1, coloring='fill', showlines=F
+                       ), colorscale = ifelse(show_negatives, 'BuRd_r' , 'Viridis'),
+                       reversescale=show_negatives,
+                       name = id)
+    } else {
     p %<>% add_trace(z = diff, type = "contour", x=x,y=y,
                      line = list(smoothing = 0),
                      contours = list(
@@ -1788,7 +1798,7 @@ plot_eaf_differences <- function(matrices, scale.xlog = T, scale.ylog = F, zero_
                      ), colorscale = ifelse(show_negatives, 'BuRd_r' , 'Viridis'),
                      reversescale=show_negatives,
                      name = id)
-
+    }
     p %<>% layout(yaxis = list(type = yscale, ticklen = 3))
     p %<>% layout(xaxis = list(type = xscale, ticklen = 3))
     if (show_colorbar) {

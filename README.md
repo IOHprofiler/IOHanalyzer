@@ -3,7 +3,7 @@
 <!-- badges: start -->
 [![metacran downloads](https://cranlogs.r-pkg.org/badges/IOHanalyzer)](https://cran.r-project.org/package=IOHanalyzer)
 [![CRAN_Status_Badge_version_last_release](https://www.r-pkg.org/badges/version-last-release/IOHanalyzer)](https://cran.r-project.org/package=IOHanalyzer)
-[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/license/bsd-3-clause/)
 [![R-CMD-check](https://github.com/IOHprofiler/IOHanalyzer/workflows/R-CMD-check/badge.svg)](https://github.com/IOHprofiler/IOHanalyzer/actions)
 <!-- badges: end -->
 
@@ -12,7 +12,7 @@ The __performance analyzer__ for **I**terative **O**ptimization **H**euristics (
 * __Documentation__: [https://arxiv.org/abs/2007.03953](https://arxiv.org/abs/2007.03953)
 * __Wiki page__: [https://iohprofiler.github.io/IOHanalyzer/](https://iohprofiler.github.io/IOHanalyzer/)
 * __Bug reports__: [https://github.com/IOHprofiler/IOHAnalyzer/issues](https://github.com/IOHprofiler/IOHAnalyzer/issues)
-* __Online service__: [http://iohprofiler.liacs.nl](http://iohprofiler.liacs.nl)
+* __Online service__: [https://iohanalyzer.liacs.nl](http://iohprofiler.liacs.nl)
 * __General Contact__: [mailto:iohprofiler@liacs.leidenuniv.nl](mailto:iohprofiler@liacs.leidenuniv.nl)
 * __Mailing List__: [https://lists.leidenuniv.nl/mailman/listinfo/iohprofiler](https://lists.leidenuniv.nl/mailman/listinfo/iohprofiler)
 
@@ -28,7 +28,7 @@ It _provides_:
 
 It is _built mainly on_:
 
-* `R` packages [Shiny](https://shiny.rstudio.com/), [Plotly](https://plotly.com/) and [Rcpp](http://www.rcpp.org/).
+* `R` packages [Shiny](https://shiny.posit.co/), [Plotly](https://plotly.com/) and [Rcpp](https://www.rcpp.org/).
 <!-- * [scmacp](https://github.com/b0rxa/scmamp) package for Bayesian analysis. -->
 
 It is _available through_:
@@ -38,7 +38,7 @@ It is _available through_:
 
 ## <a name="server"></a>Online Service
 
-A free server [http://iohprofiler.liacs.nl](http://iohprofiler.liacs.nl) running the stable version of __IOHanalyzer__ is hosted in [Leiden Institute of Advanced Computer Science](https://liacs.leidenuniv.nl/). You're welcome to check it out!
+A free server [https://iohanalyzer.liacs.nl](http://iohprofiler.liacs.nl) running the stable version of __IOHanalyzer__ is hosted in [Leiden Institute of Advanced Computer Science](https://liacs.leidenuniv.nl/). You're welcome to check it out!
 
 ## <a name="install"></a>Installation
 
@@ -100,7 +100,7 @@ We provide a docker file for deploying __IOHanalyzer__ on the server. Please see
 
 Specific formats are required to load your benchmark data to **IOHanalyzer**. If your data sets are generated in the format of
 
-* **COCO/BBOB** data format as regulated in [https://hal.inria.fr/inria-00362649](https://hal.inria.fr/inria-00362649),
+* **COCO/BBOB** data format as regulated in [https://inria.hal.science/inria-00362649](https://inria.hal.science/inria-00362649),
 * **Nevergrad** data format (explained in [https://github.com/facebookresearch/nevergrad](https://github.com/facebookresearch/nevergrad)), or
 * **IOHprofiler** data format, which is motivated and modified from **COCO** data format,
 

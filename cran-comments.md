@@ -1,9 +1,9 @@
 ## Submission status
-This is a new feature update submission, increasing to version 0.1.7 
+This is a new feature update submission, increasing to version 0.1.8 
 
-This release implements several new features, including new 
-visualization options, custom csv-file support and basic functionality for 
-constrained optimization.
+This release implements several new features, primarily adding new analysis in the
+form of empirical attainment functions. 
+This also addresses the @docType problem which we have been requested to fix by CRAN
 
 ## Test environments
 *   Local Windows install, R 4.1.2

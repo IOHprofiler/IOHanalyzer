@@ -37,7 +37,7 @@ runServer()
 \seealso{
 Useful links:
 \itemize{
-  \item \url{http://iohprofiler.liacs.nl}
+  \item \url{https://iohanalyzer.liacs.nl}
   \item \url{https://github.com/IOHprofiler/IOHAnalyzer}
   \item Report bugs at \url{https://github.com/IOHprofiler/IOHAnalyzer/issues}
 }

@@ -20,8 +20,8 @@ render_EAF_Plot <- reactive({
                   scale.xlog = input$EAF.Single.Logx, scale.ylog = input$EAF.Single.Logy,
                   xmin = input$EAF.Single.Min, xmax = input$EAF.Single.Max,
                   ymin = input$EAF.Single.yMin, ymax = input$EAF.Single.yMax,
-                  subplot_attr = 'ID', x_title = "Evaluations",
-                  y_title = "f(x)")
+                  subplot_attr = 'ID', x_title = "Funciton Evaluations",
+                  y_title = "f(x)", show.colorbar = input$EAF.Single.Colorbar)
   },
   message = "Creating plot")
 })
@@ -62,7 +62,7 @@ get_data_EAFCDF <- reactive({
 render_EAFCDF_Plot <- reactive({
   withProgress({
     plot_general_data(get_data_EAFCDF(), 'x', 'mean', 'line', 'ID',
-                  scale.xlog = input$EAF.CDF.Logx, scale.ylog = F, x_title = "Evaluations",
+                  scale.xlog = input$EAF.CDF.Logx, scale.ylog = F, x_title = "Function Evaluations",
                   y_title = "Fraction")
   },
   message = "Creating plot")
@@ -127,7 +127,7 @@ get_data_EAF_multi <- reactive({
   dsList <- subset(DATA_RAW(), ID %in% input$EAF.Multi.Algs, funcId %in% input$EAF.Multi.FuncIds, DIM == input$Overall.Dim )
 
   generate_data.EAF(dsList, n_sets = input$EAF.Multi.levels, subsampling = 50*input$EAF.Multi.Subsampling,
-                    scale_xlog = input$EAF.Multi.Logx)
+                    scale_xlog = input$EAF.Multi.Logx, xmin=input$EAF.Multi.Min, xmax=input$EAF.Multi.Max)
 })
 
 render_EAF_multi_Plot <- reactive({
@@ -136,8 +136,8 @@ render_EAF_multi_Plot <- reactive({
                   scale.xlog = input$EAF.Multi.Logx, scale.ylog = input$EAF.Multi.Logy,
                   xmin = input$EAF.Multi.Min, xmax = input$EAF.Multi.Min,
                   ymin = input$EAF.Multi.yMin, ymax = input$EAF.Multi.yMax,
-                  subplot_attr = 'ID', x_title = "Evaluations",
-                  y_title = "f(x)")
+                  subplot_attr = 'ID', x_title = "Function Evaluations",
+                  y_title = "f(x)", show.colorbar = input$EAF.Multi.Colorbar)
   },
   message = "Creating plot")
 })
@@ -167,14 +167,20 @@ get_data_EAFMultiCDF <- reactive({
   dt_eaf <- generate_data.EAF(dsList, subsampling = 50*isolate(input$EAF.MultiCDF.Subsampling),
                               scale_xlog = isolate(input$EAF.MultiCDF.Logx),
                               xmin = isolate(input$EAF.MultiCDF.xMin),
-                              xmax = isolate(input$EAF.MultiCDF.xMax))
-
+                              xmax = isolate(input$EAF.MultiCDF.xMax), n_sets = 100)
+  max_rt <- max(dt_eaf[,'runtime'])
   dt_eMultiCDF <- rbindlist(lapply(isolate(input$EAF.MultiCDF.Algs), function(id) {
     dt_sub <- dt_eaf[ID == id, ]
     temp <- generate_data.ECDF_From_EAF(dt_sub,
                                         min_val = isolate(input$EAF.MultiCDF.yMin),
                                         max_val = isolate(input$EAF.MultiCDF.yMax),
                                         scale_log=isolate(input$EAF.MultiCDF.Logy))
+    if (max(temp[,'x']) < max_rt){
+      extreme <- data.table("x" = max_rt,
+                            "ID" = id,
+                            "mean" = max(temp[,'mean']))
+      temp <- rbind(temp, extreme)
+    }
     temp$ID <- id
     temp
   }))
@@ -184,8 +190,8 @@ get_data_EAFMultiCDF <- reactive({
 render_EAFMultiCDF_Plot <- reactive({
   withProgress({
     plot_general_data(get_data_EAFMultiCDF(), 'x', 'mean', 'line', 'ID',
-                      scale.xlog = isolate(input$EAF.MultiCDF.Logx), scale.ylog = F, x_title = "Evaluations",
-                      y_title = "Fraction")
+                      scale.xlog = isolate(input$EAF.MultiCDF.Logx), scale.ylog = F, x_title = "Function Evaluations",
+                      y_title = "Fraction", line.step = T, show.legend = T)
   },
   message = "Creating plot")
 })

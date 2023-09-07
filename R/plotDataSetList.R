@@ -1003,7 +1003,9 @@ add_transparancy <- function(colors, percentage){
 #' @param violin.showpoints Wheteher or not to show individual points when making a violinplot
 #' @param frame_attr Which attribute of the dataframe to use for the time element of the animation
 #' @param symbol_attr Which attribute of the dataframe to use for the scatter symbol
+#' @param line.step Whether to plot lines as a step-function (T) or as linear interpolation (F, default)
 #' @param ... Additional parameters for the add_trace function
+#'
 #'
 #' @export
 plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin',
@@ -1012,7 +1014,7 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                               y_title = NULL, plot_title = NULL, upper_attr = NULL,
                               lower_attr = NULL, subplot_attr = NULL, show.legend = F,
                               inf.action = 'none', violin.showpoints = F, frame_attr = 'frame',
-                              symbol_attr = 'run_nr', subplot_shareX = F, ...) {
+                              symbol_attr = 'run_nr', subplot_shareX = F, line.step = F, ...) {
 
   l <- x <- isinf <- y <- text <- l_orig <- frame <- NULL #Set local binding to remove warnings
 
@@ -1238,7 +1240,8 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                    linetype = ~l_orig, marker = list(size = getOption('IOHanalyzer.markersize', 4)),
                    linetypes = dashes,
                    colors = colors, showlegend = show.legend,
-                   text = ~text, line = list(width = getOption('IOHanalyzer.linewidth', 2)),
+                   text = ~text, line = list(width = getOption('IOHanalyzer.linewidth', 2),
+                                             shape = ifelse(line.step, "hv", "linear")),
                    hovertemplate = '%{text}',
                    ...
                  )
@@ -1274,7 +1277,8 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                      type = 'scatter', mode = 'lines+markers',
                      marker = list(size = getOption('IOHanalyzer.markersize', 4)), linetype = dashstyle,
                      colors = colors, showlegend = show.legend, name = ~l,
-                     text = y_atr, line = list(width = getOption('IOHanalyzer.linewidth', 2)),
+                     text = y_atr, line = list(width = getOption('IOHanalyzer.linewidth', 2),
+                                               shape = ifelse(line.step, "hv", "linear")),
                      ...
                    )
                )
@@ -1612,7 +1616,7 @@ Plot.cumulative_difference_plot <- function(dsList, runtime_or_target_value, isF
 #' @param y_title Title of x-axis. Defaults to x_attr
 #' @param plot_title Title of x-axis. Defaults to no title
 #' @param p A previously existing plot on which to add traces. If NULL, a new canvas is created
-#' @param show.legend Whether or not to include a legend
+#' @param show.colorbar Whether or not to include a colorbar
 #' @param ... Additional parameters for the add_trace function
 #'
 #' @return An EAF plot
@@ -1625,7 +1629,7 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
                               scale.reverse = F, p = NULL, x_title = NULL,
                               xmin = NULL, xmax = NULL, ymin = NULL, ymax = NULL,
                               y_title = NULL, plot_title = NULL, subplot_attr = NULL,
-                              show.legend = F, subplot_shareX = F, ...) {
+                              show.colorbar = F, subplot_shareX = F, ...) {
 
   l <- x <- isinf <- y <- text <- l_orig <- frame <- NULL #Set local binding to remove warnings
 
@@ -1641,7 +1645,7 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
     if (length(attrs) == 1) return(plot_eaf_data(df, scale.xlog=scale.xlog, scale.ylog=scale.ylog,
                                                      scale.reverse=scale.reverse, p=p, x_title=x_title,
                                                      xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
-                                                     y_title = y_title, show.legend = show.legend,
+                                                     y_title = y_title, show.colorbar = show.colorbar,
                                                      subplot_attr = NULL, ...))
 
     #Get some number of rows and columns
@@ -1667,7 +1671,7 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
       p <- plot_eaf_data(df_sub, scale.xlog=scale.xlog, scale.ylog=scale.ylog,
                          scale.reverse=scale.reverse, p=p, x_title=x_title,
                          xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
-                         y_title = y_title, show.legend = F, subplot_attr = NULL, ...)
+                         y_title = y_title, show.colorbar = F, subplot_attr = NULL, ...)
       if (getOption("IOHanalyzer.annotation_x", 0.5) >= 0 &
           getOption("IOHanalyzer.annotation_y", 1) >= 0) {
         p %<>% layout(
@@ -1724,17 +1728,39 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
     extreme = as.matrix(df[, .(runtime=max(`runtime`), `f(x)`=max(`f(x)`))])
 
   for (i in seq_along(att_surfs)) {
-    # extreme <- get.extremes(c(0,16),c(0,17),c(F,T), '')
-
     poli <- add.extremes(points.steps(as.matrix(att_surfs[[i]])), as.matrix(extreme), c(F,maximization))
     poli <- rbind(poli, extreme)
 
     p %<>% add_polygons(poli[,'runtime'], poli[,'f(x)'], alpha=1, fillcolor=cols[i],
                         line=list(width=0), name=names(att_surfs)[i], showlegend=F)
   }
-  p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3),
+
+  # Set axis ranges
+  xmin <- ifelse((is.null(xmin) || xmin == ""), min(df$`runtime`), as.numeric(xmin))
+  xmax <- ifelse((is.null(xmax) || xmax == ""), max(df$`runtime`), as.numeric(xmax))
+  if (scale.xlog) {
+    xmin <- log10(xmin)
+    xmax <- log10(xmax)
+  }
+  ymin <- ifelse((is.null(ymin) || ymin == ""), min(df$`f(x)`), as.numeric(ymin))
+  ymax <- ifelse((is.null(ymax) || ymax == ""), max(df$`f(x)`), as.numeric(ymax))
+  if (scale.ylog) {
+    ymin <- log10(ymin)
+    ymax <- log10(ymax)
+  }
+  yrange <- c(ymin, ymax)
+  if (scale.reverse) yrange <- rev(yrange)
+
+  p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3,
+                             range = c(xmin, xmax)),
                 yaxis = list(type = yscale, tickfont = f3(), ticklen = 3,
-                             autorange = ifelse(scale.reverse, "reversed", T)))
+                             range = yrange))
+  if (show.colorbar) {
+    p %<>% add_contour(z=matrix(-0.1,1.1), zmin=-0.1, zmax=1.1, colorscale='Viridis',
+                       contours = list(coloring='fill'), reversescale = T)
+    p %<>% colorbar(cmin=-0, cmax=1, thickness=0.03, thicknessmode='fraction', len=1,
+                    tickvals=c(0,0.5,1), tickmode='array', outlinewidth=1, title='Fraction')
+  }
   p
 
   return(p)
@@ -1776,7 +1802,7 @@ plot_eaf_differences <- function(matrices, scale.xlog = T, scale.ylog = F, zero_
     x <- as.numeric(colnames(diff))
     y <- as.numeric(rownames(diff))
 
-    p <- IOH_plot_ly_default('', 'Runtime', 'f(x)')
+    p <- IOH_plot_ly_default('', 'Function Evaluations', 'f(x)')
     if (zero_transparant)
       diff[diff == 0] = NaN
 

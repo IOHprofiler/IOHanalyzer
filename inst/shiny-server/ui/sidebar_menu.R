@@ -41,7 +41,7 @@ sidebar_menu <- function() {
                            menuSubItem('Ranking', tabName = "FCE_Statistics_aggr", icon = icon('project-diagram'))
                        )
                        ),
-              menuItem("Other perspectives", tabName = "Other", icon = icon('file'),
+              menuItem("Empirical Attainment", tabName = "Other", icon = icon('file'),
                        menuItem("Single Function", tabName = "EAF_single", icon = icon("chart-line"), selected = F,
                          menuItem("Empirical Attainment", tabName = "EAF", icon = icon("project-diagram")),
                          menuItem("EAF Differences", tabName = "EAF_Diff", icon = icon("project-diagram")),

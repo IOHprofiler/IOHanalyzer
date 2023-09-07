@@ -19,7 +19,7 @@ plot_eaf_data(
   y_title = NULL,
   plot_title = NULL,
   subplot_attr = NULL,
-  show.legend = F,
+  show.colorbar = F,
   subplot_shareX = F,
   ...
 )
@@ -53,7 +53,7 @@ plot_eaf_data(
 
 \item{subplot_attr}{Which attribute of the dataframe to use for creating subplots}
 
-\item{show.legend}{Whether or not to include a legend}
+\item{show.colorbar}{Whether or not to include a colorbar}
 
 \item{subplot_shareX}{Whether or not to share X-axis when using subplots}
 

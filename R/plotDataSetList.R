@@ -1617,6 +1617,9 @@ Plot.cumulative_difference_plot <- function(dsList, runtime_or_target_value, isF
 #' @param plot_title Title of x-axis. Defaults to no title
 #' @param p A previously existing plot on which to add traces. If NULL, a new canvas is created
 #' @param show.colorbar Whether or not to include a colorbar
+#' @param dt_overlay Dataframe containing additional data (e.g. quantiles) to plot
+#' on top of the EAF. This should have a column labeled 'runtime'. The other columsn will
+#' all be plotted as function values.
 #' @param ... Additional parameters for the add_trace function
 #'
 #' @return An EAF plot
@@ -1629,7 +1632,8 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
                               scale.reverse = F, p = NULL, x_title = NULL,
                               xmin = NULL, xmax = NULL, ymin = NULL, ymax = NULL,
                               y_title = NULL, plot_title = NULL, subplot_attr = NULL,
-                              show.colorbar = F, subplot_shareX = F, ...) {
+                              show.colorbar = F, subplot_shareX = F, dt_overlay = NULL,
+                              ...) {
 
   l <- x <- isinf <- y <- text <- l_orig <- frame <- NULL #Set local binding to remove warnings
 
@@ -1639,6 +1643,9 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
       stop("Provided subplot-attribut is not a colname of the selected data.table.")
     }
     colnames(df)[colnames(df) == subplot_attr] <- "subplot_attr"
+    if (!is.null(dt_overlay)){
+      colnames(dt_overlay)[colnames(dt_overlay) == subplot_attr] <- "subplot_attr"
+    }
     attrs <- unique(df[, subplot_attr])
     if (length(attrs) == 0) stop("Attempting to create subplots with fewer than 2 unique values of
                                  `subplot_attrs`-column")
@@ -1646,7 +1653,7 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
                                                      scale.reverse=scale.reverse, p=p, x_title=x_title,
                                                      xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
                                                      y_title = y_title, show.colorbar = show.colorbar,
-                                                     subplot_attr = NULL, ...))
+                                                     subplot_attr = NULL, dt_overlay = dt_overlay,...))
 
     #Get some number of rows and columns
     n_cols <- 1 + ceiling(length(attrs)/10)
@@ -1655,6 +1662,7 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
     p <- lapply(seq(length(attrs)), function(idx) {
       attr_val <- attrs[[idx]]
       df_sub <- df[subplot_attr == attr_val]
+      dt_overlay_sub <- dt_overlay[subplot_attr == attr_val]
       disp_y <-  idx %% n_cols == 1
       disp_x <- idx > (length(attrs) - n_cols)
       x.title = if (disp_x) x_title else ""
@@ -1671,7 +1679,8 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
       p <- plot_eaf_data(df_sub, scale.xlog=scale.xlog, scale.ylog=scale.ylog,
                          scale.reverse=scale.reverse, p=p, x_title=x_title,
                          xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
-                         y_title = y_title, show.colorbar = F, subplot_attr = NULL, ...)
+                         y_title = y_title, show.colorbar = F, subplot_attr = NULL,
+                         dt_overlay = dt_overlay_sub, ...)
       if (getOption("IOHanalyzer.annotation_x", 0.5) >= 0 &
           getOption("IOHanalyzer.annotation_y", 1) >= 0) {
         p %<>% layout(
@@ -1755,12 +1764,28 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
                              range = c(xmin, xmax)),
                 yaxis = list(type = yscale, tickfont = f3(), ticklen = 3,
                              range = yrange))
+
+  if (!is.null(dt_overlay)) {
+    cnames <- colnames(dt_overlay)
+    if (!('runtime' %in% cnames)) {
+      warning('dt_overlay needs to contain a columns labeled `runtime` to be used.')
+    } else {
+      for (cname in cnames[!(cnames %in% c('runtime', 'subplot_attr', 'ID'))]) {
+        p %<>% add_trace(x=dt_overlay[['runtime']], y=dt_overlay[[cname]], type='scatter',
+                         mode='lines', name = cname,
+                         line = list(width = getOption('IOHanalyzer.linewidth', 2),
+                                     color = 'black', shape = 'hv')
+                         )
+      }
+    }
+  }
   if (show.colorbar) {
     p %<>% add_contour(z=matrix(-0.1,1.1), zmin=-0.1, zmax=1.1, colorscale='Viridis',
                        contours = list(coloring='fill'), reversescale = T)
     p %<>% colorbar(cmin=-0, cmax=1, thickness=0.03, thicknessmode='fraction', len=1,
                     tickvals=c(0,0.5,1), tickmode='array', outlinewidth=1, title='Fraction')
   }
+
   p
 
   return(p)

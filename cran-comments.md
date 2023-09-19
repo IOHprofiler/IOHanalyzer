@@ -1,5 +1,5 @@
 ## Submission status
-This is a new feature update submission, increasing to version 0.1.8 
+This is a new feature update submission, increasing to version 0.1.8.1 (minor update after problems passing pre-check) 
 
 This release implements several new features, primarily adding new analysis in the
 form of empirical attainment functions. 

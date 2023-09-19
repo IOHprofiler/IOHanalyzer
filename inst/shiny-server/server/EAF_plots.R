@@ -14,14 +14,30 @@ get_data_EAF <- reactive({
                     scale_xlog = input$EAF.Single.Logx)
 })
 
+
 render_EAF_Plot <- reactive({
   withProgress({
-    plot_eaf_data(get_data_EAF(), attr(DATA(), 'maximization'),
+    dt_eaf <- get_data_EAF()
+
+    if (input$EAF.Single.Problines) {
+      dsList <- subset(DATA(), ID %in% input$EAF.Single.Algs)
+      dt_fv <- get_FV_sample(dsList, unique(dt_eaf$runtime), output='long')
+      dt_lines <- dt_fv[, .(median = median(`f(x)`), per25 = quantile(`f(x)`, 0.25),
+                            per75 = quantile(`f(x)`, 0.75), ID=`ID` ), by='runtime']
+
+      dt_lines <- dt_lines %>% set_colnames(c('runtime', 'median', '25%', '75%', 'ID'))
+
+    } else {
+      dt_lines <- NULL
+    }
+
+    plot_eaf_data(dt_eaf, attr(DATA(), 'maximization'),
                   scale.xlog = input$EAF.Single.Logx, scale.ylog = input$EAF.Single.Logy,
                   xmin = input$EAF.Single.Min, xmax = input$EAF.Single.Max,
                   ymin = input$EAF.Single.yMin, ymax = input$EAF.Single.yMax,
                   subplot_attr = 'ID', x_title = "Funciton Evaluations",
-                  y_title = "f(x)", show.colorbar = input$EAF.Single.Colorbar)
+                  y_title = "f(x)", show.colorbar = input$EAF.Single.Colorbar,
+                  dt_overlay = dt_lines)
   },
   message = "Creating plot")
 })
@@ -132,12 +148,28 @@ get_data_EAF_multi <- reactive({
 
 render_EAF_multi_Plot <- reactive({
   withProgress({
-    plot_eaf_data(get_data_EAF_multi(), attr(DATA_RAW(), 'maximization'),
+    dt_eaf <- get_data_EAF_multi()
+
+    if (input$EAF.Multi.Problines) {
+      dsList <- subset(DATA_RAW(), ID %in% input$EAF.Multi.Algs, funcId %in% input$EAF.Multi.FuncIds, DIM == input$Overall.Dim )
+
+      dt_fv <- get_FV_sample(dsList, unique(dt_eaf$runtime), output='long')
+      dt_lines <- dt_fv[, .(median = median(`f(x)`), per25 = quantile(`f(x)`, 0.25),
+                            per75 = quantile(`f(x)`, 0.75), ID=`ID` ), by='runtime']
+
+      dt_lines <- dt_lines %>% set_colnames(c('runtime', 'median', '25%', '75%', 'ID'))
+
+    } else {
+      dt_lines <- NULL
+    }
+
+    plot_eaf_data(dt_eaf, attr(DATA_RAW(), 'maximization'),
                   scale.xlog = input$EAF.Multi.Logx, scale.ylog = input$EAF.Multi.Logy,
                   xmin = input$EAF.Multi.Min, xmax = input$EAF.Multi.Min,
                   ymin = input$EAF.Multi.yMin, ymax = input$EAF.Multi.yMax,
                   subplot_attr = 'ID', x_title = "Function Evaluations",
-                  y_title = "f(x)", show.colorbar = input$EAF.Multi.Colorbar)
+                  y_title = "f(x)", show.colorbar = input$EAF.Multi.Colorbar,
+                  dt_overlay = dt_lines)
   },
   message = "Creating plot")
 })

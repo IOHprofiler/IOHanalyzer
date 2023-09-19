@@ -21,6 +21,7 @@ plot_eaf_data(
   subplot_attr = NULL,
   show.colorbar = F,
   subplot_shareX = F,
+  dt_overlay = NULL,
   ...
 )
 }
@@ -56,6 +57,10 @@ plot_eaf_data(
 \item{show.colorbar}{Whether or not to include a colorbar}
 
 \item{subplot_shareX}{Whether or not to share X-axis when using subplots}
+
+\item{dt_overlay}{Dataframe containing additional data (e.g. quantiles) to plot
+on top of the EAF. This should have a column labeled 'runtime'. The other columsn will
+all be plotted as function values.}
 
 \item{...}{Additional parameters for the add_trace function}
 }

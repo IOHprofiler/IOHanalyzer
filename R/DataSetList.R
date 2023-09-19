@@ -1655,11 +1655,8 @@ generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
 #' @export
 #' @examples
 #'
-#' dsl
 #' dsl_sub <- subset(dsl, funcId == 1)
-#' runtime <- 15
-#'
-#' generate_data.CDP(dsl_sub, runtime, TRUE)
+#' generate_data.CDP(dsl_sub, 15, TRUE, nOfBootstrapSamples = 10)
 generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3)
 {
       if (!requireNamespace("RVCompare", quietly = TRUE)) {
@@ -1697,7 +1694,10 @@ generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, al
         X_B <- - X_B
       }
 
-      res <- RVCompare::get_Y_AB_bounds_bootstrap(X_A, X_B, ignoreMinimumLengthCheck = TRUE, alpha=alpha,  EPSILON=EPSILON, nOfBootstrapSamples=1e3)
+      res <- RVCompare::get_Y_AB_bounds_bootstrap(X_A, X_B,
+                                                  ignoreMinimumLengthCheck = TRUE,
+                                                  alpha=alpha,  EPSILON=EPSILON,
+                                                  nOfBootstrapSamples=nOfBootstrapSamples)
 
       return(data.frame(res))
 }

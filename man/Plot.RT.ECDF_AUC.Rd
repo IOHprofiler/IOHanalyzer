@@ -39,5 +39,6 @@ A radarplot of the area under the aggregated ECDF-curve of the DataSetList
 Radarplot of the area under the aggregated ECDF-curve of a DataSetList.
 }
 \examples{
+\dontshow{data.table::setDTthreads(1)}
 Plot.RT.ECDF_AUC(subset(dsl, funcId == 1))
 }

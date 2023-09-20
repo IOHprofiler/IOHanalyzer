@@ -1237,6 +1237,7 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', 
 #'
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' generate_data.AUC(dsl, get_ECDF_targets(dsl))
 #' generate_data.AUC(NULL, NULL, dt_ecdf = generate_data.ECDF(dsl, get_ECDF_targets(dsl)))
 generate_data.AUC <- function(dsList, targets, scale_log = F, which = 'by_RT', dt_ecdf = NULL,
@@ -1480,6 +1481,7 @@ generate_data.Aggr <- function(dsList, aggr_on = 'funcId', targets = NULL, which
 #'
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' generate_data.ECDF_raw(subset(dsl, funcId == 1), c(10, 15, 16))
 generate_data.ECDF_raw <- function(dsList, targets, scale_log = F) {
   V1 <- NULL #Set local binding to remove warnings
@@ -1783,6 +1785,7 @@ generate_data.EAF <- function(dsList, n_sets = 11, subsampling = 100, scale_xlog
 #' @param normalize Whether to normalize the resulting integrals to [0,1] (Based on `min_val` and `max_va`)
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' generate_data.ECDF_From_EAF(generate_data.EAF(subset(dsl, funcId == 1)), 1, 16, maximization = TRUE)
 generate_data.ECDF_From_EAF <- function(eaf_table, min_val, max_val, maximization = F,
                                         scale_log = F, normalize = T) {

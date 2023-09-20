@@ -18,5 +18,6 @@ a data.table, it needs columns 'target', 'DIM' and 'funcId'}
 This provides an unaggregated version of the function `generate_data.ECDF`.
 }
 \examples{
+\dontshow{data.table::setDTthreads(1)}
 generate_data.ECDF_raw(subset(dsl, funcId == 1), c(10, 15, 16))
 }

@@ -1001,6 +1001,7 @@ get_marg_contrib_ecdf <- function(id, perm, j, dt) {
 #'
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' dsl_sub <- subset(dsl, funcId == 1)
 #' get_shapley_values(dsl_sub, get_ECDF_targets(dsl_sub), group_size = 2)
 get_shapley_values <- function(dsList, targets, scale.log = T, group_size = 5, max_perm_size = 10, normalize = T){

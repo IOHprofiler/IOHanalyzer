@@ -30,5 +30,6 @@ generate_data.ECDF_From_EAF(
 This function uses EAF-data to calculate a target-independent version of the ECDF
 }
 \examples{
+\dontshow{data.table::setDTthreads(1)}
 generate_data.ECDF_From_EAF(generate_data.EAF(subset(dsl, funcId == 1)), 1, 16, maximization = TRUE)
 }

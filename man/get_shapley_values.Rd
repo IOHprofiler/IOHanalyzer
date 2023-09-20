@@ -31,6 +31,7 @@ a data.table, it needs columns 'target', 'DIM' and 'funcId'}
 Based on the contribution to the ECDF-curve of the VBS of the portfolio
 }
 \examples{
+\dontshow{data.table::setDTthreads(1)}
 dsl_sub <- subset(dsl, funcId == 1)
 get_shapley_values(dsl_sub, get_ECDF_targets(dsl_sub), group_size = 2)
 }

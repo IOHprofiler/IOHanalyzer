@@ -143,6 +143,7 @@ Plot.RT.Histogram <- function(dsList, ftarget, plot_mode = 'overlay', use.equal.
 #' the running times of the DataSetList at the target function values
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' Plot.RT.ECDF_Per_Target(subset(dsl, funcId == 1), 14)
 Plot.RT.ECDF_Per_Target <- function(dsList, ftargets, scale.xlog = F)
   UseMethod("Plot.RT.ECDF_Per_Target", dsList)
@@ -160,6 +161,7 @@ Plot.RT.ECDF_Per_Target <- function(dsList, ftargets, scale.xlog = F)
 #' the running times of the DataSetList
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' Plot.RT.ECDF_Single_Func(subset(dsl, funcId == 1))
 Plot.RT.ECDF_Single_Func <- function(dsList, fstart = NULL, fstop = NULL,
                               fstep = NULL, show.per_target = F,
@@ -175,6 +177,7 @@ Plot.RT.ECDF_Single_Func <- function(dsList, fstart = NULL, fstop = NULL,
 #' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' Plot.RT.ECDF_AUC(subset(dsl, funcId == 1))
 Plot.RT.ECDF_AUC <- function(dsList, fstart = NULL,
                         fstop = NULL, fstep = NULL,
@@ -222,6 +225,7 @@ Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay', use.equal.bi
 #' the fucntion values of the DataSetList at the target runtimes
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' Plot.FV.ECDF_Per_Target(subset(dsl, funcId == 1), 10)
 Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F, scale.reverse = F)
   UseMethod("Plot.FV.ECDF_Per_Target", dsList)
@@ -240,6 +244,7 @@ Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F, scale.reve
 #' the function values of the DataSetList
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' Plot.FV.ECDF_Single_Func(subset(dsl, funcId == 1))
 Plot.FV.ECDF_Single_Func <- function(dsList, rt_min = NULL, rt_max = NULL,
                               rt_step = NULL, scale.xlog = F,
@@ -255,6 +260,7 @@ Plot.FV.ECDF_Single_Func <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' Plot.FV.ECDF_AUC(subset(dsl, funcId == 1))
 Plot.FV.ECDF_AUC <- function(dsList, rt_min = NULL, rt_max = NULL,
                         rt_step = NULL) UseMethod("Plot.FV.ECDF_AUC", dsList)
@@ -316,6 +322,7 @@ Plot.FV.Parameters <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' the running times of the DataSetList
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' Plot.RT.ECDF_Multi_Func(dsl)
 Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = F)
   UseMethod("Plot.RT.ECDF_Multi_Func", dsList)

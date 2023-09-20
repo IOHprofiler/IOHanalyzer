@@ -1155,9 +1155,10 @@ generate_data.hist <- function(dsList, target, use.equal.bins = F, which = 'by_R
 #' @examples
 #' generate_data.ECDF(subset(dsl, funcId == 1), c(10, 15, 16))
 generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', use_full_range = TRUE) {
-  V1 <- NULL #Set local binding to remove warnings
   by_rt <- which == 'by_RT'
+  V1 <- frac <- NULL
   if (by_rt) {
+    maximization <- attr(dsList, "maximization")
     RT <- get_runtimes(dsList)
     if (!use_full_range) {
       if (length(unique(get_funcId(dsList))) > 1 || length(unique(get_dim(dsList))) > 1) {
@@ -1188,6 +1189,8 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', 
     x <- unique(seq_FV(FV, length.out = 50, scale = ifelse(scale_log, 'log', 'linear')))
   }
 
+
+
   dt <- as.data.table(rbindlist(lapply(dsList, function(df) {
     ID <- get_id(df)
     if (by_rt) {
@@ -1196,28 +1199,26 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', 
     }
     else
       targets_ <- targets
-    m <- lapply(targets_, function(target) {
-      if (by_rt) {
-        data <- get_RT_sample(df, target, output = 'long')$RT
-        data[is.na(data)] <- Inf
-      }
+
+
+    if (by_rt) {
+      data <- get_FV_sample(df, x, output = 'long')
+      if (maximization)
+        data$frac <- unlist(lapply(data$`f(x)`, function(temp) mean(temp > targets_)))
       else
-        data <- get_FV_sample(df, target, output = 'long')$`f(x)`
-
-      if (all(is.na(data)))
-        return(rep(0, length(x)))
-      fun <- ecdf(data)
-      if (is.function(fun)) fun(x) else NA
-    }) %>%
-      do.call(rbind, .)
-
-    data.frame(x = x,
-               mean = apply(m, 2, . %>% mean(na.rm = T)),
-               sd = apply(m, 2, . %>% sd(na.rm = T))) %>%
-      mutate(upper = mean + sd, lower = mean - sd, ID = ID)
+        data$frac <- unlist(lapply(data$`f(x)`, function(temp) mean(temp < targets_)))
+      res <- data[, .(x=runtime, mean=mean(frac), sd=sd(frac)), by='runtime']
+    } else {
+      data <- get_RT_sample(df, x, output = 'long')
+      data[is.na(data)] <- Inf
+      data$frac <- unlist(lapply(data$RT, function(temp) mean(temp < targets_)))
+      res <- data[, .(x=target, mean=mean(frac), sd=sd(frac)), by='target']
+    }
+    mutate(res, upper = mean + sd, lower = mean - sd, ID = ID)
   })))
   dt[, mean(mean), by = .(x, ID)][, .(mean = V1, ID = ID, x = x)]
 }
+
 
 
 #' Generate dataframe containing the AUC for any ECDF-curves
@@ -1236,6 +1237,7 @@ generate_data.ECDF <- function(dsList, targets, scale_log = F, which = 'by_RT', 
 #'
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' generate_data.AUC(dsl, get_ECDF_targets(dsl))
 #' generate_data.AUC(NULL, NULL, dt_ecdf = generate_data.ECDF(dsl, get_ECDF_targets(dsl)))
 generate_data.AUC <- function(dsList, targets, scale_log = F, which = 'by_RT', dt_ecdf = NULL,
@@ -1246,21 +1248,36 @@ generate_data.AUC <- function(dsList, targets, scale_log = F, which = 'by_RT', d
       return(NULL)
     dt_ecdf <- generate_data.ECDF(dsList, targets, scale_log, which)
   }
-  max_idx <- nrow(unique(dt_ecdf[,'x']))
-  dt_ecdf[, idx := seq(max_idx), by = 'ID']
-  dt3 = copy(dt_ecdf)
-  dt3[, idx := idx - 1]
-  dt_merged = merge(dt_ecdf, dt3, by = c('ID', 'idx'))
-  colnames(dt_merged) <- c("ID", "idx", "mean_pre", "x_pre", "mean_post", "x")
-  dt_merged[, auc_contrib := ((mean_pre + mean_post)/2)*(x - x_pre)]
-  if (normalize){
-  dt_merged[, auc := cumsum(auc_contrib)/x, by = 'ID']
-  } else {
-    dt_merged[, auc := cumsum(auc_contrib), by = 'ID']
-  }
-  if (multiple_x)
-    return(dt_merged[, c('ID','x','auc') ])
-  return(dt_merged[idx == (max_idx - 1), c('ID','x','auc') ])
+  dt_ecdf <- dt_ecdf[, c('mean', 'ID', 'x')]
+  rt_max <- max(dt_ecdf[,'x'])
+  dt_merged <- rbindlist(lapply(unique(dt_ecdf$ID), function(id) {
+    dt_part <- dt_ecdf[ID == id, ]
+    max_idx <- nrow(unique(dt_part[,'x']))
+    dt_part[, idx := seq(max_idx), by = 'ID']
+    dt3 = copy(dt_part)
+    dt3[, idx := idx - 1]
+    dt_merged_part = merge(dt_part, dt3, by = c('ID', 'idx'))
+    colnames(dt_merged_part) <- c("ID", "idx", "mean_pre", "x_pre", "mean_post", "x")
+    if (max(dt_part[,'x']) < rt_max){
+      extreme <- data.table("ID" = id, "idx" = max_idx+1,
+                            "x_pre" = max(dt_part[,'x']),
+                            "x" = rt_max,
+                            "mean_pre" = max(dt_part[,'mean']),
+                            "mean_post" = max(dt_part[,'mean']))
+      max_idx <- max_idx + 1
+      dt_merged_part <- rbind(dt_merged_part, extreme)
+    }
+    dt_merged_part[, auc_contrib := ((mean_pre + mean_post)/2)*(x - x_pre)]
+    if (normalize){
+      dt_merged_part[, auc := cumsum(auc_contrib)/x, by = 'ID']
+    } else {
+      dt_merged_part[, auc := cumsum(auc_contrib), by = 'ID']
+    }
+    if (multiple_x)
+      return(dt_merged_part[, c('ID','x','auc') ])
+    return(dt_merged_part[idx == (max_idx - 1), c('ID','x','auc') ])
+  }))
+  return(dt_merged)
 }
 
 
@@ -1464,6 +1481,7 @@ generate_data.Aggr <- function(dsList, aggr_on = 'funcId', targets = NULL, which
 #'
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' generate_data.ECDF_raw(subset(dsl, funcId == 1), c(10, 15, 16))
 generate_data.ECDF_raw <- function(dsList, targets, scale_log = F) {
   V1 <- NULL #Set local binding to remove warnings
@@ -1639,11 +1657,8 @@ generate_data.Heatmaps <- function(dsList, which = 'by_FV', target_dt = NULL) {
 #' @export
 #' @examples
 #'
-#' dsl
 #' dsl_sub <- subset(dsl, funcId == 1)
-#' runtime <- 15
-#'
-#' generate_data.CDP(dsl_sub, runtime, TRUE)
+#' generate_data.CDP(dsl_sub, 15, TRUE, nOfBootstrapSamples = 10)
 generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, alpha=0.05,  EPSILON=1e-80, nOfBootstrapSamples=1e3)
 {
       if (!requireNamespace("RVCompare", quietly = TRUE)) {
@@ -1681,7 +1696,227 @@ generate_data.CDP <- function(dsList, runtime_or_target_value, isFixedBudget, al
         X_B <- - X_B
       }
 
-      res <- RVCompare::get_Y_AB_bounds_bootstrap(X_A, X_B, ignoreMinimumLengthCheck = TRUE, alpha=alpha,  EPSILON=EPSILON, nOfBootstrapSamples=1e3)
+      res <- RVCompare::get_Y_AB_bounds_bootstrap(X_A, X_B,
+                                                  ignoreMinimumLengthCheck = TRUE,
+                                                  alpha=alpha,  EPSILON=EPSILON,
+                                                  nOfBootstrapSamples=nOfBootstrapSamples)
 
       return(data.frame(res))
 }
+
+
+#' Generate dataframe consisting of the levelsets of the EAF
+#'
+#' This function generates a dataframe which can be easily plotted using the `plot_eaf_data`-function
+#'
+#' @param dsList The DataSetList object
+#' @param n_sets The number of level sets to calculate
+#' @param subsampling Level of subsampling to use for runtime-values (number of runtimes to consider).
+#'  Setting to 0 will make the calculations more precise at the cost of potentially much longer exectution times
+#' @param scale_xlog Only has effect when `subsampling` is True. The scaling of the subsampled runtimes
+#' When true, these are equally spaced in log-space, when false they are linearly spaced.
+#' @param xmin Minimum runtime value
+#' @param xmax Maximum runtime value
+#'
+#' @export
+#' @examples
+#' generate_data.EAF(subset(dsl, funcId == 1))
+generate_data.EAF <- function(dsList, n_sets = 11, subsampling = 100, scale_xlog = F,
+                              xmin = "", xmax = "") {
+  V1 <- NULL #Set local binding to remove warnings
+
+  if (!requireNamespace("eaf", quietly = TRUE)) {
+    stop("Package \"eaf\" needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
+
+  # if (length(get_id(dsList)) != 1 ) {
+  #   stop("Multiple IDs are present in provided DataSetList.
+  #   Please call this function for each individual ID instead.")
+  # }
+  ids <- get_id(dsList)
+  runtimes <- get_runtimes(dsList)
+  xmin <- ifelse(xmin == "", min(runtimes, na.rm = T), as.numeric(xmin))
+  xmax <- ifelse(xmax == "", max(runtimes, na.rm = T), as.numeric(xmax))
+
+  if (subsampling > 0){
+    runtimes <- seq_RT(c(xmin,xmax), from=xmin, to=xmax, length.out = subsampling, scale=ifelse(scale_xlog, 'log', 'linear'))
+  } else {
+    runtimes <- runtimes[runtimes > xmin]
+    runtimes <- runtimes[runtimes < xmax]
+  }
+
+  temp <- lapply(ids, function(id) {
+    dsl <- subset(dsList, ID == id)
+
+
+    dt <- get_FV_sample(dsl, runtimes, output='long')
+    max_runs <- max(dt$run)
+    dt_temp <- dt[!is.na(`f(x)`),.(temp=max_runs*funcId+ run, `f(x)`, `runtime`)]
+
+    if (attr(dsl, 'maximization')) {
+      quals <- dt_temp[, .(`runtime`, `f(x)`=-1*`f(x)`)]
+    } else {
+      quals <- dt_temp[,c('runtime', 'f(x)')]
+    }
+    runs <- dt_temp$temp
+    eaf <- eafs(quals, runs, percentiles = seq(0,100, length.out=n_sets))
+    if (attr(dsl, 'maximization')) {
+      eaf[,2] = eaf[,2]*-1
+    }
+    eaf_table <- as.data.table(eaf)
+    colnames(eaf_table) <- c('runtime', 'f(x)', 'percentage')
+    eaf_table$ID <- id
+    return(eaf_table)}
+    )
+  dt <- rbindlist(temp)
+  return(dt)
+}
+
+#' Generate dataframe consisting of the ECDF-equivalent based on the EAF
+#'
+#' This function uses EAF-data to calculate a target-independent version of the ECDF
+#'
+#' @param eaf_table Datatable resulting from the `generate_data.EAF` function
+#' @param min_val Minimum value to use for y-space
+#' @param max_val Maximum value to use for y-space
+#' @param maximization Whether the data resulted from maximization or not
+#' @param scale_log Whether to use logarithmic scaling in y-space before calculating the partial integral
+#' @param normalize Whether to normalize the resulting integrals to [0,1] (Based on `min_val` and `max_va`)
+#' @export
+#' @examples
+#' \dontshow{data.table::setDTthreads(1)}
+#' generate_data.ECDF_From_EAF(generate_data.EAF(subset(dsl, funcId == 1)), 1, 16, maximization = TRUE)
+generate_data.ECDF_From_EAF <- function(eaf_table, min_val, max_val, maximization = F,
+                                        scale_log = F, normalize = T) {
+
+  runtimes <- sort(unique(eaf_table[,`runtime`]))
+
+  ext_func <- ifelse(maximization, max, min)
+
+  fvals <-  sort(unique(eaf_table[,`f(x)`]))
+  min_val <- ifelse(min_val == "", min(fvals, na.rm = T), as.numeric(min_val))
+  max_val <- ifelse(max_val == "", max(fvals, na.rm = T), as.numeric(max_val))
+
+  if (scale_log){
+    min_val <- max(min_val, 1e-12)
+    max_val <- max(max_val, 1e-12)
+    eaf_table <- eaf_table[,.(`runtime`, `f(x)`=log10(pmax( min_val, pmin( `f(x)`, max_val))), `percentage`, `ID`)]
+    min_val <- log10(min_val)
+    max_val <- log10(max_val)
+  }
+
+  ecdf_full <- rbindlist(lapply(unlist(unique(eaf_table[,'ID'])), function(id) {
+    ecdf <- rbindlist(lapply(runtimes, function(runtime_value) {
+      temp <- eaf_table[runtime <= runtime_value , .(agg_fval = ext_func(`f(x)`)), by = c('percentage')]
+      agg_vals <- pmax(pmin(temp$agg_fval, max_val), min_val)
+
+      if (maximization) {
+        partials <- rev(c(rev(agg_vals), max_val) - c(min_val, rev(agg_vals)))
+      } else {
+        partials <- c(agg_vals, max_val) - c(min_val,agg_vals)
+      }
+      list(runtime_value, sum(partials * c(0,temp$perc/100)))
+    }))
+    if (normalize) {
+      ecdf[,2] = ecdf[,2]/(max_val-min_val)
+    }
+    ecdf <- as.data.table(ecdf)
+    colnames(ecdf) <- c('x', 'mean')
+    ecdf$ID <- id
+    ecdf
+  }))
+  return(ecdf_full)
+}
+
+
+#' Generate differences between two EAFs
+#'
+#' This function uses the 'eaf' package to calculate eaf differences
+#'
+#' @param dsList1 The first DataSetList object
+#' @param dsList2 The second DataSetList object
+#' @export
+#' @examples
+#' generate_data.EAF_Difference(dsl[1], dsl[3])
+generate_data.EAF_Difference <- function(dsList1, dsList2) {
+
+  dt <- get_FV_sample(dsList1, get_runtimes(dsList1), output='long')
+  max_runs <- max(dt$run)
+  dt_temp = dt[,.(temp=max_runs*funcId+ run, `f(x)`, `runtime`)]
+
+  quals <- dt_temp[,c('runtime', 'f(x)')]
+  runs <- dt_temp$temp - min(dt_temp$temp) + 1 #need to start at 1
+  x <- cbind(quals, runs)
+  x <- x[!is.na(`f(x)`),.(`runtime`, `f(x)`, `runs`)]
+
+  dt <- get_FV_sample(dsList2, get_runtimes(dsList2), output='long')
+  max_runs <- max(dt$run)
+  dt_temp = dt[,.(temp=max_runs*funcId+ run, `f(x)`, `runtime`)]
+
+  quals <- dt_temp[,c('runtime', 'f(x)')]
+  runs <- dt_temp$temp - min(dt_temp$temp) + 1 #need to start at 1
+  y <- cbind(quals, runs)
+  y <- y[!is.na(`f(x)`),.(`runtime`, `f(x)`, `runs`)]
+
+  diff <- eafdiff(x, y, rectangles = T)
+
+  return(diff)
+}
+
+
+#' Generate EAF-differences between each function and the remaining portfolio
+#'
+#' This is an approximation of ``, since the number of required polygons
+#' can quickly become problematic for plotly. This function uses discretized
+#' contour matrices instead, which trades off accuracy for scalability.
+#'
+#' @param dsList The DataSetList object, containing at least 2 IDs
+#' @param xmin Minimum runtime to consider
+#' @param xmax Maximum runtime to consider
+#' @param ymin Minimum f(x) to consider
+#' @param ymax Maximum f(x) to consider
+#' @param x.log Whether to scale the y-space logarithmically
+#' @param y.log Whether to scale the y-space logarithmically
+#' @export
+#' @examples
+#' generate_data.EAF_diff_Approximate(subset(dsl, funcId == 1), 1, 16, 1, 16)
+generate_data.EAF_diff_Approximate <- function(dsList, xmin, xmax, ymin, ymax,
+                                          x.log=T, y.log=T) {
+
+  RT <- get_runtimes(dsList)
+  xmin <- max(as.numeric(xmin), min(RT))
+  xmax <- min(as.numeric(xmax), max(RT))
+
+  x <- unique(seq_RT(c(xmin, xmax), length.out = 50, scale = 'log'))
+
+  FV <- get_funvals(dsList)
+  ymin <- max(as.numeric(ymin), min(FV))
+  ymax <- min(as.numeric(ymax), max(FV))
+  y <- rev(unique(seq_FV(c(ymin,ymax), length.out = 50, scale = 'log')))
+
+  algs <- get_algId(dsList)
+
+  mats <- lapply(algs, function(alg) {
+    ds <- subset(dsList, algId == alg)
+    do.call(rbind, lapply(x, function(xval) {unlist(get_RT_summary(ds, y, xval)$ps)}))
+  })
+
+  names(mats) <- algs
+  fv_sum = get_FV_summary(dsList, x, include_limits = T)
+
+  matrices_diffs <- lapply(algs, function(alg) {
+    mat_max <- Reduce(pmax, mats[algs[algs != alg]])
+    diff <- mats[alg][[1]] - mat_max
+    # diff[diff<0] <- 0
+    rownames(diff) <- x
+    colnames(diff) <- y
+    return(t(diff))
+  })
+
+  names(matrices_diffs) <- algs
+  return(matrices_diffs)
+}
+
+
+

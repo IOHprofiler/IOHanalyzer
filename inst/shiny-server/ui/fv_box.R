@@ -103,6 +103,11 @@ fv_agg_box <- function(width = 12, height = '600px', collapsible = T, collapsed 
                       ),
           selectInput('FCEPlot.Multi.Funcs', label = 'Select which Functions to include:',
                       multiple = T, selected = NULL, choices = NULL),
+          selectInput('FCEPlot.Multi.Geom_mean',
+                        label = 'Select the aggregation method to use:',
+                        multiple = F, selected = 'median',
+                        choices = c('median', 'mean', 'geometric')),
+
           checkboxInput('FCEPlot.Multi.Logx',
                         label = 'Scale x axis \\(\\log_{10}\\)',
                         value = T),

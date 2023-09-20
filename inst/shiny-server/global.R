@@ -106,6 +106,7 @@ print_html <- function(s, widget_id = 'process_data_promt')
 
 # download file names: csv, image ---------------------
 AUC_ECDF_aggr_name <- parse(text = "paste0('AUC_ECDF_MULTI.', input$RTECDF.AUC.Table.Format)")
+AUC_EAF_ECDF_aggr_name <- parse(text = "paste0('AUC_EAF.', input$EAF.AUC.Table.Format)")
 overview_single_name <- parse(text = "paste0('Overview-', paste0(input$Overall.Dim, 'D'),
                              paste0('F', input$Overall.Funcid), '.', input$Overview.Single.Format)")
 overview_all_name <- parse(text = "paste0('Overview-All-', '.', input$Overview.All.Format)")
@@ -191,6 +192,12 @@ FIG_NAME_RT_SHAPLEY <- parse(text = "paste0('RT-Shapley-', Sys.Date(), '.', inpu
 RT_NG_heatmap_name <- parse(text = "paste0('RT-NG_Heatmap-', Sys.Date(), '.', input$RT_NG.Heatmap.Format)")
 FV_NG_heatmap_name <- parse(text = "paste0('FV-NG_Heatmap-', Sys.Date(), '.', input$FV_NG.Heatmap.Format)")
 
+FIG_NAME_EAF <- parse(text = "paste0('EAF-', Sys.Date(), '.', input$EAF.Single.Format)")
+FIG_NAME_EAFCDF <- parse(text = "paste0('EAFCDF-', Sys.Date(), '.', input$EAF.CDF.Format)")
+FIG_NAME_EAFDiff <- parse(text = "paste0('EAFDiff-', Sys.Date(), '.', input$EAF.Diff.Format)")
+FIG_NAME_EAFMultiCDF <- parse(text = "paste0('EAF_multiCDF-', Sys.Date(), '.', input$EAF.MultiCDF.Format)")
+AUC_ECDFEAF_aggr_name <- parse(text = "paste0('AUC_ECDFEAF_MULTI.', input$RTECDF.AUC.Table.Format)")
+
 # ID of the control widget, whose current value should de always recorded and restored ----
 # those control widget are switched on and off
 widget_id <- c('RTSummary.Statistics.Min',
@@ -244,7 +251,16 @@ widget_id <- c('RTSummary.Statistics.Min',
                'FCEECDF.AUC.Min',
                'FCEECDF.AUC.Max',
                'FCEECDF.AUC.Step',
-               'FCEECDF.Single.Target')
+               'FCEECDF.Single.Target',
+               'EAF.Single.Min',
+               'EAF.Single.Max',
+               'EAF.Single.yMin',
+               'EAF.Single.yMax',
+               'EAF.CDF.yMin',
+               'EAF.CDF.yMax',
+               'EAF.Diff.yMin',
+               'EAF.Diff.yMax'
+               )
 
 eventExpr <- parse(text = paste0('{', paste(paste0('input$', widget_id), collapse = "\n"), '}'))
 

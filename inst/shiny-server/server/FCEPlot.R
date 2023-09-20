@@ -96,7 +96,7 @@ get_data_FCE_multi_func_bulk <- reactive({
   if (length(get_id(data)) < 20) { #Arbitrary limit for the time being
     rbindlist(lapply(get_funcId(data), function(fid) {
       generate_data.Single_Function(subset(data, funcId == fid), scale_log = input$FCEPlot.Multi.Logx,
-                                    which = 'by_FV', start = start, stop = end)
+                                    which = 'by_FV', start = start, stop = end, include_geom_mean = T)
     }))
   }
   else
@@ -128,10 +128,11 @@ get_data_FCEPlot_multi <- reactive({
 
 render_FCEPlot_multi_plot <- reactive({
   withProgress({
-  plot_general_data(get_data_FCEPlot_multi(), x_attr = 'runtime', y_attr = 'mean',
+  plot_general_data(get_data_FCEPlot_multi(), x_attr = 'runtime', y_attr = input$FCEPlot.Multi.Geom_mean,
                     subplot_attr = 'funcId', type = 'line', scale.xlog = input$FCEPlot.Multi.Logx,
                     scale.ylog = input$FCEPlot.Multi.Logy, x_title = 'Function Evaluations',
                     y_title = 'Best-so-far f(x)', show.legend = T, subplot_shareX = T)
+
   },
   message = "Creating plot")
 })

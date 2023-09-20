@@ -16,7 +16,7 @@ render_ecdf_per_target <- reactive({
                       x_title = "Target Value",
                       y_title = "Proportion of runs", scale.xlog = input$FCEECDF.Single.Logx,
                       show.legend = T,
-                      scale.reverse = !attr(DATA()[[1]], 'maximization'))
+                      scale.reverse = !attr(DATA()[[1]], 'maximization'), line.step = T)
   },
   message = "Creating plot")
 })
@@ -71,7 +71,8 @@ render_FV_ECDF_AGGR <- reactive({
                       x_title = "Target Value",
                       y_title = "Proportion of (run, target) pairs",
                       scale.xlog = input$FCEECDF.Mult.Logx,
-                      scale.reverse = !attr(DATA()[[1]], 'maximization'), show.legend = T)
+                      scale.reverse = !attr(DATA()[[1]], 'maximization'),
+                      show.legend = T, line.step = T)
   },
   message = "Creating plot")
 })

@@ -28,5 +28,6 @@ Plot the empirical cumulative distriburtion as a function of the target values o
 a DataSetList at certain target runtimes
 }
 \examples{
+\dontshow{data.table::setDTthreads(1)}
 Plot.FV.ECDF_Per_Target(subset(dsl, funcId == 1), 10)
 }

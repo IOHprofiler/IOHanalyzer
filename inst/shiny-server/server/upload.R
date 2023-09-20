@@ -458,6 +458,7 @@ observe({
   DIMs <- get_dim(data)
   algIds <- get_algId(data)
   runtimes <- get_runtimes(data)
+  fvals <- get_funvals(data)
 
   selected_ds <- data[[1]]
   selected_f <- attr(selected_ds,'funcId')
@@ -533,6 +534,9 @@ observe({
   updateSelectInput(session, 'FV_Stats.Glicko.Funcid', choices = funcIds, selected = selected_f)
   updateSelectInput(session, 'FV_Stats.Glicko.Dim', choices = DIMs, selected = selected_dim)
 
+  updateSelectInput(session, 'EAF.Multi.FuncIds', choices = funcIds, selected = funcIds)
+  updateSelectInput(session, 'EAF.MultiCDF.FuncIds', choices = funcIds, selected = funcIds)
+
   updateSelectInput(session, 'FV_Stats.Overview.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RTSummary.Statistics.ID', choices = IDs, selected = IDs)
   updateSelectInput(session, 'RTSummary.Overview.ID', choices = IDs, selected = IDs)
@@ -569,6 +573,13 @@ observe({
   updateSelectInput(session, 'FCEECDF.Single.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FCEECDF.Mult.Algs', choices = IDs, selected = IDs)
   updateSelectInput(session, 'FCEECDF.AUC.Algs', choices = IDs, selected = IDs)
+
+  updateSelectInput(session, 'EAF.Single.Algs', choices = IDs, selected = IDs[[1]])
+  updateSelectInput(session, 'EAF.CDF.Algs', choices = IDs, selected = IDs[[1]])
+  updateSelectInput(session, 'EAF.Multi.Algs', choices = IDs, selected = IDs[[1]])
+  updateSelectInput(session, 'EAF.MultiCDF.Algs', choices = IDs, selected = IDs[[1]])
+  updateSelectInput(session, 'EAF.Diff.Algs', choices = IDs, selected = IDs)
+
   updateSelectInput(session, 'ParCoordPlot.Algs', choices = IDs, selected = IDs[[1]])
   updateSelectInput(session, 'FV_PAR.CorrPlot.Param1', choices = c(parIds_RT_, 'f(x)'), selected = 'f(x)')
   if (length(parIds_RT_) == 0)
@@ -585,6 +596,9 @@ observe({
   invalid_choices <- c('funcId', 'DIM', 'ID')
   updateSelectInput(session, 'Settings.ID.Variables', choices = attr_choices[!attr_choices %in% invalid_choices],
                     selected = attr(data, 'ID_attributes'))
+
+  updateTextInput(session, 'EAF.MultiCDF.yMin', value = min(fvals, na.rm = T))
+  updateTextInput(session, 'EAF.MultiCDF.yMax', value = max(fvals, na.rm = T))
 
   if (isTRUE(attr(data, 'constrained'))) {
     shinyjs::show(id = "Settings.Constrained")
@@ -723,6 +737,16 @@ observe({
   setTextInput(session, 'RT_Stats.Overview.Target', name, alternative = format_FV(stop))
   setTextInput(session, 'RT.Multisample.Target', name, alternative = format_FV(median(v)))
   setTextInput(session, 'RT.MultiERT.Target', name, alternative = format_FV(median(v)))
+
+  setTextInput(session, 'EAF.Single.yMin', name, alternative = format_FV(start))
+  setTextInput(session, 'EAF.Single.yMax', name, alternative = format_FV(stop))
+  setTextInput(session, 'EAF.CDF.yMin', name, alternative = format_FV(start))
+  setTextInput(session, 'EAF.CDF.yMax', name, alternative = format_FV(stop))
+  setTextInput(session, 'EAF.Diff.yMin', name, alternative = format_FV(start))
+  setTextInput(session, 'EAF.Diff.yMax', name, alternative = format_FV(stop))
+  setTextInput(session, 'RT.MultiERT.Target', name, alternative = format_FV(median(v)))
+  setTextInput(session, 'RT.MultiERT.Target', name, alternative = format_FV(median(v)))
+
 })
 
 # update the values for the grid of running times
@@ -769,6 +793,11 @@ observe({
   setTextInput(session, 'FV_PAR.Sample.Max', name, alternative = max(v))
   setTextInput(session, 'FV_PAR.Sample.Step', name, alternative = step)
   setTextInput(session, 'FV_Stats.Overview.Target', name, alternative = max(v))
+
+  setTextInput(session, 'EAF.Single.Min', name, alternative = min(v))
+  setTextInput(session, 'EAF.Single.Max', name, alternative = max(v))
+  setTextInput(session, 'EAF.Diff.Min', name, alternative = min(v))
+  setTextInput(session, 'EAF.Diff.Max', name, alternative = max(v))
   #TODO: remove q and replace by single number
   setTextInput(session, 'FCEECDF.Single.Target', name, alternative = q[2])
 })

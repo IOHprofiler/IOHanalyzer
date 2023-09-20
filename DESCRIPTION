@@ -1,7 +1,7 @@
 Package: IOHanalyzer
 Type: Package
 Title: Data Analysis Part of 'IOHprofiler'
-Version: 0.1.7.4
+Version: 0.1.8.2
 Maintainer: Diederick Vermetten <d.l.vermetten@liacs.leidenuniv.nl>
 Authors@R: c(
     person("Hao", "Wang", email = "h.wang@liacs.leidenuniv.nl", role = "aut", comment = c(ORCID = "0000-0002-4933-5181")),
@@ -17,7 +17,7 @@ Description: The data analysis module for the Iterative Optimization Heuristics
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 LazyData: true
-URL: http://iohprofiler.liacs.nl, https://github.com/IOHprofiler/IOHAnalyzer
+URL: https://iohanalyzer.liacs.nl, https://github.com/IOHprofiler/IOHAnalyzer
 BugReports: https://github.com/IOHprofiler/IOHAnalyzer/issues
 Imports: 
   magrittr,
@@ -34,9 +34,11 @@ Imports:
   httr,
   knitr,
   methods,
-  rjson
+  rjson,
+  eaf,
+  viridis
 LinkingTo: Rcpp
-SystemRequirements: C++11
+SystemRequirements: C++
 RoxygenNote: 7.1.2
 Suggests: 
   Rcpp,

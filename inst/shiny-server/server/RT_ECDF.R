@@ -38,7 +38,7 @@ render_RT_ECDF_MULT <- reactive({
                       scale.ylog = input$RTECDF.Aggr.Logy,
                       x_title = "Function Evaluations",
                       y_title = "Proportion of (run, target, ...) pairs",
-                      show.legend = T)
+                      show.legend = T, line.step = T)
   },
   message = "Creating plot")
 })
@@ -194,7 +194,9 @@ output$RT_ECDF <- renderPlotly({
   req(input$RTECDF.Single.Target)
   plot_general_data(get_data_RT_ECDF_Single(), 'x', 'mean', 'line',
                     x_title = "Function Evaluations",
-                    y_title = "Proportion of runs", scale.xlog = input$RTECDF.Single.Logx, show.legend = T)
+                    y_title = "Proportion of runs",
+                    scale.xlog = input$RTECDF.Single.Logx, show.legend = T,
+                    line.step = T)
   # ftargets <- as.numeric(format_FV(input$RTECDF.Single.Target))
   # data <- subset(DATA(), algId %in% input$RTECDF.Single.Algs)
   # Plot.RT.ECDF_Per_Target(data, ftargets, scale.xlog = input$RTECDF.Single.Logx)
@@ -258,7 +260,8 @@ render_RT_ECDF_AGGR <- reactive({
     plot_general_data(get_data_RT_ECDF_AGGR(), 'x', 'mean', 'line',
                       x_title = "Function Evaluations",
                       y_title = "Proportion of (run, target) pairs",
-                      scale.xlog = input$RTECDF.Multi.Logx, show.legend = T)
+                      scale.xlog = input$RTECDF.Multi.Logx, show.legend = T,
+                      line.step = T)
 
   # Plot.RT.ECDF_Single_Func(
   #   data, fstart, fstop, fstep,

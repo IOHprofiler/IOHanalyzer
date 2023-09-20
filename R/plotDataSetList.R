@@ -143,6 +143,7 @@ Plot.RT.Histogram <- function(dsList, ftarget, plot_mode = 'overlay', use.equal.
 #' the running times of the DataSetList at the target function values
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' Plot.RT.ECDF_Per_Target(subset(dsl, funcId == 1), 14)
 Plot.RT.ECDF_Per_Target <- function(dsList, ftargets, scale.xlog = F)
   UseMethod("Plot.RT.ECDF_Per_Target", dsList)
@@ -160,6 +161,7 @@ Plot.RT.ECDF_Per_Target <- function(dsList, ftargets, scale.xlog = F)
 #' the running times of the DataSetList
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' Plot.RT.ECDF_Single_Func(subset(dsl, funcId == 1))
 Plot.RT.ECDF_Single_Func <- function(dsList, fstart = NULL, fstop = NULL,
                               fstep = NULL, show.per_target = F,
@@ -175,6 +177,7 @@ Plot.RT.ECDF_Single_Func <- function(dsList, fstart = NULL, fstop = NULL,
 #' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' Plot.RT.ECDF_AUC(subset(dsl, funcId == 1))
 Plot.RT.ECDF_AUC <- function(dsList, fstart = NULL,
                         fstop = NULL, fstep = NULL,
@@ -222,6 +225,7 @@ Plot.FV.Histogram <- function(dsList, runtime, plot_mode='overlay', use.equal.bi
 #' the fucntion values of the DataSetList at the target runtimes
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' Plot.FV.ECDF_Per_Target(subset(dsl, funcId == 1), 10)
 Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F, scale.reverse = F)
   UseMethod("Plot.FV.ECDF_Per_Target", dsList)
@@ -240,6 +244,7 @@ Plot.FV.ECDF_Per_Target <- function(dsList, runtimes, scale.xlog = F, scale.reve
 #' the function values of the DataSetList
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' Plot.FV.ECDF_Single_Func(subset(dsl, funcId == 1))
 Plot.FV.ECDF_Single_Func <- function(dsList, rt_min = NULL, rt_max = NULL,
                               rt_step = NULL, scale.xlog = F,
@@ -255,6 +260,7 @@ Plot.FV.ECDF_Single_Func <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' @return A radarplot of the area under the aggregated ECDF-curve of the DataSetList
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' Plot.FV.ECDF_AUC(subset(dsl, funcId == 1))
 Plot.FV.ECDF_AUC <- function(dsList, rt_min = NULL, rt_max = NULL,
                         rt_step = NULL) UseMethod("Plot.FV.ECDF_AUC", dsList)
@@ -316,6 +322,7 @@ Plot.FV.Parameters <- function(dsList, rt_min = NULL, rt_max = NULL,
 #' the running times of the DataSetList
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(1)}
 #' Plot.RT.ECDF_Multi_Func(dsl)
 Plot.RT.ECDF_Multi_Func <- function(dsList, targets = NULL, scale.xlog = F)
   UseMethod("Plot.RT.ECDF_Multi_Func", dsList)
@@ -1003,7 +1010,9 @@ add_transparancy <- function(colors, percentage){
 #' @param violin.showpoints Wheteher or not to show individual points when making a violinplot
 #' @param frame_attr Which attribute of the dataframe to use for the time element of the animation
 #' @param symbol_attr Which attribute of the dataframe to use for the scatter symbol
+#' @param line.step Whether to plot lines as a step-function (T) or as linear interpolation (F, default)
 #' @param ... Additional parameters for the add_trace function
+#'
 #'
 #' @export
 plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin',
@@ -1012,7 +1021,7 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                               y_title = NULL, plot_title = NULL, upper_attr = NULL,
                               lower_attr = NULL, subplot_attr = NULL, show.legend = F,
                               inf.action = 'none', violin.showpoints = F, frame_attr = 'frame',
-                              symbol_attr = 'run_nr', subplot_shareX = F, ...) {
+                              symbol_attr = 'run_nr', subplot_shareX = F, line.step = F, ...) {
 
   l <- x <- isinf <- y <- text <- l_orig <- frame <- NULL #Set local binding to remove warnings
 
@@ -1238,7 +1247,8 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                    linetype = ~l_orig, marker = list(size = getOption('IOHanalyzer.markersize', 4)),
                    linetypes = dashes,
                    colors = colors, showlegend = show.legend,
-                   text = ~text, line = list(width = getOption('IOHanalyzer.linewidth', 2)),
+                   text = ~text, line = list(width = getOption('IOHanalyzer.linewidth', 2),
+                                             shape = ifelse(line.step, "hv", "linear")),
                    hovertemplate = '%{text}',
                    ...
                  )
@@ -1274,7 +1284,8 @@ plot_general_data <- function(df, x_attr = 'ID', y_attr = 'vals', type = 'violin
                      type = 'scatter', mode = 'lines+markers',
                      marker = list(size = getOption('IOHanalyzer.markersize', 4)), linetype = dashstyle,
                      colors = colors, showlegend = show.legend, name = ~l,
-                     text = y_atr, line = list(width = getOption('IOHanalyzer.linewidth', 2)),
+                     text = y_atr, line = list(width = getOption('IOHanalyzer.linewidth', 2),
+                                               shape = ifelse(line.step, "hv", "linear")),
                      ...
                    )
                )
@@ -1592,3 +1603,297 @@ Plot.cumulative_difference_plot <- function(dsList, runtime_or_target_value, isF
   return(fig)
 }
 
+
+#' Create EAF-based polygon plots
+#'
+#'
+#'
+#' @param df The dataframe containing the data to plot. This should come from `generate_data.EAF`
+#' @param subplot_attr Which attribute of the dataframe to use for creating subplots
+#' @param subplot_shareX Whether or not to share X-axis when using subplots
+#' @param scale.xlog Logarithmic scaling of x-axis
+#' @param scale.ylog Logarithmic scaling of y-axis
+#' @param xmin Minimum value for the x-axis
+#' @param xmax Maximum value for the x-axis
+#' @param ymin Minimum value for the y-axis
+#' @param ymax Maximum value for the y-axis
+#' @param maximization Whether the data comes from maximization or minimization
+#' @param scale.reverse Decreasing or increasing x-axis
+#' @param x_title Title of x-axis. Defaults to x_attr
+#' @param y_title Title of x-axis. Defaults to x_attr
+#' @param plot_title Title of x-axis. Defaults to no title
+#' @param p A previously existing plot on which to add traces. If NULL, a new canvas is created
+#' @param show.colorbar Whether or not to include a colorbar
+#' @param dt_overlay Dataframe containing additional data (e.g. quantiles) to plot
+#' on top of the EAF. This should have a column labeled 'runtime'. The other columsn will
+#' all be plotted as function values.
+#' @param ... Additional parameters for the add_trace function
+#'
+#' @return An EAF plot
+#' @export
+#' @examples
+#' \dontrun{
+#' plot_eaf_data(generate_data.EAF(subset(dsl, ID==get_id(dsl)[[1]])), maximization=T)
+#' }
+plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
+                              scale.reverse = F, p = NULL, x_title = NULL,
+                              xmin = NULL, xmax = NULL, ymin = NULL, ymax = NULL,
+                              y_title = NULL, plot_title = NULL, subplot_attr = NULL,
+                              show.colorbar = F, subplot_shareX = F, dt_overlay = NULL,
+                              ...) {
+
+  l <- x <- isinf <- y <- text <- l_orig <- frame <- NULL #Set local binding to remove warnings
+
+  #Deal with subplots
+  if (!is.null(subplot_attr)) {
+    if (!subplot_attr %in% colnames(df)) {
+      stop("Provided subplot-attribut is not a colname of the selected data.table.")
+    }
+    colnames(df)[colnames(df) == subplot_attr] <- "subplot_attr"
+    if (!is.null(dt_overlay)){
+      colnames(dt_overlay)[colnames(dt_overlay) == subplot_attr] <- "subplot_attr"
+    }
+    attrs <- unique(df[, subplot_attr])
+    if (length(attrs) == 0) stop("Attempting to create subplots with fewer than 2 unique values of
+                                 `subplot_attrs`-column")
+    if (length(attrs) == 1) return(plot_eaf_data(df, scale.xlog=scale.xlog, scale.ylog=scale.ylog,
+                                                     scale.reverse=scale.reverse, p=p, x_title=x_title,
+                                                     xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
+                                                     y_title = y_title, show.colorbar = show.colorbar,
+                                                     subplot_attr = NULL, dt_overlay = dt_overlay,...))
+
+    #Get some number of rows and columns
+    n_cols <- 1 + ceiling(length(attrs)/10)
+    n_rows <- ceiling(length(attrs) / n_cols)
+
+    p <- lapply(seq(length(attrs)), function(idx) {
+      attr_val <- attrs[[idx]]
+      df_sub <- df[subplot_attr == attr_val]
+      dt_overlay_sub <- dt_overlay[subplot_attr == attr_val]
+      disp_y <-  idx %% n_cols == 1
+      disp_x <- idx > (length(attrs) - n_cols)
+      x.title = if (disp_x) x_title else ""
+      y.title = if (disp_y) y_title else ""
+
+      #Generate title for the subplots
+      if (stri_detect_regex(subplot_attr, "(?i)fun"))
+        sub_title <- paste0('F', attr_val)
+      else if (stri_detect_regex(subplot_attr, "(?i)dim"))
+        sub_title <- paste0('D', attr_val)
+      else
+        sub_title <- paste0(attr_val)
+      p <- NULL
+      p <- plot_eaf_data(df_sub, scale.xlog=scale.xlog, scale.ylog=scale.ylog,
+                         scale.reverse=scale.reverse, p=p, x_title=x_title,
+                         xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
+                         y_title = y_title, show.colorbar = F, subplot_attr = NULL,
+                         dt_overlay = dt_overlay_sub, ...)
+      if (getOption("IOHanalyzer.annotation_x", 0.5) >= 0 &
+          getOption("IOHanalyzer.annotation_y", 1) >= 0) {
+        p %<>% layout(
+          annotations = list(
+            text = sub_title,
+            font = f2, showarrow = FALSE,
+            xref = "paper", yref = "paper",
+            x = getOption("IOHanalyzer.annotation_x", 0.5),
+            y = getOption("IOHanalyzer.annotation_y", 1)
+          )
+        )
+        p
+      }
+
+    })
+
+    p <- subplot(
+      p, nrows = n_rows, titleX = T, titleY = T,
+      margin = c(getOption("IOHanalyzer.margin_horizontal", 0.02),
+                 getOption("IOHanalyzer.margin_vertical", 0.02),
+                 getOption("IOHanalyzer.margin_horizontal", 0.02),
+                 getOption("IOHanalyzer.margin_vertical", 0.02)),
+      shareX = subplot_shareX
+    ) %>%
+      layout(title = plot_title)
+    return(p)
+  }
+
+  xscale <- if (scale.xlog) 'log' else 'linear'
+  yscale <- if (scale.ylog) 'log' else 'linear'
+
+
+
+
+  #If new plot is needed, create one. Store in bool to decide if axis scaling is needed.
+  is_new_plot <- F
+  if (is.null(p)) {
+    p <- IOH_plot_ly_default(x.title = x_title,
+                             y.title = y_title,
+                             title = plot_title)
+    is_new_plot <- T
+  }
+
+  eaf_sets <- df$`percentage`
+  uniq_eaf_sets <- unique(eaf_sets)
+  att_surfs <- split.data.frame(df[,.(`runtime`, `f(x)`)],
+                                factor(eaf_sets,
+                                       levels = uniq_eaf_sets,
+                                       labels = uniq_eaf_sets))
+  cols <- rev(viridis(length(att_surfs)))
+  if (maximization)
+    extreme = as.matrix(df[, .(runtime=max(`runtime`), `f(x)`=min(`f(x)`))])
+  else
+    extreme = as.matrix(df[, .(runtime=max(`runtime`), `f(x)`=max(`f(x)`))])
+
+  for (i in seq_along(att_surfs)) {
+    poli <- add.extremes(points.steps(as.matrix(att_surfs[[i]])), as.matrix(extreme), c(F,maximization))
+    poli <- rbind(poli, extreme)
+
+    p %<>% add_polygons(poli[,'runtime'], poli[,'f(x)'], alpha=1, fillcolor=cols[i],
+                        line=list(width=0), name=names(att_surfs)[i], showlegend=F)
+  }
+
+  # Set axis ranges
+  xmin <- ifelse((is.null(xmin) || xmin == ""), min(df$`runtime`), as.numeric(xmin))
+  xmax <- ifelse((is.null(xmax) || xmax == ""), max(df$`runtime`), as.numeric(xmax))
+  if (scale.xlog) {
+    xmin <- log10(xmin)
+    xmax <- log10(xmax)
+  }
+  ymin <- ifelse((is.null(ymin) || ymin == ""), min(df$`f(x)`), as.numeric(ymin))
+  ymax <- ifelse((is.null(ymax) || ymax == ""), max(df$`f(x)`), as.numeric(ymax))
+  if (scale.ylog) {
+    ymin <- log10(ymin)
+    ymax <- log10(ymax)
+  }
+  yrange <- c(ymin, ymax)
+  if (scale.reverse) yrange <- rev(yrange)
+
+  p %<>% layout(xaxis = list(type = xscale, tickfont = f3(), ticklen = 3,
+                             range = c(xmin, xmax)),
+                yaxis = list(type = yscale, tickfont = f3(), ticklen = 3,
+                             range = yrange))
+
+  if (!is.null(dt_overlay)) {
+    cnames <- colnames(dt_overlay)
+    if (!('runtime' %in% cnames)) {
+      warning('dt_overlay needs to contain a columns labeled `runtime` to be used.')
+    } else {
+      for (cname in cnames[!(cnames %in% c('runtime', 'subplot_attr', 'ID'))]) {
+        p %<>% add_trace(x=dt_overlay[['runtime']], y=dt_overlay[[cname]], type='scatter',
+                         mode='lines', name = cname,
+                         line = list(width = getOption('IOHanalyzer.linewidth', 2),
+                                     color = 'black', shape = 'hv')
+                         )
+      }
+    }
+  }
+  if (show.colorbar) {
+    p %<>% add_contour(z=matrix(-0.1,1.1), zmin=-0.1, zmax=1.1, colorscale='Viridis',
+                       contours = list(coloring='fill'), reversescale = T)
+    p %<>% colorbar(cmin=-0, cmax=1, thickness=0.03, thicknessmode='fraction', len=1,
+                    tickvals=c(0,0.5,1), tickmode='array', outlinewidth=1, title='Fraction')
+  }
+
+  p
+
+  return(p)
+}
+
+
+
+#' Create EAF-difference contour plots
+#'
+#'
+#'
+#' @param matrices The dataframes containing the data to plot. This should come from `generate_data.EAF_diff_Approximate`
+#' @param scale.xlog Logarithmic scaling of x-axis
+#' @param scale.ylog Logarithmic scaling of y-axis
+#' @param zero_transparant Whether values of 0 should be made transparant or not
+#' @param show_negatives Whether to also show negative values or not
+#'
+#' @return EAF difference plots
+#' @export
+#' @examples
+#' \dontrun{
+#' plot_eaf_differences(generate_data.EAF_diff_Approximate(subset(dsl, funcId == 1), 1, 50, 1, 16))
+#' }
+plot_eaf_differences <- function(matrices, scale.xlog = T, scale.ylog = F, zero_transparant = F,
+                                 show_negatives = F) {
+
+
+  xscale <- if (scale.xlog) 'log' else 'linear'
+  yscale <- if (scale.ylog) 'log' else 'linear'
+
+
+  show_colorbar <- T
+  ids <- names(matrices)
+  ps <- lapply(seq(length(ids)), function(idx) {
+    diff <- matrices[[idx]]
+    if (!show_negatives)
+      diff[diff< 0 ] = 0
+    id <- ids[[idx]]
+    x <- as.numeric(colnames(diff))
+    y <- as.numeric(rownames(diff))
+
+    p <- IOH_plot_ly_default('', 'Function Evaluations', 'f(x)')
+    if (zero_transparant)
+      diff[diff == 0] = NaN
+
+    if (all(is.na(diff))) {
+      p %<>% add_trace(z = 0, type = "contour", x=x,y=y,
+                       line = list(smoothing = 0),
+                       contours = list(
+                         start = ifelse(show_negatives, -1, 0),
+                         end = 1, coloring='fill', showlines=F
+                       ), colorscale = ifelse(show_negatives, 'BuRd_r' , 'Viridis'),
+                       reversescale=show_negatives,
+                       name = id)
+    } else {
+    p %<>% add_trace(z = diff, type = "contour", x=x,y=y,
+                     line = list(smoothing = 0),
+                     contours = list(
+                       start = ifelse(show_negatives, -1, 0),
+                       end = 1, coloring='fill', showlines=F
+                     ), colorscale = ifelse(show_negatives, 'BuRd_r' , 'Viridis'),
+                     reversescale=show_negatives,
+                     name = id)
+    }
+    p %<>% layout(yaxis = list(type = yscale, ticklen = 3))
+    p %<>% layout(xaxis = list(type = xscale, ticklen = 3))
+    if (show_colorbar) {
+      show_colorbar <<- F
+    } else {
+      p %<>% hide_colorbar()
+    }
+
+    if (getOption("IOHanalyzer.annotation_x", 0.5) >= 0 &
+        getOption("IOHanalyzer.annotation_y", 1) >= 0) {
+      p %<>% layout(
+        annotations = list(
+          text = id,
+          font = f2, showarrow = FALSE,
+          xref = "paper", yref = "paper",
+          x = getOption("IOHanalyzer.annotation_x", 0.5),
+          y = getOption("IOHanalyzer.annotation_y", 1)
+        )
+      )
+    }
+
+    # p %<>% add_trace(x=x, y=fv_sum[ , .(max = max(max)), by = runtime]$max, color='white', type = "scatter", mode = "line", showlegend=F, alpha=0.4, name='max')
+    # p %<>% add_trace(x=x, y=fv_sum[ , .(min = min(min)), by = runtime]$min, color='white', type = "scatter", mode = "line", showlegend=F, alpha=0.4, name='min')
+    p
+  })
+
+  n_cols <- 1 + ceiling(length(matrices)/10)
+  n_rows <- ceiling(length(matrices) / n_cols)
+  p <- subplot(
+    ps, nrows = n_rows, titleX = T, titleY = T,
+    margin = c(getOption("IOHanalyzer.margin_horizontal", 0.02),
+               getOption("IOHanalyzer.margin_vertical", 0.02),
+               getOption("IOHanalyzer.margin_horizontal", 0.02),
+               getOption("IOHanalyzer.margin_vertical", 0.02)),
+    shareX = T, shareY = T
+  )
+  p
+
+  return(p)
+}

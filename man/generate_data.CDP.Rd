@@ -37,9 +37,6 @@ the `cumulative_difference_plot`.
 }
 \examples{
 
-dsl
 dsl_sub <- subset(dsl, funcId == 1)
-runtime <- 15
-
-generate_data.CDP(dsl_sub, runtime, TRUE)
+generate_data.CDP(dsl_sub, 15, TRUE, nOfBootstrapSamples = 10)
 }

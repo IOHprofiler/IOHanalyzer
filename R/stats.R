@@ -569,13 +569,18 @@ glicko2_ranking <- function(dsl, nr_rounds = 100, which = 'by_FV', target_dt = N
           x_arr <- get_FV_sample(dsl_s, target)
           win_operator <- ifelse(attr(dsl, 'maximization'), `>`, `<`)
         }
+        if (is.null(alg_names)) alg_names <- x_arr[,3]
         vals = array(dim = c(n_algs,ncol(x_arr) - 4))
         for (i in seq(1,n_algs)) {
+          ds <- subset(dsl_s, algId == alg_names[i][[1]])
+          n_valid <- length(attr(ds[[1]], 'instance'))
+
           z <- x_arr[i]
           y <- as.numeric(z[,5:ncol(x_arr)])
-          vals[i,] = y
+
+
+          vals[i,] = sample(y[1:n_valid], length(vals[i,]), replace = TRUE)
         }
-        if (is.null(alg_names)) alg_names <- x_arr[,3]
 
         for (i in seq(1,n_algs)) {
           for (j in seq(i,n_algs)) {
@@ -733,6 +738,7 @@ set_DSC_credentials <- function(username, password) {
             paste0(repo_dir, "/config.rds"))
   }
   else {
+    keyring::keyring_unlock(password="")
     keyring::key_set_with_value("DSCtool", password = password)
     keyring::key_set_with_value("DSCtool_name", password = username)
   }
@@ -756,6 +762,7 @@ get_DSC_credentials <- function() {
     return(list(name = data$DSCusername, pwd = data$DSCpassword))
   }
   else {
+    keyring::keyring_unlock(password="")
     return(list(name = keyring::key_get("DSCtool_name"),
                 pwd = keyring::key_get("DSCtool")))
   }
@@ -994,7 +1001,9 @@ get_marg_contrib_ecdf <- function(id, perm, j, dt) {
 #'
 #' @export
 #' @examples
-#' get_shapley_values(dsl, get_ECDF_targets(dsl))
+#' \dontshow{data.table::setDTthreads(1)}
+#' dsl_sub <- subset(dsl, funcId == 1)
+#' get_shapley_values(dsl_sub, get_ECDF_targets(dsl_sub), group_size = 2)
 get_shapley_values <- function(dsList, targets, scale.log = T, group_size = 5, max_perm_size = 10, normalize = T){
   hit <- NULL #Bind to avoid notes
   ids_full <- get_id(dsList)

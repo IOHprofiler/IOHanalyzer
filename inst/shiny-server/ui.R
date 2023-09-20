@@ -608,6 +608,46 @@ body <- dashboardBody(
               )
             )
     ),
+    tabItem(tabName = 'EAF',
+            fluidRow(
+              column(
+                width = 12,
+                EAF_box()
+              )
+            )
+    ),
+    tabItem(tabName = 'EAF_Diff',
+            fluidRow(
+              column(
+                width = 12,
+                EAF_Diff_box()
+              )
+            )
+    ),
+    tabItem(tabName = 'EAF_CDF',
+            fluidRow(
+              column(
+                width = 12,
+                EAF_CDF_box()
+              )
+            )
+    ),
+    tabItem(tabName = 'EAF_mult',
+            fluidRow(
+              column(
+                width = 12,
+                EAF_mult_box()
+              )
+            )
+    ),
+    tabItem(tabName = 'EAF_CDF_mult',
+            fluidRow(
+              column(
+                width = 12,
+                EAF_CDF_mult_box()
+              )
+            )
+    ),
 
     tabItem(
       tabName = 'Settings',

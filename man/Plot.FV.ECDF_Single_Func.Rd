@@ -50,5 +50,6 @@ Plot the aggregated empirical cumulative distriburtion as a function of the func
 a DataSetList.
 }
 \examples{
+\dontshow{data.table::setDTthreads(1)}
 Plot.FV.ECDF_Single_Func(subset(dsl, funcId == 1))
 }

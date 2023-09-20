@@ -35,6 +35,7 @@ is provided together with dsList and targets}
 This function generates a dataframe which can be easily plotted using the `plot_general_data`-function
 }
 \examples{
+\dontshow{data.table::setDTthreads(1)}
 generate_data.AUC(dsl, get_ECDF_targets(dsl))
 generate_data.AUC(NULL, NULL, dt_ecdf = generate_data.ECDF(dsl, get_ECDF_targets(dsl)))
 }

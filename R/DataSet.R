@@ -72,17 +72,7 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     tdatFile <- file.path(path, paste0(datBaseName, '.tdat'))
     cdatFile <- file.path(path, paste0(datBaseName, '.cdat'))
 
-    # NOTE: preference on data file for the alignment by RT: cdat > tdat > dat
-    if (file.exists(cdatFile))
-      fvFile <- cdatFile
-    else if (file.exists(tdatFile))
-      fvFile <- tdatFile
-    else if (file.exists(datFile))
-      fvFile <- datFile
-    else
-      stop('No datafiles found, please verify the integrity of the chosen files')
-
-    # NOTE: preference on data file for the alignment by FV: dat > tdat > cdat
+    # NOTE: preference on data file from coco: dat > tdat > cdat
     if (file.exists(datFile))
       rtFile <- datFile
     else if (file.exists(tdatFile))
@@ -90,6 +80,8 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     else if (file.exists(cdatFile))
       # TODO: perhaps turn on `subsampling` here as this would take quite some time
       rtFile <- cdatFile
+    else
+      stop('No datafiles found, please verify the integrity of the chosen files')
 
     read_raw <- switch(
       format,
@@ -101,7 +93,6 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     )
 
     RT_raw <- read_raw(rtFile, subsampling)
-    FV_raw <- read_raw(fvFile, subsampling)
 
     if (is.null(maximization)) {
       if (verbose)
@@ -109,14 +100,14 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
                 function value progression")
       # TODO: idxTarget should be set depending on the data format
       idxTarget <- 2
-      cond <- unique(lapply(FV_raw, function(FV) FV[1, idxTarget] >= FV[nrow(FV), idxTarget]))
+      cond <- unique(lapply(RT_raw, function(FV) FV[1, idxTarget] >= FV[nrow(FV), idxTarget]))
       if (length(cond) > 1)
         stop('The detected maximization differs in multiple runs')
       maximization <- cond
     }
 
     RT <- align_running_time(RT_raw, format = format, maximization = maximization)
-    FV <- align_function_value(FV_raw, format = format)
+    FV <- align_function_value(RT_raw, format = format)
 
     PAR <- list(
       'by_FV' = RT[names(RT) != 'RT'],
@@ -148,9 +139,9 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
     # TODO: clean up these if-statements: Function to set idxTarget and n_data_column?
     # `idxTarget` is a global variable?
     if (format == TWO_COL)
-      finalFV <- set_names(sapply(FV_raw, function(d) d[nrow(d), idxTarget - 1]), NULL)
+      finalFV <- set_names(sapply(RT_raw, function(d) d[nrow(d), idxTarget - 1]), NULL)
     else
-      finalFV <- set_names(sapply(FV_raw, function(d) d[nrow(d), idxTarget]), NULL)
+      finalFV <- set_names(sapply(RT_raw, function(d) d[nrow(d), idxTarget]), NULL)
 
     if (any(finalFV != info$finalFV) && verbose)
       warning('Inconsitent finalFvalue in *.info file and *.dat file')
@@ -168,9 +159,9 @@ DataSet <- function(info, verbose = F, maximization = NULL, format = IOHprofiler
                    maximization = maximization, suite = suite, ID = info$algId))
     )
     if (isTRUE(info$constrained) || full_sampling) {
-      FV_raw_mat <- matrix(nrow = nrow(FV), ncol = length(FV_raw))
-      for (idx in seq(length(FV_raw))) {
-        FV_raw_mat[,idx] = FV_raw[[idx]][,2]
+      FV_raw_mat <- matrix(nrow = nrow(FV), ncol = length(RT_raw))
+      for (idx in seq(length(RT_raw))) {
+        FV_raw_mat[,idx] = RT_raw[[idx]][,2]
       }
       temp$FV_raw_mat <- FV_raw_mat
       attr(temp, 'contains_full_FV') <- TRUE

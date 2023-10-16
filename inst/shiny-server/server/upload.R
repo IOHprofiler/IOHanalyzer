@@ -586,7 +586,7 @@ observe({
     updateSelectInput(session, 'FV_PAR.CorrPlot.Param2', choices = c(parIds_RT_, 'f(x)'), selected = 'f(x)')
   else
     updateSelectInput(session, 'FV_PAR.CorrPlot.Param2', choices = c(parIds_RT_, 'f(x)'), selected = parIds_RT_[[1]])
-  updateSelectInput(session, 'FV_PAR.Plot.Params', choices = parIds_, selected = parIds_)
+  updateSelectInput(session, 'FV_PAR.Plot.Params', choices = parIds_RT_, selected = parIds_RT_)
   updateSelectInput(session, 'RT_PAR.Plot.Params', choices = parIds_, selected = parIds_)
 
   updateTextInput(session, 'FCEPlot.Multi.Min', value = min(runtimes))

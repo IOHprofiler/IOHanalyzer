@@ -1382,8 +1382,15 @@ read_IOH_v1plus <- function(info, full_sampling = FALSE){
       mat_temp <- as.matrix(dt_for_allign[,2:ncol(dt_for_allign)])
       rownames(mat_temp) <- runtimes
       mat_temp
+    }), 'by_FV' = lapply(paramnames, function(parname) {
+      dt_for_allign <- dcast(data, raw_y ~ runnr, value.var = parname)
+
+      mat_temp <- as.matrix(dt_for_allign[,2:ncol(dt_for_allign)])
+      rownames(mat_temp) <- dt_for_allign$raw_y
+      mat_temp
     }))
   names(PAR$by_RT) <- paramnames
+  names(PAR$by_FV) <- paramnames
 
   ds <- do.call(
     function(...)

@@ -1779,7 +1779,7 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
     } else {
       for (cname in cnames[!(cnames %in% c('runtime', 'subplot_attr', 'ID'))]) {
         p %<>% add_trace(x=dt_overlay[['runtime']], y=dt_overlay[[cname]], type='scatter',
-                         mode='lines', name = cname,
+                         mode='lines', name = cname, showlegend = F,
                          line = list(width = getOption('IOHanalyzer.linewidth', 2),
                                      color = 'black', shape = 'hv')
                          )

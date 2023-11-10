@@ -242,7 +242,7 @@ create_color_scheme <- function(ids) {
   if (length(ids) == 0) {
     return(NULL)
   }
-  ids <- sort(ids, method='radix', method='radix')
+  ids <- sort(ids, method='radix')
   colors <- color_palettes(length(ids))
   linestyles <- rep(c("solid", "dash", "dot"), ceiling(length(colors)/3))[1:length(colors)]
   IOHanalyzer_env$id_colors <- data.table(ids, colors, linestyles)

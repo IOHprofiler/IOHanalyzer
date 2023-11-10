@@ -242,7 +242,7 @@ create_color_scheme <- function(ids) {
   if (length(ids) == 0) {
     return(NULL)
   }
-  ids <- sort(ids)
+  ids <- sort(ids, method='radix', method='radix')
   colors <- color_palettes(length(ids))
   linestyles <- rep(c("solid", "dash", "dot"), ceiling(length(colors)/3))[1:length(colors)]
   IOHanalyzer_env$id_colors <- data.table(ids, colors, linestyles)
@@ -257,7 +257,7 @@ create_color_scheme <- function(ids) {
 #' @examples
 #' get_color_scheme(get_algId(dsl))
 get_color_scheme <- function(ids_in){
-  ids_in <- sort(ids_in)
+  ids_in <- sort(ids_in, method='radix')
   if (is.null(IOHanalyzer_env$id_colors))
     create_color_scheme(ids_in)
   cdt <- IOHanalyzer_env$id_colors
@@ -279,7 +279,7 @@ get_color_scheme <- function(ids_in){
 #' @examples
 #' get_line_style(get_algId(dsl))
 get_line_style <- function(ids_in){
-  ids_in <- sort(ids_in)
+  ids_in <- sort(ids_in, method='radix')
   if (is.null(IOHanalyzer_env$id_colors))
     create_color_scheme(ids_in)
   cdt <- IOHanalyzer_env$id_colors

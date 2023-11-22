@@ -209,6 +209,10 @@ observe({
   else {
     options('IOHanalyzer.function_representation' = 'funcId')
   }
+  if (any(endsWith(input$tabs, c("_multi", "_aggr", "_DSC", "_portfolio")))) {
+    shinyjs::hide(id = "overall_funcname_box")
+    shinyjs::hide(id = "overall_funcid_box")
+  }
 })
 
 observe({

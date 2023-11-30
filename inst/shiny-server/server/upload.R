@@ -65,10 +65,98 @@ observeEvent(input$repository.dataset, {
   shinyjs::enable('repository.load_button')
 })
 
+
+
+library(DBI)
+library(odbc)
+library(RSQLite)
+
+
+
+capture_data_info <- function(data_replicate, output_file_path = "/home/shiny/repository/output_data_replicate.txt") {
+  output_text <- capture.output({
+    for(name in names(data_replicate)) {
+      # Capture the name and the content of each component
+      captured_name <- paste(Sys.time(), " - ", name, ":\n", sep = "")
+      captured_content <- paste(capture.output(print(data_replicate[[name]])), collapse = "\n")
+      cat(captured_name, captured_content, "\n\n", file = output_file_path, append = TRUE)
+    }
+
+    # Capture and log attributes
+    attrs <- attributes(data_replicate)
+    for(attr_name in names(attrs)) {
+      if(attr_name != "names") {
+        captured_attr_name <- paste(Sys.time(), " - attr(,", paste0("\"", attr_name, "\""), "):\n", sep = "")
+        captured_attr_content <- paste(capture.output(print(attrs[[attr_name]])), collapse = "\n")
+        cat(captured_attr_name, captured_attr_content, "\n\n", file = output_file_path, append = TRUE)
+      }
+    }
+  }, silent = TRUE)  # Use silent = TRUE to suppress output to the console
+
+  # Optionally, log a message indicating the completion of the operation
+  log_message <- paste(Sys.time(), " - Information appended to", output_file_path, "\n")
+  cat(log_message, file = output_file_path, append = TRUE)
+}
+
+
+
+
+
+
 # add the data from repository
 observeEvent(input$repository.load_button, {
   data <- DataSetList()
   repo_dir <- get_repo_location()
+
+
+
+
+
+  # Set the path to the SQLite database
+  db_path <- "/home/shiny/repository/bbob/db.sqlite3"
+
+  # Connect to the SQLite database
+  conn <- dbConnect(RSQLite::SQLite(), dbname = db_path)
+  capture_data_info(dbGetQuery(conn, "SELECT sqlite_version();"))
+
+
+
+  # Example queries
+  # Query algorithm names
+  algorithms <- dbGetQuery(conn, "SELECT name FROM iohdata_algorithm")
+
+  # Query function IDs and dimensions from the 'iohdata_problem' table
+  problems <- dbGetQuery(conn, "SELECT fid, variable_type FROM iohdata_problem")
+
+  # Query function values or runtime times from 'iohdata_solution' or 'iohdata_run'
+  solutions <- dbGetQuery(conn, "SELECT y, run_id FROM iohdata_solution LIMIT 10")
+  runs <- dbGetQuery(conn, "SELECT evals, experiment_id FROM iohdata_run LIMIT 10")
+
+  # Close the connection
+  dbDisconnect(conn)
+
+  # Print the results
+  capture_data_info(algorithms)
+  capture_data_info(problems)
+  capture_data_info(solutions)
+  capture_data_info(runs)
+
+
+  conn <- dbConnect(
+    odbc::odbc(),
+    "ClickHouse DSN (Unicode)"
+  )
+
+  query_result <- dbGetQuery(conn, "SELECT * FROM ioh.raw_y WHERE run_id = 1800;")
+  capture_data_info(query_result)
+
+  dbDisconnect(conn)
+
+
+
+
+
+
   for (f in input$repository.dataset) {
     rds_file <- file.path(repo_dir, input$repository.type, paste0(f, ".rds"))
     data <- c(data, readRDS(rds_file))

@@ -1656,7 +1656,8 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
     attrs <- unique(df[, subplot_attr])
     if (length(attrs) == 0) stop("Attempting to create subplots with fewer than 2 unique values of
                                  `subplot_attrs`-column")
-    if (length(attrs) == 1) return(plot_eaf_data(df, scale.xlog=scale.xlog, scale.ylog=scale.ylog,
+    if (length(attrs) == 1) return(plot_eaf_data(df, maximization = maximization,
+                                                     scale.xlog=scale.xlog, scale.ylog=scale.ylog,
                                                      scale.reverse=scale.reverse, p=p, x_title=x_title,
                                                      xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
                                                      y_title = y_title, show.colorbar = show.colorbar,
@@ -1683,7 +1684,7 @@ plot_eaf_data <- function(df, maximization = F, scale.xlog = F, scale.ylog = F,
       else
         sub_title <- paste0(attr_val)
       p <- NULL
-      p <- plot_eaf_data(df_sub, scale.xlog=scale.xlog, scale.ylog=scale.ylog,
+      p <- plot_eaf_data(df_sub, maximization = maximization, scale.xlog=scale.xlog, scale.ylog=scale.ylog,
                          scale.reverse=scale.reverse, p=p, x_title=x_title,
                          xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
                          y_title = y_title, show.colorbar = F, subplot_attr = NULL,

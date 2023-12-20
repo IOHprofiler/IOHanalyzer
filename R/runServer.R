@@ -9,20 +9,42 @@
 #' \dontrun{
 #' runServer(6563, TRUE)
 #' }
-runServer <- function(port = getOption('shiny.port'), open_browser = TRUE, orca_gpu = TRUE) {
-  appDir <- system.file("shiny-server", package = "IOHanalyzer")
-  if (appDir == "") {
-    stop("Could not find example directory. Try re-installing `IOHanalyzer`.", call. = FALSE)
-  }
-  for (pkgname in c('DT', 'bsplus', 'colourpicker', 'kableExtra', 'markdown', 'shinydashboard',
-                     'shinyjs')) {
-    if (!requireNamespace(pkgname, quietly = TRUE)) {
-      stop(paste0("Package \"", pkgname, "\" is needed for this function to work.
-           It is recommended to install all suggested packages if you want to make use of the GUI functionality."),
+runServer <-
+  function(port = getOption('shiny.port'),
+           open_browser = TRUE,
+           orca_gpu = TRUE) {
+    appDir <- system.file("shiny-server", package = "IOHanalyzer")
+    if (appDir == "") {
+      stop("Could not find example directory. Try re-installing `IOHanalyzer`.",
            call. = FALSE)
     }
-  }
-  options("IOHanalyzer.orca_use_gpu" = orca_gpu)
+    for (pkgname in c(
+      'DT',
+      'bsplus',
+      'colourpicker',
+      'kableExtra',
+      'markdown',
+      'shinydashboard',
+      'shinyjs'
+    )) {
+      if (!requireNamespace(pkgname, quietly = TRUE)) {
+        stop(
+          paste0(
+            "Package \"",
+            pkgname,
+            "\" is needed for this function to work.
+           It is recommended to install all suggested packages if you want to make use of the GUI functionality."
+          ),
+          call. = FALSE
+        )
+      }
+    }
+    options("IOHanalyzer.orca_use_gpu" = orca_gpu)
 
-  shiny::runApp(appDir, port = port, launch.browser = open_browser, display.mode = "normal")
-}
+    shiny::runApp(
+      appDir,
+      port = port,
+      launch.browser = open_browser,
+      display.mode = "normal"
+    )
+  }

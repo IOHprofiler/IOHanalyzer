@@ -10,7 +10,7 @@ limit.data <- function(df, n) {
   N <- nrow(df)
   if (N > n) {
     idx <- unique(c(1, seq(1, N, length.out = n), N))
-    df[idx, ]
+    df[idx,]
   } else
     df
 }
@@ -26,7 +26,13 @@ limit.data <- function(df, n) {
 #' scan_index_file(path)
 scan_index_file <- function(folder) {
   folder <- trimws(folder)
-  files <- list.files(folder, pattern = '.(info|json)$', recursive = T, full.names = T)
+  files <-
+    list.files(
+      folder,
+      pattern = '.(info|json)$',
+      recursive = T,
+      full.names = T
+    )
   files[file.size(files) > 0]
 }
 
@@ -45,9 +51,12 @@ read_index_file <- function(fname) {
   else {
     tryCatch(
       read_index_file__IOH(fname),
-      warning = function(e) read_index_file__COCO(fname),
-      error = function(e) read_index_file__COCO(fname),
-      finally = function(e) stop(paste0('Error in reading .info files ', e))
+      warning = function(e)
+        read_index_file__COCO(fname),
+      error = function(e)
+        read_index_file__COCO(fname),
+      finally = function(e)
+        stop(paste0('Error in reading .info files ', e))
     )
   }
 }
@@ -58,10 +67,12 @@ read_index_file <- function(fname) {
 #' @return The data contained in the json info-file
 #' @noRd
 read_index_file__json <- function(fname) {
-
   json_data <- fromJSON(file = fname)
   base_dir <- dirname(fname)
-  exp_attrs <- sapply(json_data$experiment_attributes, function(x) {x})
+  exp_attrs <-
+    sapply(json_data$experiment_attributes, function(x) {
+      x
+    })
 
   data <- list()
   tryCatch({
@@ -72,34 +83,44 @@ read_index_file__json <- function(fname) {
     algid <- json_data$algorithm$name
     attributes <- json_data$attributes
     version <- json_data$version
-  }, error = function(e) {return(NULL)})
+  }, error = function(e) {
+    return(NULL)
+  })
 
   data <- lapply(json_data$scenarios, function(scenario) {
-
     run_attrs <- list()
 
     for (run_attr in json_data$run_attributes) {
-      attr(run_attrs, run_attr) <- sapply(scenario$runs, function(x) x$run_attr)
+      attr(run_attrs, run_attr) <-
+        sapply(scenario$runs, function(x)
+          x$run_attr)
     }
 
     datafile <- file.path(base_dir, scenario$path)
 
-    temp <- c(list(
-      funcId = fid,
-      funcName = fname,
-      suite = suite,
-      maximization = maximization,
-      algId = algid,
-      DIM = scenario$dimension,
-      attributes = attributes,
-      version = version,
-      datafile = datafile,
-      instance = sapply(scenario$runs, function(x) x$instance),
-      maxRT = sapply(scenario$runs, function(x) x$evals),
-      finalFV = sapply(scenario$runs, function(x) x$best$y),
-      final_pos = sapply(scenario$runs, function(x) x$best$x)
-    ), run_attrs,
-    exp_attrs)
+    temp <- c(
+      list(
+        funcId = fid,
+        funcName = fname,
+        suite = suite,
+        maximization = maximization,
+        algId = algid,
+        DIM = scenario$dimension,
+        attributes = attributes,
+        version = version,
+        datafile = datafile,
+        instance = sapply(scenario$runs, function(x)
+          x$instance),
+        maxRT = sapply(scenario$runs, function(x)
+          x$evals),
+        finalFV = sapply(scenario$runs, function(x)
+          x$best$y),
+        final_pos = sapply(scenario$runs, function(x)
+          x$best$x)
+      ),
+      run_attrs,
+      exp_attrs
+    )
 
   })
   data
@@ -124,7 +145,10 @@ read_index_file__IOH <- function(fname) {
 
     # TODO: make this quote symbol ' or " as the configurable parameter
     # TODO: Fix this
-    name_value <- read.csv(text = lines[1], header = F, quote = c("\"","'")) %>%
+    name_value <-
+      read.csv(text = lines[1],
+               header = F,
+               quote = c("\"", "'")) %>%
       as.list %>%
       unlist %>%
       as.vector
@@ -136,24 +160,26 @@ read_index_file__IOH <- function(fname) {
       unlist %>%
       trimws %>%
       matrix(nrow = 2) %>% {
-        ans <- as.list(.[2, ])
-        names(ans) <- .[1, ]
-        for (name in .[1, ]) {
+        ans <- as.list(.[2,])
+        names(ans) <- .[1,]
+        for (name in .[1,]) {
           value <- ans[[name]]
           ans[[name]] <- gsub("'", '', value)
 
           if (name == 'maximization' || name == 'constrained')
             value <- as.logical(value)
           else
-            value <- suppressWarnings(as.numeric(value)) # convert quoted numeric values to numeric
+            value <-
+            suppressWarnings(as.numeric(value)) # convert quoted numeric values to numeric
 
-          if (!is.na(value)) ans[[name]] <- value
+          if (!is.na(value))
+            ans[[name]] <- value
         }
         ans
       }
 
     record <- trimws(strsplit(lines[3], ',')[[1]])
-    if (length(record) == 1){
+    if (length(record) == 1) {
       next
     }
 
@@ -167,21 +193,22 @@ read_index_file__IOH <- function(fname) {
       maxRTs <- NULL
     } else {
       res <- matrix(unlist(strsplit(record[-1], ':')), nrow = 2)
-      info <- matrix(unlist(strsplit(res[2, ], '\\|')), nrow = 2)
+      info <- matrix(unlist(strsplit(res[2,], '\\|')), nrow = 2)
       #Check for incorrect usages of reset_problem and remove them
-      maxRTs <- as.numeric(info[1,])
+      maxRTs <- as.numeric(info[1, ])
       idx_correct <- which(maxRTs > 0)
-      if (has_dynattr){
-        info_split <- strsplit(info[2,], ';')
-        finalFVs <- as.numeric(sapply(info_split, `[[`, 1))[idx_correct]
+      if (has_dynattr) {
+        info_split <- strsplit(info[2, ], ';')
+        finalFVs <-
+          as.numeric(sapply(info_split, `[[`, 1))[idx_correct]
 
         dynamic_attrs <- sapply(info_split, `[[`, 2)[idx_correct]
         # dynamic_attrs <- dynamic_attrs[idx_correct
       }
       else {
-        finalFVs <- as.numeric(info[2,])[idx_correct]
+        finalFVs <- as.numeric(info[2, ])[idx_correct]
       }
-      instances <- as.numeric(res[1,])[idx_correct]
+      instances <- as.numeric(res[1, ])[idx_correct]
       maxRTs <- maxRTs[idx_correct]
     }
 
@@ -198,20 +225,19 @@ read_index_file__IOH <- function(fname) {
 
 
 
-    if (has_dynattr){
+    if (has_dynattr) {
       attr_list[[header$dynamicAttribute]] <- dynamic_attrs
     }
 
     # TODO: Make this code more readable
-    data[[i]] <- c(
-      header,
-      attr_list
-    )
+    data[[i]] <- c(header,
+                   attr_list)
 
     i <- i + 1
   }
   close(f)
-  datafiles <- unlist(lapply(data, function(x) x$datafile))
+  datafiles <- unlist(lapply(data, function(x)
+    x$datafile))
   if (length(datafiles) > length(unique(datafiles)))
     return(merge_indexinfo(data))
   else
@@ -228,14 +254,17 @@ read_index_file__IOH <- function(fname) {
 #' @return a reduced version of the provided indexInfo, preserving original order
 #' @noRd
 merge_indexinfo <- function(indexInfo) {
-  datafiles <- unlist(lapply(indexInfo, function(x) x$datafile))
+  datafiles <- unlist(lapply(indexInfo, function(x)
+    x$datafile))
   lapply(unique(datafiles), function(dfile) {
     new_info <- list()
     idxs <- datafiles == dfile
     infos <- indexInfo[idxs]
-    nr_runs <- length(unlist(lapply(infos, function(x) x$instance)))
+    nr_runs <- length(unlist(lapply(infos, function(x)
+      x$instance)))
     for (a in attributes(infos[[1]])$names) {
-      temp <- unlist(lapply(infos, function(x) x[[a]]))
+      temp <- unlist(lapply(infos, function(x)
+        x[[a]]))
       if (length(temp) == nr_runs)
         new_info[[a]] <- temp
       else
@@ -256,13 +285,20 @@ read_index_file__COCO <- function(fname) {
   data <- list()
   i <- 1
   while (TRUE) {
-
-    lines <- suppressWarnings(readLines(f, n = 3))  # read header and comments
+    lines <-
+      suppressWarnings(readLines(f, n = 3))  # read header and comments
     if (length(lines) < 3) {
       break
     }
     comment <- lines[2]
-    name_value <- as.vector(unlist(as.list(read.csv(text = lines[1], header = F, quote = "'"))))
+    name_value <-
+      as.vector(unlist(as.list(
+        read.csv(
+          text = lines[1],
+          header = F,
+          quote = "'"
+        )
+      )))
 
     header <- trimws(name_value) %>% {
       regmatches(., regexpr("=", .), invert = T)  # match the first appearance of '='
@@ -270,12 +306,13 @@ read_index_file__COCO <- function(fname) {
       unlist %>%
       trimws %>%
       matrix(nrow = 2) %>% {
-        ans <- as.list(.[2, ])
-        names(ans) <- .[1, ]
-        for (name in .[1, ]) {
+        ans <- as.list(.[2,])
+        names(ans) <- .[1,]
+        for (name in .[1,]) {
           value <- ans[[name]]
           ans[[name]] <- gsub("'", '', value)
-          value <- suppressWarnings(as.numeric(value)) # convert quoted numeric values to numeric
+          value <-
+            suppressWarnings(as.numeric(value)) # convert quoted numeric values to numeric
           if (!is.na(value))
             ans[[name]] <- value
         }
@@ -292,7 +329,8 @@ read_index_file__COCO <- function(fname) {
       info <- NULL
     } else {
       res <- matrix(unlist(strsplit(record[-c(1)], ':')), nrow = 2)
-      info <- matrix(as.numeric(unlist(strsplit(res[2, ], '\\|'))), nrow = 2)
+      info <-
+        matrix(as.numeric(unlist(strsplit(res[2,], '\\|'))), nrow = 2)
     }
 
     record[1] <-  gsub("\\\\", "/", record[1])
@@ -308,9 +346,9 @@ read_index_file__COCO <- function(fname) {
       list(
         comment = comment,
         datafile = datafile,
-        instance = as.numeric(res[1, ]),
-        maxRT = info[1, ],
-        finalFV = info[2, ]
+        instance = as.numeric(res[1,]),
+        maxRT = info[1,],
+        finalFV = info[2,]
       )
     )
     i <- i + 1
@@ -330,22 +368,31 @@ read_index_file__BIOBJ_COCO <- function(fname) {
   data <- list()
   i <- 1
 
-  lines <- suppressWarnings(readLines(f, n = 2))  # read header and comments
+  lines <-
+    suppressWarnings(readLines(f, n = 2))  # read header and comments
   comment <- lines[2]
-  name_value <- as.vector(unlist(as.list(read.csv(text = lines[1], header = F, quote = "'"))))
+  name_value <-
+    as.vector(unlist(as.list(
+      read.csv(
+        text = lines[1],
+        header = F,
+        quote = "'"
+      )
+    )))
 
   header <- trimws(name_value) %>% {
-      regmatches(., regexpr("=", .), invert = T)  # match the first appearance of '='
-    } %>%
+    regmatches(., regexpr("=", .), invert = T)  # match the first appearance of '='
+  } %>%
     unlist %>%
     trimws %>%
     matrix(nrow = 2) %>% {
-      ans <- as.list(.[2, ])
-      names(ans) <- .[1, ]
-      for (name in .[1, ]) {
+      ans <- as.list(.[2,])
+      names(ans) <- .[1,]
+      for (name in .[1,]) {
         value <- ans[[name]]
         ans[[name]] <- gsub("'", '', value)
-        value <- suppressWarnings(as.numeric(value)) # convert quoted numeric values to numeric
+        value <-
+          suppressWarnings(as.numeric(value)) # convert quoted numeric values to numeric
         if (!is.na(value))
           ans[[name]] <- value
       }
@@ -368,7 +415,8 @@ read_index_file__BIOBJ_COCO <- function(fname) {
       info <- NULL
     } else {
       res <- matrix(unlist(strsplit(record[-c(1, 2, 3)], ':')), nrow = 2)
-      info <- matrix(as.numeric(unlist(strsplit(res[2, ], '\\|'))), nrow = 2)
+      info <-
+        matrix(as.numeric(unlist(strsplit(res[2,], '\\|'))), nrow = 2)
     }
 
     record[3] <-  gsub("\\\\", "/", record[3])
@@ -379,8 +427,8 @@ read_index_file__BIOBJ_COCO <- function(fname) {
 
     funcId <- trimws(strsplit(record[1], '=')[[1]][2])
     funcId.int <- suppressWarnings(as.integer(funcId.int))
-    if(!any(is.na(funcId.int))) {
-      if(all((funcId.int >= 0L) & (funcId.int <= 1000000000L))) {
+    if (!any(is.na(funcId.int))) {
+      if (all((funcId.int >= 0L) & (funcId.int <= 1000000000L))) {
         funcId <- funcId.int
       }
     }
@@ -395,9 +443,9 @@ read_index_file__BIOBJ_COCO <- function(fname) {
         funcId = funcId,
         DIM = DIM,
         datafile = datafile,
-        instance = as.numeric(res[1, ]),
-        maxRT = info[1, ],
-        finalFV = info[2, ]
+        instance = as.numeric(res[1,]),
+        maxRT = info[1,],
+        finalFV = info[2,]
       )
     )
     i <- i + 1
@@ -428,54 +476,83 @@ check_format <- function(path) {
   if (length(index_files) == 0)
     return(SOS)
 
-  info <- unlist(lapply(index_files, read_index_file), recursive = F)
+  info <-
+    unlist(lapply(index_files, read_index_file), recursive = F)
   if (all(unlist(lapply(info, function(x) {
-      return (ifelse(is.null(x$version), F, (compareVersion(x$version, "0.3.3") >= 0)))
-    })))) {
+    return (ifelse(is.null(x$version), F, (
+      compareVersion(x$version, "0.3.3") >= 0
+    )))
+  })))) {
     return(IOHprofiler)
   }
 
-  datafile <- sapply(info, function(item) item$datafile)
+  datafile <- sapply(info, function(item)
+    item$datafile)
 
   format <- lapply(datafile, function(file) {
     tryCatch({
       if (!file.exists(file)) {
         cdatfile <- stri_replace(file, ".cdat", fixed = ".dat")
         tdatfile <- stri_replace(file, ".tdat", fixed = ".dat")
-        if (file.exists(cdatfile)) file <- cdatfile
-        else file <- tdatfile
+        if (file.exists(cdatfile))
+          file <- cdatfile
+        else
+          file <- tdatfile
       }
-      first_line <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
+      first_line <-
+        scan(
+          file,
+          what = 'character',
+          sep = '\n',
+          n = 1,
+          quiet = T
+        )
     }, error = function(e) {
-      stop("Error detecting data files specified in .info, please verify the
-             integrity of the provided files.")
+      stop(
+        "Error detecting data files specified in .info, please verify the
+             integrity of the provided files."
+      )
     })
 
-    if (startsWith(first_line, '% function') || startsWith(first_line, '% f evaluations'))
+    if (startsWith(first_line, '% function') ||
+        startsWith(first_line, '% f evaluations'))
       COCO
     else if (startsWith(first_line, '\"function')) {
-      n_col <- ncol(fread(file, header = FALSE, sep = ' ',
-                          colClasses = 'character', fill = T, nrows = 1))
+      n_col <- ncol(fread(
+        file,
+        header = FALSE,
+        sep = ' ',
+        colClasses = 'character',
+        fill = T,
+        nrows = 1
+      ))
       if (n_col == 2)
         TWO_COL
       else
         IOHprofiler
     }
-    else if (first_line == '%')  # Bi-objective COCO format...
+    else if (first_line == '%')
+      # Bi-objective COCO format...
       BIBOJ_COCO
     else {
-      stop("Error detecting file format of file ", file, "; Please verify
-           the integrity of this file.")
+      stop(
+        "Error detecting file format of file ",
+        file,
+        "; Please verify
+           the integrity of this file."
+      )
     }
   }) %>%
     unlist %>%
     unique
 
-  csv_files <- file.path(path, list.files(path, pattern = '.csv', recursive = T))
+  csv_files <-
+    file.path(path, list.files(path, pattern = '.csv', recursive = T))
   if (length(csv_files) > 0)
     format <- c(format, NEVERGRAD)
 
-  txt_files <- file.path(path, list.files(path, pattern = '.txt', recursive = T))
+  txt_files <-
+    file.path(path, list.files(path, pattern = '.txt', recursive = T))
   if (length(txt_files) > 0)
     format <- c(format, SOS)
 
@@ -499,25 +576,35 @@ check_format <- function(path) {
 #' @return A list of data.frames
 read_dat <- function(fname, subsampling = FALSE) {
   # TODO: use the same data loading method as in read_dat__COCO
-  df <- fread(fname, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
-  colnames(df) <- as.character(df[1, ])
+  df <-
+    fread(
+      fname,
+      header = FALSE,
+      sep = ' ',
+      colClasses = 'character',
+      fill = T
+    )
+  colnames(df) <- as.character(df[1,])
   idx <- which(!grepl('\\d+', df[[1]], perl = T))
 
   # check for data consistence
-  header_len <- min(apply(df[idx, ] != "", 1, sum))
+  header_len <- min(apply(df[idx,] != "", 1, sum))
   idx <- c(idx, nrow(df) + 1)
   df <- df[, 1:header_len]
 
   # turn off the warnings of the data coersion below
   options(warn = -1)
   # TOOD: this opeartor is the bottelneck
-  df <- sapply(df, function(c) {class(c) <- 'numeric'; c})
+  df <- sapply(df, function(c) {
+    class(c) <- 'numeric'
+    c
+  })
   options(warn = 0)
 
   res <- lapply(seq(length(idx) - 1), function(i) {
     i1 <- idx[i] + 1
     i2 <- idx[i + 1] - 1
-    ans <- df[i1:i2, ]
+    ans <- df[i1:i2,]
     if (i1 == i2)
       ans <- as.matrix(t(ans))
 
@@ -551,18 +638,29 @@ read_dat__COCO_ <- function(fname, subsampling = FALSE) {
 read_dat__COCO <- function(fname, subsampling = FALSE) {
   select <- seq(5)
   # read the file as a character vector (one string per row)
-  X <- fread(fname, header = FALSE, sep = '\n', colClasses = 'character')[[1]]
+  X <-
+    fread(fname,
+          header = FALSE,
+          sep = '\n',
+          colClasses = 'character')[[1]]
   idx <- which(startsWith(X, '%'))
   X <- gsub('\\s+|\\t', ' ', X, perl = T)
 
-  df <- fread(text = X[-idx], header = F, sep = ' ', select = select, fill = T)
+  df <-
+    fread(
+      text = X[-idx],
+      header = F,
+      sep = ' ',
+      select = select,
+      fill = T
+    )
   idx <- c((idx + 1) - seq_along(idx), nrow(df))
 
   lapply(seq(length(idx) - 1),
          function(i) {
            i1 <- idx[i]
            i2 <- idx[i + 1] - 1
-           as.matrix(df[i1:i2, ])
+           as.matrix(df[i1:i2,])
          })
 }
 
@@ -573,18 +671,29 @@ read_dat__BIOBJ_COCO <- function(fname, subsampling = FALSE) {
     select <- seq(2)
 
   # read the file as a character vector (one string per row)
-  X <- fread(fname, header = FALSE, sep = '\n', colClasses = 'character')[[1]]
+  X <-
+    fread(fname,
+          header = FALSE,
+          sep = '\n',
+          colClasses = 'character')[[1]]
   idx <- which(startsWith(X, '%'))
   X <- gsub('\\s+|\\t', ' ', X, perl = T)
 
-  df <- fread(text = X[-idx], header = F, sep = ' ', select = select, fill = T)
+  df <-
+    fread(
+      text = X[-idx],
+      header = F,
+      sep = ' ',
+      select = select,
+      fill = T
+    )
   idx <- which(startsWith(X, '% function'))
   idx <- c((idx + 1) - seq_along(idx) * 4, nrow(df))
 
   lapply(seq(length(idx) - 1), function(i) {
     i1 <- idx[i]
     i2 <- idx[i + 1] - 1
-    as.matrix(df[i1:i2, ])
+    as.matrix(df[i1:i2,])
   })
 }
 
@@ -627,7 +736,8 @@ align_non_contiguous <- function(data, idx, rownames) {
   lapply(data,
          function(d) {
            y <- d[, idxEvals]
-           y[is.na(y)] <- Inf #Prevent problems with NA when no improvements are found in a run
+           y[is.na(y)] <-
+             Inf #Prevent problems with NA when no improvements are found in a run
            c_impute(d[, idx], y, rownames)
          }) %>%
     unlist %>%
@@ -641,50 +751,56 @@ align_non_contiguous <- function(data, idx, rownames) {
 #' @param include_param Whether to include the recorded parameters in the alignment
 #' @noRd
 #' @return Data aligned by the running time
-align_running_time <- function(data, format = IOHprofiler, include_param = TRUE,
-                               maximization = TRUE) {
-  if (format == IOHprofiler)
-    idxTarget <- 3
-  else if (format == COCO)
-    idxTarget <- 3
-  else if (format == BIBOJ_COCO) {
-    n_data_column <- 3
-    idxTarget <- 2
-  }
-  else if (format == TWO_COL) {
-    n_data_column <- 2
-    idxTarget <- 2
-  }
+align_running_time <-
+  function(data,
+           format = IOHprofiler,
+           include_param = TRUE,
+           maximization = TRUE) {
+    if (format == IOHprofiler)
+      idxTarget <- 3
+    else if (format == COCO)
+      idxTarget <- 3
+    else if (format == BIBOJ_COCO) {
+      n_data_column <- 3
+      idxTarget <- 2
+    }
+    else if (format == TWO_COL) {
+      n_data_column <- 2
+      idxTarget <- 2
+    }
 
-  FV <- sort(unique(unlist(lapply(data, function(x) x[, idxTarget]))),
-             decreasing = !maximization)
-  n_column <- unique(sapply(data, ncol))
+    FV <-
+      sort(unique(unlist(lapply(data, function(x)
+        x[, idxTarget]))),
+        decreasing = !maximization)
+    n_column <- unique(sapply(data, ncol))
 
-  if (format == COCO) {
-    n_param <- 0
-    idxValue <- idxEvals
-    param_names <- NULL
-  }
-  else if (format == IOHprofiler) {
-    n_param <- n_column - n_data_column
-    if (include_param && n_param > 0) {
-      param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
-      idxValue <- c(idxEvals, (n_data_column + 1):n_column)
+    if (format == COCO) {
+      n_param <- 0
+      idxValue <- idxEvals
+      param_names <- NULL
+    }
+    else if (format == IOHprofiler) {
+      n_param <- n_column - n_data_column
+      if (include_param && n_param > 0) {
+        param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
+        idxValue <- c(idxEvals, (n_data_column + 1):n_column)
+      }
+      else {
+        param_names <- NULL
+        idxValue <- idxEvals
+      }
     }
     else {
       param_names <- NULL
       idxValue <- idxEvals
     }
-  }
-  else {
-    param_names <- NULL
-    idxValue <- idxEvals
-  }
 
-  res <- c_align_running_time(data, FV, idxValue - 1, maximization, idxTarget - 1)
-  names(res) <- c('RT', param_names)
-  res
-}
+    res <-
+      c_align_running_time(data, FV, idxValue - 1, maximization, idxTarget - 1)
+    names(res) <- c('RT', param_names)
+    res
+  }
 
 #' Align data by function values
 #' @param data The data to align
@@ -692,56 +808,63 @@ align_running_time <- function(data, format = IOHprofiler, include_param = TRUE,
 #' @param include_param Whether to include the recorded parameters in the alignment
 #' @noRd
 #' @return Data aligned by the function value
-align_function_value <- function(data, include_param = TRUE, format = IOHprofiler) {
-  n_column <- unique(sapply(data, ncol))
-  stopifnot(length(n_column) == 1)
+align_function_value <-
+  function(data,
+           include_param = TRUE,
+           format = IOHprofiler) {
+    n_column <- unique(sapply(data, ncol))
+    stopifnot(length(n_column) == 1)
 
-  if (format == COCO) {
-    idxTarget <- 3
-    n_param <- 0
-  }
-  else if (format == IOHprofiler) {
-    idxTarget <- 3
-    n_param <- n_column - n_data_column
-  }
-  else if (format == BIBOJ_COCO) {  # bi-objective COCO format
-    idxTarget <- 2
-    n_data_column <- 2
-    n_param <- 0                   # no parameter is allowed in this case
-  }
-  else if (format == TWO_COL) {
-    idxTarget <- 2
-    n_param <- 0
-  }
+    if (format == COCO) {
+      idxTarget <- 3
+      n_param <- 0
+    }
+    else if (format == IOHprofiler) {
+      idxTarget <- 3
+      n_param <- n_column - n_data_column
+    }
+    else if (format == BIBOJ_COCO) {
+      # bi-objective COCO format
+      idxTarget <- 2
+      n_data_column <- 2
+      n_param <-
+        0                   # no parameter is allowed in this case
+    }
+    else if (format == TWO_COL) {
+      idxTarget <- 2
+      n_param <- 0
+    }
 
-  if (check_contiguous(data)) {
-    nrow <- sapply(data, nrow) %>% max
-    runtime <- seq(nrow)
-    align_func <- align_contiguous
-  } else {
-    runtime <- sort(unique(unlist(lapply(data, function(x) x[, idxEvals]))))
-    nrow <- length(runtime)
-    align_func <- align_non_contiguous
-  }
+    if (check_contiguous(data)) {
+      nrow <- sapply(data, nrow) %>% max
+      runtime <- seq(nrow)
+      align_func <- align_contiguous
+    } else {
+      runtime <-
+        sort(unique(unlist(lapply(data, function(x)
+          x[, idxEvals]))))
+      nrow <- length(runtime)
+      align_func <- align_non_contiguous
+    }
 
-  FV <- align_func(data, idxTarget, runtime)
-  include_param <- include_param && (n_param > 0)
+    FV <- align_func(data, idxTarget, runtime)
+    include_param <- include_param && (n_param > 0)
 
-  if (include_param) {
-    param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
-    param <- list()
-    for (i in seq(n_param)) {
-      name <- param_names[i]
-      param[[name]] <- align_func(data, i + n_data_column, runtime)
+    if (include_param) {
+      param_names <- colnames(data[[1]])[(n_data_column + 1):n_column]
+      param <- list()
+      for (i in seq(n_param)) {
+        name <- param_names[i]
+        param[[name]] <- align_func(data, i + n_data_column, runtime)
+      }
+    }
+
+    if (include_param) {
+      c(list(FV = FV), param)
+    } else {
+      list(FV = FV)
     }
   }
-
-  if (include_param) {
-    c(list(FV = FV), param)
-  } else {
-    list(FV = FV)
-  }
-}
 
 
 #' Read Nevergrad data
@@ -751,7 +874,7 @@ align_function_value <- function(data, include_param = TRUE, format = IOHprofile
 #' @param fname The path to the .csv file
 #' @return The DataSetList extracted from the .csv file provided
 #' @noRd
-read_nevergrad <- function(path){
+read_nevergrad <- function(path) {
   dt <- fread(path)
 
   if (!'name' %in% colnames(dt)) {
@@ -773,16 +896,17 @@ read_nevergrad <- function(path){
     funcId <- triplets$name[i]
 
     rescale_name <- 'rescale'
-    if ( !('rescale' %in% colnames(dt))) {
-      if ( 'transform' %in% colnames(dt))
+    if (!('rescale' %in% colnames(dt))) {
+      if ('transform' %in% colnames(dt))
         colnames(dt)[colnames(dt) == "transform"] <- "rescale"
       else{
         dt$rescale <- NA
       }
     }
 
-    data <- dt[optimizer_name == algId & dimension == DIM & name == funcId,
-               .(budget, loss, rescale)]
+    data <-
+      dt[optimizer_name == algId & dimension == DIM & name == funcId,
+         .(budget, loss, rescale)]
 
     for (scaled in unique(data$rescale)) {
       if (!is.na(scaled)) {
@@ -801,24 +925,25 @@ read_nevergrad <- function(path){
 
       rows <- unique(data_reduced$budget) %>% sort
       FV <- lapply(rows,
-             function(b) {
-               data_reduced[budget == b, loss]
-             }
-          ) %>%
+                   function(b) {
+                     data_reduced[budget == b, loss]
+                   }) %>%
         do.call(rbind, .) %>%
         set_rownames(rows)
 
       RT <- list()
 
-      ds <-  structure(list(RT = RT, FV = FV),
-                       class = c('DataSet', 'list'),
-                       maxRT = max(rows),
-                       finalFV = min(FV),
-                       format = 'NEVERGRAD',
-                       maximization = FALSE,
-                       algId = algId,
-                       funcId = funcId_name,
-                       DIM = DIM)
+      ds <-  structure(
+        list(RT = RT, FV = FV),
+        class = c('DataSet', 'list'),
+        maxRT = max(rows),
+        finalFV = min(FV),
+        format = 'NEVERGRAD',
+        maximization = FALSE,
+        algId = algId,
+        funcId = funcId_name,
+        DIM = DIM
+      )
       res[[idx]] <- ds
       idx <- idx + 1
     }
@@ -843,17 +968,30 @@ read_nevergrad <- function(path){
 read_single_file_SOS <- function(file) {
   V1 <- NULL #Local binding to remove CRAN warnings
 
-  algId <- substr(basename(file), 1,  stringi::stri_locate_last(basename(file), fixed = 'D')[[1]] - 1)
+  algId <-
+    substr(basename(file),
+           1,
+           stringi::stri_locate_last(basename(file), fixed = 'D')[[1]] - 1)
 
   dt <- fread(file, header = F)
-  header <- scan(file, what = 'character', sep = '\n', n = 1, quiet = T)
-  splitted <- header %>% trimws %>% strsplit("\\s+") %>% .[[1]] %>% .[2:length(.)]
+  header <-
+    scan(
+      file,
+      what = 'character',
+      sep = '\n',
+      n = 1,
+      quiet = T
+    )
+  splitted <-
+    header %>% trimws %>% strsplit("\\s+") %>% .[[1]] %>% .[2:length(.)]
   info <- list(algId = algId)
   for (i in seq_len(length(splitted) / 2)) {
-    temp <- splitted[[2*i]]
-    name <- splitted[[2*i - 1]]
-    if (name == 'function') name <- 'funcId'
-    if (name == 'dim') name <- 'DIM'
+    temp <- splitted[[2 * i]]
+    name <- splitted[[2 * i - 1]]
+    if (name == 'function')
+      name <- 'funcId'
+    if (name == 'dim')
+      name <- 'DIM'
     names(temp) <- name
     info <- c(info, temp)
   }
@@ -888,7 +1026,7 @@ read_single_file_SOS <- function(file) {
   idxs_final <- setdiff(idxs_avail, idxs_replaced)
 
   idx_final_best <- idxs_final[[which.min(FV[idxs_final])]]
-  final_pos <- as.numeric(pos[idx_final_best, ])
+  final_pos <- as.numeric(pos[idx_final_best,])
   # if (sum(FV == finalFV) > 1) {
   #   #Reconstruct population to determine which best solution is final position
   #   ids_min <- dt[FV_raw == finalFV, V1]
@@ -954,10 +1092,15 @@ read_datasetlist_SOS <- function(dir, corrections_files = NULL) {
 
   idx <- 1
 
-  corrs <- as.data.table(rbindlist(lapply(corrections_files, fread)))
+  corrs <-
+    as.data.table(rbindlist(lapply(corrections_files, fread)))
 
-  for (f in list.files(dir, recursive = T, pattern = "*.txt", full.names = T)) {
-    if (f %in% corrections_files) next
+  for (f in list.files(dir,
+                       recursive = T,
+                       pattern = "*.txt",
+                       full.names = T)) {
+    if (f %in% corrections_files)
+      next
     ds <- read_single_file_SOS(f)
 
     dims[[idx]] <- attr(ds, 'DIM')
@@ -968,9 +1111,10 @@ read_datasetlist_SOS <- function(dir, corrections_files = NULL) {
 
     if (nrow(corrs) > 0) {
       fn <- substr(basename(f), 1, nchar(basename(f)) - 4)
-      corr_opts <- corrs[V1 == fn, ]
+      corr_opts <- corrs[V1 == fn,]
       if (stri_detect_fixed(fn, "DE")) {
-        corr <- corr_opts[V3 == attr(ds, 'F'), ][V4 == attr(ds, 'CR'), 'V2'][['V2']]
+        corr <-
+          corr_opts[V3 == attr(ds, 'F'),][V4 == attr(ds, 'CR'), 'V2'][['V2']]
       }
       else if (stri_detect_fixed(fn, "RIS")) {
         corr <- corr_opts[['V2']]
@@ -1014,7 +1158,11 @@ read_datasetlist_SOS <- function(dir, corrections_files = NULL) {
 #' @return The relative paths to the corection files
 #' @noRd
 locate_corrections_files <- function(path) {
-  files <- list.files(path, recursive = T, pattern = "*.txt", full.names = T)
+  files <-
+    list.files(path,
+               recursive = T,
+               pattern = "*.txt",
+               full.names = T)
   files[stri_detect_fixed(files, 'corrections')]
 }
 
@@ -1035,7 +1183,8 @@ convert_from_OPTION <- function(dt, source, ...) {
   precision_value <- elapsed_budget <- rotated <- NULL
 
 
-  triplets <- unique(dt[, .(algorithm_name, dimensionality, benchmark_problem )])
+  triplets <-
+    unique(dt[, .(algorithm_name, dimensionality, benchmark_problem)])
   algIds <- list()
   DIMs <- list()
   funcIds <- list()
@@ -1050,41 +1199,56 @@ convert_from_OPTION <- function(dt, source, ...) {
     funcId <- triplets$benchmark_problem[i]
 
     if (source == "BBOB") {
-      data <- dt[algorithm_name == algId & dimensionality == DIM & benchmark_problem == funcId,
-                 .(instance_id, num_experiment_run, num_function_run, precision_value)]
+      data <-
+        dt[algorithm_name == algId &
+             dimensionality == DIM & benchmark_problem == funcId,
+           .(instance_id,
+             num_experiment_run,
+             num_function_run,
+             precision_value)]
 
       funcId_no_f <- as.numeric(stri_sub(funcId, 2))
 
       for (iid in unique(data$instance_id)) {
         for (rep in unique(data$num_experiment_run)) {
           data_reduced <- data[instance_id == iid & num_experiment_run == rep,
-                               .(num_function_run = as.numeric(num_function_run),
-                                 precision_value =  as.numeric(precision_value))]
+                               .(
+                                 num_function_run = as.numeric(num_function_run),
+                                 precision_value =  as.numeric(precision_value)
+                               )]
 
           rows <- unique(data_reduced$num_function_run) %>% sort
           FV <- lapply(rows,
                        function(b) {
                          data_reduced[num_function_run == b, precision_value]
-                       }
-          ) %>%
+                       }) %>%
             do.call(rbind, .) %>%
             set_rownames(rows)
 
-          data_twocol <- as.matrix(data_reduced[order(num_function_run)])
-          RT <- align_running_time(list(data_twocol), TWO_COL, maximization = F, include_param = F)
+          data_twocol <-
+            as.matrix(data_reduced[order(num_function_run)])
+          RT <-
+            align_running_time(
+              list(data_twocol),
+              TWO_COL,
+              maximization = F,
+              include_param = F
+            )
 
-          ds <-  structure(list(RT = RT$RT, FV = FV),
-                           class = c('DataSet', 'list'),
-                           maxRT = max(rows),
-                           finalFV = min(FV),
-                           format = 'OPTION',
-                           suite = COCO,
-                           maximization = FALSE,
-                           algId = algId,
-                           instance = iid,
-                           funcId = funcId_no_f,
-                           DIM = DIM,
-                           ID = algId)
+          ds <-  structure(
+            list(RT = RT$RT, FV = FV),
+            class = c('DataSet', 'list'),
+            maxRT = max(rows),
+            finalFV = min(FV),
+            format = 'OPTION',
+            suite = COCO,
+            maximization = FALSE,
+            algId = algId,
+            instance = iid,
+            funcId = funcId_no_f,
+            DIM = DIM,
+            ID = algId
+          )
           res[[idx]] <- ds
           idx <- idx + 1
           algIds <- c(algIds, algId)
@@ -1094,40 +1258,48 @@ convert_from_OPTION <- function(dt, source, ...) {
       }
     }
     else {
-      data <- dt[algorithm_name == algId & dimensionality == DIM & benchmark_problem == funcId,
-                 .(elapsed_budget, precision_value, rotated, noise_level)]
+      data <-
+        dt[algorithm_name == algId &
+             dimensionality == DIM & benchmark_problem == funcId,
+           .(elapsed_budget, precision_value, rotated, noise_level)]
 
       for (rotation in unique(data$rotated)) {
         for (noise_level in unique(data$noise_level)) {
-          data_reduced <- data[rotated == rotation & noise_level == noise_level,
-                               .(num_function_run = as.numeric(elapsed_budget),
-                                 precision_value =  as.numeric(precision_value))]
+          data_reduced <-
+            data[rotated == rotation & noise_level == noise_level,
+                 .(
+                   num_function_run = as.numeric(elapsed_budget),
+                   precision_value =  as.numeric(precision_value)
+                 )]
 
           rows <- unique(data_reduced$num_function_run) %>% sort
           FV <- lapply(rows,
                        function(b) {
                          data_reduced[num_function_run == b, precision_value]
-                       }
-          ) %>%
+                       }) %>%
             do.call(rbind, .) %>%
             set_rownames(rows)
 
-          data_twocol <- as.matrix(data_reduced[order(num_function_run)])
-          RT <- align_running_time(list(data_twocol), TWO_COL, maximization = F)
+          data_twocol <-
+            as.matrix(data_reduced[order(num_function_run)])
+          RT <-
+            align_running_time(list(data_twocol), TWO_COL, maximization = F)
 
-          ds <-  structure(list(RT = RT$RT, FV = FV),
-                           class = c('DataSet', 'list'),
-                           maxRT = max(rows),
-                           finalFV = min(FV),
-                           format = 'OPTION',
-                           suite = NEVERGRAD,
-                           maximization = FALSE,
-                           algId = algId,
-                           funcId = as.character(funcId),
-                           DIM = DIM,
-                           ID = algId,
-                           rotated = rotation,
-                           noise_level = noise_level)
+          ds <-  structure(
+            list(RT = RT$RT, FV = FV),
+            class = c('DataSet', 'list'),
+            maxRT = max(rows),
+            finalFV = min(FV),
+            format = 'OPTION',
+            suite = NEVERGRAD,
+            maximization = FALSE,
+            algId = algId,
+            funcId = as.character(funcId),
+            DIM = DIM,
+            ID = algId,
+            rotated = rotation,
+            noise_level = noise_level
+          )
           res[[idx]] <- ds
           idx <- idx + 1
           algIds <- c(algIds, algId)
@@ -1169,10 +1341,17 @@ convert_from_OPTION <- function(dt, source, ...) {
 #'
 #' @return The DataSetList extracted from the .csv file provided
 #' @export
-read_pure_csv <- function(path, neval_name, fval_name, fname_name,
-                          algname_name, dim_name, run_name, maximization = F,
-                          static_attrs = NULL){
-  fname <- algname <- neval <- fval <- NULL #Ugly fix for CRAN warnings
+read_pure_csv <- function(path,
+                          neval_name,
+                          fval_name,
+                          fname_name,
+                          algname_name,
+                          dim_name,
+                          run_name,
+                          maximization = F,
+                          static_attrs = NULL) {
+  fname <-
+    algname <- neval <- fval <- NULL #Ugly fix for CRAN warnings
   dt <- fread(path)
 
   #If columns are not specified, check if they have static values or should be imputed
@@ -1180,8 +1359,14 @@ read_pure_csv <- function(path, neval_name, fval_name, fname_name,
 
 
   if (!fval_name %in% colnames(dt)) {
-    warning(paste0("The function value column named ", fval_name, " does not exist
-            in the provided file!"))
+    warning(
+      paste0(
+        "The function value column named ",
+        fval_name,
+        " does not exist
+            in the provided file!"
+      )
+    )
     return(NULL)
   }
   colnames(dt)[colnames(dt) == fval_name] <- "fval"
@@ -1247,7 +1432,7 @@ read_pure_csv <- function(path, neval_name, fval_name, fname_name,
     # data <- dt[algname == algId & dim == DIM & fname == funcId,
     #            .(neval, fval, run)]
 
-    data <- dt[algname == algId & dim == DIM & fname == funcId,]
+    data <- dt[algname == algId & dim == DIM & fname == funcId, ]
 
     if (impute_evalnrs) {
       data$neval <-  ave(data$fval, data$run, FUN = seq_along)
@@ -1255,16 +1440,28 @@ read_pure_csv <- function(path, neval_name, fval_name, fname_name,
 
     dt_for_allign <- dcast(data, neval ~ run, value.var = 'fval')
 
-    FV_mat <- as.matrix(dt_for_allign[,2:ncol(dt_for_allign)])
+    FV_mat <- as.matrix(dt_for_allign[, 2:ncol(dt_for_allign)])
     runtimes <- dt_for_allign$neval
 
     if (maximization) {
-      FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummax(FV_mat[,x])))
-      FV <- apply(FV, 2, function(x) {x[is.na(x)] <- max(x, na.rm = T); x})
+      FV <-
+        do.call(cbind, lapply(seq(ncol(FV_mat)), function(x)
+          cummax(FV_mat[, x])))
+      FV <-
+        apply(FV, 2, function(x) {
+          x[is.na(x)] <- max(x, na.rm = T)
+          x
+        })
     }
     else {
-      FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummin(FV_mat[,x])))
-      FV <- apply(FV, 2, function(x) {x[is.na(x)] <- min(x, na.rm = T); x})
+      FV <-
+        do.call(cbind, lapply(seq(ncol(FV_mat)), function(x)
+          cummin(FV_mat[, x])))
+      FV <-
+        apply(FV, 2, function(x) {
+          x[is.na(x)] <- min(x, na.rm = T)
+          x
+        })
     }
     rownames(FV) <- runtimes
 
@@ -1272,20 +1469,24 @@ read_pure_csv <- function(path, neval_name, fval_name, fname_name,
 
     FV_temp <- sort(unique(FV_mat), decreasing = !maximization)
     index <- as.numeric(runtimes)
-    RT <- c_align_running_time_matrix(FV_mat, FV_temp, as.numeric(index), maximization)
+    RT <-
+      c_align_running_time_matrix(FV_mat, FV_temp, as.numeric(index), maximization)
     rownames(RT) <- FV_temp
-    RT[RT < 1] <- NA #Avoids weird values from impossible imputes at the end
+    RT[RT < 1] <-
+      NA #Avoids weird values from impossible imputes at the end
 
-    ds <-  structure(list(RT = RT, FV = FV),
-                     class = c('DataSet', 'list'),
-                     maxRT = max(runtimes),
-                     finalFV = min(FV),
-                     format = 'Custom',
-                     maximization = maximization,
-                     algId = algId,
-                     funcId = funcId,
-                     DIM = DIM,
-                     ID = algId)
+    ds <-  structure(
+      list(RT = RT, FV = FV),
+      class = c('DataSet', 'list'),
+      maxRT = max(runtimes),
+      finalFV = min(FV),
+      format = 'Custom',
+      maximization = maximization,
+      algId = algId,
+      funcId = funcId,
+      DIM = DIM,
+      ID = algId
+    )
     res[[idx]] <- ds
     idx <- idx + 1
   }
@@ -1309,27 +1510,36 @@ read_pure_csv <- function(path, neval_name, fval_name, fname_name,
 #'
 #' @return The DataSetList extracted from the .csv file provided
 #' @export
-read_IOH_v1plus <- function(info, full_sampling = FALSE){
-
-  df <- fread(info$datafile, header = FALSE, sep = ' ', colClasses = 'character', fill = T)
-  colnames(df) <- as.character(df[1, ])
+read_IOH_v1plus <- function(info, full_sampling = FALSE) {
+  df <-
+    fread(
+      info$datafile,
+      header = FALSE,
+      sep = ' ',
+      colClasses = 'character',
+      fill = T
+    )
+  colnames(df) <- as.character(df[1,])
   idx <- which(!grepl('\\d+', df[[1]], perl = T))
 
   # check for data consistence
-  header_len <- min(apply(df[idx, ] != "", 1, sum))
+  header_len <- min(apply(df[idx,] != "", 1, sum))
   idx <- c(idx, nrow(df) + 1)
   df <- df[, 1:header_len]
 
   # turn off the warnings of the data coersion below
   options(warn = -1)
   # TOOD: this opeartor is the bottelneck
-  df <- sapply(df, function(c) {class(c) <- 'numeric'; c})
+  df <- sapply(df, function(c) {
+    class(c) <- 'numeric'
+    c
+  })
   options(warn = 0)
 
   data <- rbindlist(lapply(seq(length(idx) - 1), function(i) {
     i1 <- idx[i] + 1
     i2 <- idx[i + 1] - 1
-    ans <- df[i1:i2, ]
+    ans <- df[i1:i2,]
     if (i1 == i2)
       ans <- as.matrix(t(ans))
     data.table(ans, runnr = i)
@@ -1343,25 +1553,40 @@ read_IOH_v1plus <- function(info, full_sampling = FALSE){
 
   algId <- info$algId
   DIM <- info$dim
-  funcId <- attr(info, getOption('IOHanalyzer.function_representation', 'funcId'))
+  funcId <-
+    attr(info,
+         getOption('IOHanalyzer.function_representation', 'funcId'))
 
   if (impute_evalnrs) {
     data$evaluations <-  ave(data$raw_y, data$runnr, FUN = seq_along)
   }
 
-  dt_for_allign <- dcast(data, evaluations ~ runnr, value.var = 'raw_y')
+  dt_for_allign <-
+    dcast(data, evaluations ~ runnr, value.var = 'raw_y')
 
-  FV_mat <- as.matrix(dt_for_allign[,2:ncol(dt_for_allign)])
+  FV_mat <- as.matrix(dt_for_allign[, 2:ncol(dt_for_allign)])
   runtimes <- dt_for_allign$evaluations
 
   if (info$maximization) {
-    FV_mat <- apply(FV_mat, 2, function(x) {x[is.na(x)] <- min(x, na.rm = T); x})
-    FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummax(FV_mat[,x])))
+    FV_mat <-
+      apply(FV_mat, 2, function(x) {
+        x[is.na(x)] <- min(x, na.rm = T)
+        x
+      })
+    FV <-
+      do.call(cbind, lapply(seq(ncol(FV_mat)), function(x)
+        cummax(FV_mat[, x])))
     # FV <- apply(FV, 2, function(x) {x[is.na(x)] <- max(x, na.rm = T); x})
   }
   else {
-    FV_mat <- apply(FV_mat, 2, function(x) {x[is.na(x)] <- max(x, na.rm = T); x})
-    FV <- do.call(cbind, lapply(seq(ncol(FV_mat)), function(x) cummin(FV_mat[,x])))
+    FV_mat <-
+      apply(FV_mat, 2, function(x) {
+        x[is.na(x)] <- max(x, na.rm = T)
+        x
+      })
+    FV <-
+      do.call(cbind, lapply(seq(ncol(FV_mat)), function(x)
+        cummin(FV_mat[, x])))
     # FV <- apply(FV, 2, function(x) {x[is.na(x)] <- max(x, na.rm = T); x})
   }
   rownames(FV) <- runtimes
@@ -1369,38 +1594,52 @@ read_IOH_v1plus <- function(info, full_sampling = FALSE){
 
   FV_temp <- unique(sort(FV_mat, decreasing = !info$maximization))
   index <- as.numeric(runtimes)
-  RT <- c_align_running_time_matrix(FV_mat, FV_temp, as.numeric(index), info$maximization)
+  RT <-
+    c_align_running_time_matrix(FV_mat, FV_temp, as.numeric(index), info$maximization)
   rownames(RT) <- FV_temp
-  RT[RT < 1] <- NA #Avoids weird values from impossible imputes at the end
+  RT[RT < 1] <-
+    NA #Avoids weird values from impossible imputes at the end
 
 
-  paramnames <- info$attributes[!info$attributes %in% c("evaluations", "raw_y")]
+  paramnames <-
+    info$attributes[!info$attributes %in% c("evaluations", "raw_y")]
 
-  PAR <- list('by_RT' = lapply(paramnames, function(parname) {
-      dt_for_allign <- dcast(data, evaluations ~ runnr, value.var = parname)
+  PAR <- list(
+    'by_RT' = lapply(paramnames, function(parname) {
+      dt_for_allign <-
+        dcast(data, evaluations ~ runnr, value.var = parname)
 
-      mat_temp <- as.matrix(dt_for_allign[,2:ncol(dt_for_allign)])
+      mat_temp <- as.matrix(dt_for_allign[, 2:ncol(dt_for_allign)])
       rownames(mat_temp) <- runtimes
       mat_temp
-    }), 'by_FV' = lapply(paramnames, function(parname) {
+    }),
+    'by_FV' = lapply(paramnames, function(parname) {
       dt_for_allign <- dcast(data, raw_y ~ runnr, value.var = parname)
 
-      mat_temp <- as.matrix(dt_for_allign[,2:ncol(dt_for_allign)])
+      mat_temp <- as.matrix(dt_for_allign[, 2:ncol(dt_for_allign)])
       rownames(mat_temp) <- dt_for_allign$raw_y
       mat_temp
-    }))
+    })
+  )
   names(PAR$by_RT) <- paramnames
   names(PAR$by_FV) <- paramnames
 
-  ds <- do.call(
-    function(...)
-      structure(list(RT = RT, FV = FV, PAR = PAR), class = c('DataSet', 'list'), ...),
-    c(info, list(maxRT = max(runtimes), finalFV = min(FV), format = IOHprofiler,
-                 ID = info$algId))
-  )
-    if (getOption('IOHanalyzer.function_representation', 'funcId') == 'funcName') {
-      attr(ds, 'funcId') <- attr(ds, 'funcName')
-    }
+  ds <- do.call(function(...)
+    structure(list(
+      RT = RT, FV = FV, PAR = PAR
+    ), class = c('DataSet', 'list'), ...),
+    c(
+      info,
+      list(
+        maxRT = max(runtimes),
+        finalFV = min(FV),
+        format = IOHprofiler,
+        ID = info$algId
+      )
+    ))
+  if (getOption('IOHanalyzer.function_representation', 'funcId') == 'funcName') {
+    attr(ds, 'funcId') <- attr(ds, 'funcName')
+  }
 
 
   if (full_sampling || 'violation' %in% info$attributes) {

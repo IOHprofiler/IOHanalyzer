@@ -16,7 +16,7 @@
 #' @importFrom ggplot2 scale_x_continuous scale_x_log10 facet_wrap theme_set theme_grey theme
 #' @importFrom shiny req
 #' @importFrom stringi stri_detect_regex stri_detect_fixed stri_locate_all stri_replace
-#' @importFrom stringi stri_rand_strings stri_sub
+#' @importFrom stringi stri_rand_strings stri_sub stri_replace_all_fixed
 #' @importFrom httr POST GET add_headers content authenticate
 #' @importFrom reshape2 acast dcast
 #' @importFrom knitr kable

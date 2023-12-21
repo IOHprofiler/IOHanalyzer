@@ -39,7 +39,7 @@ Imports:
   viridis
 LinkingTo: Rcpp
 SystemRequirements: C++
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Suggests: 
   Rcpp,
   testthat,
@@ -60,4 +60,3 @@ Suggests:
   RVCompare,
   reticulate
 Depends: R (>= 2.10)
-

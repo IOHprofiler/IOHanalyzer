@@ -67,7 +67,7 @@ get_data_EAFCDF <- reactive({
 
   dt_ecdf <- rbindlist(lapply(input$EAF.CDF.Algs, function(id) {
     dt_sub <- dt_eaf[ID == id, ]
-    temp <- generate_data.ECDF_From_EAF(dt_sub,
+    temp <- generate_data.ECDF_From_EAF(dt_sub, maximization = attr(dsList, 'maximization'),
                                         min_val = input$EAF.CDF.yMin,
                                         max_val = input$EAF.CDF.yMax, scale_log=input$EAF.CDF.Logy)
     temp$ID <- id
@@ -203,7 +203,7 @@ get_data_EAFMultiCDF <- reactive({
   max_rt <- max(dt_eaf[,'runtime'])
   dt_eMultiCDF <- rbindlist(lapply(isolate(input$EAF.MultiCDF.Algs), function(id) {
     dt_sub <- dt_eaf[ID == id, ]
-    temp <- generate_data.ECDF_From_EAF(dt_sub,
+    temp <- generate_data.ECDF_From_EAF(dt_sub, maximization = attr(dsList, 'maximization'),
                                         min_val = isolate(input$EAF.MultiCDF.yMin),
                                         max_val = isolate(input$EAF.MultiCDF.yMax),
                                         scale_log=isolate(input$EAF.MultiCDF.Logy))

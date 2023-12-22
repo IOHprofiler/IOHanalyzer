@@ -167,6 +167,268 @@ observeEvent(input$repository.load_button, {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+library(DBI)
+library(dplyr)
+library(odbc)
+library(RSQLite)
+source("/opt/IOHanalyzer/R/DataSet.R")
+source("/opt/IOHanalyzer/R/DataSetList.R")
+
+# Database connections
+sqlite_db_path <- '/home/shiny/repository/db.sqlite3'
+sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
+clickhouseConnection <- dbConnect(odbc::odbc(), "ClickHouse DSN (Unicode)")
+
+# Define the variables
+dimensions <- input$repository.dim
+problems <- input$repository.funcId
+algorithm_id <- 1
+
+
+file_conn <- file("/home/shiny/output_data_replicate.txt", open = "a")
+on.exit(close(file_conn))
+
+
+writeLines("ES GEHT LOS", file_conn)
+
+writeLines(paste(capture.output(print(input$repository.funcId)), collapse = "\n"), file_conn)
+writeLines(paste(capture.output(print(input$repository.dim)), collapse = "\n"), file_conn)
+writeLines(paste(capture.output(print(input$repository.ID)), collapse = "\n"), file_conn)
+writeLines(paste(capture.output(print(input$repository)), collapse = "\n"), file_conn)
+writeLines(paste(capture.output(print(input)), collapse = "\n"), file_conn)
+
+
+
+# Convert the vectors to comma-separated strings
+dimensions_str <- paste(dimensions, collapse = ", ")
+problems_str <- paste(problems, collapse = ", ")
+
+# Construct the query using sprintf
+run_id_query <- sprintf("
+SELECT
+    e.problem_id,
+    r.dimension,
+    e.algorithm_id,
+    r.instance,
+    r.id
+FROM
+    iohdata_run r
+JOIN
+    iohdata_experiment e ON r.experiment_id = e.id
+WHERE
+    r.dimension IN (%s) AND
+    e.problem_id IN (%s) AND
+    e.algorithm_id = %d;
+", dimensions_str, problems_str, algorithm_id)
+
+# Execute the query
+run_data <- dbGetQuery(sqliteConnection, run_id_query)
+dbDisconnect(sqliteConnection)
+
+function_values_matrices <- list()
+runtimes_matrices <- list()
+runs <- list()
+class(runs) <- c("DataSetList", "list")
+
+print(nrow(run_data))
+
+all_combinations <- expand.grid(problem_id = problems, dimension = dimensions, algorithm_id = algorithm_id)
+
+# Iterate over each row in run_data
+for (i in 1:nrow(all_combinations)) {
+    start_time <- Sys.time()
+
+    current_combination <- all_combinations[i, ]
+
+    # Get the current triple
+    current_problem_id <- current_combination$problem_id
+    current_dimension <- current_combination$dimension
+    current_algorithm_id <- current_combination$algorithm_id
+
+    # Filter for current triple
+    subset_runs <- run_data %>%
+        filter(
+            problem_id == current_problem_id,
+            dimension == current_dimension,
+            algorithm_id == current_algorithm_id
+        ) %>%
+        select(instance, id) # Keep only instance and run id
+
+    # Prepare query for ClickHouse
+    run_ids_string <- paste(subset_runs$id, collapse = ", ")
+    sqlQuery <- paste(
+        "WITH tab AS (",
+        "    SELECT t, run_id, x",
+        "    FROM ioh.raw_y",
+        "    WHERE run_id IN (", run_ids_string, ")",
+        "),",
+        "num AS (",
+        "    SELECT DISTINCT run_id, t",
+        "    FROM ioh.raw_y",
+        "    WHERE run_id IN (", run_ids_string, ")",
+        ")",
+        "SELECT tab.run_id as rid, num.t, tab.x AS raw_y_column",
+        "FROM num",
+        "LEFT JOIN tab ON num.run_id = tab.run_id AND num.t = tab.t",
+        "ORDER BY num.run_id, num.t;",
+        sep = "\n"
+    )
+    # Fetch raw data from ClickHouse
+    raw_data <- dbGetQuery(clickhouseConnection, sqlQuery)
+
+
+
+
+    # Get unique t and rid values
+    unique_t <- sort(unique(raw_data$t))
+    unique_rid <- sort(unique(raw_data$rid))
+
+    # Prepare an empty matrix with the appropriate dimensions
+    function_values <- matrix(NA, nrow = length(unique_t), ncol = length(unique_rid))
+
+    # Set row names to the unique t values and column names to unique rid values
+    rownames(function_values) <- as.numeric(unique_t)
+    colnames(function_values) <- as.character(unique_rid)
+
+    # Fill the matrix with ioh.raw_y values
+    for (i in 1:nrow(function_values)) {
+        for (j in 1:ncol(function_values)) {
+            # Find the ioh.raw_y value for each combination of t and rid
+            raw_y_value <- raw_data$ioh.raw_y[raw_data$t == rownames(function_values)[i] & raw_data$rid == colnames(function_values)[j]]
+            if (length(raw_y_value) == 1) {
+                function_values[i, j] <- raw_y_value
+            }
+        }
+    }
+
+    # Remove rows where at least one value is NA
+    function_values <- function_values[!apply(function_values, 1, function(x) any(is.na(x))), ]
+
+    colnames(function_values) <- NULL
+
+    function_values_matrices[[length(function_values_matrices) + 1]] <- function_values
+
+
+
+    # === EXTRACT RT: START ===
+
+    # Targets vector
+    targets <- sort(unique(as.vector(function_values)), decreasing = TRUE)
+
+    # Number of columns in the function_values matrix
+    num_columns <- ncol(function_values)
+
+    # Get the row names (indices) of the matrix
+    row_names <- as.numeric(rownames(function_values))
+
+    # Initialize a matrix to store the corresponding row names for each column
+    runtimes <- matrix(
+      NA,
+      nrow = length(targets),
+      ncol = num_columns,
+      dimnames = list(targets, NULL)
+    )
+
+    # Iterate over each column
+    for (j in 1:num_columns) {
+        # Extract the j-th column from the matrix
+        column <- function_values[, j]
+
+        # Iterate over each target to find the corresponding row name for this column
+        for (i in seq_along(targets)) {
+            target <- targets[i]
+            # Find the indices of values that are at most the target
+            indices <- which(column <= target)
+
+            # Get the row name corresponding to the first index if it exists
+            if (length(indices) > 0) {
+                runtimes[i, j] <- row_names[indices[1]]
+            }
+        }
+    }
+
+    # runtimes now contains the corresponding row names for each target in each column,
+    # with row names being the targets
+
+    # === EXTRACT RT: END ===
+
+
+    runtimes_matrices[[length(runtimes_matrices) + 1]] <- runtimes
+
+    # Creating the nested list structure
+    run <- list()
+    class(run) <- c("DataSet", "list")
+    run$FV <- function_values
+    run$RT <- runtimes
+    run$PAR <- list(
+      by_FV = structure(list(), names=character(0)),
+      by_RT = structure(list(), names=character(0))
+    )
+    attr(run, "funcId") <- current_problem_id
+    attr(run, "DIM") <- current_dimension
+    attr(run, "algId") <- current_algorithm_id
+    attr(run, "instance") <- as.list(subset_runs$instance)
+    runs[[length(runs) + 1]] <- run
+
+    end_time <- Sys.time()
+    duration <- end_time - start_time
+    print(duration)
+}
+
+# print(function_values_matrices)
+# print(runtimes_matrices)
+print(runs)
+
+
+dbDisconnect(clickhouseConnection)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   for (f in input$repository.dataset) {
     rds_file <- file.path(repo_dir, input$repository.type, paste0(f, ".rds"))
     data <- c(data, readRDS(rds_file))
@@ -176,11 +438,7 @@ observeEvent(input$repository.load_button, {
   data <- subset(data, algId %in% input$repository.ID)
 
 
-  capture_data_info("LOOK HERE")
-  capture_data_info(data[[1]])
-  capture_data_info(data[[2]])
-  capture_data_info(data)
-
+  data <- runs
 
   if (length(DataList$data) > 0 && attr(data, 'maximization') != attr(DataList$data, 'maximization')) {
     shinyjs::alert(paste0("Attempting to add data from a different optimization type to the currently",

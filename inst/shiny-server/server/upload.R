@@ -73,31 +73,36 @@ library(RSQLite)
 
 
 
-capture_data_info <- function(data_replicate, output_file_path = "/home/shiny/repository/output_data_replicate.txt") {
-  output_text <- capture.output({
-    for(name in names(data_replicate)) {
-      # Capture the name and the content of each component
-      captured_name <- paste(Sys.time(), " - ", name, ":\n", sep = "")
-      captured_content <- paste(capture.output(print(data_replicate[[name]])), collapse = "\n")
-      cat(captured_name, captured_content, "\n\n", file = output_file_path, append = TRUE)
-    }
+capture_data_info <- function(data_replicate, output_file_path = "/home/shiny/output_data_replicate.txt") {
+  # Open the connection to the file for writing
+  file_conn <- file(output_file_path, open = "a")
 
-    # Capture and log attributes
-    attrs <- attributes(data_replicate)
-    for(attr_name in names(attrs)) {
-      if(attr_name != "names") {
-        captured_attr_name <- paste(Sys.time(), " - attr(,", paste0("\"", attr_name, "\""), "):\n", sep = "")
-        captured_attr_content <- paste(capture.output(print(attrs[[attr_name]])), collapse = "\n")
-        cat(captured_attr_name, captured_attr_content, "\n\n", file = output_file_path, append = TRUE)
-      }
-    }
-  }, silent = TRUE)  # Use silent = TRUE to suppress output to the console
+  # Log the string representation of the entire data structure
+  stringified_data <- deparse(substitute(data_replicate))
+  cat(Sys.time(), " - Complete Data Structure:\n", file = file_conn)
+  writeLines(stringified_data, file_conn)
+  writeLines("\n", file_conn)
 
-  # Optionally, log a message indicating the completion of the operation
-  log_message <- paste(Sys.time(), " - Information appended to", output_file_path, "\n")
-  cat(log_message, file = output_file_path, append = TRUE)
+  # Log each component of the data structure
+  for(name in names(data_replicate)) {
+    captured_name <- paste(Sys.time(), " - ", name, ":\n", sep = "")
+    captured_content <- paste(capture.output(print(data_replicate[[name]])), collapse = "\n")
+    cat(captured_name, captured_content, "\n\n", file = file_conn)
+  }
+
+  # Log attributes of the data structure
+  attrs <- attributes(data_replicate)
+  for(attr_name in names(attrs)) {
+    if(attr_name != "names") {
+      captured_attr_name <- paste(Sys.time(), " - attr(,", paste0("\"", attr_name, "\""), "):\n", sep = "")
+      captured_attr_content <- paste(capture.output(print(attrs[[attr_name]])), collapse = "\n")
+      cat(captured_attr_name, captured_attr_content, "\n\n", file = file_conn)
+    }
+  }
+
+  # Close the file connection
+  close(file_conn)
 }
-
 
 
 
@@ -110,10 +115,8 @@ observeEvent(input$repository.load_button, {
 
 
 
-
-
   # Set the path to the SQLite database
-  db_path <- "/home/shiny/repository/bbob/db.sqlite3"
+  db_path <- "/home/shiny/repository/db.sqlite3"
 
   # Connect to the SQLite database
   conn <- dbConnect(RSQLite::SQLite(), dbname = db_path)
@@ -142,14 +145,21 @@ observeEvent(input$repository.load_button, {
   capture_data_info(runs)
 
 
+  capture_data_info("current_working_directory()")
+  current_working_directory <- getwd()
+
+  capture_data_info(current_working_directory)
+
+
   conn <- dbConnect(
     odbc::odbc(),
     "ClickHouse DSN (Unicode)"
   )
-
   query_result <- dbGetQuery(conn, "SELECT * FROM ioh.raw_y WHERE run_id = 1800;")
-  capture_data_info(query_result)
+  query_result <- dbGetQuery(conn, "SELECT * FROM ioh.raw_y WHERE run_id = 76;")
 
+
+  capture_data_info(query_result)
   dbDisconnect(conn)
 
 
@@ -164,6 +174,13 @@ observeEvent(input$repository.load_button, {
   data <- subset(data, funcId %in% input$repository.funcId)
   data <- subset(data, DIM %in% input$repository.dim)
   data <- subset(data, algId %in% input$repository.ID)
+
+
+  capture_data_info("LOOK HERE")
+  capture_data_info(data[[1]])
+  capture_data_info(data[[2]])
+  capture_data_info(data)
+
 
   if (length(DataList$data) > 0 && attr(data, 'maximization') != attr(DataList$data, 'maximization')) {
     shinyjs::alert(paste0("Attempting to add data from a different optimization type to the currently",

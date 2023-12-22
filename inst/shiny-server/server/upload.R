@@ -77,15 +77,35 @@ observeEvent(input$repository.load_button, {
   data <- DataSetList()
   repo_dir <- get_repo_location()
 
+
+  file_conn <- file("/home/shiny/output_data_replicate.txt", open = "a")
+  on.exit(close(file_conn))
+
+
   # Database connections
   sqlite_db_path <- '/home/shiny/repository/db.sqlite3'
   sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
   clickhouseConnection <- dbConnect(odbc::odbc(), "ClickHouse DSN (Unicode)")
 
+
+
+  # Algorithm name(s) you're looking for
+  algorithm_names <- input$repository.ID
+
+  # SQL query to get the algorithm ID based on the name
+  query <- sprintf(
+    "SELECT id, info FROM iohdata_algorithm WHERE name IN ('%s')",
+    paste(algorithm_names, collapse="', '")
+  )
+
+  # Execute the query and fetch the result
+  result <- dbGetQuery(sqliteConnection, query)
+
   # Define the variables
   dimensions <- input$repository.dim
   problems <- input$repository.funcId
-  algorithm_id <- 1
+  algorithm_id <- result$id
+  algorithm_infos <- result$info
 
   # Convert the vectors to comma-separated strings
   dimensions_str <- paste(dimensions, collapse = ", ")
@@ -121,7 +141,7 @@ observeEvent(input$repository.load_button, {
   all_combinations <- expand.grid(problem_id = problems, dimension = dimensions, algorithm_id = algorithm_id)
 
   # Iterate over each row in run_data
-  for (i in 1:50) {
+  for (i in 1:nrow(run_data)) {
       start_time <- Sys.time()
 
       current_combination <- all_combinations[i, ]
@@ -244,9 +264,10 @@ observeEvent(input$repository.load_button, {
         by_FV = structure(list(), names=character(0)),
         by_RT = structure(list(), names=character(0))
       )
-      attr(run, "funcId") <- current_problem_id
+      attr(run, "algId") <- algorithm_names[current_algorithm_id]
+      attr(run, "comment") <- algorithm_infos[current_algorithm_id]
       attr(run, "DIM") <- current_dimension
-      attr(run, "algId") <- current_algorithm_id
+      attr(run, "funcId") <- current_problem_id
       attr(run, "instance") <- as.list(subset_runs$instance)
       runs[[length(runs) + 1]] <- run
 

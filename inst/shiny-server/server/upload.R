@@ -141,10 +141,13 @@ observeEvent(input$repository.load_button, {
   all_combinations <- expand.grid(problem_id = problems, dimension = dimensions, algorithm_id = algorithm_id)
 
   # Iterate over each row in run_data
-  for (i in 1:nrow(run_data)) {
+  for (combination_index in 1:nrow(all_combinations)) {
       start_time <- Sys.time()
 
-      current_combination <- all_combinations[i, ]
+      # writeLines(paste(capture.output(print(start_time)), collapse = "\n"), file_conn)
+      # flush(file_conn)
+
+      current_combination <- all_combinations[combination_index, ]
 
       # Get the current triple
       current_problem_id <- current_combination$problem_id
@@ -159,6 +162,13 @@ observeEvent(input$repository.load_button, {
               algorithm_id == current_algorithm_id
           ) %>%
           select(instance, id) # Keep only instance and run id
+
+      if (length(subset_runs$id) == 0) {
+        writeLines(paste(capture.output(print("subset_runs is EMPTY!!!")), collapse = "\n"), file_conn)
+        flush(file_conn)
+        flush(file_conn)
+        break
+      }
 
       # Prepare query for ClickHouse
       run_ids_string <- paste(subset_runs$id, collapse = ", ")

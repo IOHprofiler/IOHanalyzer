@@ -77,10 +77,8 @@ observeEvent(input$repository.load_button, {
   data <- DataSetList()
   repo_dir <- get_repo_location()
 
-
   file_conn <- file("/home/shiny/output_data_replicate.txt", open = "a")
   on.exit(close(file_conn))
-
 
   # Database connections
   sqlite_db_path <- '/home/shiny/repository/db.sqlite3'
@@ -88,8 +86,6 @@ observeEvent(input$repository.load_button, {
   clickhouseConnection <- dbConnect(odbc::odbc(), "ClickHouse DSN (Unicode)")
 
 
-
-  # Algorithm name(s) you're looking for
   algorithm_names <- input$repository.ID
 
   # SQL query to get the algorithm ID based on the name
@@ -107,27 +103,102 @@ observeEvent(input$repository.load_button, {
   algorithm_id <- result$id
   algorithm_infos <- result$info
 
+  # Create the query string
+  query <- sprintf("SELECT p.fid, s.name FROM iohdata_problem p JOIN iohdata_suite s ON p.suite_id = s.id WHERE p.fid IN (%s)", paste(problems, collapse = ", "))
+
+  # Execute the query and fetch results
+  suite_name_mapping <- dbGetQuery(sqliteConnection, query)
+
+  # Create the query string
+  query <- sprintf("SELECT id FROM iohdata_experiment WHERE algorithm_id = %s AND problem_id = %s",
+                   algorithm_id[1], problems[1])
+
+  # Execute the query and fetch results
+  result <- dbGetQuery(sqliteConnection, query)
+
+  # Extract the id
+  # Since the combination of algorithm_id and problem_id is unique,
+  # there should be only one row in the result
+  experiment_id <- result$id[1]
+
+
+  # Create the query string to fetch algorithm_id, problem_id, and version
+  query <- sprintf("SELECT algorithm_id, problem_id, version FROM iohdata_experiment WHERE algorithm_id IN (%s) AND problem_id IN (%s)",
+                   paste(algorithm_id, collapse = ", "), paste(problems, collapse = ", "))
+
+  # Execute the query and fetch results
+  result <- dbGetQuery(sqliteConnection, query)
+
+  # Initialize an empty list for version mapping
+  version_mapping <- list()
+
+  # Populate the list with version for each algorithm and problem combination
+  for (row in 1:nrow(result)) {
+      key <- paste(result$algorithm_id[row], result$problem_id[row], sep = ",")
+      version_mapping[[key]] <- result$version[row]
+  }
+
+  # Now version_mapping is a list where you can access version with version_mapping[["algorithm_id,problem_id"]]
+
+
+  # Assuming you have already connected to your database and have access to the table
+
+  # Create a query to fetch 'fid' and 'maximization' columns
+  query <- "SELECT fid, maximization FROM iohdata_problem"
+
+  # Execute the query and fetch results
+  results <- dbGetQuery(sqliteConnection, query)
+
+  # Initialize an empty mapping
+  fid_to_maximization <- list()
+
+  # Iterate through the results to create the mapping
+  for (i in 1:nrow(results)) {
+    fid <- results$fid[i]
+    maximization <- as.logical(results$maximization[i])  # Convert to boolean
+
+    # Add to the mapping
+    fid_to_maximization[fid] <- maximization
+  }
+
+  # Now fid_to_maximization is a mapping from 'fid' to 'maximization' as boolean values
+
+
+  # Create the query string
+  query <- sprintf("SELECT instance FROM iohdata_run WHERE dimension = %s AND experiment_id = %s", dimensions[1], experiment_id)
+
+  # Execute the query and fetch results
+  instances_result <- dbGetQuery(sqliteConnection, query)
+
+  # Extract the 'instance' column into a vector
+  instances <- instances_result$instance
+
   # Convert the vectors to comma-separated strings
   dimensions_str <- paste(dimensions, collapse = ", ")
   problems_str <- paste(problems, collapse = ", ")
 
   # Construct the query using sprintf
-  run_id_query <- sprintf("
-  SELECT
-      e.problem_id,
-      r.dimension,
-      e.algorithm_id,
-      r.instance,
-      r.id
-  FROM
-      iohdata_run r
-  JOIN
-      iohdata_experiment e ON r.experiment_id = e.id
-  WHERE
-      r.dimension IN (%s) AND
-      e.problem_id IN (%s) AND
-      e.algorithm_id = %d;
-  ", dimensions_str, problems_str, algorithm_id)
+  run_id_query <- sprintf(
+    "
+      SELECT
+        e.problem_id,
+        r.dimension,
+        e.algorithm_id,
+        r.instance,
+        r.id
+      FROM
+        iohdata_run r
+      JOIN
+        iohdata_experiment e ON r.experiment_id = e.id
+      WHERE
+        r.dimension IN (%s) AND
+        e.problem_id IN (%s) AND
+        e.algorithm_id = %d;
+    ",
+    dimensions_str,
+    problems_str,
+    algorithm_id
+  )
 
   # Execute the query
   run_data <- dbGetQuery(sqliteConnection, run_id_query)
@@ -140,149 +211,60 @@ observeEvent(input$repository.load_button, {
 
   all_combinations <- expand.grid(problem_id = problems, dimension = dimensions, algorithm_id = algorithm_id)
 
+  writeLines(paste(capture.output(print(algorithm_names)), collapse = "\n"), file_conn)
+  flush(file_conn)
+  writeLines(paste(capture.output(print(algorithm_names[algorithm_id])), collapse = "\n"), file_conn)
+  flush(file_conn)
+
+  rds_path <- sprintf('/home/shiny/repository/bbob/%s.rds', algorithm_names[algorithm_id])
+
+  writeLines(paste(capture.output(print(rds_path)), collapse = "\n"), file_conn)
+  flush(file_conn)
+
+  rdsFile <- readRDS(rds_path)
+
   # Iterate over each row in run_data
-  for (combination_index in 1:nrow(all_combinations)) {
-      start_time <- Sys.time()
+  for (i in 1:nrow(all_combinations)) {
+    current_combination <- all_combinations[i, ]
 
-      # writeLines(paste(capture.output(print(start_time)), collapse = "\n"), file_conn)
-      # flush(file_conn)
+    current_problem_id <- current_combination$problem_id
+    current_dimension <- current_combination$dimension
+    current_algorithm_id <- current_combination$algorithm_id
 
-      current_combination <- all_combinations[combination_index, ]
+    requested_index <- NULL  # Initialize variable to store the index
 
-      # Get the current triple
-      current_problem_id <- current_combination$problem_id
-      current_dimension <- current_combination$dimension
-      current_algorithm_id <- current_combination$algorithm_id
-
-      # Filter for current triple
-      subset_runs <- run_data %>%
-          filter(
-              problem_id == current_problem_id,
-              dimension == current_dimension,
-              algorithm_id == current_algorithm_id
-          ) %>%
-          select(instance, id) # Keep only instance and run id
-
-      if (length(subset_runs$id) == 0) {
-        writeLines(paste(capture.output(print("subset_runs is EMPTY!!!")), collapse = "\n"), file_conn)
-        flush(file_conn)
-        flush(file_conn)
-        break
+    for(i in seq_along(rdsFile)) {
+      # Check if both conditions are met
+      if(attr(rdsFile[[i]], 'DIM') == current_dimension && attr(rdsFile[[i]], 'funcId') == current_problem_id) {
+        requested_index <- i  # Store the index
+        break  # Exit the loop once the match is found
       }
+    }
 
-      # Prepare query for ClickHouse
-      run_ids_string <- paste(subset_runs$id, collapse = ", ")
-      sqlQuery <- paste(
-          "WITH tab AS (",
-          "    SELECT t, run_id, x",
-          "    FROM ioh.raw_y",
-          "    WHERE run_id IN (", run_ids_string, ")",
-          "),",
-          "num AS (",
-          "    SELECT DISTINCT run_id, t",
-          "    FROM ioh.raw_y",
-          "    WHERE run_id IN (", run_ids_string, ")",
-          ")",
-          "SELECT tab.run_id as rid, num.t, tab.x AS raw_y_column",
-          "FROM num",
-          "LEFT JOIN tab ON num.run_id = tab.run_id AND num.t = tab.t",
-          "ORDER BY num.run_id, num.t;",
-          sep = "\n"
-      )
-      # Fetch raw data from ClickHouse
-      raw_data <- dbGetQuery(clickhouseConnection, sqlQuery)
+    run <- list()
+    class(run) <- c("DataSet", "list")
+    run$FV <- rdsFile[[requested_index]]$FV
+    run$RT <- rdsFile[[requested_index]]$RT
+    run$PAR <- list(
+      by_FV = structure(list(), names=character(0)),
+      by_RT = structure(list(), names=character(0))
+    )
 
-      # === EXTRACT FV: START ===
+    attr(run, "DIM") <- current_dimension
+    attr(run, "algId") <- current_algorithm_id
 
-      # Get unique t and rid values
-      unique_t <- sort(unique(raw_data$t))
-      unique_rid <- sort(unique(raw_data$rid))
+    attr(run, "funcId") <- current_problem_id
+    attr(run, "suite") <- suite_name_mapping[suite_name_mapping$fid == current_problem_id, "name"]
 
-      # Prepare an empty matrix with the appropriate dimensions
-      function_values <- matrix(NA, nrow = length(unique_t), ncol = length(unique_rid))
+    key <- paste(current_algorithm_id, current_problem_id, sep = ",")
+    attr(run, "format") <- version_mapping[[key]]
 
-      # Set row names to the unique t values and column names to unique rid values
-      rownames(function_values) <- as.numeric(unique_t)
-      colnames(function_values) <- as.character(unique_rid)
+    attr(run, "maximization") <- fid_to_maximization[current_problem_id]
+    attr(run, "instance") <- instances
+    attr(run, "datafile") <- rds_path
+    attr(run, "comment") <- algorithm_infos[current_algorithm_id]
 
-      # Fill the matrix with ioh.raw_y values
-      for (i in 1:nrow(function_values)) {
-          for (j in 1:ncol(function_values)) {
-              # Find the ioh.raw_y value for each combination of t and rid
-              raw_y_value <- raw_data$ioh.raw_y[raw_data$t == rownames(function_values)[i] & raw_data$rid == colnames(function_values)[j]]
-              if (length(raw_y_value) == 1) {
-                  function_values[i, j] <- raw_y_value
-              }
-          }
-      }
-
-      # Remove rows where at least one value is NA
-      function_values <- function_values[!apply(function_values, 1, function(x) any(is.na(x))), ]
-
-      colnames(function_values) <- NULL
-
-      function_values_matrices[[length(function_values_matrices) + 1]] <- function_values
-
-      # === EXTRACT FV: END ===
-      # === EXTRACT RT: START ===
-
-      # Targets vector
-      targets <- sort(unique(as.vector(function_values)), decreasing = TRUE)
-
-      # Number of columns in the function_values matrix
-      num_columns <- ncol(function_values)
-
-      # Get the row names (indices) of the matrix
-      row_names <- as.numeric(rownames(function_values))
-
-      # Initialize a matrix to store the corresponding row names for each column
-      runtimes <- matrix(
-        NA,
-        nrow = length(targets),
-        ncol = num_columns,
-        dimnames = list(targets, NULL)
-      )
-
-      # Iterate over each column
-      for (j in 1:num_columns) {
-          # Extract the j-th column from the matrix
-          column <- function_values[, j]
-
-          # Iterate over each target to find the corresponding row name for this column
-          for (i in seq_along(targets)) {
-              target <- targets[i]
-              # Find the indices of values that are at most the target
-              indices <- which(column <= target)
-
-              # Get the row name corresponding to the first index if it exists
-              if (length(indices) > 0) {
-                  runtimes[i, j] <- row_names[indices[1]]
-              }
-          }
-      }
-
-      # === EXTRACT RT: END ===
-
-      runtimes_matrices[[length(runtimes_matrices) + 1]] <- runtimes
-
-      # Creating the nested list structure
-      run <- list()
-      class(run) <- c("DataSet", "list")
-      run$FV <- function_values
-      run$RT <- runtimes
-      run$PAR <- list(
-        by_FV = structure(list(), names=character(0)),
-        by_RT = structure(list(), names=character(0))
-      )
-      attr(run, "algId") <- algorithm_names[current_algorithm_id]
-      attr(run, "comment") <- algorithm_infos[current_algorithm_id]
-      attr(run, "DIM") <- current_dimension
-      attr(run, "funcId") <- current_problem_id
-      attr(run, "instance") <- as.list(subset_runs$instance)
-      runs[[length(runs) + 1]] <- run
-
-      end_time <- Sys.time()
-      duration <- end_time - start_time
+    runs[[length(runs) + 1]] <- run
   }
 
   # After all the above iterations of querying the ClickHouse database are over:

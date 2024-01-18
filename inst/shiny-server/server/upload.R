@@ -25,12 +25,18 @@ observe({
 # set up list of datasets (scan the repository, looking for .rds files)
 observe({
   req(input$repository.type)
-  repo_dir <- get_repo_location()
-  dir <- file.path(repo_dir, input$repository.type)
 
-  rds_files <- list.files(dir, pattern = '.rds$') %>% sub('\\.rds$', '', .)
-  if (length(rds_files) != 0) {
-    updateSelectInput(session, 'repository.dataset', choices = rds_files, selected = rds_files[[1]])
+  # Get the available datasets from the SQLite database.
+  repo_dir <- get_repo_location()
+  sqlite_db_path <- sprintf('%s/db.sqlite3', repo_dir)
+  sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
+  query <- "SELECT name FROM iohdata_experimentset"
+  result <- dbGetQuery(sqliteConnection, query)
+  dbDisconnect(sqliteConnection)
+  dataset_names <- result$name
+
+  if (length(dataset_names) != 0) {
+    updateSelectInput(session, 'repository.dataset', choices = dataset_names, selected = dataset_names[[1]])
   } else {# TODO: the alert msg should be updated
     shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository,
                    please create a folder called 'repository' in your home directory
@@ -43,66 +49,114 @@ observe({
 # load repository that is selected
 observeEvent(input$repository.dataset, {
   req(input$repository.dataset)
-  repo_dir <- get_repo_location()
-  algs <- c()
-  dims <- c()
-  funcs <- c()
 
-  for (f in input$repository.dataset) {
-    rds_file <- file.path(repo_dir, input$repository.type, paste0(f, ".rds"))
-    if (file.exists(paste0(rds_file, '_info'))) {
-      info <- readRDS(paste0(rds_file, '_info'))
-    }
-    else {
-      dsl <- readRDS(rds_file)
-      info = list(algId = get_algId(dsl), funcId = get_funcId(dsl), DIM = get_dim(dsl))
-    }
-    algs <- c(algs, info$algId)
-    dims <- c(dims, info$DIM)
-    funcs <- c(funcs, info$funcId)
-  }
+  # Specify the path to the SQLite database
+  repo_dir <- get_repo_location()  # Replace with your function to get the directory path
+  sqlite_db_path <- sprintf('%s/db.sqlite3', repo_dir)
 
-  algs <- unique(algs)
-  dims <- unique(dims)
-  funcs <- unique(funcs)
+  # Establish a connection to the database
+  sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
 
-  updateSelectInput(session, 'repository.ID', choices = algs, selected = algs)
-  updateSelectInput(session, 'repository.dim', choices = dims, selected = dims)
-  updateSelectInput(session, 'repository.funcId', choices = funcs, selected = funcs)
+  # Prepare the combined query
+  # This query fetches distinct algorithm names, problem IDs, and dimensions
+  combined_query <- sprintf(
+    "SELECT DISTINCT alg.name AS algorithm_name, exp.problem_id, run.dimension
+     FROM iohdata_run AS run
+     INNER JOIN (
+       SELECT exp.id AS experiment_id, exp.problem_id, exp.algorithm_id
+       FROM iohdata_experiment AS exp
+       INNER JOIN iohdata_experimentset AS expset ON exp.experiment_set_id = expset.id
+       WHERE expset.name IN (%s)
+     ) AS exp ON run.experiment_id = exp.experiment_id
+     INNER JOIN iohdata_algorithm AS alg ON exp.algorithm_id = alg.id",
+    paste(sprintf("'%s'", input$repository.dataset), collapse = ", ")
+  )
+
+  # Execute the combined query
+  combined_result <- dbGetQuery(sqliteConnection, combined_query)
+
+  # Close the database connection
+  dbDisconnect(sqliteConnection)
+
+  # Extract distinct values into vectors
+  algo_names <- unique(combined_result$algorithm_name)
+  problem_ids <- unique(combined_result$problem_id)
+  dimensions <- unique(combined_result$dimension)
+
+  # Output the vectors
+  internal(algo_names)
+  internal(problem_ids)
+  internal(dimensions)
+
+  updateSelectInput(session, 'repository.ID', choices = algo_names, selected = algo_names)
+  updateSelectInput(session, 'repository.dim', choices = dimensions, selected = dimensions)
+  updateSelectInput(session, 'repository.funcId', choices = problem_ids, selected = problem_ids)
   shinyjs::enable('repository.load_button')
 })
 
+# Helper function to check if an object is iterable
+is.iterable <- function(x) {
+  is.vector(x) || is.list(x) || is.matrix(x) || is.data.frame(x)
+}
 
-observed_data_reactive <- reactiveVal()
-actionButton("show_popup", "Show Popup")
-observeEvent(input$show_popup, {
-  showModal(modalDialog(
-    title = "Information",
-    tags$pre(id = "popup_content", style = "white-space: pre-wrap; overflow-x: auto;", observed_data_reactive()),
-    footer = modalButton("Close")
-  ))
-})
+# Check if the object is a reactivevalues object
+is.reactivevalues <- function(x) {
+  inherits(x, "reactivevalues")
+}
 
+internal <- function(variable) {
+  # Get the variable name
+  variable_name <- deparse(substitute(variable))
 
-# add the data from repository
+  # Get the variable type
+  variable_type <- class(variable)
+
+  # Get the calling code
+  call_string <- deparse(match.call())
+
+  # Initialize the message
+  info_message <- paste(
+    variable_name,
+    "\n\tType:", variable_type,
+    "\n\tCalling code:", call_string,
+    "\n"
+  )
+
+  # Check if the variable is a reactivevalues object and handle accordingly
+  if (is.reactivevalues(variable)) {
+    reactive_contents <- reactiveValuesToList(variable)
+    for (name in names(reactive_contents)) {
+      value <- reactive_contents[[name]]
+      value_type <- class(value)
+      info_message <- paste(info_message,
+                            "\n\t", name, ": ",
+                            if (is.null(value)) "NULL" else paste(value, collapse = ", "),
+                            " (Type: ", value_type, ")")
+    }
+  }
+  # Else, handle as a regular variable
+  else {
+    info_message <- paste(info_message,
+                          "\n\tValue:", paste(variable, collapse = ", "),
+                          "\n\tType:", variable_type)
+  }
+
+  # Display the message
+  message("")
+  message(info_message)
+}
+
 observeEvent(input$repository.load_button, {
-  data <- DataSetList()
-  repo_dir <- get_repo_location()
-
   file_conn <- file("/home/shiny/output_data_replicate.txt", open = "a")
   on.exit(close(file_conn))
 
-  # Database connections
-  sqlite_db_path <- '/home/shiny/repository/db.sqlite3'
+  repo_dir <- get_repo_location()
+  sqlite_db_path <- sprintf('%s/db.sqlite3', repo_dir)
   sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
-  clickhouseConnection <- dbConnect(odbc::odbc(), "ClickHouse DSN (Unicode)")
-
 
   algorithm_names <- input$repository.ID
-
-  # SQL query to fetch the id and name from the table where the name is in algorithm_names
   query <- sprintf(
-    "SELECT id, name FROM iohdata_algorithm WHERE name IN ('%s')",
+    "SELECT id, name, info FROM iohdata_algorithm WHERE name IN ('%s')",
     paste(algorithm_names, collapse="', '")
   )
 
@@ -128,8 +182,7 @@ observeEvent(input$repository.load_button, {
   suite_name_mapping <- dbGetQuery(sqliteConnection, query)
 
   # Create the query string
-  query <- sprintf("SELECT id FROM iohdata_experiment WHERE algorithm_id = %s AND problem_id = %s",
-                   algorithm_id[1], problems[1])
+  query <- sprintf("SELECT id FROM iohdata_experiment WHERE algorithm_id = %s AND problem_id = %s", algorithm_id[1], problems[1])
 
   # Execute the query and fetch results
   result <- dbGetQuery(sqliteConnection, query)
@@ -139,10 +192,12 @@ observeEvent(input$repository.load_button, {
   # there should be only one row in the result
   experiment_id <- result$id[1]
 
-
   # Create the query string to fetch algorithm_id, problem_id, and version
-  query <- sprintf("SELECT algorithm_id, problem_id, version FROM iohdata_experiment WHERE algorithm_id IN (%s) AND problem_id IN (%s)",
-                   paste(algorithm_id, collapse = ", "), paste(problems, collapse = ", "))
+  query <- sprintf(
+    "SELECT algorithm_id, problem_id, version FROM iohdata_experiment WHERE algorithm_id IN (%s) AND problem_id IN (%s)",
+    paste(algorithm_id, collapse = ", "),
+    paste(problems, collapse = ", ")
+  )
 
   # Execute the query and fetch results
   result <- dbGetQuery(sqliteConnection, query)
@@ -157,7 +212,6 @@ observeEvent(input$repository.load_button, {
   }
 
   # Now version_mapping is a list where you can access version with version_mapping[["algorithm_id,problem_id"]]
-
 
   # Function to get data source for a given algorithm name
   getDataSource <- function(algorithm_name) {
@@ -181,7 +235,6 @@ observeEvent(input$repository.load_button, {
     data_sources[[algid]] <- getDataSource(algname)
   }
 
-
   # Assuming you have already connected to your database and have access to the table
 
   # Create a query to fetch 'fid' and 'maximization' columns
@@ -204,7 +257,6 @@ observeEvent(input$repository.load_button, {
 
   # Now fid_to_maximization is a mapping from 'fid' to 'maximization' as boolean values
 
-
   # Create the query string
   query <- sprintf("SELECT instance FROM iohdata_run WHERE dimension = %s AND experiment_id = %s", dimensions[1], experiment_id)
 
@@ -217,6 +269,7 @@ observeEvent(input$repository.load_button, {
   # Convert the vectors to comma-separated strings
   dimensions_str <- paste(dimensions, collapse = ", ")
   problems_str <- paste(problems, collapse = ", ")
+  algorithm_ids_str <- paste(algorithm_id, collapse = ", ")
 
   # Construct the query using sprintf
   run_id_query <- sprintf(
@@ -234,43 +287,31 @@ observeEvent(input$repository.load_button, {
       WHERE
         r.dimension IN (%s) AND
         e.problem_id IN (%s) AND
-        e.algorithm_id = %d;
+        e.algorithm_id IN (%s);
     ",
     dimensions_str,
     problems_str,
-    algorithm_id
+    algorithm_ids_str
   )
 
   # Execute the query
   run_data <- dbGetQuery(sqliteConnection, run_id_query)
   dbDisconnect(sqliteConnection)
 
-  function_values_matrices <- list()
-  runtimes_matrices <- list()
   runs <- list()
   class(runs) <- c("DataSetList", "list")
 
   all_combinations <- expand.grid(problem_id = problems, dimension = dimensions, algorithm_id = algorithm_id)
 
-  writeLines(paste(capture.output(print(algorithm_names)), collapse = "\n"), file_conn)
-  flush(file_conn)
-  writeLines(paste(capture.output(print(algorithm_names[algorithm_id])), collapse = "\n"), file_conn)
-  flush(file_conn)
+  rds_paths <- sprintf('%s/%s/%s.rds', repo_dir, data_sources[algorithm_id], input$repository.dataset)
 
-  algorithm_name <- id_to_name_mapping[as.character(algorithm_id)]
-  rds_path <- sprintf('/home/shiny/repository/%s/%s.rds', data_sources[algorithm_id], algorithm_name)
+  # Initialize an empty list to store the datasets
+  loadedDatasets <- list()
 
-  observed_data_reactive(class(algorithm_id))
-  showModal(modalDialog(
-    title = "Information",
-    tags$pre(id = "popup_content", style = "white-space: pre-wrap; overflow-x: auto;", observed_data_reactive()),
-    footer = modalButton("Close")
-  ))
-
-  writeLines(paste(capture.output(print(rds_path)), collapse = "\n"), file_conn)
-  flush(file_conn)
-
-  rdsDataset <- readRDS(rds_path)
+  # Loop through the rds_paths and read each RDS file
+  for (i in seq_along(rds_paths)) {
+      loadedDatasets[[i]] <- readRDS(rds_paths[i])
+  }
 
   # Iterate over each row in run_data
   for (i in 1:nrow(all_combinations)) {
@@ -280,27 +321,50 @@ observeEvent(input$repository.load_button, {
     current_dimension <- current_combination$dimension
     current_algorithm_id <- current_combination$algorithm_id
 
-    requested_index <- NULL  # Initialize variable to store the index
+    current_algorithm_name <- id_to_name_mapping[as.character(current_algorithm_id)]
 
-    for(i in seq_along(rdsDataset)) {
-      # Check if both conditions are met
-      if(attr(rdsDataset[[i]], 'DIM') == current_dimension && attr(rdsDataset[[i]], 'funcId') == current_problem_id) {
-        requested_index <- i  # Store the index
-        break  # Exit the loop once the match is found
+    requested_dataset_index <- NA  # Initialize to indicate no match found for dataset
+    requested_inner_index <- NA    # Initialize to indicate no match found within dataset
+
+    # Iterate over the list of datasets
+    for (i in seq_along(loadedDatasets)) {
+      # Access the current dataset
+      current_dataset <- loadedDatasets[[i]]
+
+      # Now iterate over elements within this dataset
+      for (j in seq_along(current_dataset)) {
+        # Check if 'DIM' and 'funcId' attributes match the desired values for each element
+        if (attr(current_dataset[[j]], 'DIM') == current_dimension && attr(current_dataset[[j]], 'funcId') == current_problem_id && attr(current_dataset[[j]], 'ID') == current_algorithm_name) {
+          requested_dataset_index <- i  # Store the index of the dataset
+          requested_inner_index <- j    # Store the index within the dataset
+          break  # Exit the inner loop once the match is found
+        }
       }
+
+      if (!is.na(requested_inner_index)) {
+        # If a match is found in the inner loop, exit the outer loop as well
+        break
+      }
+    }
+
+    # Check if a match was found
+    if (is.na(requested_dataset_index) || is.na(requested_inner_index)) {
+      stop("No match found for the following entries: current_problem_id = ",
+           current_problem_id, ", current_dimension = ", current_dimension,
+           ", current_algorithm_id = ", current_algorithm_id, ".")
     }
 
     run <- list()
     class(run) <- c("DataSet", "list")
-    run$FV <- rdsDataset[[requested_index]]$FV
-    run$RT <- rdsDataset[[requested_index]]$RT
+    run$FV <- loadedDatasets[[requested_dataset_index]][[requested_inner_index]]$FV
+    run$RT <- loadedDatasets[[requested_dataset_index]][[requested_inner_index]]$RT
     run$PAR <- list(
       by_FV = structure(list(), names=character(0)),
       by_RT = structure(list(), names=character(0))
     )
 
     attr(run, "DIM") <- current_dimension
-    attr(run, "algId") <- current_algorithm_id
+    attr(run, "algId") <- current_algorithm_name
 
     attr(run, "funcId") <- current_problem_id
     attr(run, "suite") <- suite_name_mapping[suite_name_mapping$fid == current_problem_id, "name"]
@@ -310,15 +374,13 @@ observeEvent(input$repository.load_button, {
 
     attr(run, "maximization") <- fid_to_maximization[current_problem_id]
     attr(run, "instance") <- instances
-    attr(run, "datafile") <- rds_path
+    attr(run, "datafile") <- rds_paths[[requested_dataset_index]]
     attr(run, "comment") <- algorithm_infos[current_algorithm_id]
 
     runs[[length(runs) + 1]] <- run
   }
 
-  # After all the above iterations of querying the ClickHouse database are over:
-  dbDisconnect(clickhouseConnection)
-
+  data <- DataSetList()
   data <- runs
 
   if (length(DataList$data) > 0 && attr(data, 'maximization') != attr(DataList$data, 'maximization')) {

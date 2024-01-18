@@ -72,6 +72,18 @@ observeEvent(input$repository.dataset, {
   shinyjs::enable('repository.load_button')
 })
 
+
+observed_data_reactive <- reactiveVal()
+actionButton("show_popup", "Show Popup")
+observeEvent(input$show_popup, {
+  showModal(modalDialog(
+    title = "Information",
+    tags$pre(id = "popup_content", style = "white-space: pre-wrap; overflow-x: auto;", observed_data_reactive()),
+    footer = modalButton("Close")
+  ))
+})
+
+
 # add the data from repository
 observeEvent(input$repository.load_button, {
   data <- DataSetList()
@@ -88,11 +100,17 @@ observeEvent(input$repository.load_button, {
 
   algorithm_names <- input$repository.ID
 
-  # SQL query to get the algorithm ID based on the name
+  # SQL query to fetch the id and name from the table where the name is in algorithm_names
   query <- sprintf(
-    "SELECT id, info FROM iohdata_algorithm WHERE name IN ('%s')",
+    "SELECT id, name FROM iohdata_algorithm WHERE name IN ('%s')",
     paste(algorithm_names, collapse="', '")
   )
+
+  # Execute the query and fetch the result
+  result <- dbGetQuery(sqliteConnection, query)
+
+  # Create the mapping from id to name
+  id_to_name_mapping <- setNames(result$name, result$id)
 
   # Execute the query and fetch the result
   result <- dbGetQuery(sqliteConnection, query)
@@ -139,6 +157,29 @@ observeEvent(input$repository.load_button, {
   }
 
   # Now version_mapping is a list where you can access version with version_mapping[["algorithm_id,problem_id"]]
+
+
+  # Function to get data source for a given algorithm name
+  getDataSource <- function(algorithm_name) {
+    query <- sprintf("SELECT data_source FROM iohdata_experimentset WHERE name = '%s'", algorithm_name)
+    result <- dbGetQuery(sqliteConnection, query)
+    # Extract the first value from the data_source column
+    if (nrow(result) > 0) {
+      return(result$data_source[1])
+    } else {
+      return(NA)  # Return NA if no result is found
+    }
+  }
+
+  # Initialize an empty list for data_sources
+  data_sources <- list()
+
+  # Create a mapping of algorithm_ids to algorithm_names
+  for (i in seq(algorithm_names)) {
+    algname <- algorithm_names[i]
+    algid <- algorithm_id[i]
+    data_sources[[algid]] <- getDataSource(algname)
+  }
 
 
   # Assuming you have already connected to your database and have access to the table
@@ -216,12 +257,20 @@ observeEvent(input$repository.load_button, {
   writeLines(paste(capture.output(print(algorithm_names[algorithm_id])), collapse = "\n"), file_conn)
   flush(file_conn)
 
-  rds_path <- sprintf('/home/shiny/repository/bbob/%s.rds', algorithm_names[algorithm_id])
+  algorithm_name <- id_to_name_mapping[as.character(algorithm_id)]
+  rds_path <- sprintf('/home/shiny/repository/%s/%s.rds', data_sources[algorithm_id], algorithm_name)
+
+  observed_data_reactive(class(algorithm_id))
+  showModal(modalDialog(
+    title = "Information",
+    tags$pre(id = "popup_content", style = "white-space: pre-wrap; overflow-x: auto;", observed_data_reactive()),
+    footer = modalButton("Close")
+  ))
 
   writeLines(paste(capture.output(print(rds_path)), collapse = "\n"), file_conn)
   flush(file_conn)
 
-  rdsFile <- readRDS(rds_path)
+  rdsDataset <- readRDS(rds_path)
 
   # Iterate over each row in run_data
   for (i in 1:nrow(all_combinations)) {
@@ -233,9 +282,9 @@ observeEvent(input$repository.load_button, {
 
     requested_index <- NULL  # Initialize variable to store the index
 
-    for(i in seq_along(rdsFile)) {
+    for(i in seq_along(rdsDataset)) {
       # Check if both conditions are met
-      if(attr(rdsFile[[i]], 'DIM') == current_dimension && attr(rdsFile[[i]], 'funcId') == current_problem_id) {
+      if(attr(rdsDataset[[i]], 'DIM') == current_dimension && attr(rdsDataset[[i]], 'funcId') == current_problem_id) {
         requested_index <- i  # Store the index
         break  # Exit the loop once the match is found
       }
@@ -243,8 +292,8 @@ observeEvent(input$repository.load_button, {
 
     run <- list()
     class(run) <- c("DataSet", "list")
-    run$FV <- rdsFile[[requested_index]]$FV
-    run$RT <- rdsFile[[requested_index]]$RT
+    run$FV <- rdsDataset[[requested_index]]$FV
+    run$RT <- rdsDataset[[requested_index]]$RT
     run$PAR <- list(
       by_FV = structure(list(), names=character(0)),
       by_RT = structure(list(), names=character(0))

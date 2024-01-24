@@ -94,58 +94,6 @@ observeEvent(input$repository.dataset, {
   shinyjs::enable('repository.load_button')
 })
 
-# Helper function to check if an object is iterable
-is.iterable <- function(x) {
-  is.vector(x) || is.list(x) || is.matrix(x) || is.data.frame(x)
-}
-
-# Check if the object is a reactivevalues object
-is.reactivevalues <- function(x) {
-  inherits(x, "reactivevalues")
-}
-
-internal <- function(variable) {
-  # Get the variable name
-  variable_name <- deparse(substitute(variable))
-
-  # Get the variable type
-  variable_type <- class(variable)
-
-  # Get the calling code
-  call_string <- deparse(match.call())
-
-  # Initialize the message
-  info_message <- paste(
-    variable_name,
-    "\n\tType:", variable_type,
-    "\n\tCalling code:", call_string,
-    "\n"
-  )
-
-  # Check if the variable is a reactivevalues object and handle accordingly
-  if (is.reactivevalues(variable)) {
-    reactive_contents <- reactiveValuesToList(variable)
-    for (name in names(reactive_contents)) {
-      value <- reactive_contents[[name]]
-      value_type <- class(value)
-      info_message <- paste(info_message,
-                            "\n\t", name, ": ",
-                            if (is.null(value)) "NULL" else paste(value, collapse = ", "),
-                            " (Type: ", value_type, ")")
-    }
-  }
-  # Else, handle as a regular variable
-  else {
-    info_message <- paste(info_message,
-                          "\n\tValue:", paste(variable, collapse = ", "),
-                          "\n\tType:", variable_type)
-  }
-
-  # Display the message
-  message("")
-  message(info_message)
-}
-
 observeEvent(input$repository.load_button, {
   file_conn <- file("/home/shiny/output_data_replicate.txt", open = "a")
   on.exit(close(file_conn))
@@ -300,6 +248,7 @@ observeEvent(input$repository.load_button, {
 
   runs <- list()
   class(runs) <- c("DataSetList", "list")
+  attr(runs, "maximization") <- FALSE
 
   all_combinations <- expand.grid(problem_id = problems, dimension = dimensions, algorithm_id = algorithm_id)
 
@@ -380,8 +329,8 @@ observeEvent(input$repository.load_button, {
     runs[[length(runs) + 1]] <- run
   }
 
-  data <- DataSetList()
   data <- runs
+  internal("333")
 
   if (length(DataList$data) > 0 && attr(data, 'maximization') != attr(DataList$data, 'maximization')) {
     shinyjs::alert(paste0("Attempting to add data from a different optimization type to the currently",
@@ -389,6 +338,7 @@ observeEvent(input$repository.load_button, {
                    " choose a different dataset to load."))
     return(NULL)
   }
+  internal("341")
 
   if (length(DataList$data) > 0 &&
       !all(attr(DataList$data, 'ID_attributes') %in% get_static_attributes(data))) {
@@ -396,12 +346,11 @@ observeEvent(input$repository.load_button, {
                           Please check that the attributes to create the ID
                           are present in the data you are loading."))
     return(NULL)  }
+  internal("349")
 
   if (length(DataList$data) > 0) {
     data <- change_id(data, attr(DataList$data, 'ID_attributes'))
-    temp_data <- c(DataList$data, data)
-
-    temp_data <- clean_DataSetList(temp_data)
+    temp_data <- data
   } else {
     temp_data <- change_id(data, 'algId')
   }

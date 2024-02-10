@@ -11,16 +11,18 @@ DataList <- reactiveValues(data = DataSetList())
 
 observe({
   repo_dir <- get_repo_location()
-  dirs <- list.dirs(repo_dir, full.names = F)
-  inspectify(dirs)
-  if (length(dirs) == 0) {
-    shinyjs::alert("No repository directory found. To make use of the IOHProfiler-repository,
-                   please create a folder called 'repository' in your home directory
-                   and make sure it contains at least one '.rds'-file of a DataSetList-object,
-                   such as the ones provided on the IOHProfiler github-page.")
+  sqlite_db_path <- sprintf('%s/../db.sqlite3', repo_dir)
+  sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
+  query <- "SELECT data_source FROM iohdata_experimentset"
+  result <- dbGetQuery(sqliteConnection, query)
+  dbDisconnect(sqliteConnection)
+  data_sources <- result$data_source
+
+  if (length(data_sources) == 0) {
+    shinyjs::alert("Could not display a dataset source. To display a dataset source, please upload a dataset.")
   }
   else
-    updateSelectInput(session, 'repository.type', choices = dirs, selected = dirs[[1]])
+    updateSelectInput(session, 'repository.type', choices = data_sources, selected = data_sources[[1]])
 })
 
 # set up list of datasets (scan the repository, looking for .rds files)
@@ -58,15 +60,15 @@ observeEvent(input$repository.dataset, {
   # Prepare the combined query
   # This query fetches distinct algorithm names, problem IDs, and dimensions
   combined_query <- sprintf(
-    "SELECT DISTINCT alg.name AS algorithm_name, exp.problem_id, run.dimension
-     FROM iohdata_run AS run
-     INNER JOIN (
-       SELECT exp.id AS experiment_id, exp.problem_id, exp.algorithm_id
-       FROM iohdata_experiment AS exp
-       INNER JOIN iohdata_experimentset AS expset ON exp.experiment_set_id = expset.id
-       WHERE expset.name IN (%s)
-     ) AS exp ON run.experiment_id = exp.experiment_id
-     INNER JOIN iohdata_algorithm AS alg ON exp.algorithm_id = alg.id",
+    "SELECT DISTINCT iohdata_algorithm.name AS algorithm_name, iohdata_experiment.problem_id, iohdata_run.dimension
+    FROM iohdata_run
+    INNER JOIN (
+      SELECT iohdata_experiment.id AS experiment_id, iohdata_experiment.problem_id, iohdata_experiment.algorithm_id
+      FROM iohdata_experiment
+      INNER JOIN iohdata_experimentset ON iohdata_experiment.experiment_set_id = iohdata_experimentset.id
+      WHERE iohdata_experimentset.name IN (%s)
+    ) AS iohdata_experiment ON iohdata_run.experiment_id = iohdata_experiment.experiment_id
+    INNER JOIN iohdata_algorithm ON iohdata_experiment.algorithm_id = iohdata_algorithm.id",
     paste(sprintf("'%s'", input$repository.dataset), collapse = ", ")
   )
 
@@ -90,11 +92,11 @@ observeEvent(input$repository.dataset, {
 observeEvent(input$repository.load_button, {
   repo_dir <- get_repo_location()
   sqlite_db_path <- sprintf('%s/../db.sqlite3', repo_dir)
-  inspectify(sqlite_db_path)
   sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
-  inspectify(sqliteConnection)
 
   algorithm_names <- input$repository.ID
+
+
   query <- sprintf(
     "SELECT id, name, info FROM iohdata_algorithm WHERE name IN ('%s')",
     paste(algorithm_names, collapse="', '")
@@ -102,11 +104,9 @@ observeEvent(input$repository.load_button, {
 
   # Execute the query and fetch the result
   result <- dbGetQuery(sqliteConnection, query)
-  inspectify(result)
 
   # Create the mapping from id to name
   id_to_name_mapping <- setNames(result$name, result$id)
-
   # Execute the query and fetch the result
   result <- dbGetQuery(sqliteConnection, query)
 
@@ -116,9 +116,9 @@ observeEvent(input$repository.load_button, {
   algorithm_id <- result$id
   algorithm_infos <- result$info
 
+
   # Create the query string
   query <- sprintf("SELECT p.fid, s.name FROM iohdata_problem p JOIN iohdata_suite s ON p.suite_id = s.id WHERE p.fid IN (%s)", paste(problems, collapse = ", "))
-
   # Execute the query and fetch results
   suite_name_mapping <- dbGetQuery(sqliteConnection, query)
 
@@ -153,7 +153,6 @@ observeEvent(input$repository.load_button, {
   }
 
   # Now version_mapping is a list where you can access version with version_mapping[["algorithm_id,problem_id"]]
-
   # Function to get data source for a given algorithm name
   getDataSource <- function(algorithm_name) {
     query <- sprintf("SELECT data_source FROM iohdata_experimentset WHERE name = '%s'", algorithm_name)
@@ -206,12 +205,10 @@ observeEvent(input$repository.load_button, {
 
   # Extract the 'instance' column into a vector
   instances <- instances_result$instance
-
   # Convert the vectors to comma-separated strings
   dimensions_str <- paste(dimensions, collapse = ", ")
   problems_str <- paste(problems, collapse = ", ")
   algorithm_ids_str <- paste(algorithm_id, collapse = ", ")
-
   # Construct the query using sprintf
   run_id_query <- sprintf(
     "
@@ -255,6 +252,7 @@ observeEvent(input$repository.load_button, {
       loadedDatasets[[i]] <- readRDS(rds_paths[i])
   }
 
+
   # Iterate over each row in run_data
   for (i in 1:nrow(all_combinations)) {
     current_combination <- all_combinations[i, ]
@@ -276,7 +274,7 @@ observeEvent(input$repository.load_button, {
       # Now iterate over elements within this dataset
       for (j in seq_along(current_dataset)) {
         # Check if 'DIM' and 'funcId' attributes match the desired values for each element
-        if (attr(current_dataset[[j]], 'DIM') == current_dimension && attr(current_dataset[[j]], 'funcId') == current_problem_id && attr(current_dataset[[j]], 'ID') == current_algorithm_name) {
+        if (attr(current_dataset[[j]], 'DIM') == current_dimension && attr(current_dataset[[j]], 'funcId') == current_problem_id && attr(current_dataset[[j]], 'algId') == current_algorithm_name) {
           requested_dataset_index <- i  # Store the index of the dataset
           requested_inner_index <- j    # Store the index within the dataset
           break  # Exit the inner loop once the match is found
@@ -288,7 +286,6 @@ observeEvent(input$repository.load_button, {
         break
       }
     }
-
     # Check if a match was found
     if (is.na(requested_dataset_index) || is.na(requested_inner_index)) {
       stop("No match found for the following entries: current_problem_id = ",
@@ -304,7 +301,6 @@ observeEvent(input$repository.load_button, {
       by_FV = structure(list(), names=character(0)),
       by_RT = structure(list(), names=character(0))
     )
-
     attr(run, "DIM") <- current_dimension
     attr(run, "algId") <- current_algorithm_name
 
@@ -350,7 +346,6 @@ observeEvent(input$repository.load_button, {
       attr(ds, 'funcId') <- attr(ds, 'funcName')
     }
   }
-
   # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
   update_menu_visibility(attr(temp_data, 'suite'))
   # set_format_func(attr(DataList$data, 'suite'))
@@ -359,6 +354,8 @@ observeEvent(input$repository.load_button, {
     set_color_scheme("Default", IDs)
   }
   DataList$data <- temp_data
+
+
 })
 
 # decompress zip files recursively and return the root directory of extracted files

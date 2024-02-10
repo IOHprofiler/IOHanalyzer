@@ -12,6 +12,7 @@ DataList <- reactiveValues(data = DataSetList())
 observe({
   repo_dir <- get_repo_location()
   dirs <- list.dirs(repo_dir, full.names = F)
+  inspectify(dirs)
   if (length(dirs) == 0) {
     shinyjs::alert("No repository directory found. To make use of the IOHProfiler-repository,
                    please create a folder called 'repository' in your home directory
@@ -28,7 +29,7 @@ observe({
 
   # Get the available datasets from the SQLite database.
   repo_dir <- get_repo_location()
-  sqlite_db_path <- sprintf('%s/db.sqlite3', repo_dir)
+  sqlite_db_path <- sprintf('%s/../db.sqlite3', repo_dir)
   sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
   query <- "SELECT name FROM iohdata_experimentset"
   result <- dbGetQuery(sqliteConnection, query)
@@ -37,11 +38,8 @@ observe({
 
   if (length(dataset_names) != 0) {
     updateSelectInput(session, 'repository.dataset', choices = dataset_names, selected = dataset_names[[1]])
-  } else {# TODO: the alert msg should be updated
-    shinyjs::alert("No repository file found. To make use of the IOHProfiler-repository,
-                   please create a folder called 'repository' in your home directory
-                   and make sure it contains at least one '.rds'-file of a DataSetList-object,
-                   such as the ones provided on the IOHProfiler github-page.")
+  } else {
+    shinyjs::alert("Could not display any dataset. Please upload an IOH data file.")
     updateSelectInput(session, 'repository.dataset', choices = NULL, selected = NULL)
   }
 })
@@ -52,7 +50,7 @@ observeEvent(input$repository.dataset, {
 
   # Specify the path to the SQLite database
   repo_dir <- get_repo_location()  # Replace with your function to get the directory path
-  sqlite_db_path <- sprintf('%s/db.sqlite3', repo_dir)
+  sqlite_db_path <- sprintf('%s/../db.sqlite3', repo_dir)
 
   # Establish a connection to the database
   sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
@@ -83,11 +81,6 @@ observeEvent(input$repository.dataset, {
   problem_ids <- unique(combined_result$problem_id)
   dimensions <- unique(combined_result$dimension)
 
-  # Output the vectors
-  internal(algo_names)
-  internal(problem_ids)
-  internal(dimensions)
-
   updateSelectInput(session, 'repository.ID', choices = algo_names, selected = algo_names)
   updateSelectInput(session, 'repository.dim', choices = dimensions, selected = dimensions)
   updateSelectInput(session, 'repository.funcId', choices = problem_ids, selected = problem_ids)
@@ -95,12 +88,11 @@ observeEvent(input$repository.dataset, {
 })
 
 observeEvent(input$repository.load_button, {
-  file_conn <- file("/home/shiny/output_data_replicate.txt", open = "a")
-  on.exit(close(file_conn))
-
   repo_dir <- get_repo_location()
-  sqlite_db_path <- sprintf('%s/db.sqlite3', repo_dir)
+  sqlite_db_path <- sprintf('%s/../db.sqlite3', repo_dir)
+  inspectify(sqlite_db_path)
   sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
+  inspectify(sqliteConnection)
 
   algorithm_names <- input$repository.ID
   query <- sprintf(
@@ -110,6 +102,7 @@ observeEvent(input$repository.load_button, {
 
   # Execute the query and fetch the result
   result <- dbGetQuery(sqliteConnection, query)
+  inspectify(result)
 
   # Create the mapping from id to name
   id_to_name_mapping <- setNames(result$name, result$id)
@@ -330,7 +323,6 @@ observeEvent(input$repository.load_button, {
   }
 
   data <- runs
-  internal("333")
 
   if (length(DataList$data) > 0 && attr(data, 'maximization') != attr(DataList$data, 'maximization')) {
     shinyjs::alert(paste0("Attempting to add data from a different optimization type to the currently",
@@ -338,7 +330,6 @@ observeEvent(input$repository.load_button, {
                    " choose a different dataset to load."))
     return(NULL)
   }
-  internal("341")
 
   if (length(DataList$data) > 0 &&
       !all(attr(DataList$data, 'ID_attributes') %in% get_static_attributes(data))) {
@@ -346,7 +337,6 @@ observeEvent(input$repository.load_button, {
                           Please check that the attributes to create the ID
                           are present in the data you are loading."))
     return(NULL)  }
-  internal("349")
 
   if (length(DataList$data) > 0) {
     data <- change_id(data, attr(DataList$data, 'ID_attributes'))

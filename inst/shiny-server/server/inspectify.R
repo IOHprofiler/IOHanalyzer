@@ -54,4 +54,5 @@ inspectify <- function(variable) {
   }
 
   message(info_message)
+  flush.console()
 }

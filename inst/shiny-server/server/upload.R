@@ -519,6 +519,19 @@ observeEvent(selected_folders(), {
       set_color_scheme("Default", IDs)
     }
   }, message = "Processing data, this might take some time")
+
+
+  # Extract the ID attribute
+  data_id <- attr(DataList$data, "ID")
+
+  repo_dir <- get_repo_location()
+  file_path <- sprintf('%s/custom_datasets/%s', repo_dir, paste0(data_id, ".rds"))
+
+  # Save the object to the file
+  saveRDS(DataList$data, file_path)
+
+  # Optional: Print a message or inspectify the saved path
+  print(paste("Data saved to:", file_path))
 })
 
 #Load data from custom csv

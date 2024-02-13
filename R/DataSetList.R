@@ -67,6 +67,7 @@ DataSetList <-
            format = IOHprofiler,
            subsampling = FALSE,
            full_aggregation = TRUE) {
+    SOS <- 'SOS'
     if (is.null(path))
       return(structure(list(), class = c('DataSetList', 'list')))
 
@@ -203,6 +204,7 @@ DataSetList <-
       clean_DataSetList(object)
     else
       object
+    return(object)
   }
 
 

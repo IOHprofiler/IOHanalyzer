@@ -33,7 +33,7 @@ observe({
   repo_dir <- get_repo_location()
   sqlite_db_path <- sprintf('%s/../db.sqlite3', repo_dir)
   sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
-  query <- "SELECT name FROM iohdata_experimentset"
+  query <- sprintf("SELECT name FROM iohdata_experimentset WHERE data_source = '%s'", input$repository.type)
   result <- dbGetQuery(sqliteConnection, query)
   dbDisconnect(sqliteConnection)
   dataset_names <- result$name

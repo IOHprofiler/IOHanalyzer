@@ -60,7 +60,7 @@ observeEvent(input$repository.dataset, {
   # Prepare the combined query
   # This query fetches distinct algorithm names, problem IDs, and dimensions
   combined_query <- sprintf(
-    "SELECT DISTINCT iohdata_algorithm.name AS algorithm_name, iohdata_experiment.problem_id, iohdata_run.dimension
+    "SELECT DISTINCT iohdata_algorithm.name AS algorithm_name, iohdata_problem.fid, iohdata_run.dimension
     FROM iohdata_run
     INNER JOIN (
       SELECT iohdata_experiment.id AS experiment_id, iohdata_experiment.problem_id, iohdata_experiment.algorithm_id
@@ -68,7 +68,8 @@ observeEvent(input$repository.dataset, {
       INNER JOIN iohdata_experimentset ON iohdata_experiment.experiment_set_id = iohdata_experimentset.id
       WHERE iohdata_experimentset.name IN (%s)
     ) AS iohdata_experiment ON iohdata_run.experiment_id = iohdata_experiment.experiment_id
-    INNER JOIN iohdata_algorithm ON iohdata_experiment.algorithm_id = iohdata_algorithm.id",
+    INNER JOIN iohdata_algorithm ON iohdata_experiment.algorithm_id = iohdata_algorithm.id
+    INNER JOIN iohdata_problem ON iohdata_experiment.problem_id = iohdata_problem.id",
     paste(sprintf("'%s'", input$repository.dataset), collapse = ", ")
   )
 
@@ -80,8 +81,10 @@ observeEvent(input$repository.dataset, {
 
   # Extract distinct values into vectors
   algo_names <- unique(combined_result$algorithm_name)
-  problem_ids <- unique(combined_result$problem_id)
+  problem_ids <- unique(combined_result$fid)
   dimensions <- unique(combined_result$dimension)
+
+  inspectify(problem_ids)
 
   updateSelectInput(session, 'repository.ID', choices = algo_names, selected = algo_names)
   updateSelectInput(session, 'repository.dim', choices = dimensions, selected = dimensions)
@@ -96,7 +99,6 @@ observeEvent(input$repository.load_button, {
 
   algorithm_names <- input$repository.ID
 
-
   query <- sprintf(
     "SELECT id, name, info FROM iohdata_algorithm WHERE name IN ('%s')",
     paste(algorithm_names, collapse="', '")
@@ -104,7 +106,7 @@ observeEvent(input$repository.load_button, {
 
   # Execute the query and fetch the result
   result <- dbGetQuery(sqliteConnection, query)
-
+inspectify("109")
   # Create the mapping from id to name
   id_to_name_mapping <- setNames(result$name, result$id)
   # Execute the query and fetch the result
@@ -115,7 +117,7 @@ observeEvent(input$repository.load_button, {
   problems <- input$repository.funcId
   algorithm_id <- result$id
   algorithm_infos <- result$info
-
+inspectify("120")
 
   # Create the query string
   query <- sprintf("SELECT p.fid, s.name FROM iohdata_problem p JOIN iohdata_suite s ON p.suite_id = s.id WHERE p.fid IN (%s)", paste(problems, collapse = ", "))
@@ -123,7 +125,15 @@ observeEvent(input$repository.load_button, {
   suite_name_mapping <- dbGetQuery(sqliteConnection, query)
 
   # Create the query string
-  query <- sprintf("SELECT id FROM iohdata_experiment WHERE algorithm_id = %s AND problem_id = %s", algorithm_id[1], problems[1])
+  query <- sprintf(
+    "SELECT iohdata_experiment.id
+    FROM iohdata_experiment
+    INNER JOIN iohdata_problem ON iohdata_experiment.problem_id = iohdata_problem.id
+    WHERE iohdata_experiment.algorithm_id = %s
+    AND iohdata_problem.fid = %s",
+    algorithm_id[1],
+    problems[1]
+  )
 
   # Execute the query and fetch results
   result <- dbGetQuery(sqliteConnection, query)
@@ -132,26 +142,32 @@ observeEvent(input$repository.load_button, {
   # Since the combination of algorithm_id and problem_id is unique,
   # there should be only one row in the result
   experiment_id <- result$id[1]
-
+inspectify("137")
   # Create the query string to fetch algorithm_id, problem_id, and version
   query <- sprintf(
-    "SELECT algorithm_id, problem_id, version FROM iohdata_experiment WHERE algorithm_id IN (%s) AND problem_id IN (%s)",
+    "SELECT iohdata_experiment.algorithm_id, iohdata_problem.fid, iohdata_experiment.version
+    FROM iohdata_experiment
+    INNER JOIN iohdata_problem ON iohdata_experiment.problem_id = iohdata_problem.id
+    WHERE iohdata_experiment.algorithm_id IN (%s)
+    AND iohdata_problem.fid IN (%s)",
     paste(algorithm_id, collapse = ", "),
     paste(problems, collapse = ", ")
   )
 
   # Execute the query and fetch results
   result <- dbGetQuery(sqliteConnection, query)
+  inspectify(result)
 
   # Initialize an empty list for version mapping
   version_mapping <- list()
-
+inspectify("150")
+inspectify("151")
   # Populate the list with version for each algorithm and problem combination
   for (row in 1:nrow(result)) {
       key <- paste(result$algorithm_id[row], result$problem_id[row], sep = ",")
       version_mapping[[key]] <- result$version[row]
   }
-
+inspectify("157")
   # Now version_mapping is a list where you can access version with version_mapping[["algorithm_id,problem_id"]]
   # Function to get data source for a given algorithm name
   getDataSource <- function(algorithm_name) {
@@ -164,21 +180,22 @@ observeEvent(input$repository.load_button, {
       return(NA)  # Return NA if no result is found
     }
   }
-
+inspectify("170")
   # Initialize an empty list for data_sources
   data_sources <- list()
-
+inspectify("173")
   # Create a mapping of algorithm_ids to algorithm_names
   for (i in seq(algorithm_names)) {
     algname <- algorithm_names[i]
     algid <- algorithm_id[i]
     data_sources[[algid]] <- getDataSource(algname)
   }
-
+inspectify("180")
   # Assuming you have already connected to your database and have access to the table
-
+inspectify("182")
   # Create a query to fetch 'fid' and 'maximization' columns
   query <- "SELECT fid, maximization FROM iohdata_problem"
+inspectify("185")
 
   # Execute the query and fetch results
   results <- dbGetQuery(sqliteConnection, query)
@@ -188,20 +205,38 @@ observeEvent(input$repository.load_button, {
 
   # Iterate through the results to create the mapping
   for (i in 1:nrow(results)) {
+
+    inspectify(query)
+    inspectify(results)
+    inspectify(results$fid)
+    inspectify(results$fid[i])
+
+
     fid <- results$fid[i]
+        inspectify("208")
+
     maximization <- as.logical(results$maximization[i])  # Convert to boolean
+    inspectify("211")
 
     # Add to the mapping
     fid_to_maximization[fid] <- maximization
+        inspectify("215")
+
   }
+    inspectify("218")
 
   # Now fid_to_maximization is a mapping from 'fid' to 'maximization' as boolean values
+
+    inspectify(experiment_id)
+    inspectify(dimensions)
+    inspectify(dimensions[1])
 
   # Create the query string
   query <- sprintf("SELECT instance FROM iohdata_run WHERE dimension = %s AND experiment_id = %s", dimensions[1], experiment_id)
 
   # Execute the query and fetch results
   instances_result <- dbGetQuery(sqliteConnection, query)
+inspectify("209")
 
   # Extract the 'instance' column into a vector
   instances <- instances_result$instance
@@ -231,6 +266,7 @@ observeEvent(input$repository.load_button, {
     problems_str,
     algorithm_ids_str
   )
+inspectify("239")
 
   # Execute the query
   run_data <- dbGetQuery(sqliteConnection, run_id_query)
@@ -251,7 +287,7 @@ observeEvent(input$repository.load_button, {
   for (i in seq_along(rds_paths)) {
       loadedDatasets[[i]] <- readRDS(rds_paths[i])
   }
-
+inspectify("260")
 
   # Iterate over each row in run_data
   for (i in 1:nrow(all_combinations)) {
@@ -274,6 +310,12 @@ observeEvent(input$repository.load_button, {
       # Now iterate over elements within this dataset
       for (j in seq_along(current_dataset)) {
         # Check if 'DIM' and 'funcId' attributes match the desired values for each element
+
+        inspectify(current_algorithm_name)
+        inspectify(current_dataset[[j]])
+        inspectify(current_dimension)
+        inspectify(current_problem_id)
+
         if (attr(current_dataset[[j]], 'DIM') == current_dimension && attr(current_dataset[[j]], 'funcId') == current_problem_id && attr(current_dataset[[j]], 'algId') == current_algorithm_name) {
           requested_dataset_index <- i  # Store the index of the dataset
           requested_inner_index <- j    # Store the index within the dataset

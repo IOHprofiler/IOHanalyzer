@@ -84,7 +84,6 @@ observeEvent(input$repository.dataset, {
   problem_ids <- unique(combined_result$fid)
   dimensions <- unique(combined_result$dimension)
 
-  inspectify(problem_ids)
 
   updateSelectInput(session, 'repository.ID', choices = algo_names, selected = algo_names)
   updateSelectInput(session, 'repository.dim', choices = dimensions, selected = dimensions)
@@ -106,7 +105,6 @@ observeEvent(input$repository.load_button, {
 
   # Execute the query and fetch the result
   result <- dbGetQuery(sqliteConnection, query)
-inspectify("109")
   # Create the mapping from id to name
   id_to_name_mapping <- setNames(result$name, result$id)
   # Execute the query and fetch the result
@@ -117,7 +115,6 @@ inspectify("109")
   problems <- input$repository.funcId
   algorithm_id <- result$id
   algorithm_infos <- result$info
-inspectify("120")
 
   # Create the query string
   query <- sprintf("SELECT p.fid, s.name FROM iohdata_problem p JOIN iohdata_suite s ON p.suite_id = s.id WHERE p.fid IN (%s)", paste(problems, collapse = ", "))
@@ -142,7 +139,6 @@ inspectify("120")
   # Since the combination of algorithm_id and problem_id is unique,
   # there should be only one row in the result
   experiment_id <- result$id[1]
-inspectify("137")
   # Create the query string to fetch algorithm_id, problem_id, and version
   query <- sprintf(
     "SELECT iohdata_experiment.algorithm_id, iohdata_problem.fid, iohdata_experiment.version
@@ -156,18 +152,14 @@ inspectify("137")
 
   # Execute the query and fetch results
   result <- dbGetQuery(sqliteConnection, query)
-  inspectify(result)
 
   # Initialize an empty list for version mapping
   version_mapping <- list()
-inspectify("150")
-inspectify("151")
   # Populate the list with version for each algorithm and problem combination
   for (row in 1:nrow(result)) {
       key <- paste(result$algorithm_id[row], result$problem_id[row], sep = ",")
       version_mapping[[key]] <- result$version[row]
   }
-inspectify("157")
   # Now version_mapping is a list where you can access version with version_mapping[["algorithm_id,problem_id"]]
   # Function to get data source for a given algorithm name
   getDataSource <- function(algorithm_name) {
@@ -180,22 +172,17 @@ inspectify("157")
       return(NA)  # Return NA if no result is found
     }
   }
-inspectify("170")
   # Initialize an empty list for data_sources
   data_sources <- list()
-inspectify("173")
   # Create a mapping of algorithm_ids to algorithm_names
   for (i in seq(algorithm_names)) {
     algname <- algorithm_names[i]
     algid <- algorithm_id[i]
     data_sources[[algid]] <- getDataSource(algname)
   }
-inspectify("180")
   # Assuming you have already connected to your database and have access to the table
-inspectify("182")
   # Create a query to fetch 'fid' and 'maximization' columns
   query <- "SELECT fid, maximization FROM iohdata_problem"
-inspectify("185")
 
   # Execute the query and fetch results
   results <- dbGetQuery(sqliteConnection, query)
@@ -206,37 +193,23 @@ inspectify("185")
   # Iterate through the results to create the mapping
   for (i in 1:nrow(results)) {
 
-    inspectify(query)
-    inspectify(results)
-    inspectify(results$fid)
-    inspectify(results$fid[i])
-
-
     fid <- results$fid[i]
-        inspectify("208")
 
     maximization <- as.logical(results$maximization[i])  # Convert to boolean
-    inspectify("211")
 
     # Add to the mapping
     fid_to_maximization[fid] <- maximization
-        inspectify("215")
 
   }
-    inspectify("218")
 
   # Now fid_to_maximization is a mapping from 'fid' to 'maximization' as boolean values
 
-    inspectify(experiment_id)
-    inspectify(dimensions)
-    inspectify(dimensions[1])
 
   # Create the query string
   query <- sprintf("SELECT instance FROM iohdata_run WHERE dimension = %s AND experiment_id = %s", dimensions[1], experiment_id)
 
   # Execute the query and fetch results
   instances_result <- dbGetQuery(sqliteConnection, query)
-inspectify("209")
 
   # Extract the 'instance' column into a vector
   instances <- instances_result$instance
@@ -266,7 +239,6 @@ inspectify("209")
     problems_str,
     algorithm_ids_str
   )
-inspectify("239")
 
   # Execute the query
   run_data <- dbGetQuery(sqliteConnection, run_id_query)
@@ -287,7 +259,6 @@ inspectify("239")
   for (i in seq_along(rds_paths)) {
       loadedDatasets[[i]] <- readRDS(rds_paths[i])
   }
-inspectify("260")
 
   # Iterate over each row in run_data
   for (i in 1:nrow(all_combinations)) {
@@ -311,10 +282,6 @@ inspectify("260")
       for (j in seq_along(current_dataset)) {
         # Check if 'DIM' and 'funcId' attributes match the desired values for each element
 
-        inspectify(current_algorithm_name)
-        inspectify(current_dataset[[j]])
-        inspectify(current_dimension)
-        inspectify(current_problem_id)
 
         if (attr(current_dataset[[j]], 'DIM') == current_dimension && attr(current_dataset[[j]], 'funcId') == current_problem_id && attr(current_dataset[[j]], 'algId') == current_algorithm_name) {
           requested_dataset_index <- i  # Store the index of the dataset
@@ -328,11 +295,16 @@ inspectify("260")
         break
       }
     }
+
     # Check if a match was found
     if (is.na(requested_dataset_index) || is.na(requested_inner_index)) {
-      stop("No match found for the following entries: current_problem_id = ",
-           current_problem_id, ", current_dimension = ", current_dimension,
-           ", current_algorithm_id = ", current_algorithm_id, ".")
+      message(
+        "No match found for the following entries:",
+        "current_problem_id =", current_problem_id, ",",
+        "current_dimension =", current_dimension, ",",
+        "current_algorithm_id =", current_algorithm_id, "."
+      )
+      next
     }
 
     run <- list()
@@ -503,6 +475,8 @@ observeEvent(selected_folders(), {
     print_html(paste0('<p style="color:blue;">Data processing of source type:', format_detected, ' <br>'))
 
     for (folder in folder_new) {
+
+
       indexFiles <- scan_index_file(folder)
       if (length(indexFiles) == 0 && !(format_detected %in% c(NEVERGRAD, "SOS", "RDS")))
         print_html(paste('<p style="color:red;">No .info-files detected in the
@@ -516,6 +490,7 @@ observeEvent(selected_folders(), {
             DataSetList()
         }
         else {
+          inspectify("491")
           # read the data set and handle potential errors
           new_data <- tryCatch({
             DataSetList(folder, print_fun = print_html,
@@ -529,7 +504,11 @@ observeEvent(selected_folders(), {
               DataSetList()
             }
           )
+          inspectify("505")
         }
+                  inspectify("507")
+
+        # Union the existing data with the newly added data from the newly selected folder path.
         tryCatch(
           DataList$data <- c(DataList$data, new_data),
           error = function(e) {
@@ -540,40 +519,46 @@ observeEvent(selected_folders(), {
             DataList$data <- new_data
           }
         )
-        shinyjs::html("upload_data_promt",
-                      sprintf('%d: %s\n', length(folderList$data), folder),
-                      add = TRUE)
+
+        shinyjs::html(
+          "upload_data_promt",
+          sprintf('%d: %s\n', length(folderList$data), folder),
+          add = TRUE
+        )
+
+        # Extract the ID attribute
+        data_id <- attr(new_data, "ID")
+
+        repo_dir <- get_repo_location()
+        file_path <- sprintf('%s/custom_datasets/%s', repo_dir, paste0(data_id, ".rds"))
+                inspectify("550")
+
+        # Save the object to the file
+        saveRDS(new_data, file_path)
+                inspectify("538")
+        message(paste("Data saved to:", file_path))
       }
     }
-
+    inspectify("542")
     DataList$data <- clean_DataSetList(DataList$data)
+    inspectify("544")
     # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
     if (is.null(DataList$data)) {
+    inspectify("547")
       shinyjs::alert("An error occurred when processing the uploaded data.
                      Please ensure the data is not corrupted.")
       return(NULL)
     }
-
+    inspectify("550")
     update_menu_visibility(attr(DataList$data, 'suite'))
+    inspectify("552")
     # set_format_func(attr(DataList$data, 'suite'))
     IDs <- get_id(DataList$data)
     if (!all(IDs %in% get_color_scheme_dt()[['ids']])) {
       set_color_scheme("Default", IDs)
     }
+    inspectify("558")
   }, message = "Processing data, this might take some time")
-
-
-  # Extract the ID attribute
-  data_id <- attr(DataList$data, "ID")
-
-  repo_dir <- get_repo_location()
-  file_path <- sprintf('%s/custom_datasets/%s', repo_dir, paste0(data_id, ".rds"))
-
-  # Save the object to the file
-  saveRDS(DataList$data, file_path)
-
-  # Optional: Print a message or inspectify the saved path
-  print(paste("Data saved to:", file_path))
 })
 
 #Load data from custom csv

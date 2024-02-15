@@ -18,11 +18,9 @@ observe({
   dbDisconnect(sqliteConnection)
   data_sources <- result$data_source
 
-  if (length(data_sources) == 0) {
-    shinyjs::alert("Could not display a dataset source. To display a dataset source, please upload a dataset.")
-  }
-  else
+  if (length(data_sources) > 0) {
     updateSelectInput(session, 'repository.type', choices = data_sources, selected = data_sources[[1]])
+  }
 })
 
 # set up list of datasets (scan the repository, looking for .rds files)
@@ -38,11 +36,8 @@ observe({
   dbDisconnect(sqliteConnection)
   dataset_names <- result$name
 
-  if (length(dataset_names) != 0) {
+  if (length(dataset_names) > 0) {
     updateSelectInput(session, 'repository.dataset', choices = dataset_names, selected = dataset_names[[1]])
-  } else {
-    shinyjs::alert("Could not display any dataset. Please upload an IOH data file.")
-    updateSelectInput(session, 'repository.dataset', choices = NULL, selected = NULL)
   }
 })
 
@@ -527,19 +522,43 @@ observeEvent(selected_folders(), {
         )
 
         # Extract the ID attribute
+        inspectify("525")
         data_id <- attr(new_data, "ID")
+        inspectify("527")
 
         repo_dir <- get_repo_location()
-        file_path <- sprintf('%s/custom_datasets/%s', repo_dir, paste0(data_id, ".rds"))
-                inspectify("550")
+        inspectify("530")
+        file_path_in_shiny_container <- sprintf('%s/custom_datasets/%s', repo_dir, paste0(data_id, ".rds"))
+        inspectify("532")
+        file_path_in_django_container <- gsub("/home/shiny/", "/app/", file_path_in_shiny_container)
 
+        inspectify("535")
         # Save the object to the file
-        saveRDS(new_data, file_path)
-                inspectify("538")
-        message(paste("Data saved to:", file_path))
+        saveRDS(new_data, file_path_in_shiny_container)
+        inspectify("538")
+        message(paste("Data saved to:", file_path_in_shiny_container))
+
+        inspectify("541")
+        # Assuming file_path_in_shiny_container is already defined in your R code
+        data_source <- "custom_datasets"
+
+        inspectify("545")
+
+        # Construct the URL for the curl command
+        url <- sprintf("http://web:8000/add-dataset?dataset_path=%s&data_source=%s", URLencode(file_path_in_django_container), data_source)
+
+        inspectify("549")
+        inspectify(url)
+
+        # Construct the curl command with quotation marks around the URL
+        system_command <- sprintf('curl "%s"', url)
+        inspectify(system_command)
+
+        # Use system() function to call curl
+        system(system_command, intern = TRUE)
       }
     }
-    inspectify("542")
+    inspectify("554")
     DataList$data <- clean_DataSetList(DataList$data)
     inspectify("544")
     # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))

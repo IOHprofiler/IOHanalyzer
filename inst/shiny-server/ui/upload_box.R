@@ -133,10 +133,16 @@ upload_box <- function(width = 12, collapsible = T, collapsed = T,   # TODO: fin
 
 
 
-      actionButton('upload.remove_data',
-                   label = HTML('<p align="center" style="margin-bottom:0;"><b>
-                   Remove all the data</b></p>'))
+      actionButton(
+        'upload.remove_data',
+        label = HTML('<p align="center" style="margin-bottom:0;"><b>Remove all the data</b></p>'),
       ),
+
+      actionButton(
+        'upload.add_data',
+        label = HTML('<p align="center" style="margin-bottom:0;"><b>Save data on cloud</b></p>'),
+      )
+    ),
     downloadButton('upload.Download_processed',
                    label = 'Download RDS of loaded data.')
     )

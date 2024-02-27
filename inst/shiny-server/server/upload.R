@@ -485,7 +485,6 @@ observeEvent(selected_folders(), {
             DataSetList()
         }
         else {
-          inspectify("491")
           # read the data set and handle potential errors
           new_data <- tryCatch({
             DataSetList(folder, print_fun = print_html,
@@ -499,9 +498,7 @@ observeEvent(selected_folders(), {
               DataSetList()
             }
           )
-          inspectify("505")
         }
-                  inspectify("507")
 
         # Union the existing data with the newly added data from the newly selected folder path.
         tryCatch(
@@ -520,63 +517,21 @@ observeEvent(selected_folders(), {
           sprintf('%d: %s\n', length(folderList$data), folder),
           add = TRUE
         )
-
-        # Extract the ID attribute
-        inspectify("525")
-        data_id <- attr(new_data, "ID")
-        inspectify("527")
-
-        repo_dir <- get_repo_location()
-        inspectify("530")
-        file_path_in_shiny_container <- sprintf('%s/custom_datasets/%s', repo_dir, paste0(data_id, ".rds"))
-        inspectify("532")
-        file_path_in_django_container <- gsub("/home/shiny/", "/app/", file_path_in_shiny_container)
-
-        inspectify("535")
-        # Save the object to the file
-        saveRDS(new_data, file_path_in_shiny_container)
-        inspectify("538")
-        message(paste("Data saved to:", file_path_in_shiny_container))
-
-        inspectify("541")
-        # Assuming file_path_in_shiny_container is already defined in your R code
-        data_source <- "custom_datasets"
-
-        inspectify("545")
-
-        # Construct the URL for the curl command
-        url <- sprintf("http://web:8000/add-dataset?dataset_path=%s&data_source=%s", URLencode(file_path_in_django_container), data_source)
-
-        inspectify("549")
-        inspectify(url)
-
-        # Construct the curl command with quotation marks around the URL
-        system_command <- sprintf('curl "%s"', url)
-        inspectify(system_command)
-
-        # Use system() function to call curl
-        system(system_command, intern = TRUE)
       }
     }
-    inspectify("554")
     DataList$data <- clean_DataSetList(DataList$data)
-    inspectify("544")
     # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
     if (is.null(DataList$data)) {
-    inspectify("547")
       shinyjs::alert("An error occurred when processing the uploaded data.
                      Please ensure the data is not corrupted.")
       return(NULL)
     }
-    inspectify("550")
     update_menu_visibility(attr(DataList$data, 'suite'))
-    inspectify("552")
     # set_format_func(attr(DataList$data, 'suite'))
     IDs <- get_id(DataList$data)
     if (!all(IDs %in% get_color_scheme_dt()[['ids']])) {
       set_color_scheme("Default", IDs)
     }
-    inspectify("558")
   }, message = "Processing data, this might take some time")
 })
 
@@ -729,6 +684,35 @@ observeEvent(input$upload.remove_data, {
     print_html('<p style="color:red;">all data are removed!</p>')
     print_html('', 'upload_data_promt')
   }
+})
+
+# remove all uploaded data set
+observeEvent(input$upload.add_data, {
+
+  new_data <- DataList$data[length(DataList$data)]
+
+  data_id <- attr(new_data, "ID")
+
+  repo_dir <- get_repo_location()
+  file_path_in_shiny_container <- sprintf('%s/custom_datasets/%s', repo_dir, paste0(data_id, ".rds"))
+  file_path_in_django_container <- gsub("/home/shiny/", "/app/", file_path_in_shiny_container)
+
+  # Save the object to the file
+  saveRDS(new_data, file_path_in_shiny_container)
+  message(paste("Data saved to:", file_path_in_shiny_container))
+
+  data_source <- "custom_datasets"
+
+  # Construct the URL for the curl command
+  url <- sprintf("http://web:8000/add-dataset?dataset_path=%s&data_source=%s", URLencode(file_path_in_django_container), data_source)
+
+  # Construct the curl command with quotation marks around the URL
+  system_command <- sprintf('curl "%s"', url)
+
+  # Use system() function to call curl
+  system(system_command, intern = TRUE)
+
+  print_html(paste("Data saved to:", file_path_in_shiny_container, "\n"))
 })
 
 # show the detailed information on DataSetList

@@ -2,8 +2,6 @@ library(DBI)
 library(dplyr)
 library(odbc)
 library(RSQLite)
-source("/opt/IOHanalyzer/R/DataSet.R")
-source("/opt/IOHanalyzer/R/DataSetList.R")
 
 # shared reactive variables
 folderList <- reactiveValues(data = list())

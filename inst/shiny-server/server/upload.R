@@ -84,248 +84,39 @@ observeEvent(input$repository.dataset, {
   shinyjs::enable('repository.load_button')
 })
 
+# Function to get all data sources for the provided algorithm names
+get_all_data_sources <- function(algorithm_names, sqliteConnection) {
+  # Create a string for the SQL IN clause
+  algorithm_names_str <- paste0("'", algorithm_names, "'", collapse = ", ")
+  query <- sprintf("SELECT name, data_source FROM iohdata_experimentset WHERE name IN (%s)", algorithm_names_str)
+  result <- dbGetQuery(sqliteConnection, query)
+  return(setNames(result$data_source, result$name))
+}
+
+# add the data from repository
 observeEvent(input$repository.load_button, {
+
+  # Establish a connection to the SQLite database
   repo_dir <- get_repo_location()
   sqlite_db_path <- sprintf('%s/../db.sqlite3', repo_dir)
   sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
 
-  algorithm_names <- input$repository.ID
+  # Assuming input$repository.dataset is available and contains algorithm names
+  # Get all data sources in one go
+  data_sources <- get_all_data_sources(input$repository.dataset, sqliteConnection)
 
-  query <- sprintf(
-    "SELECT id, name, info FROM iohdata_algorithm WHERE name IN ('%s')",
-    paste(algorithm_names, collapse="', '")
-  )
+  # data_sources is now a named vector with dataset names as names and data sources as values
 
-  # Execute the query and fetch the result
-  result <- dbGetQuery(sqliteConnection, query)
-  # Create the mapping from id to name
-  id_to_name_mapping <- setNames(result$name, result$id)
-  # Execute the query and fetch the result
-  result <- dbGetQuery(sqliteConnection, query)
-
-  # Define the variables
-  dimensions <- input$repository.dim
-  problems <- input$repository.funcId
-  algorithm_id <- result$id
-  algorithm_infos <- result$info
-
-  # Create the query string
-  query <- sprintf("SELECT p.fid, s.name FROM iohdata_problem p JOIN iohdata_suite s ON p.suite_id = s.id WHERE p.fid IN (%s)", paste(problems, collapse = ", "))
-  # Execute the query and fetch results
-  suite_name_mapping <- dbGetQuery(sqliteConnection, query)
-
-  # Create the query string
-  query <- sprintf(
-    "SELECT iohdata_experiment.id
-    FROM iohdata_experiment
-    INNER JOIN iohdata_problem ON iohdata_experiment.problem_id = iohdata_problem.id
-    WHERE iohdata_experiment.algorithm_id = %s
-    AND iohdata_problem.fid = %s",
-    algorithm_id[1],
-    problems[1]
-  )
-
-  # Execute the query and fetch results
-  result <- dbGetQuery(sqliteConnection, query)
-
-  # Extract the id
-  # Since the combination of algorithm_id and problem_id is unique,
-  # there should be only one row in the result
-  experiment_id <- result$id[1]
-  # Create the query string to fetch algorithm_id, problem_id, and version
-  query <- sprintf(
-    "SELECT iohdata_experiment.algorithm_id, iohdata_problem.fid, iohdata_experiment.version
-    FROM iohdata_experiment
-    INNER JOIN iohdata_problem ON iohdata_experiment.problem_id = iohdata_problem.id
-    WHERE iohdata_experiment.algorithm_id IN (%s)
-    AND iohdata_problem.fid IN (%s)",
-    paste(algorithm_id, collapse = ", "),
-    paste(problems, collapse = ", ")
-  )
-
-  # Execute the query and fetch results
-  result <- dbGetQuery(sqliteConnection, query)
-
-  # Initialize an empty list for version mapping
-  version_mapping <- list()
-  # Populate the list with version for each algorithm and problem combination
-  for (row in 1:nrow(result)) {
-      key <- paste(result$algorithm_id[row], result$problem_id[row], sep = ",")
-      version_mapping[[key]] <- result$version[row]
+  data <- DataSetList()
+  repo_dir <- get_repo_location()
+  for (f in input$repository.dataset) {
+    data_source <- data_sources[f]
+    rds_file <- file.path(repo_dir, data_source, paste0(f, ".rds"))
+    data <- c(data, readRDS(rds_file))
   }
-  # Now version_mapping is a list where you can access version with version_mapping[["algorithm_id,problem_id"]]
-  # Function to get data source for a given algorithm name
-  getDataSource <- function(algorithm_name) {
-    query <- sprintf("SELECT data_source FROM iohdata_experimentset WHERE name = '%s'", algorithm_name)
-    result <- dbGetQuery(sqliteConnection, query)
-    # Extract the first value from the data_source column
-    if (nrow(result) > 0) {
-      return(result$data_source[1])
-    } else {
-      return(NA)  # Return NA if no result is found
-    }
-  }
-  # Initialize an empty list for data_sources
-  data_sources <- list()
-  # Create a mapping of algorithm_ids to algorithm_names
-  for (i in seq(algorithm_names)) {
-    algname <- algorithm_names[i]
-    algid <- algorithm_id[i]
-    data_sources[[algid]] <- getDataSource(algname)
-  }
-  # Assuming you have already connected to your database and have access to the table
-  # Create a query to fetch 'fid' and 'maximization' columns
-  query <- "SELECT fid, maximization FROM iohdata_problem"
-
-  # Execute the query and fetch results
-  results <- dbGetQuery(sqliteConnection, query)
-
-  # Initialize an empty mapping
-  fid_to_maximization <- list()
-
-  # Iterate through the results to create the mapping
-  for (i in 1:nrow(results)) {
-
-    fid <- results$fid[i]
-
-    maximization <- as.logical(results$maximization[i])  # Convert to boolean
-
-    # Add to the mapping
-    fid_to_maximization[fid] <- maximization
-
-  }
-
-  # Now fid_to_maximization is a mapping from 'fid' to 'maximization' as boolean values
-
-
-  # Create the query string
-  query <- sprintf("SELECT instance FROM iohdata_run WHERE dimension = %s AND experiment_id = %s", dimensions[1], experiment_id)
-
-  # Execute the query and fetch results
-  instances_result <- dbGetQuery(sqliteConnection, query)
-
-  # Extract the 'instance' column into a vector
-  instances <- instances_result$instance
-  # Convert the vectors to comma-separated strings
-  dimensions_str <- paste(dimensions, collapse = ", ")
-  problems_str <- paste(problems, collapse = ", ")
-  algorithm_ids_str <- paste(algorithm_id, collapse = ", ")
-  # Construct the query using sprintf
-  run_id_query <- sprintf(
-    "
-      SELECT
-        e.problem_id,
-        r.dimension,
-        e.algorithm_id,
-        r.instance,
-        r.id
-      FROM
-        iohdata_run r
-      JOIN
-        iohdata_experiment e ON r.experiment_id = e.id
-      WHERE
-        r.dimension IN (%s) AND
-        e.problem_id IN (%s) AND
-        e.algorithm_id IN (%s);
-    ",
-    dimensions_str,
-    problems_str,
-    algorithm_ids_str
-  )
-
-  # Execute the query
-  run_data <- dbGetQuery(sqliteConnection, run_id_query)
-  dbDisconnect(sqliteConnection)
-
-  runs <- list()
-  class(runs) <- c("DataSetList", "list")
-  attr(runs, "maximization") <- FALSE
-
-  all_combinations <- expand.grid(problem_id = problems, dimension = dimensions, algorithm_id = algorithm_id)
-
-  rds_paths <- sprintf('%s/%s/%s.rds', repo_dir, data_sources[algorithm_id], input$repository.dataset)
-
-  # Initialize an empty list to store the datasets
-  loadedDatasets <- list()
-
-  # Loop through the rds_paths and read each RDS file
-  for (i in seq_along(rds_paths)) {
-      loadedDatasets[[i]] <- readRDS(rds_paths[i])
-  }
-
-  # Iterate over each row in run_data
-  for (i in 1:nrow(all_combinations)) {
-    current_combination <- all_combinations[i, ]
-
-    current_problem_id <- current_combination$problem_id
-    current_dimension <- current_combination$dimension
-    current_algorithm_id <- current_combination$algorithm_id
-
-    current_algorithm_name <- id_to_name_mapping[as.character(current_algorithm_id)]
-
-    requested_dataset_index <- NA  # Initialize to indicate no match found for dataset
-    requested_inner_index <- NA    # Initialize to indicate no match found within dataset
-
-    # Iterate over the list of datasets
-    for (i in seq_along(loadedDatasets)) {
-      # Access the current dataset
-      current_dataset <- loadedDatasets[[i]]
-
-      # Now iterate over elements within this dataset
-      for (j in seq_along(current_dataset)) {
-        # Check if 'DIM' and 'funcId' attributes match the desired values for each element
-
-
-        if (attr(current_dataset[[j]], 'DIM') == current_dimension && attr(current_dataset[[j]], 'funcId') == current_problem_id && attr(current_dataset[[j]], 'algId') == current_algorithm_name) {
-          requested_dataset_index <- i  # Store the index of the dataset
-          requested_inner_index <- j    # Store the index within the dataset
-          break  # Exit the inner loop once the match is found
-        }
-      }
-
-      if (!is.na(requested_inner_index)) {
-        # If a match is found in the inner loop, exit the outer loop as well
-        break
-      }
-    }
-
-    # Check if a match was found
-    if (is.na(requested_dataset_index) || is.na(requested_inner_index)) {
-      message(
-        "No match found for the following entries:",
-        "current_problem_id =", current_problem_id, ",",
-        "current_dimension =", current_dimension, ",",
-        "current_algorithm_id =", current_algorithm_id, "."
-      )
-      next
-    }
-
-    run <- list()
-    class(run) <- c("DataSet", "list")
-    run$FV <- loadedDatasets[[requested_dataset_index]][[requested_inner_index]]$FV
-    run$RT <- loadedDatasets[[requested_dataset_index]][[requested_inner_index]]$RT
-    run$PAR <- list(
-      by_FV = structure(list(), names=character(0)),
-      by_RT = structure(list(), names=character(0))
-    )
-    attr(run, "DIM") <- current_dimension
-    attr(run, "algId") <- current_algorithm_name
-
-    attr(run, "funcId") <- current_problem_id
-    attr(run, "suite") <- suite_name_mapping[suite_name_mapping$fid == current_problem_id, "name"]
-
-    key <- paste(current_algorithm_id, current_problem_id, sep = ",")
-    attr(run, "format") <- version_mapping[[key]]
-
-    attr(run, "maximization") <- fid_to_maximization[current_problem_id]
-    attr(run, "instance") <- instances
-    attr(run, "datafile") <- rds_paths[[requested_dataset_index]]
-    attr(run, "comment") <- algorithm_infos[current_algorithm_id]
-
-    runs[[length(runs) + 1]] <- run
-  }
-
-  data <- runs
+  data <- subset(data, funcId %in% input$repository.funcId)
+  data <- subset(data, DIM %in% input$repository.dim)
+  data <- subset(data, algId %in% input$repository.ID)
 
   if (length(DataList$data) > 0 && attr(data, 'maximization') != attr(DataList$data, 'maximization')) {
     shinyjs::alert(paste0("Attempting to add data from a different optimization type to the currently",
@@ -343,7 +134,9 @@ observeEvent(input$repository.load_button, {
 
   if (length(DataList$data) > 0) {
     data <- change_id(data, attr(DataList$data, 'ID_attributes'))
-    temp_data <- data
+    temp_data <- c(DataList$data, data)
+
+    temp_data <- clean_DataSetList(temp_data)
   } else {
     temp_data <- change_id(data, 'algId')
   }
@@ -353,6 +146,7 @@ observeEvent(input$repository.load_button, {
       attr(ds, 'funcId') <- attr(ds, 'funcName')
     }
   }
+
   # DataList$data <- change_id(DataList$data, getOption("IOHanalyzer.ID_vars", c("algId")))
   update_menu_visibility(attr(temp_data, 'suite'))
   # set_format_func(attr(DataList$data, 'suite'))
@@ -361,9 +155,13 @@ observeEvent(input$repository.load_button, {
     set_color_scheme("Default", IDs)
   }
   DataList$data <- temp_data
-
-
 })
+
+
+
+
+
+
 
 # decompress zip files recursively and return the root directory of extracted files
 unzip_fct_recursive <- function(zipfile, exdir, print_fun = print, alert_fun = print, depth = 0) {

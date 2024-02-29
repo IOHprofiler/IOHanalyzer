@@ -713,15 +713,52 @@ observeEvent(input$upload.add_data, {
   print_html(paste("Data saved to:", file_path_in_shiny_container, "\n"))
 })
 
-# show the detailed information on DataSetList
+# Function to clean list columns
+clean_column <- function(column) {
+  if (is.list(column)) {
+    # Convert list to a comma-separated string
+    sapply(column, function(x) paste(unique(unlist(x)), collapse=", "))
+  } else {
+    column
+  }
+}
+
+# Render the data table in the Shiny UI
 output$data_info <- renderDataTable({
+  # Retrieve the datasets
   datasets <- DataList$data
-  if (length(datasets) != 0)
-    summary(datasets)
-  else
-    data.frame()
-}, options = list(pageLength = 10, scrollX = F, autoWidth = TRUE,
-                  columnDefs = list(list(width = '20px', targets = c(0, 1)))))
+
+  # Check if datasets is not empty
+  if (length(datasets) != 0) {
+    # Create a summary of the datasets
+    data_table <- summary(datasets)
+
+    # Apply the clean_column function to each column in the data_table
+    data_table <- lapply(data_table, clean_column)
+
+    # Convert back to data frame
+    data_table <- as.data.frame(data_table)
+
+    # Clean up the 'suite' column specifically if needed
+    if ("suite" %in% names(data_table) && is.character(data_table$suite)) {
+      data_table$suite <- gsub("unknown suite, ", "", data_table$suite)
+      data_table$suite <- gsub(", unknown suite", "", data_table$suite)
+    }
+  } else {
+    # If datasets is empty, create an empty data frame
+    data_table <- data.frame()
+  }
+
+  # Return the cleaned data table for rendering
+  data_table
+},
+options = list(
+  pageLength = 10,
+  scrollX = FALSE,
+  autoWidth = TRUE,
+  columnDefs = list(list(width = '20px', targets = c(0, 1)))
+)
+)
 
 # update the list of dimensionality, funcId and algId and parameter list
 observe({

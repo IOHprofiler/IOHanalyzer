@@ -7,14 +7,38 @@ library(RSQLite)
 folderList <- reactiveValues(data = list())
 DataList <- reactiveValues(data = DataSetList())
 
-observe({
-  repo_dir <- get_repo_location()
-  sqlite_db_path <- sprintf('%s/../db.sqlite3', repo_dir)
+repo_dir <- get_repo_location()
+sqlite_db_path <- sprintf("%s/../db.sqlite3", repo_dir)
+
+check_table_and_connect <- function() {
+  # Connect to the SQLite database
   sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
-  query <- "SELECT data_source FROM iohdata_experimentset"
-  result <- dbGetQuery(sqliteConnection, query)
-  dbDisconnect(sqliteConnection)
-  data_sources <- result$data_source
+
+  # Check if the specified table exists
+  table_exists_query <- sprintf("SELECT name FROM sqlite_master WHERE type='table' AND name='iohdata_experimentset';")
+  table_exists <- dbGetQuery(sqliteConnection, table_exists_query)
+
+  if (nrow(table_exists) > 0) {
+    return(sqliteConnection)
+  } else {
+    dbDisconnect(sqliteConnection)
+    return(NULL)
+  }
+}
+
+observe({
+  data_sources <- NULL
+
+  sqliteConnection <- check_table_and_connect()
+  if (!is.null(sqliteConnection)) {
+    query <- "SELECT data_source FROM iohdata_experimentset"
+    result <- dbGetQuery(sqliteConnection, query)
+    dbDisconnect(sqliteConnection)
+    data_sources <- result$data_source
+  } else {
+    repo_dir <- get_repo_location()
+    data_sources <- list.dirs(repo_dir, full.names = F)
+  }
 
   if (length(data_sources) > 0) {
     updateSelectInput(session, 'repository.type', choices = data_sources, selected = data_sources[[1]])
@@ -25,17 +49,24 @@ observe({
 observe({
   req(input$repository.type)
 
-  # Get the available datasets from the SQLite database.
-  repo_dir <- get_repo_location()
-  sqlite_db_path <- sprintf('%s/../db.sqlite3', repo_dir)
-  sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
-  query <- sprintf("SELECT name FROM iohdata_experimentset WHERE data_source = '%s'", input$repository.type)
-  result <- dbGetQuery(sqliteConnection, query)
-  dbDisconnect(sqliteConnection)
-  dataset_names <- result$name
+
+  sqliteConnection <- check_table_and_connect()
+  dataset_names <- NULL
+  if (!is.null(sqliteConnection)) {
+    query <- sprintf("SELECT name FROM iohdata_experimentset WHERE data_source = '%s'", input$repository.type)
+    result <- dbGetQuery(sqliteConnection, query)
+    dbDisconnect(sqliteConnection)
+    dataset_names <- result$name
+  } else {
+    repo_dir <- get_repo_location()
+    dir <- file.path(repo_dir, input$repository.type)
+    dataset_names <- list.files(dir, pattern = '.rds$') %>% sub('\\.rds$', '', .)
+  }
 
   if (length(dataset_names) > 0) {
     updateSelectInput(session, 'repository.dataset', choices = dataset_names, selected = dataset_names[[1]])
+  } else {
+    updateSelectInput(session, 'repository.dataset', choices = dataset_names, selected = c())
   }
 })
 
@@ -43,40 +74,61 @@ observe({
 observeEvent(input$repository.dataset, {
   req(input$repository.dataset)
 
-  # Specify the path to the SQLite database
-  repo_dir <- get_repo_location()  # Replace with your function to get the directory path
-  sqlite_db_path <- sprintf('%s/../db.sqlite3', repo_dir)
+  sqliteConnection <- check_table_and_connect()
+  algo_names <- NULL
+  dimensions <- NULL
+  problem_ids <- NULL
+  if (!is.null(sqliteConnection)) {
+    # Prepare the combined query
+    # This query fetches distinct algorithm names, problem IDs, and dimensions
+    combined_query <- sprintf(
+      "SELECT DISTINCT iohdata_algorithm.name AS algorithm_name, iohdata_problem.fid, iohdata_run.dimension
+      FROM iohdata_run
+      INNER JOIN (
+        SELECT iohdata_experiment.id AS experiment_id, iohdata_experiment.problem_id, iohdata_experiment.algorithm_id
+        FROM iohdata_experiment
+        INNER JOIN iohdata_experimentset ON iohdata_experiment.experiment_set_id = iohdata_experimentset.id
+        WHERE iohdata_experimentset.name IN (%s)
+      ) AS iohdata_experiment ON iohdata_run.experiment_id = iohdata_experiment.experiment_id
+      INNER JOIN iohdata_algorithm ON iohdata_experiment.algorithm_id = iohdata_algorithm.id
+      INNER JOIN iohdata_problem ON iohdata_experiment.problem_id = iohdata_problem.id",
+      paste(sprintf("'%s'", input$repository.dataset), collapse = ", ")
+    )
 
-  # Establish a connection to the database
-  sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
+    # Execute the combined query
+    combined_result <- dbGetQuery(sqliteConnection, combined_query)
 
-  # Prepare the combined query
-  # This query fetches distinct algorithm names, problem IDs, and dimensions
-  combined_query <- sprintf(
-    "SELECT DISTINCT iohdata_algorithm.name AS algorithm_name, iohdata_problem.fid, iohdata_run.dimension
-    FROM iohdata_run
-    INNER JOIN (
-      SELECT iohdata_experiment.id AS experiment_id, iohdata_experiment.problem_id, iohdata_experiment.algorithm_id
-      FROM iohdata_experiment
-      INNER JOIN iohdata_experimentset ON iohdata_experiment.experiment_set_id = iohdata_experimentset.id
-      WHERE iohdata_experimentset.name IN (%s)
-    ) AS iohdata_experiment ON iohdata_run.experiment_id = iohdata_experiment.experiment_id
-    INNER JOIN iohdata_algorithm ON iohdata_experiment.algorithm_id = iohdata_algorithm.id
-    INNER JOIN iohdata_problem ON iohdata_experiment.problem_id = iohdata_problem.id",
-    paste(sprintf("'%s'", input$repository.dataset), collapse = ", ")
-  )
+      # Extract distinct values into vectors
+    algo_names <- unique(combined_result$algorithm_name)
+    dimensions <- unique(combined_result$dimension)
+    problem_ids <- unique(combined_result$fid)
 
-  # Execute the combined query
-  combined_result <- dbGetQuery(sqliteConnection, combined_query)
+    # Close the database connection
+    dbDisconnect(sqliteConnection)
+  } else {
+    repo_dir <- get_repo_location()
+    algs <- c()
+    dims <- c()
+    funcs <- c()
 
-  # Close the database connection
-  dbDisconnect(sqliteConnection)
+    for (f in input$repository.dataset) {
+      rds_file <- file.path(repo_dir, input$repository.type, paste0(f, ".rds"))
+      if (file.exists(paste0(rds_file, '_info'))) {
+        info <- readRDS(paste0(rds_file, '_info'))
+      }
+      else {
+        dsl <- readRDS(rds_file)
+        info = list(algId = get_algId(dsl), funcId = get_funcId(dsl), DIM = get_dim(dsl))
+      }
+      algs <- c(algs, info$algId)
+      dims <- c(dims, info$DIM)
+      funcs <- c(funcs, info$funcId)
+    }
 
-  # Extract distinct values into vectors
-  algo_names <- unique(combined_result$algorithm_name)
-  problem_ids <- unique(combined_result$fid)
-  dimensions <- unique(combined_result$dimension)
-
+    algo_names <- unique(algs)
+    dimensions <- unique(dims)
+    problem_ids <- unique(funcs)
+  }
 
   updateSelectInput(session, 'repository.ID', choices = algo_names, selected = algo_names)
   updateSelectInput(session, 'repository.dim', choices = dimensions, selected = dimensions)
@@ -96,27 +148,36 @@ get_all_data_sources <- function(algorithm_names, sqliteConnection) {
 # add the data from repository
 observeEvent(input$repository.load_button, {
 
-  # Establish a connection to the SQLite database
-  repo_dir <- get_repo_location()
-  sqlite_db_path <- sprintf('%s/../db.sqlite3', repo_dir)
-  sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
-
-  # Assuming input$repository.dataset is available and contains algorithm names
-  # Get all data sources in one go
-  data_sources <- get_all_data_sources(input$repository.dataset, sqliteConnection)
-
-  # data_sources is now a named vector with dataset names as names and data sources as values
+  sqliteConnection <- check_table_and_connect()
 
   data <- DataSetList()
-  repo_dir <- get_repo_location()
-  for (f in input$repository.dataset) {
-    data_source <- data_sources[f]
-    rds_file <- file.path(repo_dir, data_source, paste0(f, ".rds"))
-    data <- c(data, readRDS(rds_file))
+  if (!is.null(sqliteConnection)) {
+
+    # Assuming input$repository.dataset is available and contains algorithm names
+    # Get all data sources in one go
+    data_sources <- get_all_data_sources(input$repository.dataset, sqliteConnection)
+
+    # data_sources is now a named vector with dataset names as names and data sources as values
+
+    repo_dir <- get_repo_location()
+    for (f in input$repository.dataset) {
+      data_source <- data_sources[f]
+      rds_file <- file.path(repo_dir, data_source, paste0(f, ".rds"))
+      data <- c(data, readRDS(rds_file))
+    }
+    data <- subset(data, funcId %in% input$repository.funcId)
+    data <- subset(data, DIM %in% input$repository.dim)
+    data <- subset(data, algId %in% input$repository.ID)
+  } else {
+    repo_dir <- get_repo_location()
+    for (f in input$repository.dataset) {
+      rds_file <- file.path(repo_dir, input$repository.type, paste0(f, ".rds"))
+      data <- c(data, readRDS(rds_file))
+    }
+    data <- subset(data, funcId %in% input$repository.funcId)
+    data <- subset(data, DIM %in% input$repository.dim)
+    data <- subset(data, algId %in% input$repository.ID)
   }
-  data <- subset(data, funcId %in% input$repository.funcId)
-  data <- subset(data, DIM %in% input$repository.dim)
-  data <- subset(data, algId %in% input$repository.ID)
 
   if (length(DataList$data) > 0 && attr(data, 'maximization') != attr(DataList$data, 'maximization')) {
     shinyjs::alert(paste0("Attempting to add data from a different optimization type to the currently",
@@ -156,12 +217,6 @@ observeEvent(input$repository.load_button, {
   }
   DataList$data <- temp_data
 })
-
-
-
-
-
-
 
 # decompress zip files recursively and return the root directory of extracted files
 unzip_fct_recursive <- function(zipfile, exdir, print_fun = print, alert_fun = print, depth = 0) {

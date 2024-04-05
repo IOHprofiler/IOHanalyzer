@@ -1,7 +1,8 @@
-library(DBI)
-library(dplyr)
-library(odbc)
-library(RSQLite)
+# Install and load the DBI package
+if (!require(DBI)) {
+  install.packages("DBI")
+  library(DBI)
+}
 
 # shared reactive variables
 folderList <- reactiveValues(data = list())
@@ -11,8 +12,18 @@ repo_dir <- get_repo_location()
 sqlite_db_path <- sprintf("%s/../db.sqlite3", repo_dir)
 
 check_table_and_connect <- function() {
-  # Connect to the SQLite database
-  sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
+
+  tryCatch({
+    sqliteConnection <- dbConnect(RSQLite::SQLite(), dbname = sqlite_db_path)
+    shinyjs::enable("upload.add_data")
+  },
+error = function(e) {
+    shinyjs::disable("upload.add_data")
+    error_info <- paste("Error Message:", e$message, "\n",
+                        "Call:", deparse(e$call), sep = "")
+    # inspectify(error_info)
+    return(NULL)
+  })
 
   # Check if the specified table exists
   table_exists_query <- sprintf("SELECT name FROM sqlite_master WHERE type='table' AND name='iohdata_experimentset';")
@@ -21,6 +32,7 @@ check_table_and_connect <- function() {
   if (nrow(table_exists) > 0) {
     return(sqliteConnection)
   } else {
+    shinyjs::disable("upload.add_data")
     dbDisconnect(sqliteConnection)
     return(NULL)
   }

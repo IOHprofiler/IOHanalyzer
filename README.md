@@ -3,7 +3,7 @@
 <!-- badges: start -->
 [![metacran downloads](https://cranlogs.r-pkg.org/badges/IOHanalyzer)](https://cran.r-project.org/package=IOHanalyzer)
 [![CRAN_Status_Badge_version_last_release](https://www.r-pkg.org/badges/version-last-release/IOHanalyzer)](https://cran.r-project.org/package=IOHanalyzer)
-[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/license/bsd-3-clause/)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/license/bsd-3-clause)
 [![R-CMD-check](https://github.com/IOHprofiler/IOHanalyzer/workflows/R-CMD-check/badge.svg)](https://github.com/IOHprofiler/IOHanalyzer/actions)
 <!-- badges: end -->
 
@@ -14,7 +14,6 @@ The __performance analyzer__ for **I**terative **O**ptimization **H**euristics (
 * __Bug reports__: [https://github.com/IOHprofiler/IOHAnalyzer/issues](https://github.com/IOHprofiler/IOHAnalyzer/issues)
 * __Online service__: [https://iohanalyzer.liacs.nl](https://iohanalyzer.liacs.nl)
 * __General Contact__: [mailto:iohprofiler@liacs.leidenuniv.nl](mailto:iohprofiler@liacs.leidenuniv.nl)
-* __Mailing List__: [https://lists.leidenuniv.nl/mailman/listinfo/iohprofiler](https://lists.leidenuniv.nl/mailman/listinfo/iohprofiler)
 
 ![](./misc/demo.gif)
 

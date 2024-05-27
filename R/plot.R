@@ -420,26 +420,9 @@ color_palettes <- function(ncolor) {
     colors
   }
 
-  color_fcts <-
-    c(colorRamps::primary.colors,
-      IOHanalyzer_env$used_colorscheme)
-
   n <- min(11, ncolor)
-  colors <- brewer(n)
-  ncolor <- ncolor - n
+  colors <- colorRampPalette(brewer(n))(ncolor)
 
-  i <- 1
-  while (ncolor > 0) {
-    n <- min(8, ncolor)
-    if (i > length(color_fcts)) {
-      colors <- c(colors, colorRamps::primary.colors(ncolor))
-      break
-    } else {
-      colors <- c(colors, color_fcts[[i]](n))
-      ncolor <- ncolor - n
-    }
-    i <- i + 1
-  }
   colors
 }
 

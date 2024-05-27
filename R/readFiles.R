@@ -1562,7 +1562,7 @@ read_IOH_v1plus <- function(info, full_sampling = FALSE) {
   }
 
   dt_for_allign <-
-    dcast(data, evaluations ~ runnr, value.var = 'raw_y')
+    dcast(data, evaluations ~ runnr, value.var = 'raw_y', fun.aggregate = ifelse(info$maximization, max, min))
 
   FV_mat <- as.matrix(dt_for_allign[, 2:ncol(dt_for_allign)])
   runtimes <- dt_for_allign$evaluations

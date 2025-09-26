@@ -240,7 +240,7 @@ overal_loading_box <- function(width = 12, collapsible = T,
 
                        selectInput('repository.type', label = "Select the dataset source",
                                    choices = NULL, selected = NULL, width = '80%'),
-
+                       verbatimTextOutput('repository_meta'),
                        selectInput('repository.dataset',
                                    label = "Select the dataset",
                                    choices = NULL, selected = NULL, width = '80%', multiple = T),

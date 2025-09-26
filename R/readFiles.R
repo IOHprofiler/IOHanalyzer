@@ -1438,7 +1438,7 @@ read_pure_csv <- function(path,
       data$neval <-  ave(data$fval, data$run, FUN = seq_along)
     }
 
-    dt_for_allign <- dcast(data, neval ~ run, value.var = 'fval')
+    dt_for_allign <- dcast(data, neval ~ run, value.var = 'fval', fun.aggregate = ifelse(maximization, max, min))
 
     FV_mat <- as.matrix(dt_for_allign[, 2:ncol(dt_for_allign)])
     runtimes <- dt_for_allign$neval
@@ -1602,7 +1602,11 @@ read_IOH_v1plus <- function(info, full_sampling = FALSE) {
 
 
   paramnames <-
-    info$attributes[!info$attributes %in% c("evaluations", "raw_y")]
+    colnames(data)[!colnames(data) %in% c("evaluations", "raw_y", 'runnr')]
+
+  if (all(paste0('x', seq(0,info$DIM - 1)) %in% paramnames)) {
+    info$contains_position <- T
+  }
 
   PAR <- list(
     'by_RT' = lapply(paramnames, function(parname) {

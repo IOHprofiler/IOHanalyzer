@@ -1357,6 +1357,7 @@ Plot.Stats.Significance_Graph.DataSetList <-
     }
     p_matrix <-
       pairwise.test(dsList, ftarget, bootstrap.size, which)
+    p_matrix[is.na(p_matrix)] <- 1
     g <-
       igraph::graph_from_adjacency_matrix(p_matrix <= alpha, mode = 'directed', diag = F)
     lab.locs <-

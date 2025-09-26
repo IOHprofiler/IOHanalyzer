@@ -37,7 +37,7 @@ It is _available through_:
 
 ## <a name="server"></a>Online Service
 
-A free server [https://iohanalyzer.liacs.nl](http://iohprofiler.liacs.nl) running the stable version of __IOHanalyzer__ is hosted in [Leiden Institute of Advanced Computer Science](https://liacs.leidenuniv.nl/). You're welcome to check it out!
+A free server [https://iohanalyzer.liacs.nl](https://iohanalyzer.liacs.nl) running the stable version of __IOHanalyzer__ is hosted in [Leiden Institute of Advanced Computer Science](https://liacs.leidenuniv.nl/). You're welcome to check it out!
 
 ## <a name="install"></a>Installation
 
@@ -107,11 +107,11 @@ then you just need to compress the data folder obtained from the experiment into
 
 ## Our Team
 
-* [Hao Wang](https://www.lip6.fr/actualite/personnes-fiche.php?ident=D2381), Sorbonne Université, LIP6, France.
-* [Diederick Vermetten](https://www.universiteitleiden.nl/en/staffmembers/diederick-vermetten), Leiden Institute of Advanced Computer Science, The Netherlands.
+* [Hao Wang](https://www.universiteitleiden.nl/en/staffmembers/hao-wang), Leiden Institute of Advanced Computer Science, The Netherlands.
+* [Diederick Vermetten](https://www.lip6.fr/actualite/personnes-fiche.php?ident=D2799), Sorbonne Université, CNRS, LIP6, France.
 * [Furong Ye](https://www.universiteitleiden.nl/en/staffmembers/furong-ye), Leiden Institute of Advanced Computer Science, The Netherlands.
 * [Ofer M. Shir](https://ofersh.github.io/telhai/), Tel-Hai College, Israel.
-* [Carola Doerr](http://www-desir.lip6.fr/~doerr/), Sorbonne Université, CNRS, LIP6, France.
+* [Carola Doerr](https://doerr.perso.lip6.fr/), Sorbonne Université, CNRS, LIP6, France.
 * [Thomas Bäck](https://www.universiteitleiden.nl/en/staffmembers/thomas-back), Leiden Institute of Advanced Computer Science, The Netherlands.
 
 When using IOHprofiler and parts thereof, please kindly cite this work as
@@ -119,16 +119,15 @@ When using IOHprofiler and parts thereof, please kindly cite this work as
 Hao Wang, Diederick Vermettern, Furong Ye, Carola Doerr and Thomas Bäck: _IOHanalyzer: Performance Analysis for Iterative Optimization Heuristic_, arXiv e-prints:2007.03953, 2020.
 
 ```bibtex
-@ARTICLE{IOHprofiler,
-  author = {Hao Wang and Diederick Vermettern and Furong Ye and Carola Doerr and Thomas B{\"a}ck},
-  title = {{IOHanalyzer: Performance Analysis for Iterative Optimization Heuristic}},
-  journal = {arXiv e-prints:2007.03953},
-  archivePrefix = "arXiv",
-  eprint = {2007.03953},
-  year = 2020,
-  month = July,
-  keywords = {Computer Science - Neural and Evolutionary Computing},
-  url = {https://arxiv.org/abs/2007.03953}
+@article{IOHanalzyer,
+  title={IOHanalyzer: Detailed performance analyses for iterative optimization heuristics},
+  author={Wang, Hao and Vermetten, Diederick and Ye, Furong and Doerr, Carola and B{\"a}ck, Thomas},
+  journal={ACM Transactions on Evolutionary Learning and Optimization},
+  volume={2},
+  number={1},
+  pages={1--29},
+  year={2022},
+  publisher={ACM New York, NY}
 }
 ```
 

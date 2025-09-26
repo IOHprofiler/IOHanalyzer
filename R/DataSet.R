@@ -135,10 +135,6 @@ DataSet <-
       PAR <- list('by_FV' = RT[names(RT) != 'RT'],
                   'by_RT' = FV[names(FV) != 'FV'])
 
-      if (all(paste0('x', seq(0,info$DIM - 1)) %in% names(PAR$by_RT))) {
-        info$contains_position <- T
-      }
-
       RT <- RT$RT
       mode(RT) <- 'integer'
       FV <- FV$FV
@@ -339,16 +335,11 @@ c.DataSet <- function(...) {
         }), recursive = F)
   }
 
-  res <- do.call(function(...)
+  do.call(function(...)
     structure(list(
       RT = RT, FV = FV, PAR = PAR
     ), class = c('DataSet', 'list'), ...),
     c(info))
-
-  if (!is.null(attr(dsl[[1]], 'contains_full_FV')) && attr(dsl[[1]], 'contains_full_FV')) {
-    res$FV_raw_mat <- do.call(cbind, lapply(dsl, function(ds) unlist(ds$FV_raw_mat)))
-  }
-
 }
 
 #' S3 subset function for DataSet
@@ -675,7 +666,7 @@ get_PAR_name <- function(ds, which)
 #' @examples
 #' get_FV_overview(dsl)
 #' get_FV_overview(dsl[[1]])
-#' get_FV_overview(subset(dsl, algId == "(1+1)_greedy_hill_climber_1"))
+#' get_FV_overview(dsl, algorithm = '(1+1)_greedy_hill_climber_1')
 #' @export
 get_FV_overview <-
   function(ds, ...)

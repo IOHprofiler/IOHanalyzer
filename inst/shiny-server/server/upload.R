@@ -31,6 +31,10 @@ observe({
                    such as the ones provided on the IOHProfiler github-page.")
     updateSelectInput(session, 'repository.dataset', choices = NULL, selected = NULL)
   }
+  meta_file <- list.files(dir, pattern = 'meta.json', full.names = T)
+  if (length(meta_file) == 1) {
+    shinyjs::html("repository_meta", print(rjson::fromJSON(file=meta_file))[['description']])
+  }
 })
 
 # load repository that is selected
